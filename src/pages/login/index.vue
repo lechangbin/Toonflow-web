@@ -49,7 +49,6 @@ const store = settingStore();
 const { baseUrl, wsBaseUrl } = storeToRefs(store);
 
 const svgRef = ref(null);
-const showHint = ref(true);
 const showSettingModal = ref(false);
 const tempBaseUrl = ref(baseUrl.value);
 const tempWsBaseUrl = ref(wsBaseUrl.value);
@@ -165,20 +164,6 @@ const resSvg = async () => {
 
       :deep(.t-input) {
         border-radius: 8px;
-      }
-    }
-
-    .loginBtn {
-      height: 44px;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 500;
-      margin-top: 8px;
-      background: var(--mainGradient);
-      border: none;
-
-      &:hover {
-        background: var(--mainGradientHover);
       }
     }
   }

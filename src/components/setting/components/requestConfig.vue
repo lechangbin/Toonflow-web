@@ -1,6 +1,6 @@
 <template>
   <div class="request-config">
-    <t-alert theme="warning" content="请配置 API 和 WebSocket 地址"></t-alert>
+    <t-alert style="margin-bottom: 1rem" theme="warning" message="如非特殊情况，不需要修改或者配置"></t-alert>
     <t-form :data="formData" labelAlign="top" :rules="formRules">
       <t-form-item label="API 地址" name="baseUrl">
         <t-input v-model="formData.baseUrl" placeholder="请输入 API 请求地址" clearable>

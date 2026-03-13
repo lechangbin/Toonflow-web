@@ -51,7 +51,7 @@ onMounted(() => {
 
 const theme = {
   token: {
-    colorPrimary: "#9810fa",
+    colorPrimary: "#000",
   },
 };
 

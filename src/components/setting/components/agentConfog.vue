@@ -1,5 +1,23 @@
 <template>
   <div class="aiConfog">
+    <div class="banner">
+      <div class="content f ac jb">
+        <div class="textContent ac">
+          <i-good-two class="icon" theme="filled" size="24" fill="currentColor" />
+          <span>使用 Toonflow 官方中转站点，支持一键填入配置，开箱即用，无需手动配置。</span>
+        </div>
+        <div class="btnList">
+          <t-button>
+            进入网站
+            <template #suffix>
+              <i-share theme="outline" />
+            </template>
+          </t-button>
+          <t-button>填入KEY</t-button>
+        </div>
+      </div>
+    </div>
+
     <div class="cardGrid">
       <div v-for="item in modelData" :key="item.key" class="skillCard" @click="startConfig(item)">
         <div class="skillCardHeader">
@@ -69,6 +87,24 @@ function startConfig(item: ModelType) {
 .aiConfog {
   display: flex;
   flex-direction: column;
+  .banner {
+    background-color: var(--td-success-color-focus);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    .content {
+      width: 100%;
+      .icon {
+        color: var(--td-success-color);
+        margin-right: 0.5em;
+      }
+      .btnList {
+        & > * {
+          margin-left: 8px;
+        }
+      }
+    }
+  }
 }
 
 .cardGrid {

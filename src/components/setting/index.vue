@@ -12,7 +12,7 @@
       <div class="settingRight">
         <h3 class="sectionTitle">{{ currentMenuItem?.label }}</h3>
         <div class="settingContent">
-          <modelServe v-if="activeMenu === 'modelServe'" />
+          <vendorConfig v-if="activeMenu === 'vendorConfig'" />
           <themeConfig v-if="activeMenu === 'themeConfig'" />
           <requestConfig v-if="activeMenu === 'requestConfig'" />
           <loginConfig v-if="activeMenu === 'loginConfig'" />
@@ -40,14 +40,14 @@ import dbConfig from "./components/dbConfig.vue";
 import otherConfig from "./components/otherConfig.vue";
 import about from "./components/about.vue";
 import logoutConfig from "./components/logoutConfig.vue";
-import modelServe from "./components/modelServe.vue";
+import vendorConfig from "./components/vendorConfig.vue";
 
 const menuItems = [
   { key: "themeConfig", label: "主题", icon: "i-platte" },
-  { key: "modelServe", label: "模型服务", icon: "i-network-drive" },
+  { key: "vendorConfig", label: "模型服务", icon: "i-computer" },
   { key: "agentConfog", label: "Agent配置", icon: "i-color-filter" },
   { key: "loginConfig", label: "登录配置", icon: "i-lock" },
-  { key: "dbConfig", label: "数据库操作", icon: "i-database-config" },
+  { key: "dbConfig", label: "数据库操作", icon: "i-data" },
   { key: "otherConfig", label: "其他配置", icon: "i-application-menu" },
   { key: "requestConfig", label: "请求地址", icon: "i-api" },
   { key: "about", label: "检查更新", icon: "i-info" },

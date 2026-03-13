@@ -3,8 +3,8 @@ export default defineStore(
   () => {
     const showSetting = ref(false);
 
-    const baseUrl = ref<string>("http://localhost:60000");
-    const wsBaseUrl = ref<string>("ws://localhost:60000");
+    const baseUrl = ref<string>("http://localhost:60000/api");
+    const wsBaseUrl = ref<string>("ws://localhost:60000/api");
 
     const otherSetting = ref({
       axiosTimeOut: 60 * 10 * 1000,
@@ -13,7 +13,7 @@ export default defineStore(
 
     const themeSetting = ref({
       mode: "light" as "light" | "dark" | "auto",
-      primaryColor: "#9810fa",
+      primaryColor: "#000",
     });
 
     return { showSetting, baseUrl, wsBaseUrl, otherSetting, themeSetting };

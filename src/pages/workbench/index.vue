@@ -194,19 +194,6 @@ function handleClick(menu: any) {
       }
     }
   }
-  .view::-webkit-scrollbar {
-    width: 6px;
-  }
-  .view::-webkit-scrollbar-thumb {
-    background-color: #d5d5d5;
-    border-radius: 4px;
-    &:hover {
-      background-color: #bbb;
-    }
-  }
-  .view::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
 }
 
 .item {
