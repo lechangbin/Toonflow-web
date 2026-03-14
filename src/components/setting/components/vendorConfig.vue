@@ -227,7 +227,6 @@
 import { CodeEditor } from "monaco-editor-vue3";
 import { DialogPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
-import dayjs from "dayjs";
 import VENDOR_CODE_TEMPLATE from "@/lib/vendorTemplate.ts?raw";
 
 // ── 类型 ──

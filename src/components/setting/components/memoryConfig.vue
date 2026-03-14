@@ -7,19 +7,19 @@
         <t-row :gutter="16">
           <t-col :span="4">
             <t-form-item label="短期记忆长度" name="shortTermMemoryLength">
-              <t-input-number v-model="formData.shortTermMemoryLength" :min="1" :max="200"/>
-               <template #help>保留最近 N 条对话上下文。</template>
+              <t-input-number v-model="formData.shortTermMemoryLength" :min="1" :max="200" />
+              <template #help>保留最近 N 条对话上下文。</template>
             </t-form-item>
           </t-col>
           <t-col :span="4">
             <t-form-item label="搜索记忆条数" name="searchTopK">
-              <t-input-number v-model="formData.searchTopK" :min="1" :max="100"  />
-               <template #help>检索时返回的候选记忆条数。</template>
+              <t-input-number v-model="formData.searchTopK" :min="1" :max="100" />
+              <template #help>检索时返回的候选记忆条数。</template>
             </t-form-item>
           </t-col>
           <t-col :span="4">
             <t-form-item label="记忆相似度阈值" name="similarityThreshold">
-              <t-input-number v-model="formData.similarityThreshold" :min="0" :max="1" :step="0.01" :decimalPlaces="2"  />
+              <t-input-number v-model="formData.similarityThreshold" :min="0" :max="1" :step="0.01" :decimalPlaces="2" />
               <template #help>范围 0-1，值越大匹配越严格。</template>
             </t-form-item>
           </t-col>
@@ -37,7 +37,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { DialogPlugin, MessagePlugin } from "tdesign-vue-next";
-import axios from "@/utils/axios";
 
 interface MemoryConfigForm {
   shortTermMemoryLength: number;
