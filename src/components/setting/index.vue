@@ -10,7 +10,7 @@
         </t-menu-item>
       </t-menu>
       <div class="settingRight">
-        <h3 class="sectionTitle">{{ currentMenuItem?.label }}</h3>
+        <div class="sectionTitle">{{ currentMenuItem?.label }}</div>
         <div class="settingContent">
           <vendorConfig v-if="activeMenu === 'vendorConfig'" />
           <themeConfig v-if="activeMenu === 'themeConfig'" />
@@ -77,23 +77,27 @@ const currentMenuItem = computed(() => menuItems.find((item) => item.key === act
 
   .settingRight {
     flex: 1;
-    padding: 16px 32px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    height: 70vh;
     overflow-y: auto;
 
     .sectionTitle {
-      margin: 0 0 20px 0;
       font-size: 16px;
       font-weight: 600;
       padding-bottom: 12px;
       border-bottom: 1px solid var(--td-component-border);
+      margin-bottom: 1vh;
+      height: 4vh;
     }
 
     .settingContent {
       width: 100%;
+      height: calc(70vh - 5vh);
     }
   }
 }
-:deep(.t-menu){
+:deep(.t-menu) {
   padding: 0;
   padding-right: 8px;
 }

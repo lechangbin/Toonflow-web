@@ -53,10 +53,12 @@
     </div>
   </div>
   <setting />
+  <migrateShow />
 </template>
 
 <script setup lang="ts">
 import setting from "@/components/setting/index.vue";
+import migrateShow from "@/components/migrateShow.vue";
 
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -185,7 +187,7 @@ function handleClick(menu: any) {
           margin-right: 4px;
           margin-left: 4px;
         }
-        .divider{
+        .divider {
           width: 1px;
           height: 24px;
           background-color: #ecedef;
