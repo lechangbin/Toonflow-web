@@ -143,18 +143,21 @@ interface ChatList {
 const chatList = ref<ChatList[]>([
   {
     role: "user",
-    content: "你好，请介绍一下你自己。",
+    content: "你好",
   },
   {
     role: "assistant",
     identity: ["大纲师", "情节设计师"],
     content:
-      "你好！我是一个智能助手，专门为你提供帮助和解答问题。无论你有什么疑问或者需要什么帮助，我都会尽力为你提供准确和有用的信息。请随时告诉我你需要什么帮助！",
+      "你好！我是你的创作助手，可以帮助你设计故事大纲、发展情节、塑造角色等。请告诉我你需要什么样的帮助，或者直接分享你的创作想法，我们可以一起把它变成一个精彩的故事！",
   },
 ]);
 //发送
 function handleSendData(data: string) {
-  console.log("发送的数据：", data);
+  chatList.value.push({
+    role: "user",
+    content: data,
+  });
 }
 
 const options = ref(1);
