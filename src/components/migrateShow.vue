@@ -19,7 +19,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import axios from "@/utils/axios";
-const visible = ref(true);
+const visible = ref(false);
 function onConfirm() {
   axios
     .post("/migrate/migrateData")
