@@ -18,15 +18,17 @@
     <div class="caht">
       <div v-for="(item, index) in props.chatList" :key="index" class="item" :class="item.role">
         <div class="user frr" v-if="item.role == 'user'">{{ item.content }}</div>
-        <div class="assistant" v-else>
+        <div v-else class="assistantWrapper">
           <div class="divider">
             <t-tag v-for="(items, indexs) in item.identity" :key="indexs" shape="round">{{ items }}</t-tag>
           </div>
-          <div class="ai fr">
-            <div class="identity c">
-              <span>{{ item.identity?.join(", ") }}</span>
+          <div class="assistant">
+            <div class="ai fr">
+              <div class="identity c">
+                <span>{{ item.identity?.join(", ") }}</span>
+              </div>
+              {{ item.content }}
             </div>
-            {{ item.content }}
           </div>
         </div>
       </div>
@@ -34,7 +36,9 @@
     <div class="inputBox">
       <t-textarea v-model="needData" placeholder="请输入你的设计需求" name="description" :autosize="{ minRows: 3, maxRows: 3 }" />
       <div class="send c" @click="sendFn">
-        <i-arrow-up theme="outline" size="16" fill="#fff" />
+        <t-button shape="circle" theme="primary" :disabled="!needData">
+          <i-arrow-up theme="outline" size="16" fill="#fff" />
+        </t-button>
       </div>
       <div class="setting c">
         <i-setting-config theme="outline" size="16" fill="#b6b9bf" @click="settingFn" />
@@ -65,7 +69,22 @@ const props = defineProps({
 const emit = defineEmits(["sendData"]);
 function sendFn() {
   emit("sendData", needData.value);
+  needData.value = "";
 }
+function handleKeydown(event: KeyboardEvent) {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendFn();
+  }
+}
+// 生命周期
+onMounted(() => {
+  window.addEventListener("keydown", handleKeydown);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", handleKeydown);
+});
 //设置
 function settingFn() {}
 </script>
@@ -103,39 +122,46 @@ function settingFn() {}
           color: #fff;
           padding: 12px 16px;
           border-radius: 16px 16px 4px 16px;
-          min-width: 30%;
+          min-width: 10%;
           word-wrap: break-word;
         }
       }
-      &.assistant {
-        position: relative;
-        justify-content: flex-start;
+      .assistantWrapper {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         .divider {
           gap: 8px;
           font-size: 13px;
           display: flex;
           flex-direction: column;
           align-items: center;
-          margin: 0 auto;
+          margin-bottom: 10px;
         }
-        .ai {
-          margin-top: 10px;
-          background-color: #ececec;
-          color: #000;
-          padding: 24px 16px 16px;
-          border-radius: 16px 16px 16px 4px;
-          min-width: 10%;
-          word-wrap: break-word;
-          position: relative;
-          .identity {
-            padding: 5px 10px;
-            position: absolute;
-            top: -10px;
-            left: 12px;
-            color: #fff;
-            font-size: 12px;
-            border-radius: 25px;
-            background-color: #000;
+        .assistant {
+          width: 100%;
+          display: flex;
+          justify-content: flex-start;
+          .ai {
+            margin-top: 5px;
+            background-color: #ececec;
+            color: #000;
+            padding: 24px 16px 16px;
+            border-radius: 16px 16px 16px 4px;
+            min-width: 150px;
+            word-wrap: break-word;
+            position: relative;
+            .identity {
+              padding: 5px 10px;
+              position: absolute;
+              top: -10px;
+              left: 12px;
+              color: #fff;
+              font-size: 12px;
+              border-radius: 25px;
+              background-color: #000;
+            }
           }
         }
       }
@@ -146,7 +172,7 @@ function settingFn() {}
     bottom: 10px;
     left: 10px;
     right: 10px;
-    height: 120px;
+    height: 130px;
     border-radius: 10px;
     border: 1px solid #d1d0d0;
     padding: 5px;
@@ -162,12 +188,7 @@ function settingFn() {}
       position: absolute;
       right: 5px;
       bottom: 5px;
-      width: 28px;
-      height: 28px;
       cursor: pointer;
-      border-radius: 50%;
-      background-color: #b6b9bf;
-      border-color: #b6b9bf;
     }
     .setting {
       position: absolute;
