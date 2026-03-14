@@ -4,14 +4,17 @@
     <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
     <div class="title c">分镜表</div>
     <div class="content">
-      <div class="storyboardList">
-        <div v-for="(item, index) in props.data.items" :key="item.id" class="storyboardItem">
-          <div class="itemTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">S{{ String(item.id).padStart(2, "0") }}</div>
-          <div class="itemContent">
-            <div class="itemTitle">{{ item.scene }} — {{ item.description }}</div>
-            <div class="itemSubtitle">
-              景别：{{ item.camera.split("，")[0] }} · 时长：{{ item.duration || "3s"
-              }}{{ item.camera.includes("，") ? " · 运镜：" + item.camera.split("，").slice(1).join("，") : "" }}
+      <div v-for="(group, groupIndex) in props.data.groups" :key="group.id" class="groupSection">
+        <div class="groupHeader">{{ group.name }}</div>
+        <div class="storyboardList">
+          <div v-for="(item, index) in group.items" :key="`${group.id}-${item.id}`" class="storyboardItem">
+            <div class="itemTag" :style="{ backgroundColor: tagColors[(groupIndex * 10 + index) % tagColors.length] }">S{{ String(item.id).padStart(2, "0") }}</div>
+            <div class="itemContent">
+              <div class="itemTitle">{{ item.scene }} — {{ item.description }}</div>
+              <div class="itemSubtitle">
+                景别：{{ item.camera.split("，")[0] }} · 时长：{{ item.duration || "3s"
+                }}{{ item.camera.includes("，") ? " · 运镜：" + item.camera.split("，").slice(1).join("，") : "" }}
+              </div>
             </div>
           </div>
         </div>
@@ -31,10 +34,17 @@ interface StoryboardItem {
   duration?: string;
 }
 
+interface StoryboardGroup {
+  id: string;
+  name: string;
+  blockId: string;
+  items: StoryboardItem[];
+}
+
 const props = defineProps<{
   id: string;
   data: {
-    items: StoryboardItem[];
+    groups: StoryboardGroup[];
     handleIds: {
       target: string;
       source: string;
@@ -55,7 +65,7 @@ const tagColors = [
 
 <style lang="scss" scoped>
 .storyboardTable {
-  min-width: 400px;
+  width: 50vw;
 
   .title {
     background-color: #000;
@@ -68,6 +78,23 @@ const tagColors = [
 
   .content {
     margin-top: 8px;
+  }
+
+  .groupSection {
+    margin-bottom: 16px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .groupHeader {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--td-text-color-primary, #333);
+    padding: 8px 0;
+    border-bottom: 2px solid var(--td-brand-color, #0052d9);
+    margin-bottom: 8px;
   }
 
   .storyboardList {

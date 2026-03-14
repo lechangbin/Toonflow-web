@@ -1,11 +1,12 @@
 <template>
   <t-card class="poster">
+    <Handle :id="props.data.handleIds.target" type="target" :position="Position.Left" />
     <div class="titleBar">
       <div class="title">视频封面</div>
-      <t-tag size="small" variant="outline">{{ props.data.posters.length }}张</t-tag>
+      <t-tag size="small" variant="outline">{{ props.data.items.length }}张</t-tag>
     </div>
     <div class="posterGrid">
-      <div v-for="(item, index) in props.data.posters" :key="item.id" class="posterCard">
+      <div v-for="(item, index) in props.data.items" :key="item.id" class="posterCard">
         <div class="posterImage" :style="{ background: item.gradient }">
           <t-image v-if="item.image" :src="item.image" fit="cover" class="posterImg" />
           <div class="posterOverlay">
@@ -31,6 +32,8 @@
 </template>
 
 <script setup lang="ts">
+import { Handle, Position } from "@vue-flow/core";
+
 interface PosterItem {
   id: number;
   name: string;
@@ -43,8 +46,10 @@ interface PosterItem {
 const props = defineProps<{
   id: string;
   data: {
-    workbenchId: string;
-    posters: PosterItem[];
+    items: PosterItem[];
+    handleIds: {
+      target: string;
+    };
   };
 }>();
 </script>

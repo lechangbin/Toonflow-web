@@ -24,7 +24,7 @@ const openShowVisible = defineModel({
   flex-direction: column;
   z-index: 9999;
   .box {
-    width: 500px;
+    width: 20vw;
     height: 100%;
     border-radius: 10px;
     border: 1px solid #919191;

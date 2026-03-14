@@ -1,9 +1,9 @@
 <template>
   <t-card class="script">
+    <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
     <div class="title c">剧本</div>
     <div class="block pr" :style="{ '--block-color': colors[index % colors.length] }" v-for="(item, index) in props.data.blocks" :key="item.id">
       <pre>{{ item.content }}</pre>
-      <Handle :style="{ background: colors[index % colors.length] }" :id="props.data.handleIds.blocks[index]" type="source" :position="Position.Right" />
     </div>
     <Handle :id="props.data.handleIds.assets" type="source" :position="Position.Bottom" />
   </t-card>
@@ -15,7 +15,6 @@ import { Handle, Position } from "@vue-flow/core";
 interface Block {
   id: string;
   content: string;
-  connectTo: string | null;
 }
 
 const props = defineProps<{
@@ -24,7 +23,7 @@ const props = defineProps<{
     blocks: Block[];
     handleIds: {
       assets: string;
-      blocks: string[];
+      source: string;
     };
   };
 }>();
@@ -80,8 +79,5 @@ const colors = ["#f87171", "#fbbf24", "#34d399", "#60a5fa", "#a78bfa"];
       }
     }
   }
-}
-:deep(.source) {
-  right: calc(var(--td-comp-paddingLR-xl) * -1 + -1px);
 }
 </style>

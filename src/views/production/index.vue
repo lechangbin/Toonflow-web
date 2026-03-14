@@ -1,5 +1,5 @@
 <template>
-  <VueFlow class="flowMain" :nodes="nodes" :edges="edges" :min-zoom="0.01">
+  <VueFlow class="flowMain" :nodes="nodes" :edges="edges" :min-zoom="0.01" fit-view-on-init :selection-key-code="null" :multi-selection-key-code="null">
     <template #node-script="props">
       <scriptNode :id="props.id" :data="props.data" />
     </template>
@@ -18,7 +18,6 @@
     <template #node-poster="props">
       <poster :id="props.id" :data="props.data" />
     </template>
-    <Background></Background>
     <Background></Background>
     <Controls />
     <div class="floatingWindow">
@@ -71,6 +70,7 @@ const flowData = ref({
   script: {
     id: "script-1",
     position: { x: 10, y: 0 },
+    connectTo: "storyboard-table",
     blocks: [
       {
         id: "b1",
@@ -89,7 +89,6 @@ const flowData = ref({
 「至于青云令，我早就用秘法削弱了令牌和你的感应」
 「你以为你还能靠这令牌反抗？」
 △ 凌玄气血逆流，再次一口鲜血喷出`,
-        connectTo: "st-1",
       },
       {
         id: "b2",
@@ -104,7 +103,6 @@ const flowData = ref({
 长老甲：「凌玄，识时务者为俊杰！」
 长老乙：「你现在修为全废，青云令也没用了」
 长老丙：「早就不配管青云宗，不如乖乖交出令牌，还能保住一条命！」`,
-        connectTo: "st-2",
       },
       {
         id: "b3",
@@ -118,7 +116,6 @@ const flowData = ref({
 △ 指着苏晚卿，指尖疯狂颤抖
 【独白】她的真面目...我全看清楚了
 【卡黑】`,
-        connectTo: "st-3",
       },
     ],
   },
@@ -138,158 +135,122 @@ const flowData = ref({
       { name: "妖兽谷", desc: "威胁场景 · 凶险之地", bgColor: "#fca5a5" },
     ],
   },
-  // 分镜表
-  storyboardTables: [
-    {
-      id: "st-1",
-      position: { x: 804, y: 0 },
-      connectTo: "sb-1",
-      items: [
-        { id: 1, scene: "大殿内景", description: "凌玄跪在地上，面色苍白，嘴角带血", camera: "中景，缓慢推近", duration: "4s" },
-        { id: 2, scene: "苏晚卿特写", description: "冷笑的面容，眼神中满是算计", camera: "特写，浅景深", duration: "3s" },
-        { id: 3, scene: "青云令", description: "令牌在苏晚卿手中，表面光芒黯淡", camera: "微距特写", duration: "2s" },
-        { id: 4, scene: "回忆闪回", description: "黑风岭妖兽袭击，凌玄护住苏晚卿", camera: "快速剪辑，手持晃动", duration: "5s" },
-        { id: 5, scene: "凌玄反应", description: "瞳孔骤缩，难以置信的表情", camera: "眼部特写推至大特写", duration: "3s" },
-        { id: 6, scene: "吐血", description: "鲜血喷出，滴落在青石板上", camera: "慢动作，跟随血滴", duration: "4s" },
-      ],
-    },
-    {
-      id: "st-2",
-      position: { x: 791, y: 592 },
-      connectTo: "sb-2",
-      items: [
-        { id: 1, scene: "血迹特写", description: "鲜血在青石上晕开，形成刺目的红", camera: "俯拍，缓慢拉远", duration: "3s" },
-        { id: 2, scene: "凌玄嘶吼", description: "愤怒到极致的表情，青筋暴起", camera: "仰拍，增加压迫感", duration: "4s" },
-        { id: 3, scene: "苏晚卿讥讽", description: "轻蔑的笑容，毫无愧疚", camera: "中景，冷色调", duration: "3s" },
-        { id: 4, scene: "长老群像", description: "三位长老面面相觑，随即附和", camera: "横移，依次扫过", duration: "5s" },
-        { id: 5, scene: "沈清辞得意", description: "搂着苏晚卿，志得意满的笑", camera: "双人中景", duration: "3s" },
-      ],
-    },
-    {
-      id: "st-3",
-      position: { x: 791, y: 1084 },
-      connectTo: "sb-3",
-      items: [
-        { id: 1, scene: "血迹特写", description: "鲜血在青石上晕开，形成刺目的红", camera: "俯拍，缓慢拉远", duration: "3s" },
-        { id: 2, scene: "凌玄嘶吼", description: "愤怒到极致的表情，青筋暴起", camera: "仰拍，增加压迫感", duration: "4s" },
-        { id: 3, scene: "苏晚卿讥讽", description: "轻蔑的笑容，毫无愧疚", camera: "中景，冷色调", duration: "3s" },
-        { id: 4, scene: "长老群像", description: "三位长老面面相觑，随即附和", camera: "横移，依次扫过", duration: "5s" },
-        { id: 5, scene: "沈清辞得意", description: "搂着苏晚卿，志得意满的笑", camera: "双人中景", duration: "3s" },
-      ],
-    },
-  ],
-  // 分镜
-  storyboards: [
-    {
-      id: "sb-1",
-      position: { x: 1500, y: 24 },
-      connectTo: "wb-1",
-      frames: [
-        { id: 1, description: "大殿全景，庄严肃穆" },
-        { id: 2, description: "凌玄跪地特写" },
-        { id: 3, description: "苏晚卿冷笑" },
-        { id: 4, description: "青云令微距" },
-        { id: 5, description: "黑风岭闪回" },
-        { id: 6, description: "妖兽袭击" },
-        { id: 7, description: "凌玄瞳孔骤缩" },
-        { id: 8, description: "鲜血滴落" },
-      ],
-    },
-    {
-      id: "sb-2",
-      position: { x: 1500, y: 624 },
-      connectTo: "wb-2",
-      frames: [
-        { id: 1, description: "血迹晕开" },
-        { id: 2, description: "凌玄嘶吼" },
-        { id: 3, description: "苏晚卿讥讽" },
-        { id: 4, description: "长老甲附和" },
-        { id: 5, description: "长老乙劝降" },
-        { id: 6, description: "沈清辞得意" },
-      ],
-    },
-    {
-      id: "sb-3",
-      position: { x: 1500, y: 1224 },
-      connectTo: "wb-3",
-      frames: [
-        { id: 1, description: "凌玄颤抖" },
-        { id: 2, description: "沈清辞威胁" },
-        { id: 3, description: "众人逼迫" },
-        { id: 4, description: "凌玄血丝密布" },
-        { id: 5, description: "指向苏晚卿" },
-        { id: 6, description: "独白浮现" },
-        { id: 7, description: "真面目揭示" },
-        { id: 8, description: "画面卡黑" },
-      ],
-    },
-  ],
-  // 工作台
-  workbenches: [
-    {
-      id: "wb-1",
-      position: { x: 2100, y: 24 },
-      name: "第一幕 - 真相揭露",
-      status: "已完成",
-      duration: "00:21",
-      resolution: "1920×1080",
-      fps: "30fps",
-      gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-    },
-    {
-      id: "wb-2",
-      position: { x: 2100, y: 624 },
-      name: "第二幕 - 愤怒嘶吼",
-      status: "渲染中",
-      duration: "00:18",
-      resolution: "1920×1080",
-      fps: "30fps",
-      gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-    },
-    {
-      id: "wb-3",
-      position: { x: 2100, y: 1224 },
-      name: "第三幕 - 心寒绝望",
-      status: "待处理",
-      duration: "00:24",
-      resolution: "1920×1080",
-      fps: "30fps",
-      gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-    },
-  ],
-  // 封面
-  posters: [
-    {
-      id: "poster-1",
-      position: { x: 2500, y: 24 },
-      workbenchId: "wb-1",
-      posters: [
-        { id: 1, name: "封面方案A", size: "1080×1920", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", selected: true },
-        { id: 2, name: "封面方案B", size: "1080×1920", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
-        { id: 3, name: "封面方案C", size: "1080×1920", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
-      ],
-    },
-    {
-      id: "poster-2",
-      position: { x: 2500, y: 524 },
-      workbenchId: "wb-2",
-      posters: [
-        { id: 1, name: "愤怒特写", size: "1080×1920", gradient: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)", selected: true },
-        { id: 2, name: "嘶吼瞬间", size: "1080×1920", gradient: "linear-gradient(135deg, #d63031 0%, #e17055 100%)" },
-      ],
-    },
-    {
-      id: "poster-3",
-      position: { x: 2500, y: 1024 },
-      workbenchId: "wb-3",
-      posters: [
-        { id: 1, name: "绝望眼神", size: "1080×1920", gradient: "linear-gradient(135deg, #636e72 0%, #2d3436 100%)" },
-        { id: 2, name: "卡黑前帧", size: "1080×1920", gradient: "linear-gradient(135deg, #0c0c0c 0%, #434343 100%)", selected: true },
-        { id: 3, name: "对峙场景", size: "1080×1920", gradient: "linear-gradient(135deg, #74b9ff 0%, #0984e3 100%)" },
-        { id: 4, name: "群像构图", size: "1080×1920", gradient: "linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%)" },
-      ],
-    },
-  ],
+  // 分镜表（合并为一个 node）
+  storyboardTable: {
+    id: "storyboard-table",
+    position: { x: 804, y: 0 },
+    connectTo: "storyboard",
+    groups: [
+      {
+        id: "st-1",
+        name: "第一幕",
+        blockId: "b1",
+        items: [
+          { id: 1, scene: "大殿内景", description: "凌玄跪在地上，面色苍白，嘴角带血", camera: "中景，缓慢推近", duration: "4s" },
+          { id: 2, scene: "苏晚卿特写", description: "冷笑的面容，眼神中满是算计", camera: "特写，浅景深", duration: "3s" },
+          { id: 3, scene: "青云令", description: "令牌在苏晚卿手中，表面光芒黯淡", camera: "微距特写", duration: "2s" },
+          { id: 4, scene: "回忆闪回", description: "黑风岭妖兽袭击，凌玄护住苏晚卿", camera: "快速剪辑，手持晃动", duration: "5s" },
+          { id: 5, scene: "凌玄反应", description: "瞳孔骤缩，难以置信的表情", camera: "眼部特写推至大特写", duration: "3s" },
+          { id: 6, scene: "吐血", description: "鲜血喷出，滴落在青石板上", camera: "慢动作，跟随血滴", duration: "4s" },
+        ],
+      },
+      {
+        id: "st-2",
+        name: "第二幕",
+        blockId: "b2",
+        items: [
+          { id: 1, scene: "血迹特写", description: "鲜血在青石上晕开，形成刺目的红", camera: "俯拍，缓慢拉远", duration: "3s" },
+          { id: 2, scene: "凌玄嘶吼", description: "愤怒到极致的表情，青筋暴起", camera: "仰拍，增加压迫感", duration: "4s" },
+          { id: 3, scene: "苏晚卿讥讽", description: "轻蔑的笑容，毫无愧疚", camera: "中景，冷色调", duration: "3s" },
+          { id: 4, scene: "长老群像", description: "三位长老面面相觑，随即附和", camera: "横移，依次扫过", duration: "5s" },
+          { id: 5, scene: "沈清辞得意", description: "搂着苏晚卿，志得意满的笑", camera: "双人中景", duration: "3s" },
+        ],
+      },
+      {
+        id: "st-3",
+        name: "第三幕",
+        blockId: "b3",
+        items: [
+          { id: 1, scene: "血迹特写", description: "鲜血在青石上晕开，形成刺目的红", camera: "俯拍，缓慢拉远", duration: "3s" },
+          { id: 2, scene: "凌玄嘶吼", description: "愤怒到极致的表情，青筋暴起", camera: "仰拍，增加压迫感", duration: "4s" },
+          { id: 3, scene: "苏晚卿讥讽", description: "轻蔑的笑容，毫无愧疚", camera: "中景，冷色调", duration: "3s" },
+          { id: 4, scene: "长老群像", description: "三位长老面面相觑，随即附和", camera: "横移，依次扫过", duration: "5s" },
+          { id: 5, scene: "沈清辞得意", description: "搂着苏晚卿，志得意满的笑", camera: "双人中景", duration: "3s" },
+        ],
+      },
+    ],
+  },
+  // 分镜（合并为一个 node）
+  storyboard: {
+    id: "storyboard",
+    position: { x: 1500, y: 24 },
+    connectTo: "workbench",
+    groups: [
+      {
+        id: "sb-1",
+        name: "第一幕",
+        frames: [
+          { id: 1, description: "大殿全景，庄严肃穆" },
+          { id: 2, description: "凌玄跪地特写" },
+          { id: 3, description: "苏晚卿冷笑" },
+          { id: 4, description: "青云令微距" },
+          { id: 5, description: "黑风岭闪回" },
+          { id: 6, description: "妖兽袭击" },
+          { id: 7, description: "凌玄瞳孔骤缩" },
+          { id: 8, description: "鲜血滴落" },
+        ],
+      },
+      {
+        id: "sb-2",
+        name: "第二幕",
+        frames: [
+          { id: 1, description: "血迹晕开" },
+          { id: 2, description: "凌玄嘶吼" },
+          { id: 3, description: "苏晚卿讥讽" },
+          { id: 4, description: "长老甲附和" },
+          { id: 5, description: "长老乙劝降" },
+          { id: 6, description: "沈清辞得意" },
+        ],
+      },
+      {
+        id: "sb-3",
+        name: "第三幕",
+        frames: [
+          { id: 1, description: "凌玄颤抖" },
+          { id: 2, description: "沈清辞威胁" },
+          { id: 3, description: "众人逼迫" },
+          { id: 4, description: "凌玄血丝密布" },
+          { id: 5, description: "指向苏晚卿" },
+          { id: 6, description: "独白浮现" },
+          { id: 7, description: "真面目揭示" },
+          { id: 8, description: "画面卡黑" },
+        ],
+      },
+    ],
+  },
+  // 工作台（单个 node）
+  workbench: {
+    id: "workbench",
+    position: { x: 2100, y: 24 },
+    connectTo: "poster",
+    name: "第2集 - 真相大白",
+    status: "渲染中",
+    duration: "01:03",
+    resolution: "1920×1080",
+    fps: "30fps",
+    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  },
+  // 封面（单个 node）
+  poster: {
+    id: "poster",
+    position: { x: 2500, y: 24 },
+    items: [
+      { id: 1, name: "封面方案A", size: "1080×1920", gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", selected: true },
+      { id: 2, name: "封面方案B", size: "1080×1920", gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" },
+      { id: 3, name: "封面方案C", size: "1080×1920", gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" },
+      { id: 4, name: "封面方案D", size: "1080×1920", gradient: "linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%)" },
+    ],
+  },
 });
 // ==================== AI 操作数据区结束 ====================
 

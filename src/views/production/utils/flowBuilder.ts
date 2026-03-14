@@ -5,7 +5,6 @@ import { computed } from "vue";
 interface Block {
   id: string;
   content: string;
-  connectTo: string | null;
 }
 
 interface Character {
@@ -33,6 +32,7 @@ interface StoryboardItem {
 interface ScriptData {
   id: string;
   position: { x: number; y: number };
+  connectTo: string | null;
   blocks: Block[];
 }
 
@@ -43,23 +43,41 @@ interface AssetsData {
   scenes: Scene[];
 }
 
+// 分镜表分组
+interface StoryboardTableGroup {
+  id: string;
+  name: string;
+  blockId: string;
+  items: StoryboardItem[];
+}
+
+// 合并后的分镜表数据（单个 node）
 interface StoryboardTableData {
   id: string;
   position: { x: number; y: number };
   connectTo: string | null;
-  items: StoryboardItem[];
+  groups: StoryboardTableGroup[];
 }
 
+// 分镜分组
+interface StoryboardGroup {
+  id: string;
+  name: string;
+  frames: any[];
+}
+
+// 合并后的分镜数据（单个 node）
 interface StoryboardData {
   id: string;
   position: { x: number; y: number };
-  connectTo?: string | null;
-  frames: any[];
+  connectTo: string | null;
+  groups: StoryboardGroup[];
 }
 
 interface WorkbenchData {
   id: string;
   position: { x: number; y: number };
+  connectTo?: string | null;
   name: string;
   status: string;
   duration: string;
@@ -81,17 +99,16 @@ interface PosterItem {
 interface PosterData {
   id: string;
   position: { x: number; y: number };
-  workbenchId: string;
-  posters: PosterItem[];
+  items: PosterItem[];
 }
 
 export interface FlowData {
   script: ScriptData;
   assets: AssetsData;
-  storyboardTables: StoryboardTableData[];
-  storyboards: StoryboardData[];
-  workbenches?: WorkbenchData[];
-  posters?: PosterData[];
+  storyboardTable: StoryboardTableData;
+  storyboard: StoryboardData;
+  workbench: WorkbenchData;
+  poster: PosterData;
 }
 
 // 边样式
@@ -115,7 +132,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>) {
         blocks: data.script.blocks,
         handleIds: {
           assets: `${data.script.id}-assets`,
-          blocks: data.script.blocks.map((b) => `${data.script.id}-${b.id}`),
+          source: `${data.script.id}-source`,
         },
       },
     });
@@ -134,75 +151,66 @@ export function useFlowBuilder(flowData: Ref<FlowData>) {
       },
     });
 
-    // 3. StoryboardTable 节点
-    data.storyboardTables.forEach((st) => {
-      result.push({
-        id: st.id,
-        type: "storyboardTable",
-        position: st.position,
-        data: {
-          items: st.items,
-          handleIds: {
-            target: `${st.id}-target`,
-            source: `${st.id}-source`,
-          },
+    // 3. StoryboardTable 节点（单个合并节点）
+    result.push({
+      id: data.storyboardTable.id,
+      type: "storyboardTable",
+      position: data.storyboardTable.position,
+      data: {
+        groups: data.storyboardTable.groups,
+        handleIds: {
+          target: `${data.storyboardTable.id}-target`,
+          source: `${data.storyboardTable.id}-source`,
         },
-      });
+      },
     });
 
-    // 4. Storyboard 节点
-    data.storyboards.forEach((sb) => {
-      result.push({
-        id: sb.id,
-        type: "storyboard",
-        position: sb.position,
-        data: {
-          frames: sb.frames,
-          handleIds: {
-            target: `${sb.id}-target`,
-            source: `${sb.id}-source`,
-          },
+    // 4. Storyboard 节点（单个合并节点）
+    result.push({
+      id: data.storyboard.id,
+      type: "storyboard",
+      position: data.storyboard.position,
+      data: {
+        groups: data.storyboard.groups,
+        handleIds: {
+          target: `${data.storyboard.id}-target`,
+          source: `${data.storyboard.id}-source`,
         },
-      });
+      },
     });
 
-    // 5. Workbench 节点
-    if (data.workbenches) {
-      data.workbenches.forEach((wb) => {
-        result.push({
-          id: wb.id,
-          type: "workbench",
-          position: wb.position,
-          data: {
-            name: wb.name,
-            status: wb.status,
-            duration: wb.duration,
-            resolution: wb.resolution,
-            fps: wb.fps,
-            cover: wb.cover,
-            gradient: wb.gradient,
-            handleIds: {
-              target: `${wb.id}-target`,
-            },
-          },
-        });
-      });
-    }
+    // 5. Workbench 节点（单个）
+    result.push({
+      id: data.workbench.id,
+      type: "workbench",
+      position: data.workbench.position,
+      data: {
+        name: data.workbench.name,
+        status: data.workbench.status,
+        duration: data.workbench.duration,
+        resolution: data.workbench.resolution,
+        fps: data.workbench.fps,
+        cover: data.workbench.cover,
+        gradient: data.workbench.gradient,
+        handleIds: {
+          target: `${data.workbench.id}-target`,
+          source: `${data.workbench.id}-source`,
+        },
+      },
+    });
 
-    // 6. Poster 节点
-    if (data.posters) {
-      data.posters.forEach((p) => {
-        result.push({
-          id: p.id,
-          type: "poster",
-          position: p.position,
-          data: {
-            workbenchId: p.workbenchId,
-            posters: p.posters,
-          },
-        });
-      });
-    }
+    // 6. Poster 节点（单个）
+    result.push({
+      id: data.poster.id,
+      type: "poster",
+      position: data.poster.position,
+      data: {
+        items: data.poster.items,
+        handleIds: {
+          target: `${data.poster.id}-target`,
+        },
+      },
+    });
 
     return result;
   });
@@ -222,50 +230,57 @@ export function useFlowBuilder(flowData: Ref<FlowData>) {
       style: edgeStyle,
     });
 
-    // 2. Script blocks -> StoryboardTables 连线
-    data.script.blocks.forEach((block) => {
-      if (block.connectTo) {
-        result.push({
-          id: `${data.script.id}-${block.id}-${block.connectTo}`,
-          source: data.script.id,
-          target: block.connectTo,
-          sourceHandle: `${data.script.id}-${block.id}`,
-          targetHandle: `${block.connectTo}-target`,
-          animated: true,
-          style: edgeStyle,
-        });
-      }
-    });
+    // 2. Script -> StoryboardTable 连线（单条连线）
+    if (data.script.connectTo) {
+      result.push({
+        id: `${data.script.id}-${data.script.connectTo}`,
+        source: data.script.id,
+        target: data.script.connectTo,
+        sourceHandle: `${data.script.id}-source`,
+        targetHandle: `${data.script.connectTo}-target`,
+        animated: true,
+        style: edgeStyle,
+      });
+    }
 
-    // 3. StoryboardTables -> Storyboards 连线
-    data.storyboardTables.forEach((st) => {
-      if (st.connectTo) {
-        result.push({
-          id: `${st.id}-${st.connectTo}`,
-          source: st.id,
-          target: st.connectTo,
-          sourceHandle: `${st.id}-source`,
-          targetHandle: `${st.connectTo}-target`,
-          animated: true,
-          style: edgeStyle,
-        });
-      }
-    });
+    // 3. StoryboardTable -> Storyboard 连线（单条连线）
+    if (data.storyboardTable.connectTo) {
+      result.push({
+        id: `${data.storyboardTable.id}-${data.storyboardTable.connectTo}`,
+        source: data.storyboardTable.id,
+        target: data.storyboardTable.connectTo,
+        sourceHandle: `${data.storyboardTable.id}-source`,
+        targetHandle: `${data.storyboardTable.connectTo}-target`,
+        animated: true,
+        style: edgeStyle,
+      });
+    }
 
-    // 4. Storyboards -> Workbenches 连线
-    data.storyboards.forEach((sb) => {
-      if (sb.connectTo) {
-        result.push({
-          id: `${sb.id}-${sb.connectTo}`,
-          source: sb.id,
-          target: sb.connectTo,
-          sourceHandle: `${sb.id}-source`,
-          targetHandle: `${sb.connectTo}-target`,
-          animated: true,
-          style: edgeStyle,
-        });
-      }
-    });
+    // 4. Storyboard -> Workbench 连线（单条连线）
+    if (data.storyboard.connectTo) {
+      result.push({
+        id: `${data.storyboard.id}-${data.storyboard.connectTo}`,
+        source: data.storyboard.id,
+        target: data.storyboard.connectTo,
+        sourceHandle: `${data.storyboard.id}-source`,
+        targetHandle: `${data.storyboard.connectTo}-target`,
+        animated: true,
+        style: edgeStyle,
+      });
+    }
+
+    // 5. Workbench -> Poster 连线（单条连线）
+    if (data.workbench.connectTo) {
+      result.push({
+        id: `${data.workbench.id}-${data.workbench.connectTo}`,
+        source: data.workbench.id,
+        target: data.workbench.connectTo,
+        sourceHandle: `${data.workbench.id}-source`,
+        targetHandle: `${data.workbench.connectTo}-target`,
+        animated: true,
+        style: edgeStyle,
+      });
+    }
 
     return result;
   });

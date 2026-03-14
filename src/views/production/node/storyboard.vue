@@ -4,22 +4,27 @@
     <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
     <div class="title">分镜列表</div>
     <div class="content">
-      <div class="frameGrid">
-        <div v-for="(frame, index) in props.data.frames" :key="frame.id" class="frameCard">
-          <div class="frameImage" :style="{ background: frame.gradient || getDefaultGradient(index) }">
-            <t-tag class="frameTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
-              S{{ String(index + 1).padStart(2, "0") }}
-            </t-tag>
-            <t-image v-if="frame.image" :src="frame.image" fit="cover" class="frameImg" />
+      <div v-for="(group, groupIndex) in props.data.groups" :key="group.id" class="groupSection">
+        <div class="groupHeader">{{ group.name }}</div>
+        <div class="frameGrid">
+          <div v-for="(frame, index) in group.frames" :key="`${group.id}-${frame.id}`" class="frameCard" @click="visible = true">
+            <div class="frameImage" :style="{ background: frame.gradient || getDefaultGradient(groupIndex * 10 + index) }">
+              <t-tag class="frameTag" :style="{ backgroundColor: tagColors[(groupIndex * 10 + index) % tagColors.length] }">
+                S{{ String(index + 1).padStart(2, "0") }}
+              </t-tag>
+              <t-image v-if="frame.image" :src="frame.image" fit="cover" class="frameImg" />
+            </div>
+            <div class="frameInfo">{{ frame.description }}</div>
           </div>
-          <div class="frameInfo">{{ frame.description }}</div>
         </div>
       </div>
     </div>
+    <editStoryboard v-model:visible="visible" v-if="visible"/>
   </t-card>
 </template>
 
 <script setup lang="ts">
+import editStoryboard from "../components/editStoryboard/index.vue";
 import { Handle, Position } from "@vue-flow/core";
 
 interface Frame {
@@ -29,16 +34,24 @@ interface Frame {
   gradient?: string;
 }
 
+interface StoryboardGroup {
+  id: string;
+  name: string;
+  frames: Frame[];
+}
+
 const props = defineProps<{
   id: string;
   data: {
-    frames: Frame[];
+    groups: StoryboardGroup[];
     handleIds: {
       target: string;
       source: string;
     };
   };
 }>();
+
+const visible = ref(false);
 
 const tagColors = ["#5bccb3", "#9c7cfc", "#fbbf24", "#5b9afc", "#e86b6b", "#7cb8fc", "#e8a855", "#34d399"];
 
@@ -71,6 +84,23 @@ const getDefaultGradient = (index: number) => gradients[index % gradients.length
 
   .content {
     margin-top: 12px;
+  }
+
+  .groupSection {
+    margin-bottom: 20px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .groupHeader {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--td-text-color-primary, #333);
+    padding: 8px 0;
+    border-bottom: 2px solid var(--td-brand-color, #0052d9);
+    margin-bottom: 12px;
   }
 
   .frameGrid {

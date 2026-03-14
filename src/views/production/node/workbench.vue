@@ -1,6 +1,7 @@
 <template>
   <t-card class="workbench">
     <Handle :id="props.data.handleIds.target" type="target" :position="Position.Left" />
+    <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar">
       <div class="title">视频工作台</div>
       <t-tag theme="success" size="small">{{ props.data.status }}</t-tag>
@@ -55,6 +56,7 @@ const props = defineProps<{
     gradient?: string;
     handleIds: {
       target: string;
+      source: string;
     };
   };
 }>();
