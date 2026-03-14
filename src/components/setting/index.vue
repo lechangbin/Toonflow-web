@@ -12,8 +12,8 @@
       <div class="settingRight">
         <h3 class="sectionTitle">{{ currentMenuItem?.label }}</h3>
         <div class="settingContent">
-          <vendorConfig v-if="activeMenu === 'vendorConfig'" />
           <themeConfig v-if="activeMenu === 'themeConfig'" />
+          <vendorConfig v-if="activeMenu === 'vendorConfig'" />
           <requestConfig v-if="activeMenu === 'requestConfig'" />
           <loginConfig v-if="activeMenu === 'loginConfig'" />
           <agentConfog v-if="activeMenu === 'agentConfog'" />
@@ -21,6 +21,7 @@
           <dbConfig v-if="activeMenu === 'dbConfig'" />
           <about v-if="activeMenu === 'about'" />
           <logoutConfig v-if="activeMenu === 'logoutConfig'" />
+          <memoryConfig v-if="activeMenu === 'memoryConfig'" />
         </div>
       </div>
     </div>
@@ -41,11 +42,13 @@ import otherConfig from "./components/otherConfig.vue";
 import about from "./components/about.vue";
 import logoutConfig from "./components/logoutConfig.vue";
 import vendorConfig from "./components/vendorConfig.vue";
+import memoryConfig from "./components/memoryConfig.vue";
 
 const menuItems = [
   { key: "themeConfig", label: "主题", icon: "i-platte" },
   { key: "vendorConfig", label: "模型服务", icon: "i-computer" },
   { key: "agentConfog", label: "Agent配置", icon: "i-color-filter" },
+  { key: "memoryConfig", label: "AI记忆配置", icon: "i-memory-card-one" },
   { key: "loginConfig", label: "登录配置", icon: "i-lock" },
   { key: "dbConfig", label: "数据库操作", icon: "i-data" },
   { key: "otherConfig", label: "其他配置", icon: "i-application-menu" },
@@ -93,7 +96,7 @@ const currentMenuItem = computed(() => menuItems.find((item) => item.key === act
     }
   }
 }
-:deep(.t-menu){
+:deep(.t-menu) {
   padding: 0;
   padding-right: 8px;
 }
