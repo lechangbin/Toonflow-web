@@ -183,7 +183,7 @@ const handleGenerate = () => {
   }
 }
 
-:deep(.target) {
-  left: calc(var(--td-comp-paddingLR-xl) * -1 + -1px);
-}
+// :deep(.target) {
+//   left: calc(var(--td-comp-paddingLR-xl) * -1 + -1px);
+// }
 </style>
