@@ -6,8 +6,6 @@ import router from "./router";
 import { install } from "@icon-park/vue-next/es/all";
 import "@icon-park/vue-next/styles/index.css";
 
-import "@devui-design/icons/icomoon/devui-icon.css";
-
 import "tdesign-vue-next/es/style/index.css";
 
 import "./assets/main.css";

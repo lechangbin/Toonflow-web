@@ -75,6 +75,7 @@ const rightBtnList = ref([
   { type: "btn", path: "/novel", label: "小说原文", icon: "i-notebook" },
   { type: "btn", path: "/agent", label: "剧本Agent", icon: "i-color-filter" },
   { type: "btn", path: "/script", label: "剧本管理", icon: "i-document-folder" },
+  { type: "btn", path: "/cornerScape", label: "塑角造景", icon: "i-peoples-two" },
   { type: "btn", path: "/production", label: "视频生产", icon: "i-carousel-video" },
   { type: "divider" },
   { type: "btn", path: "/assets", label: "资产中心", icon: "i-receive" },

@@ -1,10 +1,10 @@
 <template>
-  <div class='storyboardGenerate'>
+  <div class=''>
      
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
 
 </script>

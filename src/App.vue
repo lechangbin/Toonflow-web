@@ -66,12 +66,4 @@ const globalConfig: GlobalConfigProvider = merge(empty, zhConfig, customConfig);
 </script>
 
 <style lang="scss">
-:root {
-  --mainColor: #9810fa;
-  --mainColorLight: #faf5ff;
-  --mainColorHover: #7c0dd4;
-  --mainColorActive: #6a0bb5;
-  --mainGradient: linear-gradient(135deg, #9810fa 0%, #7c3aed 100%);
-  --mainGradientHover: linear-gradient(135deg, #a020fb 0%, #8b5cf6 100%);
-}
 </style>

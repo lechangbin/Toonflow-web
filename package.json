@@ -13,6 +13,8 @@
   "dependencies": {
     "@devui-design/icons": "^1.4.0",
     "@icon-park/vue-next": "^1.4.2",
+    "@vue-flow/background": "^1.3.2",
+    "@vue-flow/controls": "^1.1.3",
     "@vue-flow/core": "^1.48.2",
     "@vueuse/core": "^14.1.0",
     "axios": "^1.13.2",

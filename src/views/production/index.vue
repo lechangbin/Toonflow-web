@@ -5,14 +5,14 @@
         <t-button style="margin-top: 10px" @click="addStoryboard">添加分镜</t-button>
       </t-tab-panel>
     </t-tabs>
-    <newStoryboard v-model="addStoryboardShow"></newStoryboard>
+    <storyboard v-model="storyboardShow"></storyboard>
   </div>
 </template>
 
 <script setup lang="ts">
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
-import newStoryboard from "./components/storyboard/index.vue";
+import storyboard from "./components/storyboard/index.vue";
 
 //集标题
 const setData = ref("0");
@@ -85,10 +85,10 @@ const setContent = ref([
     video: [],
   },
 ]);
-const addStoryboardShow = ref(false);
+const storyboardShow = ref(true);
 //添加分镜
 function addStoryboard() {
-  addStoryboardShow.value = true;
+  storyboardShow.value = true;
 }
 </script>
 
