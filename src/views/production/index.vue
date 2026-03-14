@@ -1,98 +1,109 @@
 <template>
-  <div class="production">
-    <t-tabs v-model="setData">
-      <t-tab-panel v-for="(item, index) in setContent" :key="index" :value="index + ''" :label="item.title">
-        <t-button style="margin-top: 10px" @click="addStoryboard">添加分镜</t-button>
-      </t-tab-panel>
-    </t-tabs>
-    <storyboard v-model="storyboardShow"></storyboard>
-  </div>
+  <VueFlow class="flowMain" v-model="flowData" :min-zoom="0.01">
+    <template #node-script="props">
+      <scriptNode :id="props.id" :data="props.data" />
+    </template>
+    <template #node-assets="props">
+      <div>2</div>
+    </template>
+    <template #node-storyboardTable="props">
+      <div>3</div>
+    </template>
+    <template #node-storyboard="props">
+      <div>4</div>
+    </template>
+    <template #node-preview="props">
+      <div>5</div>
+    </template>
+    <template #node-poster="props">
+      <div>6</div>
+    </template>
+    <!-- <Background :gap="100">
+        <template #pattern>
+          <svg :width="24 * viewport.zoom" :height="24 * viewport.zoom" viewBox="0 0 48 48">
+            <path d="M14 14L34 34" :stroke="getCssColor('--mainColor')" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M14 34L34 14" :stroke="getCssColor('--mainColor')" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </template>
+      </Background> -->
+    <Background></Background>
+    <Controls />
+  </VueFlow>
 </template>
 
 <script setup lang="ts">
-import projectStore from "@/stores/project";
-const { project } = storeToRefs(projectStore());
-import storyboard from "./components/storyboard/index.vue";
+import { VueFlow, useVueFlow } from "@vue-flow/core";
+import { Background } from "@vue-flow/background";
+import { Controls } from "@vue-flow/controls";
+import "@vue-flow/core/dist/style.css";
+import "@vue-flow/core/dist/theme-default.css";
+import "@vue-flow/controls/dist/style.css";
+//子node组件
+import scriptNode from "./node/script.vue";
 
-//集标题
-const setData = ref("0");
-//集内容
-const setContent = ref([
+const { viewport } = useVueFlow();
+
+const flowData = ref([
   {
-    title: "第一集",
-    storyboard: [
-      {
-        prompt: "这个是一个提示词1阿瑟地方撒放到水电费水电费水电费水电费水电费水电费水电撒旦法士大夫水电费水电费水电费费水电费",
-        imageUrl: "https://tdesign.gtimg.com/demo/demo-image-1.png",
-      },
-      {
-        prompt: "这个是一个提示词2",
-        imageUrl: "https://tdesign.gtimg.com/demo/demo-image-1.png",
-      },
-      {
-        prompt: "这个是一个提示词2",
-        imageUrl: "https://tdesign.gtimg.com/demo/demo-image-1.png",
-      },
-      {
-        prompt: "这个是一个提示词2",
-        imageUrl: "https://tdesign.gtimg.com/demo/demo-image-1.png",
-      },
-    ],
-    video: [
-      {
-        model: "doubao-seedance-1-5-pro-251215",
-        mode: "endFrameOptional",
-        images: [""],
-        resolution: "1920x1080",
-        aspectRatio: "16:9",
-        duration: 5,
-        prompt: "",
-        videoUrl: "//v2.cri.cn/M00/02/C3/rBABDmblg6eADAXKBZHO91F1HZ0889.mp4",
-        generateUrl: [
-          "http://202508W24.ban.tools.codebook.ltd/js/player/CodeBookCore.html?url=https%3A%2F%2Fwww.lingyuzhao.top%2Fb%2Fshare%2Fdownload2%2FnoLogin%2Fshare%2F17c8d054513ae15059080dd0725df371c9145569eb1cb0a84c036d4cdd9acea5.mp4",
-          "http://202508W24.ban.tools.codebook.ltd/js/player/CodeBookCore.html?url=https%3A%2F%2Fwww.lingyuzhao.top%2Fb%2Fshare%2Fdownload2%2FnoLogin%2Fshare%2F17c8d054513ae15059080dd0725df371c9145569eb1cb0a84c036d4cdea5.mp4",
-        ],
-      },
-      {
-        model: "doubao-seedance-1-0-lite-i2v-250428",
-        mode: "endFrameOptional",
-        images: [""],
-        resolution: "1920x1080",
-        aspectRatio: "16:9",
-        duration: 5,
-        prompt: "",
-        videoUrl: "https://cms-emer-res.cctvnews.cctv.com/cctv/video/20240502/7d889b4dce894c60b26a96e3e9c6ee51_H264_3000K_MP4/20240502230635275.m3u8",
-        generateUrl: [
-          "http://202508W24.ban.tools.codebook.ltd/js/player/CodeBookCore.html?url=https%3A%2F%2Fwww.lingyuzhao.top%2Fb%2Fshare%2Fdownload2%2FnoLogin%2Fshare%2F17c8d054513ae15059080dd0725df371c9145569eb1cb0a84c036d4cdd9acea5.mp4",
-        ],
-      },
-      {
-        model: "doubao-seedance-1-5-pro-251215",
-        mode: "endFrameOptional",
-        images: [],
-        resolution: "1920x1080",
-        aspectRatio: "16:9",
-        duration: 5,
-        prompt: "",
-        videoUrl: "",
-        generateUrl: [],
-      },
-    ],
+    id: "1",
+    type: "script",
+    position: {
+      x: 237,
+      y: 79,
+    },
   },
   {
-    title: "第二集",
-    storyboard: [],
-    video: [],
+    id: "2",
+    type: "assets",
+    position: {
+      x: 368,
+      y: 227,
+    },
+  },
+  {
+    id: "3",
+    type: "storyboardTable",
+    position: {
+      x: 68,
+      y: 345,
+    },
+  },
+  {
+    id: "4",
+    type: "storyboard",
+    position: {
+      x: 190,
+      y: 155,
+    },
+  },
+  {
+    id: "5",
+    type: "preview",
+    position: {
+      x: 301,
+      y: 328,
+    },
+  },
+  {
+    id: "6",
+    type: "poster",
+    position: {
+      x: 92,
+      y: 212,
+    },
+  },
+  {
+    id: "e1-2",
+    source: "1",
+    sourceHandle: "blockScript-0",
+    target: "2",
+    animated: true,
+    style: { stroke: "#10b981", strokeWidth: 4 },
   },
 ]);
-const storyboardShow = ref(true);
-//添加分镜
-function addStoryboard() {
-  storyboardShow.value = true;
-}
 </script>
-
 <style lang="scss" scoped>
-.production {
+.flowMain {
+  height: 100%;
 }
 </style>

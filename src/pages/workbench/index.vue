@@ -49,7 +49,9 @@
           </t-tooltip>
         </div>
       </div>
-      <router-view />
+      <div class="viewBox">
+        <router-view />
+      </div>
     </div>
   </div>
   <setting />
@@ -174,13 +176,14 @@ function handleClick(menu: any) {
     background-color: #fff;
     border-radius: 16px;
     width: 100%;
-    height: 100%;
+    height: calc(100vh - 2rem);
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-gutter: stable;
     padding-left: 2rem;
     padding-right: 2rem;
     .topMenu {
+      height: 6vh;
       .rightBtnList {
         .item {
           margin-bottom: 0px !important;
@@ -195,6 +198,10 @@ function handleClick(menu: any) {
           margin: 0 4px;
         }
       }
+    }
+    .viewBox {
+      width: 100%;
+      height: calc(94vh - 2rem);
     }
   }
 }
