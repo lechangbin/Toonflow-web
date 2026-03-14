@@ -39,7 +39,7 @@ interface VideoModel {
 // 供应商配置
 interface VendorConfig {
   version: number;
-  icon?: string;//仅支持base64格式
+  icon?: string; //仅支持base64格式
   name: string;
   inputs: {
     key: string;
@@ -58,6 +58,7 @@ const vendor: VendorConfig = {
   name: "Toonflow官方中转平台",
   inputs: [
     { key: "apiKey", label: "API密钥", type: "password", required: true },
+    { key: "text", label: "文本", type: "url", required: false },
     { key: "image", label: "图片任务创建", type: "url", required: false, placeholder: "如非必要请勿更改" },
     { key: "imageCreate", label: "异步图片任务创建", type: "url", required: false, placeholder: "如非必要请勿更改" },
     { key: "imageQuery", label: "异步图片任务查询", type: "url", required: false, placeholder: "如非必要请勿更改" },
@@ -68,8 +69,8 @@ const vendor: VendorConfig = {
     { key: "videoQuery", label: "通用视频任务查询", type: "url", required: false, placeholder: "如非必要请勿更改" },
   ],
   inputValues: {
-    apiKey: "",
-    baseUrl: "http://127.0.0.1:33332/v1/chat/completions",
+    apiKey: "REMOVED_SECRET",
+    text: "http://127.0.0.1:33332/v1",
     image: "http://127.0.0.1:33332/v1/images/generations",
     imageCreate: "http://127.0.0.1:33332/imagegenerator/task",
     imageQuery: "http://127.0.0.1:33332/imagegenerator/task/{id}",
@@ -94,6 +95,13 @@ const vendor: VendorConfig = {
       modelName: "Doubao-Seedream-5.0-Lite",
       mode: ["text", "singleImage", "multiReference"],
     },
+    {
+      name: "gpt-4.1",
+      type: "text",
+      modelName: "gpt-4.1",
+      multimodal: true, // 前端显示用
+      tool: true, // 前端显示用
+    },
   ],
 };
 exports.vendor = vendor;
@@ -104,8 +112,8 @@ exports.vendor = vendor;
 declare const zipImage: (completeBase64: string, size: number) => Promise<string>;
 //压缩图片分辨率
 declare const zipImageResolution: (completeBase64: string, width: number, height: number) => Promise<string>;
-//多图拼接乘单图
-declare const mergeImages: (completeBase64: string[]) => Promise<string>;
+//多图拼接乘单图 maxSize  最大输出大小，默认为 10mb
+declare const mergeImages: (completeBase64: string[], maxSize?: string) => Promise<string>;
 //Url转Base64
 declare const urlToBase64: (url: string) => Promise<string>;
 //轮询函数
@@ -123,53 +131,9 @@ const textRequest: (textModel: TextModel) => { url: string; model: string } = (t
   const apiKey = vendor.inputValues.apiKey.replace("Bearer ", "");
 
   return createOpenAI({
-    baseURL: vendor.inputValues.videoCreate || "http://127.0.0.1:33332/v1/chat/completions",
+    baseURL: vendor.inputValues.text || "http://127.0.0.1:33332/v1/chat/completions",
     apiKey: apiKey,
-    fetch: async (url, options) => {
-      // 1. 转换请求
-      const originalBody = JSON.parse(options?.body as string);
-      const transformedBody = {
-        // 转换为你的 API 格式
-        model_name: originalBody.model,
-        chat_messages: originalBody.messages,
-        params: {
-          temperature: originalBody.temperature,
-          max_tokens: originalBody.max_tokens,
-        },
-      };
-      // 2. 发送请求
-      const response = await fetch(url, {
-        ...options,
-        body: JSON.stringify(transformedBody),
-      });
-      // 3. 转换响应
-      const data = await response.json();
-      const openaiFormat = {
-        id: data.request_id,
-        object: "chat.completion",
-        choices: [
-          {
-            index: 0,
-            message: {
-              role: "assistant",
-              content: data.result?.text || data.output,
-            },
-            finish_reason: "stop",
-          },
-        ],
-        usage: {
-          prompt_tokens: data.token_usage?.input || 0,
-          completion_tokens: data.token_usage?.output || 0,
-          total_tokens: data.token_usage?.total || 0,
-        },
-      };
-      // 返回伪造的 Response 对象
-      return new Response(JSON.stringify(openaiFormat), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
-    },
-  });
+  }).chat(textModel.modelName);
 };
 exports.textRequest = textRequest;
 
@@ -197,7 +161,7 @@ const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) =>
         "4K": "2304x4096",
       },
     };
-    const fullPrompt = imageConfig.systemPrompt ? `${imageConfig.systemPrompt}\n\n${imageConfig.prompt}` : imageConfig.prompt;
+    const fullPrompt = imageConfig?.systemPrompt ? `${imageConfig.systemPrompt}\n\n${imageConfig.prompt}` : imageConfig.prompt;
 
     const body: Record<string, any> = {
       model: imageModel.modelName,
@@ -217,8 +181,13 @@ const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) =>
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
-    const { data } = await response.json();
-    return data.data[0]?.url;
+    if (!response.ok) {
+      const errorText = await response.text(); // 获取错误信息
+      console.error("请求失败，状态码:", response.status, ", 错误信息:", errorText);
+      throw new Error(`请求失败，状态码: ${response.status}, 错误信息: ${errorText}`);
+    }
+    const data = await response.json();
+    return data.data[0].url;
   } else {
     const requestUrl = vendor.inputValues.imageCreate || "http://127.0.0.1:33332/v1/images/generations";
     const queryUrl = vendor.inputValues.imageQuery || "http://127.0.0.1:33332/imagegenerator/task/{id}";
@@ -227,7 +196,9 @@ const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) =>
       headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({}),
     });
+
     const { data } = await response.json();
+
     if (data.code != "success") throw new Error(`任务提交失败: ${data || "未知错误"}`);
     const res = await pollTask(async () => {
       const queryResponse = await fetch(queryUrl, {
@@ -258,7 +229,6 @@ interface VideoConfig {
   taskClass: string;
   name: string;
   projectId: number;
-  describe?: string;
 }
 
 const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) => {
@@ -271,7 +241,7 @@ const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) =>
       "9:16": "720x1280",
     };
     const body = new FormData();
-    body.append("model", videoModel.modelName);
+    body.append("model", "Sora-2-T2V");
     body.append("prompt", videoConfig.prompt);
     body.append("seconds", String(videoConfig.duration));
 
@@ -285,32 +255,35 @@ const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) =>
     const requestUrl = vendor.inputValues.soraVideoCreate || "http://127.0.0.1:33332/v1/videos";
     const queryUrl = vendor.inputValues.soraVideoQuery || "http://127.0.0.1:33332/v1/videos/{id}";
     const downloadUrl = vendor.inputValues.soraVideoDownload || "http://127.0.0.1:33332/v1/videos/{id}/content";
-
-    const response = await fetch(requestUrl, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({}),
+    const response = await axios.post(requestUrl, body, {
+      headers: { Authorization: `Bearer ${apiKey}`, ...body.getHeaders() },
     });
-    const { data } = await response.json();
+    const { data } = response;
     const taskId = data.id ?? data.taskId ?? data.task_id ?? data.data;
     if (!taskId) throw new Error(`任务提交失败: ${data ? JSON.stringify(data) : "未知错误"}`);
 
     const downloadVideo = async (url: string) => {
       const res = await fetch(downloadUrl.replace("{id}", url), {
+        method: "GET",
         headers: { Authorization: `Bearer ${apiKey}` },
       });
       if (!res.ok) {
-        throw new Error(`HTTP error: ${res.status}`);
+        const errorText = await res.text(); // 获取错误信息
+        throw new Error(`HTTP error: Status:${res.status}；msg：${errorText}`);
       }
       return Buffer.from(await res.arrayBuffer());
     };
 
     const res = await pollTask(async () => {
       const queryResponse = await fetch(queryUrl.replace("{id}", taskId), {
-        method: "POST",
+        method: "GET",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ id: data.data.id }),
       });
+      if (!queryResponse.ok) {
+        const errorText = await queryResponse.text(); // 获取错误信息
+        console.error("请求失败，状态码:", queryResponse.status, ", 错误信息:", errorText);
+        throw new Error(`请求失败，状态码: ${queryResponse.status}, 错误信息: ${errorText}`);
+      }
       const queryData = await queryResponse.json();
       const status = queryData?.status ?? queryData?.data?.status;
       const fail_reason = queryData?.data?.fail_reason ?? queryData?.data;
