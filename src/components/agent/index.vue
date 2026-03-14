@@ -55,18 +55,19 @@ interface ChatList {
   content: string;
   identity?: string[];
 }
+const needData = ref("");
 const props = defineProps({
   chatList: {
     type: Array as () => ChatList[],
     default: () => [],
   },
 });
-//agent聊天记录
-const needData = ref("");
-function sendFn() {}
-function settingFn() {
-  console.log("设置");
+const emit = defineEmits(["sendData"]);
+function sendFn() {
+  emit("sendData", needData.value);
 }
+//设置
+function settingFn() {}
 </script>
 
 <style lang="scss" scoped>

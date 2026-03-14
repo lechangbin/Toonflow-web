@@ -1,7 +1,7 @@
 <template>
   <div class="floatingTaskBox">
     <div class="box">
-      <agent v-model="openShowVisible" :chatList="chatList" />
+      <agent v-model="openShowVisible" :chatList="chatList" @sendData="handleSendData" />
     </div>
   </div>
 </template>
@@ -66,6 +66,10 @@ const chatList = ref<ChatList[]>([
       "你好！我是一个智能助手，专门为你提供帮助和解答问题。无论你有什么疑问或者需要什么帮助，我都会尽力为你提供准确和有用的信息。请随时告诉我你需要什么帮助！",
   },
 ]);
+//发送
+function handleSendData(data: string) {
+  console.log("发送的数据：", data);
+}
 </script>
 
 <style lang="scss" scoped>
