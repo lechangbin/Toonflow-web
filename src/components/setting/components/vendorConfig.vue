@@ -71,7 +71,7 @@
           <div class="topInfo jb ac">
             <span class="modelCardName">{{ item.modelName }}</span>
             <div class="actionBtns">
-              <t-button size="small" variant="text" @click="handleTestModel(item.modelName)">
+              <t-button size="small" variant="text" @click="handleTestModel(item)">
                 <template #icon><i-lightning theme="outline" /></template>
                 测试
               </t-button>
@@ -188,6 +188,21 @@
             </t-form-item>
           </template>
         </t-form>
+      </div>
+    </t-dialog>
+
+    <!-- 测试结果弹窗 -->
+    <t-dialog width="50vw" placement="center" v-model:visible="testResultVisible" :header="`测试结果 - ${testModelName}`" :footer="false">
+      <div class="testResult">
+        <div v-if="testResultType === 'image'" class="resultContent">
+          <img :src="testResultUrl" alt="生成的图片" />
+        </div>
+        <div v-else-if="testResultType === 'video'" class="resultContent">
+          <video :src="testResultUrl" controls autoplay loop></video>
+        </div>
+        <div v-else class="resultContent">
+          <t-loading size="large" text="正在生成中..." />
+        </div>
       </div>
     </t-dialog>
 
@@ -378,6 +393,7 @@ async function getVendorList() {
     .post("/setting/vendorConfig/getVendorList")
     .then((res) => {
       vendorList.value = res.data;
+
       if (vendorList.value.length && !vendorList.value.some((v) => v.name === activeVendorName.value)) {
         activeVendorName.value = vendorList.value[0].name;
       }
@@ -406,6 +422,12 @@ const vendorCode = ref(VENDOR_CODE_TEMPLATE);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const updating = ref(false);
 
+// ── 测试结果弹窗 ──
+const testResultVisible = ref(false);
+const testResultUrl = ref("");
+const testResultType = ref<"image" | "video" | "">("");
+const testModelName = ref("");
+
 function getProviderIcon(name: string) {
   return ICON_MAP[name] || "server";
 }
@@ -421,6 +443,7 @@ function getInputPlaceholder(input: VendorInput) {
 }
 async function handleUpdateVendor() {
   if (!currentVendor.value) return;
+
   updating.value = true;
   axios
     .post("/setting/vendorConfig/updateVendor", {
@@ -747,10 +770,36 @@ function handleEditModel(model: VendorModel) {
   modelDialogVisible.value = true;
 }
 
-function handleTestModel(modelName: string) {
+async function handleTestModel(item: (typeof vendorModels.value)[number]) {
   if (!currentVendor.value?.inputValues?.apiKey) return MessagePlugin.error("请先输入 API Key");
   if (!currentVendor.value?.inputValues?.baseUrl) return MessagePlugin.error("请先输入 API 地址");
-  MessagePlugin.success(`正在测试 ${modelName} 模型...`);
+
+  testModelName.value = item.modelName;
+  testResultType.value = "";
+  testResultUrl.value = "";
+  testResultVisible.value = true;
+
+  MessagePlugin.success(`正在测试 ${item.modelName} 模型...`);
+  try {
+    const { data } = await axios.post(`/modelTest/testAi`, {
+      type: item.type,
+      modelName: item.modelName,
+      apiKey: currentVendor.value.inputValues.apiKey,
+      id: currentVendor.value.id,
+    });
+
+    if (item.type === "text") {
+      MessagePlugin.success(`测试成功！`);
+      testResultVisible.value = false;
+    } else if (item.type === "image" || item.type === "video") {
+      testResultType.value = item.type;
+      testResultUrl.value = data;
+      MessagePlugin.success(`${item.type === "image" ? "图片" : "视频"}生成成功！`);
+    }
+  } catch (e) {
+    testResultVisible.value = false;
+    MessagePlugin.error(`请求失败：${(e as any).message}`);
+  }
 }
 
 function handleDeleteModel(modelName: string) {
@@ -918,6 +967,27 @@ function handleDeleteVendor() {
     border-radius: 8px;
     overflow: hidden;
     border: 1px solid #e5e5e5;
+  }
+
+  .testResult {
+    .resultContent {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 20px;
+
+      img,
+      video {
+        max-width: 100%;
+        max-height: 70vh;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
   }
 }
 .addBox {
