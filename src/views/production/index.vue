@@ -26,6 +26,23 @@
           </svg>
         </template>
       </Background> -->
+    <div class="floatingWindow">
+      <div class="openBtn c" v-if="!openShowVisible && !isLeaving">
+        <i-menu-unfold-one
+          theme="outline"
+          size="24"
+          fill="#000000"
+          @click="
+            () => {
+              openShowVisible = true;
+            }
+          " />
+      </div>
+      <transition name="slide" @before-leave="isLeaving = true" @after-leave="isLeaving = false">
+        <floatingTaskBox v-model="openShowVisible" v-if="openShowVisible" />
+      </transition>
+    </div>
+
     <Background></Background>
     <Controls />
   </VueFlow>
@@ -40,8 +57,12 @@ import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
 //子node组件
 import scriptNode from "./node/script.vue";
+import floatingTaskBox from "./components/floatingTaskBox.vue";
 
 const { viewport } = useVueFlow();
+
+const openShowVisible = ref(false);
+const isLeaving = ref(false);
 
 const flowData = ref([
   {
@@ -105,5 +126,32 @@ const flowData = ref([
 <style lang="scss" scoped>
 .flowMain {
   height: 100%;
+  .floatingWindow {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    .openBtn {
+      position: absolute;
+      top: 10px;
+      right: 0;
+      z-index: 9999;
+      width: 40px;
+      height: 40px;
+      background-color: #f0f0f0;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+  }
+  :deep(.slide-enter-active),
+  :deep(.slide-leave-active) {
+    transition: transform 0.3s ease-out;
+  }
+  :deep(.slide-enter-from) {
+    transform: translateX(100%);
+  }
+  :deep(.slide-leave-to) {
+    transform: translateX(100%);
+  }
 }
 </style>
