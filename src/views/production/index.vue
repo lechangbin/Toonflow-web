@@ -299,6 +299,33 @@ const { nodes, edges } = useFlowBuilder(flowData);
 <style lang="scss" scoped>
 .flowMain {
   height: 100%;
+  .floatingWindow {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    .openBtn {
+      position: absolute;
+      top: 10px;
+      right: 0;
+      z-index: 9999;
+      width: 40px;
+      height: 40px;
+      background-color: #ecedef;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+  }
+  :deep(.slide-enter-active),
+  :deep(.slide-leave-active) {
+    transition: transform 0.3s ease-out;
+  }
+  :deep(.slide-enter-from) {
+    transform: translateX(100%);
+  }
+  :deep(.slide-leave-to) {
+    transform: translateX(100%);
+  }
 }
 $handelSize: 12px;
 
