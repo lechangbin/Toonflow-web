@@ -34,7 +34,7 @@
           " />
       </div>
       <transition name="slide" @before-leave="isLeaving = true" @after-leave="isLeaving = false">
-        <floatingTaskBox v-model="openShowVisible" v-if="openShowVisible" />
+        <dialogue v-if="openShowVisible" v-model="openShowVisible" />
       </transition>
     </div>
   </VueFlow>
@@ -54,7 +54,8 @@ import storyboardTable from "./node/storyboardTable.vue";
 import storyboard from "./node/storyboard.vue";
 import workbench from "./node/workbench.vue";
 import poster from "./node/poster.vue";
-import floatingTaskBox from "./components/floatingTaskBox.vue";
+//悬浮窗组件
+import dialogue from "./components/dialogue.vue";
 
 import { useFlowBuilder } from "./utils/flowBuilder";
 
@@ -299,6 +300,33 @@ const { nodes, edges } = useFlowBuilder(flowData);
 <style lang="scss" scoped>
 .flowMain {
   height: 100%;
+  .floatingWindow {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    .openBtn {
+      position: absolute;
+      top: 10px;
+      right: 0;
+      z-index: 9999;
+      width: 40px;
+      height: 40px;
+      background-color: #ecedef;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+  }
+  :deep(.slide-enter-active),
+  :deep(.slide-leave-active) {
+    transition: transform 0.3s ease-out;
+  }
+  :deep(.slide-enter-from) {
+    transform: translateX(100%);
+  }
+  :deep(.slide-leave-to) {
+    transform: translateX(100%);
+  }
 }
 $handelSize: 12px;
 
