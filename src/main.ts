@@ -8,7 +8,7 @@ import "@icon-park/vue-next/styles/index.css";
 
 import "tdesign-vue-next/es/style/index.css";
 
-import "./assets/main.css";
+import "./assets/main.scss";
 
 import "@/utils/global";
 
