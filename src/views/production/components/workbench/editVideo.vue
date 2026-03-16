@@ -6,11 +6,17 @@
       <t-button @click="addImage">+ image</t-button>
       <t-button @click="addText">+ text</t-button>
       <t-button @click="togglePlay">{{ playing ? "Pause" : "Play" }}</t-button>
+      <t-button @click="scale++">缩放-</t-button>
+      <t-button @click="scale = scale - 1 > 1 ? scale - 1 : 1">缩放+</t-button>
+      <t-button class="action-btn" :disabled="activeAction == null" @click="deleteAction">删除</t-button>
+      <t-button class="action-btn" :disabled="activeAction == null" @click="handleSplitAction">分割</t-button>
     </div>
 
     <div ref="cvsWrapEl" class="canvasContainer"></div>
     <ReactTimeline
       ref="timelineRef"
+      :style="{ width: '100%', height: '200px' }"
+      :scale="scale"
       :editorData="tlData"
       :scaleSplitCount="5"
       :autoScroll="true"
@@ -38,6 +44,7 @@ const ReactTimeline = applyPureReactInVue(Timeline);
 type TLActionWithName = TimelineAction & { name: string };
 
 //  基础状态
+const scale = ref(10);
 const cvsWrapEl = ref<HTMLDivElement | null>(null);
 const avCvs = shallowRef<AVCanvas | null>(null);
 const timelineRef = ref<InstanceType<typeof ReactTimeline> | null>(null);
@@ -199,6 +206,19 @@ function getActionRender(action: TLActionWithName) {
     },
     action.name,
   );
+}
+
+function deleteAction() {
+  if (activeAction.value == null) return;
+  const action = activeAction.value;
+  const spr = actionSpriteMap.get(action);
+  if (spr == null) return;
+  avCvs.value?.removeSprite(spr);
+  actionSpriteMap.delete(action);
+  const track = tlData.value.map((t) => t.actions).find((actions) => actions.includes(action));
+  if (track == null) return;
+  track.splice(track.indexOf(action), 1);
+  tlData.value = [...tlData.value];
 }
 </script>
 
