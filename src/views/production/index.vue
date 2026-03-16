@@ -35,19 +35,11 @@
           </template>
         </t-select>
       </div>
-      <div class="openBtn c" v-if="!openShowVisible && !isLeaving">
-        <i-menu-unfold-one
-          theme="outline"
-          size="24"
-          fill="#000000"
-          @click="
-            () => {
-              openShowVisible = true;
-            }
-          " />
+      <div class="openBtn c" v-show="!openShowVisible" @click.stop="openShowVisible = true">
+        <i-menu-unfold-one theme="outline" size="24" fill="#000000" />
       </div>
-      <transition name="slide" @before-leave="isLeaving = true" @after-leave="isLeaving = false">
-        <dialogue v-if="openShowVisible" v-model="openShowVisible" :anthology="anthology" />
+      <transition name="slide">
+        <dialogue v-show="openShowVisible" v-model="openShowVisible" :anthology="anthology" />
       </transition>
     </div>
   </VueFlow>
@@ -73,9 +65,10 @@ import dialogue from "./components/dialogue.vue";
 import { useFlowBuilder } from "./utils/flowBuilder";
 
 const { viewport } = useVueFlow();
-const openShowVisible = ref(false);
-const isLeaving = ref(false);
+const openShowVisible = ref(true);
+
 const anthology = ref("第1集");
+
 const anthologyOptions = [
   { label: "第1集", value: "第1集" },
   { label: "第2集", value: "第2集" },
@@ -300,11 +293,11 @@ const { nodes, edges } = useFlowBuilder(flowData);
       position: absolute;
       top: 10px;
       right: 0;
-      z-index: 9999;
       width: 40px;
       height: 40px;
       background-color: #ecedef;
       border-radius: 10px;
+      z-index: 10;
       cursor: pointer;
     }
   }

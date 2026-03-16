@@ -19,7 +19,7 @@ interface ImageModel {
 // 视频模型
 interface VideoModel {
   name: string; // 显示名称
-  modelName: string;
+  modelName: string; //全局唯一
   type: "video";
   mode: (
     | "singleImage" // 单图
@@ -30,8 +30,8 @@ interface VideoModel {
     | "startFrameOptional" // 首尾帧（首帧可选）
     | "text" // 文本生视频
     | "audioReference" // 音频参考
-    | "videoReference"
-  )[]; // 视频参考 // 视频参考
+    | "videoReference" // 视频参考
+  )[];
   audio: "optional" | false | true; // 音频配置
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
 }
