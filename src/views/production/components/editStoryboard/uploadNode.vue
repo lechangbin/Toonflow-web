@@ -70,7 +70,7 @@ defineProps<{
   }
 }
 
-:deep(.source) {
-  right: calc(var(--td-comp-paddingLR-xl) * -1 + -1px);
-}
+// :deep(.source) {
+//   right: calc(var(--td-comp-paddingLR-xl) * -1 + -1px);
+// }
 </style>

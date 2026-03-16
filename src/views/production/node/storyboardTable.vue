@@ -12,10 +12,19 @@
               S{{ String(item.id).padStart(2, "0") }}
             </div>
             <div class="itemContent">
-              <div class="itemTitle">{{ item.scene }} — {{ item.description }}</div>
+              <div class="jb ac">
+                <div class="itemTitle">{{ item.scene }} — {{ item.description }}</div>
+                <t-popup :content="item.role.join('，')" theme="light" placement="top">
+                  <t-tag size="small" theme="primary">角色</t-tag>
+                </t-popup>
+              </div>
               <div class="itemSubtitle">
-                景别：{{ item.camera.split("，")[0] }} · 时长：{{ item.duration || "3s"
-                }}{{ item.camera.includes("，") ? " · 运镜：" + item.camera.split("，").slice(1).join("，") : "" }}
+                景别：{{ item.camera.split("，")[0] }} -- 时长：{{ item.duration || "3s"
+                }}{{ item.camera.includes("，") ? " -- 运镜：" + item.camera.split("，").slice(1).join("，") : "" }} -- 帧模：{{ item.frameMode }}·
+                情绪目的：{{ item.mooPurpose }} -- 运镜：{{ item.luck }} -- 首帧描述：{{ item.firstFrameDescribe }} -- 尾帧描述：{{
+                  item.endFrameDescription
+                }}
+                -- 台词/音效：{{ item.linesSoundEffects }}
               </div>
             </div>
           </div>
@@ -27,6 +36,7 @@
 
 <script setup lang="ts">
 import { Handle, Position } from "@vue-flow/core";
+import type { s } from "vue-router/dist/router-CWoNjPRp.mjs";
 
 interface StoryboardItem {
   id: number;
@@ -34,6 +44,13 @@ interface StoryboardItem {
   description: string;
   camera: string;
   duration?: string;
+  frameMode: string;
+  mooPurpose: string;
+  luck: string;
+  firstFrameDescribe: string;
+  endFrameDescription: string;
+  linesSoundEffects: string;
+  role: string[];
 }
 
 interface StoryboardGroup {
@@ -59,7 +76,7 @@ const tagColors = ["#9c7cfc", "#5b9afc", "#5bccb3", "#e8a855", "#e86b6b", "#7cb8
 
 <style lang="scss" scoped>
 .storyboardTable {
-  max-width: 50vw;
+  max-width: 100vw;
   width: fit-content;
   min-width: 300px;
 

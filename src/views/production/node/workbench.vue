@@ -46,7 +46,7 @@
 import workbench from "../components/workbench/index.vue";
 import { Handle, Position } from "@vue-flow/core";
 
-const visible = ref(false);
+const visible = ref(true);
 
 const props = defineProps<{
   id: string;
