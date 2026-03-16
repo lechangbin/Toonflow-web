@@ -93,7 +93,7 @@ const vendor: VendorConfig = {
     {
       name: "Seedance 1.5 Pro",
       type: "video",
-      modelName: "doubao-seedance-1-5-pro-251215",
+      modelName: "Seedance-1.5-Pro-NotAudio",
       durationResolutionMap: [{ duration: [4, 5, 6, 7, 8, 9, 10, 11, 12], resolution: ["480p", "720p", "1080p"] }],
       mode: ["text", "endFrameOptional"],
       audio: true,
@@ -284,6 +284,59 @@ interface VideoConfig {
   projectId: number;
 }
 
+// 构建 各个平台的metadata参数
+const buildDoubaoMetadata = (videoConfig: VideoConfig) => {
+  const metaData = {
+    ...(typeof videoConfig.audio == "boolean" && { generate_audio: videoConfig.audio ?? false }),
+    ratio: videoConfig.aspectRatio,
+    image_roles: [],
+  };
+  if (videoConfig.imageBase64 && videoConfig.imageBase64.length) {
+    videoConfig.imageBase64.forEach((i, index) => {
+      if (videoConfig.mode == "startEnd") {
+        (metaData.image_roles as string[]).push(index == 0 ? "first_frame" : "last_frame");
+      }
+      if (videoConfig.mode == "single" || videoConfig.mode == "multi") {
+        (metaData.image_roles as string[]).push("reference_image");
+      }
+    });
+  }
+  return metaData;
+};
+
+const buildWanMetadata = (videoConfig: VideoConfig) => {
+  const images = videoConfig.imageBase64 ?? [];
+  const metaData: Record<string, string | boolean> = {};
+  if (videoConfig.mode === "startEnd" && images.length) {
+    if (images[0]) metaData.first_frame_url = images[0];
+    if (images[1]) metaData.last_frame_url = images[1];
+  } else if (images.length === 1) {
+    metaData.img_url = images[0]!;
+  }
+  if (typeof videoConfig.audio == "boolean") {
+    metaData.audio = videoConfig.audio;
+  }
+  return metaData;
+};
+const buildViduMetadata = (videoConfig: VideoConfig) => ({
+  aspect_ratio: videoConfig.aspectRatio,
+  audio: videoConfig.audio ?? false,
+  off_peak: false,
+});
+
+type MetadataBuilder = (config: VideoConfig) => Record<string, any>;
+const METADATA_BUILDERS: Array<[string, MetadataBuilder]> = [
+  ["doubao", buildDoubaoMetadata],
+  ["wan", buildWanMetadata],
+  ["vidu", buildViduMetadata],
+  ["seedance", buildViduMetadata],
+];
+const buildModelMetadata = (modelName: string, videoConfig: VideoConfig) => {
+  const lowerName = modelName.toLowerCase();
+  const match = METADATA_BUILDERS.find(([key]) => lowerName.includes(key));
+  return match ? match[1](videoConfig) : {};
+};
+
 const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) => {
   if (!vendor.inputValues.apiKey) throw new Error("缺少API Key");
   const apiKey = vendor.inputValues.apiKey.replace("Bearer ", "");
@@ -355,6 +408,9 @@ const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) =>
     if (res.error) throw new Error(res.error);
     return res.data;
   } else {
+    // 构建每个模型对应的附加参数
+    const metadata = buildModelMetadata(videoModel.modelName, videoConfig);
+
     //公共请求参数
     const publicBody = {
       model: videoModel.modelName,
@@ -362,21 +418,10 @@ const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) =>
       prompt: videoConfig.prompt,
       size: videoConfig.resolution,
       duration: videoConfig.duration,
-      metadata: {},
+      metadata: metadata,
     };
-    // 根据不同厂商模型追加所需格式
 
-    // 管转火山引擎
-    if (videoModel.modelName.toLocaleLowerCase().includes("doubao")) {
-      publicBody.metadata = {
-        generate_audio: videoConfig?.audio ?? false,
-        ratio: videoConfig.aspectRatio,
-        image_roles: ["first_frame", "last_frame"],
-      };
-      // 阿里 万象
-    } else if (videoModel.modelName.toLocaleLowerCase().includes("wan")) {
-      const imageReq: any = {};
-      const images = videoConfig.imageBase64 || [];
+    if (videoModel.modelName.toLocaleLowerCase().includes("wan")) {
       const sizeMap: Record<string, Record<string, string>> = {
         "480p": {
           "16:9": "832*480",
@@ -392,25 +437,7 @@ const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) =>
         },
       };
       const size = sizeMap[videoConfig.resolution]?.[videoConfig.aspectRatio];
-
-      if (videoConfig.mode == "startEnd" && Array.isArray(images) && images.length) {
-        if (images[0]) imageReq.first_frame_url = images[0];
-        if (images[1]) imageReq.last_frame_url = images[1];
-      } else if (images.length == 1) {
-        imageReq.img_url = images[0];
-      }
       publicBody.size = size;
-      publicBody.metadata = {
-        ...imageReq,
-        audio: videoConfig?.audio ?? false,
-      };
-      // vidu
-    } else if (videoModel.modelName.toLocaleLowerCase().includes("vidu")) {
-      publicBody.metadata = {
-        aspect_ratio: videoConfig.aspectRatio,
-        audio: videoConfig?.audio ?? false,
-        off_peak: false,
-      };
     }
     const requestUrl = vendor.inputValues.videoCreate || "http://127.0.0.1:33332/v1/video/generations";
     const queryUrl = vendor.inputValues.videoQuery || "http://127.0.0.1:33332/v1/video/generations/{id}";

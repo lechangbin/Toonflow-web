@@ -10,7 +10,7 @@
       </div>
       <div class="listContent" v-loading="loading">
         <t-menu v-model="activeVendorName" theme="light" v-if="vendorList.length > 0">
-          <t-menu-item v-for="item in vendorList" :key="item.name" :value="item.name">
+          <t-menu-item v-for="item in vendorList" :key="item.name" :value="item.name" @click="activeVendorName = item.name">
             <template #icon>
               <t-icon :name="getProviderIcon(item.name)" />
             </template>

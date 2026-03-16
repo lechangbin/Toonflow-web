@@ -7,7 +7,7 @@
           <span>使用 Toonflow 官方中转站点，支持一键填入配置，开箱即用，无需手动配置。</span>
         </div>
         <div class="btnList">
-          <t-button>
+          <t-button @click="jumpToWebsite">
             进入网站
             <template #suffix>
               <i-share theme="outline" />
@@ -30,6 +30,8 @@
           </div>
           <t-tag v-if="item.model" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
           <t-tag v-else theme="warning" variant="light" size="small">未配置</t-tag>
+          {{ item.modelId }}
+          <t-select v-model="item.modelId" :options="vendorList" placeholder="请选择" filterable :onChange="changeSelect" />
         </div>
         <div class="skillCardBody">{{ item.desc }}</div>
       </t-card>
@@ -39,6 +41,7 @@
 
 <script setup lang="ts">
 import providersLogo from "@/utils/ai/providersLogo";
+import axios from "@/utils/axios";
 
 interface ModelType {
   id: number;
@@ -48,7 +51,7 @@ interface ModelType {
   manufacturer: string;
   desc: string;
 }
-
+const vendorList = ref([]);
 const modelData = ref<ModelType[]>([
   {
     id: 1,
@@ -80,6 +83,42 @@ function getProviderLogo(manufacturer: string) {
 
 function startConfig(item: ModelType) {
   modelDataShow.value = true;
+}
+//跳转官方网站
+function jumpToWebsite() {
+  window.open("https://api.toonflow.net", "_blank");
+}
+
+async function getVendorList() {
+  axios
+    .post("/setting/vendorConfig/getVendorList")
+    .then((res) => {
+      vendorList.value = res.data.map((i) => {
+        return {
+          group: i.name,
+          id: i.id,
+          children: i.models.map((j) => {
+            return {
+              label: j.name,
+              value: j.modelName,
+            };
+          }),
+        };
+      });
+      console.log("%c Line:82 🍋 vendorList.value", "background:#e41a6a", vendorList.value);
+    })
+    .catch((err) => {
+      MessagePlugin.error(`获取供应商列表失败：${err.message}`);
+    })
+    .finally(() => {});
+}
+onMounted(() => {
+  getVendorList();
+});
+
+function changeSelect(value, context) {
+  console.log("%c Line:119 🍬 context", "background:#3f7cff", context);
+  console.log("%c Line:119 🥐 value", "background:#465975", value);
 }
 </script>
 
