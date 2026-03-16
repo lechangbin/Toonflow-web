@@ -16,42 +16,48 @@
     <div class="topMenu f ac">
       <t-tooltip content="快速预览" placement="bottom" theme="light" destroyOnClose :showArrow="false">
         <div class="item fc c" :class="{ active: activeMenu === 'preview' }" @click="activeMenu = 'preview'">
-          <i-play class="icon" />
+          <i-blackboard class="icon" />
         </div>
       </t-tooltip>
       <t-tooltip content="视频生成" placement="bottom" theme="light" destroyOnClose :showArrow="false">
         <div class="item fc c" :class="{ active: activeMenu === 'generate' }" @click="activeMenu = 'generate'">
-          <i-video class="icon" />
+          <i-playback-progress class="icon" />
         </div>
       </t-tooltip>
       <t-tooltip content="视频剪辑" placement="bottom" theme="light" destroyOnClose :showArrow="false">
-        <div class="item fc c" :class="{ active: activeMenu === 'edit' }" @click="activeMenu = 'edit'">
-          <i-edit class="icon" />
+        <div class="item fc c" :class="{ active: activeMenu === 'editVideo' }" @click="activeMenu = 'editVideo'">
+          <i-editing class="icon" />
         </div>
       </t-tooltip>
     </div>
     <div class="content">
       <preview v-show="activeMenu === 'preview'" />
-      <!-- <generate v-show="activeMenu === 'generate'" />
-      <edit v-show="activeMenu === 'edit'" /> -->
+      <!-- <generate v-show="activeMenu === 'generate'" /> -->
+      <editVideo v-show="activeMenu === 'editVideo'" />
     </div>
   </t-dialog>
 </template>
 
 <script setup lang="ts">
-import type { Background } from "@vue-flow/background";
 import preview from "./preview.vue";
+import editVideo from "./editVideo.vue";
 
 const visible = defineModel("visible", {
   type: Boolean,
   default: false,
 });
 
-const activeMenu = ref("preview");
+const activeMenu = ref("editVideo");
 </script>
 
 <style lang="scss" scoped>
 .fullscreenDialog {
+  :deep(.t-dialog__body) {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
   .closure {
     position: absolute;
     top: var(--td-comp-paddingTB-xl);
@@ -84,6 +90,10 @@ const activeMenu = ref("preview");
       color: #fff;
       border-radius: 16px;
     }
+  }
+  .content {
+    flex: 1;
+    overflow: hidden;
   }
   .editStoryboard {
     width: 100%;

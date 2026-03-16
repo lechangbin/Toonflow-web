@@ -6,9 +6,21 @@ import Components from "unplugin-vue-components/vite";
 import { TDesignResolver } from "unplugin-vue-components/resolvers";
 import { lazyImport, VxeResolver } from "vite-plugin-lazy-import";
 import { viteSingleFile } from "vite-plugin-singlefile";
+import fs from "node:fs";
+import path from "node:path";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   base: "./",
+  build: {
+    assetsInlineLimit: Infinity,
+    rollupOptions: {
+      output: {
+        inlineDynamicImports: true,
+      },
+    },
+  },
   plugins: [
     vue(),
     AutoImport({
