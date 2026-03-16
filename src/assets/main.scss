@@ -97,6 +97,12 @@ body,
   background-color: transparent;
 }
 
+.noFooter {
+  .t-dialog__body--fullscreen--without-footer {
+    height: 100% !important;
+  }
+}
+
 :root,
 :root[theme-mode="light"] {
   --td-brand-color-1: #fdefff;

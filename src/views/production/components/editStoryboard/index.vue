@@ -154,8 +154,8 @@ const handleGenerate = (id: string) => {
 .fullscreenDialog {
   .closure {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: var(--td-comp-paddingTB-xl);
+    right: var(--td-comp-paddingLR-xxl);
     z-index: 9999;
     cursor: pointer;
   }

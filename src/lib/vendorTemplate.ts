@@ -78,8 +78,8 @@ const vendor: VendorConfig = {
     soraVideoCreate: "http://127.0.0.1:33332/v1/videos",
     soraVideoQuery: "http://127.0.0.1:33332/v1/videos/{id}",
     soraVideoDownload: "http://127.0.0.1:33332/v1/videos/{id}/content",
-    videoCreate: "http://127.0.0.1:33332/videogenerator/generate",
-    videoQuery: "http://127.0.0.1:33332/videogenerator/generate/{id}",
+    videoCreate: "http://127.0.0.1:33332/v1/video/generations",
+    videoQuery: "http://127.0.0.1:33332/v1/video/generations/{id}",
   },
   models: [
     {
@@ -91,15 +91,95 @@ const vendor: VendorConfig = {
       durationResolutionMap: [{ duration: [4, 8, 12], resolution: ["720x1280", "1280x720", "1024x1792", "1792x1024"] }],
     },
     {
+      name: "Seedance 1.5 Pro",
+      type: "video",
+      modelName: "doubao-seedance-1-5-pro-251215",
+      durationResolutionMap: [{ duration: [4, 5, 6, 7, 8, 9, 10, 11, 12], resolution: ["480p", "720p", "1080p"] }],
+      mode: ["text", "endFrameOptional"],
+      audio: true,
+    },
+
+    {
+      name: "vidu2 turbo",
+      type: "video",
+      modelName: "ViduQ2-turbo",
+      durationResolutionMap: [{ duration: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], resolution: ["540p", "720p", "1080p"] }],
+      mode: ["singleImage", "startEndRequired"],
+      audio: false,
+    },
+
+    {
+      name: "ViduQ3 pro",
+      type: "video",
+      modelName: "ViduQ3-pro",
+      durationResolutionMap: [{ duration: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16], resolution: ["540p", "720p", "1080p"] }],
+      mode: ["singleImage", "startEndRequired"],
+      audio: false,
+    },
+
+    {
+      name: "ViduQ2 pro fast",
+      type: "video",
+      modelName: "ViduQ2-pro-fast",
+      durationResolutionMap: [{ duration: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], resolution: ["720p", "1080p"] }],
+      mode: ["singleImage", "startEndRequired"],
+      audio: false,
+    },
+    {
+      name: "ViduQ2 pro",
+      type: "video",
+      modelName: "ViduQ2-pro",
+      durationResolutionMap: [{ duration: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], resolution: ["540p", "720p", "1080p"] }],
+      mode: ["singleImage", "startEndRequired"],
+      audio: false,
+    },
+
+    {
+      name: "Wan2.6 T2V",
+      type: "video",
+      modelName: "Wan2.6-T2V",
+      mode: ["text", "singleImage"],
+      durationResolutionMap: [{ duration: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], resolution: ["720p", "1080p"] }],
+      audio: true,
+    },
+    {
+      name: "Wan2.6 I2V",
+      type: "video",
+      modelName: "Wan2.6-I2V",
+      mode: ["text", "singleImage"],
+      durationResolutionMap: [{ duration: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15], resolution: ["720p", "1080p"] }],
+      audio: true,
+    },
+    {
       name: "Doubao Seedream 5.0 Lite",
       type: "image",
       modelName: "Doubao-Seedream-5.0-Lite",
       mode: ["text", "singleImage", "multiReference"],
     },
     {
+      name: "Doubao Seedream 4.5",
+      type: "image",
+      modelName: "doubao-seedream-4-5-251128",
+      mode: ["text", "singleImage", "multiReference"],
+    },
+    {
       name: "gpt-4.1",
       type: "text",
       modelName: "gpt-4.1",
+      multimodal: true, // 前端显示用
+      tool: true, // 前端显示用
+    },
+    {
+      name: "claude-sonnet-4-6",
+      type: "text",
+      modelName: "claude-sonnet-4-6",
+      multimodal: true, // 前端显示用
+      tool: true, // 前端显示用
+    },
+    {
+      name: "claude-opus-4-5-20251101",
+      type: "text",
+      modelName: "claude-opus-4-5-20251101",
       multimodal: true, // 前端显示用
       tool: true, // 前端显示用
     },
@@ -150,72 +230,44 @@ const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) =>
   if (!vendor.inputValues.apiKey) throw new Error("缺少API Key");
   const apiKey = vendor.inputValues.apiKey.replace("Bearer ", "");
 
-  if (imageModel.modelName == "Doubao-Seedream-5.0-Lite") {
-    const size = imageConfig.size === "1K" ? "2K" : imageConfig.size;
-    const sizeMap: Record<string, Record<string, string>> = {
-      "16:9": {
-        "2K": "2848x1600",
-        "4K": "4096x2304",
-      },
-      "9:16": {
-        "2K": "1600x2848",
-        "4K": "2304x4096",
-      },
-    };
-    const fullPrompt = imageConfig?.systemPrompt ? `${imageConfig.systemPrompt}\n\n${imageConfig.prompt}` : imageConfig.prompt;
+  const size = imageConfig.size === "1K" ? "2K" : imageConfig.size;
+  const sizeMap: Record<string, Record<string, string>> = {
+    "16:9": {
+      "2K": "2848x1600",
+      "4K": "4096x2304",
+    },
+    "9:16": {
+      "2K": "1600x2848",
+      "4K": "2304x4096",
+    },
+  };
+  const fullPrompt = imageConfig?.systemPrompt ? `${imageConfig.systemPrompt}\n\n${imageConfig.prompt}` : imageConfig.prompt;
 
-    const body: Record<string, any> = {
-      model: imageModel.modelName,
-      prompt: fullPrompt,
-      size: sizeMap[imageConfig.aspectRatio][size],
-      response_format: "url",
-      sequential_image_generation: "disabled",
-      stream: false,
-      watermark: false,
-      ...(imageConfig.imageBase64 && { image: imageConfig.imageBase64 }),
-    };
+  const body: Record<string, any> = {
+    model: imageModel.modelName,
+    prompt: fullPrompt,
+    size: sizeMap[imageConfig.aspectRatio][size],
+    response_format: "url",
+    sequential_image_generation: "disabled",
+    stream: false,
+    watermark: false,
+    ...(imageConfig.imageBase64 && { image: imageConfig.imageBase64 }),
+  };
 
-    const requestUrl = vendor.inputValues.image || "http://127.0.0.1:33332/v1/images/generations";
+  const requestUrl = vendor.inputValues.image || "http://127.0.0.1:33332/v1/images/generations";
 
-    const response = await fetch(requestUrl, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const errorText = await response.text(); // 获取错误信息
-      console.error("请求失败，状态码:", response.status, ", 错误信息:", errorText);
-      throw new Error(`请求失败，状态码: ${response.status}, 错误信息: ${errorText}`);
-    }
-    const data = await response.json();
-    return data.data[0].url;
-  } else {
-    const requestUrl = vendor.inputValues.imageCreate || "http://127.0.0.1:33332/v1/images/generations";
-    const queryUrl = vendor.inputValues.imageQuery || "http://127.0.0.1:33332/imagegenerator/task/{id}";
-    const response = await fetch(requestUrl, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({}),
-    });
-
-    const { data } = await response.json();
-
-    if (data.code != "success") throw new Error(`任务提交失败: ${data || "未知错误"}`);
-    const res = await pollTask(async () => {
-      const queryResponse = await fetch(queryUrl, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ id: data.data.id }),
-      });
-      const queryData = await queryResponse.json();
-      if (queryData.code != 0) throw new Error(`查询任务失败: ${queryData ? JSON.stringify(queryData, null, 2) : "未知错误"}`);
-      const { status, results, error, failure_reason } = queryData.data || {};
-      if (status === "failed") return { completed: false, error: failure_reason + "\n" + error || "图片生成失败" };
-      if (status === "succeeded") return { completed: true, data: results?.[0].url };
-      return { completed: false };
-    });
-    if (res.error) throw new Error(res.error);
+  const response = await fetch(requestUrl, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const errorText = await response.text(); // 获取错误信息
+    console.error("请求失败，状态码:", response.status, ", 错误信息:", errorText);
+    throw new Error(`请求失败，状态码: ${response.status}, 错误信息: ${errorText}`);
   }
+  const data = await response.json();
+  return data.data[0].url;
 };
 exports.imageRequest = imageRequest;
 
@@ -294,6 +346,104 @@ const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) =>
         case "success":
           const buffer = await downloadVideo(taskId);
           return { completed: true, data: buffer.toString("base64") };
+        case "FAILURE":
+          return { completed: false, error: fail_reason || "视频生成失败" };
+        default:
+          return { completed: false };
+      }
+    });
+    if (res.error) throw new Error(res.error);
+    return res.data;
+  } else {
+    //公共请求参数
+    const publicBody = {
+      model: videoModel.modelName,
+      ...(videoConfig.imageBase64 && videoConfig.imageBase64.length ? { images: videoConfig.imageBase64 } : {}),
+      prompt: videoConfig.prompt,
+      size: videoConfig.resolution,
+      duration: videoConfig.duration,
+      metadata: {},
+    };
+    // 根据不同厂商模型追加所需格式
+
+    // 管转火山引擎
+    if (videoModel.modelName.toLocaleLowerCase().includes("doubao")) {
+      publicBody.metadata = {
+        generate_audio: videoConfig?.audio ?? false,
+        ratio: videoConfig.aspectRatio,
+        image_roles: ["first_frame", "last_frame"],
+      };
+      // 阿里 万象
+    } else if (videoModel.modelName.toLocaleLowerCase().includes("wan")) {
+      const imageReq: any = {};
+      const images = videoConfig.imageBase64 || [];
+      const sizeMap: Record<string, Record<string, string>> = {
+        "480p": {
+          "16:9": "832*480",
+          "9:16": "480*832",
+        },
+        "720p": {
+          "16:9": "1280*720",
+          "9:16": "720*1280",
+        },
+        "1080p": {
+          "16:9": "1920*1080",
+          "9:16": "1080*1920",
+        },
+      };
+      const size = sizeMap[videoConfig.resolution]?.[videoConfig.aspectRatio];
+
+      if (videoConfig.mode == "startEnd" && Array.isArray(images) && images.length) {
+        if (images[0]) imageReq.first_frame_url = images[0];
+        if (images[1]) imageReq.last_frame_url = images[1];
+      } else if (images.length == 1) {
+        imageReq.img_url = images[0];
+      }
+      publicBody.size = size;
+      publicBody.metadata = {
+        ...imageReq,
+        audio: videoConfig?.audio ?? false,
+      };
+      // vidu
+    } else if (videoModel.modelName.toLocaleLowerCase().includes("vidu")) {
+      publicBody.metadata = {
+        aspect_ratio: videoConfig.aspectRatio,
+        audio: videoConfig?.audio ?? false,
+        off_peak: false,
+      };
+    }
+    const requestUrl = vendor.inputValues.videoCreate || "http://127.0.0.1:33332/v1/video/generations";
+    const queryUrl = vendor.inputValues.videoQuery || "http://127.0.0.1:33332/v1/video/generations/{id}";
+    const response = await fetch(requestUrl, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify(publicBody),
+    });
+    if (!response.ok) {
+      const errorText = await response.text(); // 获取错误信息
+      console.error("请求失败，状态码:", response.status, ", 错误信息:", errorText);
+      throw new Error(`请求失败，状态码: ${response.status}, 错误信息: ${errorText}`);
+    }
+    const data = await response.json();
+    const taskId = data.id;
+    const res = await pollTask(async () => {
+      const queryResponse = await fetch(queryUrl.replace("{id}", taskId), {
+        method: "GET",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      });
+      if (!queryResponse.ok) {
+        const errorText = await queryResponse.text(); // 获取错误信息
+        console.error("请求失败，状态码:", queryResponse.status, ", 错误信息:", errorText);
+        throw new Error(`请求失败，状态码: ${queryResponse.status}, 错误信息: ${errorText}`);
+      }
+      const queryData = await queryResponse.json();
+      const status = queryData?.status ?? queryData?.data?.status;
+      const fail_reason = queryData?.data?.fail_reason ?? queryData?.data;
+      switch (status) {
+        case "completed":
+        case "SUCCESS":
+        case "success":
+          return { completed: true, data: queryData.data.result_url };
         case "FAILURE":
           return { completed: false, error: fail_reason || "视频生成失败" };
         default:
