@@ -448,7 +448,7 @@ async function handleUpdateVendor() {
   axios
     .post("/setting/vendorConfig/updateVendor", {
       id: currentVendor.value.id,
-      tsCode: JSON.parse(currentVendor.value.code),
+      tsCode: currentVendor.value.code,
     })
     .then(() => {
       MessagePlugin.success("供应商配置更新成功");
@@ -822,7 +822,8 @@ function handleDeleteModel(modelName: string) {
 function handleEditVendorCode() {
   if (!currentVendor.value) return;
   id.value = currentVendor.value.id;
-  vendorCode.value = JSON.parse(currentVendor.value.code);
+  vendorCode.value = currentVendor.value.code;
+  console.log("%c Line:826 🥤 vendorCode.value", "background:#42b983", vendorCode.value);
   vendorDialogVisible.value = true;
 }
 function handleDeleteVendor() {
