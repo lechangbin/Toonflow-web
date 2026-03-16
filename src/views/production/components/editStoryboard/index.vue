@@ -111,10 +111,6 @@ const edges = ref([
 
 // 连接处理
 const onConnect = (params: any) => {
-  // 检查是否已存在相同的连接
-  // const isDuplicate = edges.value.some(
-  //   (edge) => edge.source === params.source && edge.target === params.target
-  // );
   addEdges([
     {
       id: `e-${edgeIdCounter++}`,
