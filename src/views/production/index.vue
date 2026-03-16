@@ -1,5 +1,12 @@
 <template>
-  <VueFlow class="flowMain" :nodes="nodes" :edges="edges" :min-zoom="0.01" fit-view-on-init :selection-key-code="null" :multi-selection-key-code="null">
+  <VueFlow
+    class="flowMain"
+    :nodes="nodes"
+    :edges="edges"
+    :min-zoom="0.01"
+    fit-view-on-init
+    :selection-key-code="null"
+    :multi-selection-key-code="null">
     <template #node-script="props">
       <scriptNode :id="props.id" :data="props.data" />
     </template>
@@ -21,6 +28,16 @@
     <Background></Background>
     <Controls />
     <div class="floatingWindow">
+      <div class="anthology">
+        <t-select
+          label="属性："
+          v-model="anthology"
+          placeholder="-请选择-"
+          :options="anthologyOptions"
+          style="width: 200px"
+          filterable
+          @change="changeFn" />
+      </div>
       <div class="openBtn c" v-if="!openShowVisible && !isLeaving">
         <i-menu-unfold-one
           theme="outline"
@@ -61,6 +78,15 @@ import { useFlowBuilder } from "./utils/flowBuilder";
 const { viewport } = useVueFlow();
 const openShowVisible = ref(false);
 const isLeaving = ref(false);
+const anthology = ref("");
+const anthologyOptions = [
+  { label: "第1集 - 绝境求生", value: "anthology-1" },
+  { label: "第2集 - 真相大白", value: "anthology-2" },
+  { label: "第3集 - 反击之路", value: "anthology-3" },
+];
+function changeFn(value: any) {
+  console.log("选择了", value);
+}
 
 onMounted(() => {});
 
@@ -266,6 +292,13 @@ const { nodes, edges } = useFlowBuilder(flowData);
     height: 100%;
     position: relative;
     overflow: hidden;
+    .anthology {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 9999;
+      cursor: pointer;
+    }
     .openBtn {
       position: absolute;
       top: 10px;

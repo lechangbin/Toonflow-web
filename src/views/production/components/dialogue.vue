@@ -26,8 +26,7 @@ const chatList = ref<ChatList[]>([
   {
     role: "assistant",
     identity: ["大纲师", "情节设计师"],
-    content:
-      "你好！",
+    content: "你好！",
   },
   {
     role: "assistant",
@@ -57,10 +56,12 @@ function handleSendData(data: string) {
   .box {
     width: 400px;
     height: 100%;
+    margin-right: 5px;
     border-radius: 10px;
-    border: 1px solid #919191;
+    border: 1px solid #e0e0e0;
     background-color: #fff;
     overflow-y: auto;
+    box-shadow: 0 4px 10px rgba(53, 53, 53, 0.25);
   }
 }
 </style>
