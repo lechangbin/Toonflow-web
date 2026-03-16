@@ -8,7 +8,9 @@
         <div class="groupHeader">{{ group.name }}</div>
         <div class="storyboardList">
           <div v-for="(item, index) in group.items" :key="`${group.id}-${item.id}`" class="storyboardItem">
-            <div class="itemTag" :style="{ backgroundColor: tagColors[(groupIndex * 10 + index) % tagColors.length] }">S{{ String(item.id).padStart(2, "0") }}</div>
+            <div class="itemTag" :style="{ backgroundColor: tagColors[(groupIndex * 10 + index) % tagColors.length] }">
+              S{{ String(item.id).padStart(2, "0") }}
+            </div>
             <div class="itemContent">
               <div class="itemTitle">{{ item.scene }} — {{ item.description }}</div>
               <div class="itemSubtitle">
@@ -52,20 +54,14 @@ const props = defineProps<{
   };
 }>();
 
-const tagColors = [
-  "#9c7cfc",
-  "#5b9afc",
-  "#5bccb3",
-  "#e8a855",
-  "#e86b6b",
-  "#7cb8fc",
-  "#c97cfc",
-];
+const tagColors = ["#9c7cfc", "#5b9afc", "#5bccb3", "#e8a855", "#e86b6b", "#7cb8fc", "#c97cfc"];
 </script>
 
 <style lang="scss" scoped>
 .storyboardTable {
-  width: 50vw;
+  max-width: 50vw;
+  width: fit-content;
+  min-width: 300px;
 
   .title {
     background-color: #000;

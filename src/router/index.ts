@@ -44,6 +44,10 @@ const router = createRouter({
           component: () => import("@/views/script/index.vue"),
         },
         {
+          path: "/cornerScape",
+          component: () => import("@/views/cornerScape/index.vue"),
+        },
+        {
           path: "/production",
           component: () => import("@/views/production/index.vue"),
         },

@@ -38,11 +38,15 @@
         编辑
       </t-button>
     </div>
+    <workbench v-model:visible="visible" v-if="visible" />
   </t-card>
 </template>
 
 <script setup lang="ts">
+import workbench from "../components/workbench/index.vue";
 import { Handle, Position } from "@vue-flow/core";
+
+const visible = ref(false);
 
 const props = defineProps<{
   id: string;

@@ -461,7 +461,7 @@
   dependencies:
     undici-types "~6.21.0"
 
-"@types/sortablejs@^1.15.1":
+"@types/sortablejs@^1.15.1", "@types/sortablejs@^1.15.8":
   version "1.15.9"
   resolved "https://registry.npmmirror.com/@types/sortablejs/-/sortablejs-1.15.9.tgz#82d2337f54d4db827914d80dee5cf65539ae3c8b"
   integrity sha512-7HP+rZGE2p886PKV9c9OJzLBI6BBJu1O7lJGYnPyG3fS4/duUCcngkNCjsLwIMV+WMqANe3tt4irrXHSIe68OQ==
@@ -697,6 +697,36 @@
   version "14.1.0"
   resolved "https://registry.npmmirror.com/@vueuse/shared/-/shared-14.1.0.tgz#49b2face86a9c0c52e20eaf4c732a0223276c11f"
   integrity sha512-EcKxtYvn6gx1F8z9J5/rsg3+lTQnvOruQd8fUecW99DCK04BkWD7z5KQ/wTAx+DazyoEE9dJt/zV8OIEQbM6kw==
+
+"@webav/av-canvas@^1.2.8":
+  version "1.2.8"
+  resolved "https://registry.npmmirror.com/@webav/av-canvas/-/av-canvas-1.2.8.tgz#87a059ef51b6b61e331f06e183fdb1fccd0bf0a5"
+  integrity sha512-j7wvlmdQcwSeMDPiOjfnw2LR/+F/yqYScs9dzwh8SHQre6nnnxS/eOPBghhgVx/RlqFk6VR4UYtnXlhfgnhWtA==
+  dependencies:
+    "@webav/av-cliper" "1.2.8"
+    "@webav/internal-utils" "1.2.8"
+
+"@webav/av-cliper@1.2.8", "@webav/av-cliper@^1.2.8":
+  version "1.2.8"
+  resolved "https://registry.npmmirror.com/@webav/av-cliper/-/av-cliper-1.2.8.tgz#d1ad2e65f8baa0f37dca91c070d582ff4f5d5daa"
+  integrity sha512-lxCXgP5AJsl+6xRo1puU5lTv7rAsxX9StQVK8xYdbg02p9FswCt76iTPqNxmlJ0ZfV1g+lmyNufLXu/qBAnJnA==
+  dependencies:
+    "@webav/internal-utils" "1.2.8"
+    "@webav/mp4box.js" "^0.5.7"
+    opfs-tools "^0.7.2"
+    wave-resampler "^1.0.0"
+
+"@webav/internal-utils@1.2.8":
+  version "1.2.8"
+  resolved "https://registry.npmmirror.com/@webav/internal-utils/-/internal-utils-1.2.8.tgz#dd16608363eb1bedbbb6e592bfdd0bdcba26d353"
+  integrity sha512-ZiEXl4U6PRqotkux0eTUdVn5zxbzXYm4Xfjt+HvH5bowwGSJVho/mmbPrdPf3ZRtfIu0aWCWa04LUDBQuY5ltA==
+  dependencies:
+    "@webav/mp4box.js" "^0.5.7"
+
+"@webav/mp4box.js@^0.5.7":
+  version "0.5.7"
+  resolved "https://registry.npmmirror.com/@webav/mp4box.js/-/mp4box.js-0.5.7.tgz#fa100d724c3ddd4cd24fb1243f8a274823c49d38"
+  integrity sha512-KgScEtDpiLnWvj1Rj8Ri9fDWxTjfdNr7cmY/PT88EmttHh6cLxMAeyD/W8Vydes4z7qV/c5VDAaP4cTlaO0E9g==
 
 "@xmldom/xmldom@^0.8.6":
   version "0.8.11"
@@ -1558,6 +1588,11 @@ once@^1.3.0:
   dependencies:
     wrappy "1"
 
+opfs-tools@^0.7.2:
+  version "0.7.4"
+  resolved "https://registry.npmmirror.com/opfs-tools/-/opfs-tools-0.7.4.tgz#999df0940c3bc0b79080a9977f44509b5637e41c"
+  integrity sha512-DJgQnXyPcCj3q8pKa8SjP4HfNBPffj8kO6W1nc2zQydTqu5G/AxOuIjmWnRxZ84nE1EOpzZzhj8MYCZP1jRR9A==
+
 option@~0.2.1:
   version "0.2.4"
   resolved "https://registry.npmmirror.com/option/-/option-0.2.4.tgz#fd475cdf98dcabb3cb397a3ba5284feb45edbfe4"
@@ -2132,6 +2167,13 @@ vue-demi@>=0.14.8, vue-demi@^0.14.10:
   resolved "https://registry.npmmirror.com/vue-demi/-/vue-demi-0.14.10.tgz#afc78de3d6f9e11bf78c55e8510ee12814522f04"
   integrity sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==
 
+vue-draggable-plus@^0.6.1:
+  version "0.6.1"
+  resolved "https://registry.npmmirror.com/vue-draggable-plus/-/vue-draggable-plus-0.6.1.tgz#d4ed54cbfd3e2a72c046074c39da1631e0c36a78"
+  integrity sha512-FbtQ/fuoixiOfTZzG3yoPl4JAo9HJXRHmBQZFB9x2NYCh6pq0TomHf7g5MUmpaDYv+LU2n6BPq2YN9sBO+FbIg==
+  dependencies:
+    "@types/sortablejs" "^1.15.8"
+
 vue-router@^4.4.5:
   version "4.6.4"
   resolved "https://registry.npmmirror.com/vue-router/-/vue-router-4.6.4.tgz#a0a9cb9ef811a106d249e4bb9313d286718020d8"
@@ -2157,6 +2199,11 @@ vue@^3.5.12:
     "@vue/runtime-dom" "3.5.26"
     "@vue/server-renderer" "3.5.26"
     "@vue/shared" "3.5.26"
+
+wave-resampler@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.npmmirror.com/wave-resampler/-/wave-resampler-1.0.0.tgz#127502338d28e6d5315be1abb06665c04bbb4fc6"
+  integrity sha512-bE3rbpZXuKAV52Cd8/BeJvy82ZqEHK8pPWHrZ9JioaVVTBlmWbDC+u4p9blhFcf0Skepb4hlOAHc25XfqLC48g==
 
 webpack-virtual-modules@^0.6.2:
   version "0.6.2"
