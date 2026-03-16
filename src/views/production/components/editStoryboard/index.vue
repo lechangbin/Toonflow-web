@@ -19,10 +19,9 @@
       <template #node-generated="{ id, data }">
         <generatedNode :id="id" :data="data" @generate="handleGenerate" />
       </template>
-      <template #node-results="{ id, data }">
-        <results :id="id" :data="data" />
+      <template #edge-removeLine="edgeProps">
+        <removeLine v-bind="edgeProps" />
       </template>
-
       <Background></Background>
       <Controls />
 
@@ -36,15 +35,15 @@
 </template>
 
 <script setup lang="ts">
-import { VueFlow, useVueFlow, Panel } from "@vue-flow/core";
+import { VueFlow, useVueFlow, Panel, MarkerType } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import uploadNode from "./uploadNode.vue";
 import generatedNode from "./generatedNode.vue";
-import results from "./results.vue";
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
+import removeLine from "./removeLine.vue";
 
 const visible = defineModel("visible", {
   type: Boolean,
@@ -55,6 +54,8 @@ const { addEdges } = useVueFlow();
 
 // 节点ID计数器
 let nodeIdCounter = 3;
+// 边ID计数器
+let edgeIdCounter = 3;
 
 const nodes = ref([
   {
@@ -87,25 +88,43 @@ const nodes = ref([
       steps: 49,
     },
   },
-  {
-    id: "results-1",
-    type: "results",
-    position: { x: 100, y: 400 },
-    data: {
-      generateResults: "https://picsum.photos/300/200?random=1",
-    },
-  },
 ]);
 
 const edges = ref([
-  { id: "e-upload1-gen1", source: "upload-1", target: "generated-1", animated: true, style: { stroke: "#a3e635" } },
-  { id: "e-upload2-gen1", source: "upload-2", target: "generated-1", animated: true, style: { stroke: "#a3e635" } },
-  { id: "e-gen1-results1", source: "generated-1", target: "results-1", animated: true, style: { stroke: "#a3e635" } },
+  {
+    id: "e-1",
+    source: "upload-1",
+    target: "generated-1",
+    type: "removeLine",
+    animated: true,
+    style: { stroke: "#a3e635" },
+  },
+  {
+    id: "e-2",
+    source: "upload-2",
+    target: "generated-1",
+    type: "removeLine",
+    animated: true,
+    style: { stroke: "#a3e635" },
+  },
 ]);
 
 // 连接处理
 const onConnect = (params: any) => {
-  addEdges([{ ...params, animated: true, style: { stroke: "#a3e635" } }]);
+  // 检查是否已存在相同的连接
+  const isDuplicate = edges.value.some(
+    (edge) => edge.source === params.source && edge.target === params.target
+  );
+  
+  if (!isDuplicate) {
+    addEdges([{ 
+      ...params, 
+      id: `e-${edgeIdCounter++}`,
+      type: "removeLine",
+      animated: true, 
+      style: { stroke: "#a3e635" } 
+    }]);
+  }
 };
 
 // 添加新的上传节点
