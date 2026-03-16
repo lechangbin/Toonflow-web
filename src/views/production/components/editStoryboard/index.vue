@@ -63,7 +63,7 @@ const nodes = ref([
     type: "upload",
     position: { x: 100, y: 100 },
     data: {
-      image: "https://picsum.photos/300/200?random=1",
+      image: "https://tdesign.gtimg.com/demo/demo-image-1.png",
     },
   },
   {
@@ -71,7 +71,7 @@ const nodes = ref([
     type: "upload",
     position: { x: 100, y: 400 },
     data: {
-      image: "https://picsum.photos/300/400?random=2",
+      image: "https://tdesign.gtimg.com/demo/demo-image-1.png",
     },
   },
   {
@@ -80,7 +80,7 @@ const nodes = ref([
     position: { x: 500, y: 200 },
     data: {
       generatedImage: "https://picsum.photos/400/300?random=3",
-      references: [{ image: "https://picsum.photos/300/200?random=1" }, { image: "https://picsum.photos/300/400?random=2" }],
+      references: [{ image: "https://tdesign.gtimg.com/demo/demo-image-1.png" }, { image: "https://tdesign.gtimg.com/demo/demo-image-1.png" }],
       prompt: "将图二左侧的人换成图1",
       model: "banana-pro",
       ratio: "16:9",

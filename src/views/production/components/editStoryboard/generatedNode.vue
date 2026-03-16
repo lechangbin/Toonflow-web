@@ -25,8 +25,11 @@
       </div>
     </div>
     <div class="parameter" v-if="selected">
-      <div class="iamge">
-        <t-image :src="data.generatedImage" fit="cover" :style="{ width: '45px', height: '45px', borderRadius: '10px' }" />
+      <div class="iamge f">
+   
+        <div v-for="(item, index) in data.references" :key="index" style="   margin-left: 8px;">
+          <t-image :src="item.image" fit="cover" :style="{ width: '45px', height: '45px', borderRadius: '10px' }" />
+        </div>
       </div>
       <div class="text w">
         <div class="textarea-wrapper">
@@ -243,7 +246,7 @@ function handleBlur() {
 // 生成
 function handleGenerate() {
   if (generating.value) return;
-  
+
   generating.value = true;
   // TODO: 这里调用实际的生成API
   setTimeout(() => {
@@ -311,7 +314,6 @@ function handleGenerate() {
     .iamge {
       height: 50px;
       padding: 10px;
-      margin-left: 8px;
     }
     .text {
       height: 100px;
