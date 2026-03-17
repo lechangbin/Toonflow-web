@@ -155,7 +155,7 @@ const flowData = ref({
   // 分镜表（合并为一个 node）
   storyboardTable: {
     id: "storyboard-table",
-    position: { x: 804, y: 0 },
+    position: { x: 620, y: 0 },
     connectTo: "storyboard",
     groups: [
       {
