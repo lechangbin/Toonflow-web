@@ -4,7 +4,7 @@
     <div class="data" @click="selectedFn">
       <div class="title ac">
         <i-pic theme="outline" size="16" fill="#000000" />
-        <span style="margin-left: 5px; color: #4b4b4b">图片生成</span>
+        <span class="title-text">图片生成</span>
       </div>
       <div class="image">
         <div v-if="generating" class="imageLoading">
@@ -12,47 +12,36 @@
           <span class="loadingText">生成中...</span>
         </div>
         <div v-else class="imageWrapper">
-          <t-image
-            :src="data.generatedImage"
-            fit="cover"
-            :style="{
-              width: '100%',
-              height: '100%',
-              borderRadius: '10px',
-              border: selected ? '3px solid #000' : '3px solid transparent',
-              boxSizing: 'border-box',
-            }" />
+          <t-image :src="data.generatedImage" fit="cover" :class="['nodeImage', { selected }]" />
         </div>
       </div>
     </div>
-    <div class="parameter" v-if="selected">
-      <div class="iamge f">
-        <div v-for="(item, index) in data.references" :key="index" style="margin-left: 8px">
-          <t-image :src="item.image" fit="cover" :style="{ width: '45px', height: '45px', borderRadius: '10px' }" />
+    <div v-if="selected" class="parameter">
+      <div class="image-refs f">
+        <div v-for="(item, index) in data.references" :key="index" class="ref-thumb">
+          <t-image :src="item.image" fit="cover" class="ref-img" />
         </div>
       </div>
       <div class="text w">
-        <div class="textarea-wrapper">
-          <t-textarea
-            ref="textareaRef"
-            class="promptTextarea"
-            v-model="data.prompt"
-            placeholder="描述任何你想要生成的内容，按@引用素材"
-            name="description"
+        <div class="textareaWrapper">
+          <div
+            ref="editorRef"
+            class="promptEditor"
+            contenteditable="true"
+            :data-placeholder="editorContent.length === 0 ? '描述任何你想要生成的内容，按@引用素材' : ''"
             @input="handleInput"
             @keydown="handleKeydown"
             @blur="handleBlur"
-            :autosize="{ minRows: 4, maxRows: 4 }" />
-          <!-- 选择器弹窗 -->
+            @mousedown.stop></div>
           <div v-if="showReferences" class="references-popup" :style="{ left: popupPosition.left + 'px', top: popupPosition.top + 'px' }">
             <div class="references-list">
               <div
-                class="reference-item"
                 v-for="(item, index) in data.references"
                 :key="index"
+                class="reference-item"
                 :class="{ active: activeIndex === index }"
                 @mousedown.prevent="selectReference(index)">
-                <t-image :src="item.image" fit="cover" :style="{ width: '36px', height: '36px', borderRadius: '6px' }" />
+                <t-image :src="item.image" fit="cover" class="ref-popup-img" />
                 <span class="reference-label">图{{ index + 1 }}</span>
               </div>
               <div v-if="!data.references?.length" class="no-references">暂无可引用的图片</div>
@@ -65,12 +54,12 @@
           <t-option value="banana-pro" label="Banana Pro" />
           <t-option value="other" label="Other" />
         </t-select>
-        <t-select v-model="data.ratio" class="paramSelect" size="small" placeholder="比例" style="margin-left: 5px">
+        <t-select v-model="data.ratio" class="paramSelect ml-5" size="small" placeholder="比例">
           <t-option value="16:9" label="16:9" />
           <t-option value="9:16" label="9:16" />
           <t-option value="1:1" label="1:1" />
         </t-select>
-        <t-select v-model="data.quality" class="paramSelect" size="small" placeholder="质量" style="margin-left: 5px">
+        <t-select v-model="data.quality" class="paramSelect ml-5" size="small" placeholder="质量">
           <t-option value="1K" label="1K" />
           <t-option value="2K" label="2K" />
         </t-select>
@@ -86,12 +75,15 @@
 import { Handle, Position } from "@vue-flow/core";
 
 const selected = ref(false);
-const textareaRef = ref<any>(null);
+const editorRef = ref<HTMLDivElement | null>(null);
 const showReferences = ref(false);
 const activeIndex = ref(0);
 const popupPosition = ref({ left: 0, top: 0 });
-const atStartIndex = ref(-1); // 记录@符号的位置
-const generating = ref(false); // 生成中状态
+const generating = ref(false);
+const editorContent = ref("");
+
+// 保存 @ 触发时的范围，用于后续替换
+let savedRange: Range | null = null;
 
 const props = defineProps<{
   id: string;
@@ -110,85 +102,65 @@ function selectedFn() {
   selected.value = !selected.value;
 }
 
-// 获取光标位置并计算弹窗位置
-function getCursorPosition() {
-  const textarea = textareaRef.value?.$el?.querySelector("textarea");
-  if (!textarea) return { left: 0, top: 24 };
+// 获取光标前的文本内容
+function getTextBeforeCursor(): string {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return "";
 
-  const { selectionStart } = textarea;
-  const textBeforeCursor = textarea.value.substring(0, selectionStart);
+  const range = sel.getRangeAt(0);
+  const node = range.startContainer;
+  if (node.nodeType === Node.TEXT_NODE) {
+    return (node as Text).textContent?.substring(0, range.startOffset) ?? "";
+  }
+  return "";
+}
 
-  // 创建一个隐藏的元素来计算光标位置
-  const mirror = document.createElement("div");
-  const style = window.getComputedStyle(textarea);
+// 获取弹窗位置（基于光标位置）
+function getCursorPopupPosition(): { left: number; top: number } {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0) return { left: 0, top: 24 };
 
-  mirror.style.cssText = `
-    position: absolute;
-    visibility: hidden;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    width: ${style.width};
-    font-size: ${style.fontSize};
-    font-family: ${style.fontFamily};
-    line-height: ${style.lineHeight};
-    padding: ${style.padding};
-  `;
+  const range = sel.getRangeAt(0).cloneRange();
+  range.collapse(true);
+  const rect = range.getBoundingClientRect();
+  const editorRect = editorRef.value!.getBoundingClientRect();
 
-  mirror.textContent = textBeforeCursor;
-  const span = document.createElement("span");
-  span.textContent = "|";
-  mirror.appendChild(span);
-
-  document.body.appendChild(mirror);
-  const spanRect = span.getBoundingClientRect();
-  const mirrorRect = mirror.getBoundingClientRect();
-
-  const left = spanRect.left - mirrorRect.left;
-  const top = spanRect.top - mirrorRect.top + parseInt(style.lineHeight);
-
-  document.body.removeChild(mirror);
-
-  return { left: Math.max(0, left), top: Math.min(top, 80) };
+  return {
+    left: Math.max(0, rect.left - editorRect.left),
+    top: rect.bottom - editorRect.top + 4,
+  };
 }
 
 // 处理输入事件
 function handleInput() {
-  const textarea = textareaRef.value?.$el?.querySelector("textarea");
-  if (!textarea) return;
+  editorContent.value = editorRef.value?.textContent || "";
+  syncPrompt();
 
-  // 直接从 textarea 元素获取实时值，而不是从 props.data.prompt
-  const value = textarea.value || "";
-  const { selectionStart } = textarea;
-  const textBeforeCursor = value.substring(0, selectionStart);
+  const text = getTextBeforeCursor();
+  const lastAt = text.lastIndexOf("@");
 
-  // 检查是否刚输入了@
-  const lastAtIndex = textBeforeCursor.lastIndexOf("@");
-
-  if (lastAtIndex !== -1) {
-    // 检查@后面是否有空格或已完成的引用
-    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-    // 如果@后面没有空格且不是已完成的"图X"格式，显示选择器
-    if (!textAfterAt.includes(" ") && !/^图\d+$/.test(textAfterAt)) {
-      showReferences.value = true;
-      atStartIndex.value = lastAtIndex;
-      activeIndex.value = 0;
-      nextTick(() => {
-        popupPosition.value = getCursorPosition();
-      });
-      return;
+  if (lastAt !== -1 && !text.substring(lastAt + 1).includes(" ")) {
+    showReferences.value = true;
+    activeIndex.value = 0;
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      savedRange = sel.getRangeAt(0).cloneRange();
     }
+    nextTick(() => {
+      popupPosition.value = getCursorPopupPosition();
+    });
+    return;
   }
 
   showReferences.value = false;
-  atStartIndex.value = -1;
+  savedRange = null;
 }
 
 // 处理键盘事件
-function handleKeydown(e: any) {
+function handleKeydown(e: KeyboardEvent) {
   if (!showReferences.value || !props.data.references?.length) return;
 
   const maxIndex = props.data.references.length - 1;
-
   switch (e.key) {
     case "ArrowDown":
       e.preventDefault();
@@ -209,35 +181,86 @@ function handleKeydown(e: any) {
   }
 }
 
-// 选择引用
+// 选择引用 —— 将 @ 及后面的输入替换为 tag 节点
 function selectReference(index: number) {
-  const textarea = textareaRef.value?.$el?.querySelector("textarea");
-  if (!textarea || atStartIndex.value === -1) return;
+  if (!editorRef.value || !savedRange) return;
 
-  const currentValue = props.data.prompt || "";
-  const cursorPos = textarea.selectionStart;
+  // 找到光标所在文本节点，从最后一个 @ 开始删除
+  const sel = window.getSelection();
+  if (!sel) return;
 
-  // 替换@及其后面的内容为"图X"
-  const beforeAt = currentValue.substring(0, atStartIndex.value);
-  const afterCursor = currentValue.substring(cursorPos);
+  // 恢复到触发 @ 时的范围
+  const range = savedRange.cloneRange();
+  const textNode = range.startContainer as Text;
+  const cursorOffset = range.startOffset;
+  const fullText = textNode.textContent || "";
+  const lastAt = fullText.lastIndexOf("@", cursorOffset - 1);
 
-  const insertText = `图${index + 1} `;
-  props.data.prompt = beforeAt + "@" + insertText + afterCursor;
+  if (lastAt === -1) return;
+
+  // 删除从 @ 到当前光标之间的文本（含 @）
+  const deleteRange = document.createRange();
+  deleteRange.setStart(textNode, lastAt);
+  deleteRange.setEnd(textNode, cursorOffset);
+  deleteRange.deleteContents();
+
+  // 创建 tag span 节点（图标 + 文字）
+  const tag = document.createElement("span");
+  tag.className = "reference-tag";
+  tag.contentEditable = "false";
+  tag.dataset.refIndex = String(index);
+
+  // 图标：使用 SVG 内联（iconpark pic outline）
+  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 48 48" fill="none" style="display:inline-block;vertical-align:middle;flex-shrink:0">
+    <rect x="6" y="6" width="36" height="36" rx="3" ry="3" stroke="currentColor" stroke-width="3" fill="none"/>
+    <circle cx="18" cy="18" r="4" stroke="currentColor" stroke-width="3" fill="none"/>
+    <path d="M6 32l10-10 8 8 6-6 12 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>`;
+  tag.innerHTML = iconSvg + `Image ${index + 1}`;
+
+  // 在光标处插入 tag
+  const insertRange = document.createRange();
+  insertRange.setStart(textNode, lastAt);
+  insertRange.collapse(true);
+  insertRange.insertNode(tag);
+
+  // 在 tag 后插入零宽空格，供光标停留
+  const space = document.createTextNode("\u200B");
+  tag.after(space);
+
+  // 将光标移到零宽空格后
+  const newRange = document.createRange();
+  newRange.setStart(space, 1);
+  newRange.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(newRange);
 
   showReferences.value = false;
-  atStartIndex.value = -1;
+  savedRange = null;
 
-  // 恢复光标位置
-  nextTick(() => {
-    const newCursorPos = atStartIndex.value + 1 + insertText.length + 1;
-    textarea.focus();
-    textarea.setSelectionRange(beforeAt.length + 1 + insertText.length, beforeAt.length + 1 + insertText.length);
+  editorContent.value = editorRef.value?.textContent || "";
+  syncPrompt();
+}
+
+// 将编辑器内容同步回 data.prompt（纯文本，tag 转为 @图X）
+function syncPrompt() {
+  if (!editorRef.value) return;
+  let result = "";
+  editorRef.value.childNodes.forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      // 去掉零宽空格
+      result += (node.textContent || "").replace(/\u200B/g, "");
+    } else if ((node as HTMLElement).classList?.contains("reference-tag")) {
+      // 只取文字部分（跳过 SVG），格式为 @Image X
+      const refIndex = (node as HTMLElement).dataset.refIndex;
+      result += `图${Number(refIndex) + 1}`;
+    }
   });
+  props.data.prompt = result;
 }
 
 // 处理失焦
 function handleBlur() {
-  // 延迟关闭，让点击事件有时间触发
   setTimeout(() => {
     showReferences.value = false;
   }, 150);
@@ -245,14 +268,11 @@ function handleBlur() {
 
 // 生成
 function handleGenerate() {
-  if (generating.value) return;
-
   generating.value = true;
-  // TODO: 这里调用实际的生成API
+  //拿到 prompt、model、ratio、quality 等参数，调用接口生成图片，接口返回后更新 data.generatedImage
+  console.log("%c Line:263 🎂 props.data", "background:#2eafb0", props.data);
   setTimeout(() => {
     generating.value = false;
-    // 生成完成后更新图片
-    // props.data.generatedImage = '新图片地址';
   }, 3000);
 }
 </script>
@@ -271,7 +291,13 @@ function handleGenerate() {
     .title {
       height: 30px;
       padding: 5px;
+
+      .title-text {
+        margin-left: 5px;
+        color: #4b4b4b;
+      }
     }
+
     .image {
       height: 320px;
       width: 100%;
@@ -306,6 +332,18 @@ function handleGenerate() {
         position: relative;
         width: 100%;
         height: 100%;
+
+        :deep(.nodeImage) {
+          width: 100%;
+          height: 100%;
+          border-radius: 10px;
+          border: 3px solid transparent;
+          box-sizing: border-box;
+
+          &.selected {
+            border-color: #000;
+          }
+        }
       }
     }
   }
@@ -317,33 +355,54 @@ function handleGenerate() {
     border: 1px solid #d4d4d4;
     background-color: #fff;
     border-radius: 10px;
-    .iamge {
+
+    .image-refs {
       height: 50px;
       padding: 10px;
+
+      .ref-thumb {
+        margin-left: 8px;
+
+        .ref-img {
+          width: 45px;
+          height: 45px;
+          border-radius: 10px;
+        }
+      }
     }
+
     .text {
       height: 100px;
       display: flex;
       position: relative;
 
-      .textarea-wrapper {
+      .textareaWrapper {
         width: 100%;
         height: 100%;
         position: relative;
       }
 
-      .promptTextarea {
+      .promptEditor {
         width: 100%;
         height: 100%;
         box-sizing: border-box;
         border: none;
         outline: none;
         padding: 10px;
-        resize: none;
-        background: transparent;
-        :deep(.t-textarea__inner) {
-          border: none;
-          box-shadow: none;
+        overflow-y: auto;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #333;
+        white-space: pre-wrap;
+        word-break: break-all;
+        margin-left: 5px;
+        margin-top: 5px;
+        cursor: text;
+
+        &:empty::before {
+          content: attr(data-placeholder);
+          color: #aaa;
+          pointer-events: none;
         }
       }
 
@@ -368,6 +427,17 @@ function handleGenerate() {
           padding: 8px 12px;
           cursor: pointer;
           transition: background-color 0.2s;
+
+          &.active {
+            background-color: #f0faf8;
+          }
+
+          .ref-popup-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+          }
+
           .reference-label {
             margin-left: 10px;
             font-size: 14px;
@@ -388,9 +458,15 @@ function handleGenerate() {
     .operate {
       padding: 10px;
       height: 50px;
+
       .paramSelect {
         width: 100px;
       }
+
+      .ml-5 {
+        margin-left: 5px;
+      }
+
       .generateBtn {
         margin-left: auto;
         --td-brand-color: #5bccb3;
@@ -406,6 +482,30 @@ function handleGenerate() {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+:deep(.reference-tag) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e6f7f4;
+  color: #3aaa91;
+  border: 1px solid #b2e5da;
+  border-radius: 999px;
+  padding: 1px 6px 1px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  margin: 0 2px;
+  user-select: all;
+  cursor: default;
+  white-space: nowrap;
+  vertical-align: middle;
+  gap: 2px;
+
+  svg {
+    flex-shrink: 0;
+    vertical-align: middle;
   }
 }
 </style>
