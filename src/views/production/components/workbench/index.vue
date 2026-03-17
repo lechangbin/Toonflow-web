@@ -36,7 +36,8 @@
         v-show="activeMenu === 'editVideo'"
         :initial-tracks="mockTracks"
         :initial-media-items="mockMediaItems"
-        :initial-audio-items="mockAudioItems" />
+        :initial-audio-items="mockAudioItems"
+        :initial-image-items="mockImageItems" />
     </div>
   </t-dialog>
 </template>
@@ -68,16 +69,6 @@ const mockMediaItems: MediaItem[] = [
     url: "https://webav-tech.github.io/WebAV/video/bunny_0.mp4",
     loading: true,
   },
-  {
-    id: "audio-2",
-    type: "audio",
-    name: "16kHz 单声道",
-    duration: 0,
-    icon: "🎥",
-    color: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-    url: "https://webav-tech.github.io/WebAV/audio/16kHz-1chan.mp3",
-    loading: true,
-  },
 ];
 
 /** 资源库 - 音频素材 */
@@ -91,6 +82,20 @@ const mockAudioItems: AudioItem[] = [
     loading: true,
   },
   { id: "audio-2", type: "audio", name: "16kHz 单声道", duration: 0, url: "https://webav-tech.github.io/WebAV/audio/16kHz-1chan.mp3", loading: true },
+];
+
+/** 资源库 - 图片素材 */
+const mockImageItems: MediaItem[] = [
+  {
+    id: "image-1",
+    type: "image",
+    name: "示例图片 1",
+    duration: 5,
+    icon: "🖼️",
+    color: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+    url: "https://webav-tech.github.io/WebAV/img/bunny.png",
+    loading: true,
+  },
 ];
 
 /** 轨道初始数据 */

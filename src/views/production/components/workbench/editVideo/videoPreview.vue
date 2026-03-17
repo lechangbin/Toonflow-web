@@ -454,8 +454,8 @@ const clipFrameCache = new Map<string, ImageBitmap>();
 // 创建带滤镜和转场的 tickInterceptor
 // 注意：time 参数是 clip 内部的相对时间（微秒），需要转换为全局时间轴时间
 function createFilteredTickInterceptor(originalClip: Clip): ((time: number, tickRet: any) => Promise<any>) | undefined {
-  // 如果不是视频或贴纸，不需要滤镜
-  if (originalClip.type !== "video" && originalClip.type !== "sticker") {
+  // 如果不是视频、图片或贴纸，不需要滤镜
+  if (originalClip.type !== "video" && (originalClip as any).type !== "image" && originalClip.type !== "sticker") {
     return undefined;
   }
 
@@ -968,6 +968,32 @@ async function createSpriteFromClip(clip: Clip, track: Track): Promise<VisibleSp
 
       sprite.time.offset = clip.startTime * 1e6;
       sprite.time.duration = (clip.endTime - clip.startTime) * 1e6;
+    } else if ((clip as any).type === "image" && mediaClip.sourceUrl) {
+      // 创建图片 Sprite
+      const response = await fetch(mediaClip.sourceUrl);
+      if (!response.ok) {
+        console.warn(`Failed to fetch image: ${mediaClip.sourceUrl}`);
+        return null;
+      }
+      const blob = await response.blob();
+      const imageBitmap = await createImageBitmap(blob);
+      const imgClip = new ImgClip(imageBitmap);
+      await imgClip.ready;
+
+      // 设置滤镜和特效的 tickInterceptor
+      const interceptor = createFilteredTickInterceptor(clip);
+      if (interceptor) {
+        imgClip.tickInterceptor = interceptor;
+      }
+
+      sprite = new VisibleSprite(imgClip);
+      originalWidth = imageBitmap.width;
+      originalHeight = imageBitmap.height;
+
+      sprite.time.offset = clip.startTime * 1e6;
+      sprite.time.duration = (clip.endTime - clip.startTime) * 1e6;
+
+      console.log(`[Image] Created sprite for clip ${clip.id}: ${originalWidth}x${originalHeight}`);
     } else if (clip.type === "subtitle" || clip.type === "text") {
       // 创建字幕/文本 Sprite
       const textClip = clip as SubtitleClip | TextClip;
@@ -1106,8 +1132,8 @@ async function syncClipsToCanvas() {
       continue;
     }
     for (const clip of track.clips) {
-      // 处理视频、音频、贴纸、字幕、文本类型
-      if (["video", "audio", "sticker", "subtitle", "text"].includes(clip.type)) {
+      // 处理视频、音频、图片、贴纸、字幕、文本类型
+      if (["video", "audio", "image", "sticker", "subtitle", "text"].includes(clip.type)) {
         allClipsWithTrack.push({ clip, track });
       }
     }

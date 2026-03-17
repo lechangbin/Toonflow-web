@@ -4,7 +4,7 @@
       <pane size="60">
         <splitpanes :push-other-panes="false">
           <pane size="20">
-            <mediaLibrary :initial-media-items="initialMediaItems" :initial-audio-items="initialAudioItems" />
+            <mediaLibrary :initial-media-items="initialMediaItems" :initial-audio-items="initialAudioItems" :initial-image-items="initialImageItems" />
           </pane>
           <pane size="60">
             <videoPreview />
@@ -81,11 +81,13 @@ const props = withDefaults(
     initialTracks?: Track[];
     initialMediaItems?: MediaItem[];
     initialAudioItems?: AudioItem[];
+    initialImageItems?: MediaItem[];
   }>(),
   {
     initialTracks: () => [],
     initialMediaItems: () => [],
     initialAudioItems: () => [],
+    initialImageItems: () => [],
   },
 );
 
@@ -107,6 +109,7 @@ const scaleConfigButtons = ref<ScaleConfigButton[]>(["snap"]);
 
 const trackTypes = ref<TrackTypeConfig>({
   video: { max: 5 },
+  image: { max: 3 },
   audio: { max: 3 },
   subtitle: { max: 2 },
   text: { max: 2 },
@@ -130,6 +133,15 @@ const clipConfigs = ref({
     height: 36,
     selected: {
       borderColor: "#4ecdc4",
+    },
+  },
+  image: {
+    backgroundColor: "linear-gradient(45deg, #43e97b 0%, #38f9d7 100%)",
+    borderColor: "#43e97b",
+    height: 60,
+    selected: {
+      borderColor: "#ff6b6b",
+      boxShadow: "0 0 0 3px rgba(255, 107, 107, 0.3)",
     },
   },
 });
@@ -184,6 +196,24 @@ async function handleDropMedia(mediaData: any, trackId: string, startTime: numbe
       if (!mediaData.thumbnails || mediaData.thumbnails.length === 0) {
         loadVideoClipThumbnails(tracksStore, clip.id!, sourceUrl);
       }
+      return;
+    } else if (mediaData.type === "image") {
+      const sourceUrl = mediaData.sourceUrl || mediaData.url || mediaData.id;
+      clip = {
+        ...clip,
+        type: "image" as any,
+        name: mediaData.name,
+        endTime: normalizeTime(startTime + duration),
+        sourceUrl,
+        originalDuration: duration,
+        trimStart: 0,
+        trimEnd: duration,
+        playbackRate: 1,
+        thumbnails: mediaData.thumbnail ? [mediaData.thumbnail] : [],
+      };
+
+      tracksStore.addClip(track.id, clip as Clip);
+      historyStore.pushSnapshot(`添加 ${mediaData.name}`);
       return;
     } else if (mediaData.type === "audio") {
       const sourceUrl = mediaData.sourceUrl || mediaData.url || mediaData.id;

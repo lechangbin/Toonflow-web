@@ -2,6 +2,7 @@ import { generateId } from "vue-clip-track";
 
 const TRACK_NAMES: Record<string, string> = {
   video: "视频",
+  image: "图片",
   audio: "音频",
   subtitle: "字幕",
   text: "文本",
@@ -12,6 +13,7 @@ const TRACK_NAMES: Record<string, string> = {
 
 const DEFAULT_DURATIONS: Record<string, number> = {
   video: 5,
+  image: 5,
   audio: 30,
   subtitle: 3,
   text: 3,
