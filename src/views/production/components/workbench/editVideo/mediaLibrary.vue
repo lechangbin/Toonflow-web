@@ -1,12 +1,22 @@
 <template>
   <div class="mediaLibrary">
     <div class="mediaLibraryHeader">
-      <h3 class="mediaLibraryTitle">剪辑素材</h3>
+      <div class="headerTitle">
+        <h3 class="mediaLibraryTitle">剪辑素材</h3>
+      </div>
       <div class="mediaLibraryTabs">
-        <button v-for="tab in tabs" :key="tab.id" :class="['tab', { tabActive: activeTab === tab.id }]" @click="activeTab = tab.id">
-          <span class="tabIcon"><component :is="tab.icon" theme="outline" size="14" /></span>
-          <span class="tabLabel">{{ tab.label }}</span>
-        </button>
+        <t-button
+          v-for="tab in tabs"
+          :key="tab.id"
+          :theme="activeTab === tab.id ? 'primary' : 'default'"
+          :variant="activeTab === tab.id ? 'base' : 'text'"
+          size="small"
+          @click="activeTab = tab.id">
+          <template #icon>
+            <component :is="tab.icon" theme="outline" size="18" style="margin-right: 4px" />
+          </template>
+          {{ tab.label }}
+        </t-button>
       </div>
     </div>
 
@@ -21,15 +31,15 @@
           @dragstart="handleDragStart($event, item)"
           @dragend="handleDragEnd">
           <div class="mediaItemPreview">
-            <img v-if="item.thumbnail" :src="item.thumbnail" class="mediaItemThumbnail" alt="" />
+            <t-image v-if="item.thumbnail" :src="item.thumbnail" fit="cover" class="mediaItemThumbnail" />
             <component v-else :is="item.icon" theme="outline" size="18" />
             <div v-if="item.loading" class="mediaItemLoading">
-              <span class="loadingSpinner loadingSpinnerSmall"></span>
+              <t-loading size="small" />
             </div>
           </div>
           <div class="mediaItemInfo">
             <div class="mediaItemName">{{ item.name }}</div>
-            <div class="mediaItemDuration">{{ formatDuration(item.duration) }}</div>
+            <t-tag v-if="item.duration" size="small" theme="default" variant="light">{{ formatDuration(item.duration) }}</t-tag>
           </div>
         </div>
       </div>
@@ -44,10 +54,10 @@
           @dragstart="handleDragStart($event, item)"
           @dragend="handleDragEnd">
           <div class="mediaItemPreview">
-            <img v-if="item.thumbnail" :src="item.thumbnail" class="mediaItemThumbnail" alt="" />
+            <t-image v-if="item.thumbnail" :src="item.thumbnail" fit="cover" class="mediaItemThumbnail" />
             <component v-else :is="item.icon" theme="outline" size="18" />
             <div v-if="item.loading" class="mediaItemLoading">
-              <span class="loadingSpinner loadingSpinnerSmall"></span>
+              <t-loading size="small" />
             </div>
           </div>
           <div class="mediaItemInfo">
@@ -116,12 +126,12 @@
           <div class="audioItemPreview">
             <i-music theme="outline" size="18" />
             <div v-if="audio.loading" class="mediaItemLoading">
-              <span class="loadingSpinner loadingSpinnerSmall"></span>
+              <t-loading size="small" />
             </div>
           </div>
           <div class="audioItemInfo">
             <div class="audioItemName">{{ audio.name }}</div>
-            <div class="audioItemDuration">{{ formatDuration(audio.duration) }}</div>
+            <t-tag v-if="audio.duration" size="small" theme="default" variant="light">{{ formatDuration(audio.duration) }}</t-tag>
           </div>
         </div>
       </div>
@@ -280,18 +290,13 @@ onMounted(() => {
   justify-content: center;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .mediaLibrary {
   display: flex;
   flex-direction: column;
   height: 100%;
   background: #f5f5f5;
-  border-right: 1px solid #e8e8e8;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
   overflow: hidden;
 
   .mediaLibraryHeader {
@@ -300,55 +305,25 @@ onMounted(() => {
     border-bottom: 1px solid #e8e8e8;
     background: #fff;
 
-    .mediaLibraryTitle {
-      margin: 0 0 12px 0;
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      letter-spacing: -0.01em;
+    .headerTitle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+
+      .mediaLibraryTitle {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        letter-spacing: -0.01em;
+      }
     }
 
     .mediaLibraryTabs {
       display: flex;
       gap: 4px;
       flex-wrap: wrap;
-
-      .tab {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        padding: 6px 10px;
-        background: transparent;
-        border: none;
-        border-radius: 8px;
-        color: #999;
-        font-size: 12px;
-        font-weight: 400;
-        cursor: pointer;
-        transition: all 0.2s;
-        white-space: nowrap;
-
-        &:hover {
-          background: #f0f0f0;
-          color: #333;
-        }
-
-        &.tabActive {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: #fff;
-          font-weight: 500;
-        }
-
-        .tabIcon {
-          font-size: 14px;
-          line-height: 1;
-        }
-
-        .tabLabel {
-          font-size: 12px;
-          line-height: 1;
-        }
-      }
     }
   }
 
@@ -383,7 +358,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #667eea;
+          border-color: #000000;
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -435,13 +410,6 @@ onMounted(() => {
             text-overflow: ellipsis;
             line-height: 1.4;
           }
-
-          .mediaItemDuration {
-            font-size: 11px;
-            color: #999;
-            margin-top: 4px;
-            line-height: 1;
-          }
         }
       }
     }
@@ -464,7 +432,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #667eea;
+          border-color: #000000;
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -512,7 +480,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #667eea;
+          border-color: #000000;
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -559,7 +527,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #667eea;
+          border-color: #000000;
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -606,7 +574,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #667eea;
+          border-color: #000000;
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -648,13 +616,6 @@ onMounted(() => {
             text-overflow: ellipsis;
             white-space: nowrap;
           }
-
-          .audioItemDuration {
-            font-size: 11px;
-            color: #999;
-            margin-top: 4px;
-            line-height: 1;
-          }
         }
       }
     }
@@ -677,7 +638,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #667eea;
+          border-color: #000000;
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -699,7 +660,7 @@ onMounted(() => {
           .textItemContent {
             font-size: 14px;
             font-weight: 600;
-            color: #667eea;
+            color: #000000;
           }
         }
 
@@ -711,20 +672,6 @@ onMounted(() => {
         }
       }
     }
-  }
-}
-
-.loadingSpinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-
-  &.loadingSpinnerSmall {
-    width: 16px;
-    height: 16px;
   }
 }
 </style>

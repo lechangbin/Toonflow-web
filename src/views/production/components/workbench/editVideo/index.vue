@@ -3,13 +3,18 @@
     <splitpanes class="default-theme content" horizontal :push-other-panes="false">
       <pane size="60">
         <splitpanes :push-other-panes="false">
-          <pane size="20">
-            <mediaLibrary :initial-media-items="initialMediaItems" :initial-audio-items="initialAudioItems" :initial-image-items="initialImageItems" />
+          <pane size="20" min-size="10">
+            <mediaLibrary
+              :initial-media-items="initialMediaItems"
+              :initial-audio-items="initialAudioItems"
+              :initial-image-items="initialImageItems" />
           </pane>
-          <pane size="60">
-            <videoPreview />
+          <pane size="60" min-size="20">
+            <div ref="previewWrapperRef" class="previewWrapper">
+              <videoPreview ref="videoPreviewRef" :canvas-width="canvasWidth" :canvas-height="canvasHeight" :style="previewStyle" />
+            </div>
           </pane>
-          <pane size="20">
+          <pane size="20" min-size="10">
             <propertyPanel />
           </pane>
         </splitpanes>
@@ -17,6 +22,7 @@
       <pane size="40" class="pr">
         <VideoTrack
           :theme="theme"
+          class="videoTrack"
           ref="videoTrackRef"
           :operation-buttons="operationButtons"
           :scale-config-buttons="scaleConfigButtons"
@@ -30,18 +36,51 @@
           @drop-media="handleDropMedia"
           @transition-added="onTransitionAdded">
           <!-- 自定义操作按钮 -->
-          <template #custom-operation-import>
-            <button class="tools-bar__btn" @click="handleImport" title="导入项目">
-              <span class="tools-bar__icon">📁</span>
-              <span class="tools-bar__label">导入</span>
-            </button>
+          <template #custom-operation-reset>
+            <t-button variant="text" size="small" @click="videoTrackRef?.reset()" title="重置">
+              <template #icon><i-refresh size="16" /></template>
+              重置
+            </t-button>
           </template>
 
-          <template #custom-operation-export>
-            <button class="tools-bar__btn" @click="handleExport" title="导出项目">
-              <span class="tools-bar__icon">💾</span>
-              <span class="tools-bar__label">导出</span>
-            </button>
+          <template #custom-operation-undo>
+            <t-button variant="text" size="small" :disabled="!historyStore.canUndo" @click="historyStore.undo()" title="撤销">
+              <template #icon><i-undo size="16" /></template>
+              撤销
+            </t-button>
+          </template>
+
+          <template #custom-operation-redo>
+            <t-button variant="text" size="small" :disabled="!historyStore.canRedo" @click="historyStore.redo()" title="重做">
+              <template #icon><i-redo size="16" /></template>
+              重做
+            </t-button>
+          </template>
+
+          <template #custom-operation-split>
+            <t-button variant="text" size="small" :disabled="tracksStore.selectedClipIds.size === 0" @click="handleSplit" title="分割">
+              <template #icon><i-cutting-one size="16" /></template>
+              分割
+            </t-button>
+          </template>
+
+          <template #custom-operation-delete>
+            <t-button variant="text" size="small" @click="handleDeleteClips" title="删除">
+              <template #icon><i-delete size="16" /></template>
+              删除
+            </t-button>
+          </template>
+          <!-- <template #custom-operation-import>
+            <t-button variant="text" size="small" @click="handleImport" title="导入项目">
+              <template #icon><i-folder-open size="16" /></template>
+              导入
+            </t-button>
+          </template> -->
+          <template #scale-append>
+            <t-button theme="danger" @click="handleExport" :loading="isExporting" title="导出项目">
+              <template #icon><i-export size="16" style="margin-right: 4px" /></template>
+              {{ isExporting ? "渲染中..." : "导出视频" }}
+            </t-button>
           </template>
         </VideoTrack>
       </pane>
@@ -82,27 +121,47 @@ const props = withDefaults(
     initialMediaItems?: MediaItem[];
     initialAudioItems?: AudioItem[];
     initialImageItems?: MediaItem[];
+    canvasWidth?: number;
+    canvasHeight?: number;
   }>(),
   {
     initialTracks: () => [],
     initialMediaItems: () => [],
     initialAudioItems: () => [],
     initialImageItems: () => [],
+    canvasWidth: 1920,
+    canvasHeight: 1080,
   },
 );
+
+const aspectRatio = computed(() => props.canvasWidth / props.canvasHeight);
+
+// 预览区域自适应尺寸
+const previewWrapperRef = ref<HTMLElement>();
+const wrapperSize = reactive({ width: 0, height: 0 });
+let resizeObserver: ResizeObserver | null = null;
+
+const previewStyle = computed(() => {
+  const { width: cw, height: ch } = wrapperSize;
+  if (cw <= 0 || ch <= 0) return {};
+  const ratio = aspectRatio.value;
+  if (cw / ch > ratio) {
+    return { height: ch + "px", width: Math.floor(ch * ratio) + "px" };
+  }
+  return { width: cw + "px", height: Math.floor(cw / ratio) + "px" };
+});
 
 const tracksStore = useTracksStore();
 const playbackStore = usePlaybackStore();
 const historyStore = useHistoryStore();
 
 const operationButtons = ref<OperationButton[]>([
-  "reset",
-  "undo",
-  "redo",
-  "split",
-  "delete",
+  { type: "custom", key: "reset" },
+  { type: "custom", key: "undo" },
+  { type: "custom", key: "redo" },
+  { type: "custom", key: "split" },
+  { type: "custom", key: "delete" },
   { type: "custom", key: "import" },
-  { type: "custom", key: "export" },
 ]);
 
 const scaleConfigButtons = ref<ScaleConfigButton[]>(["snap"]);
@@ -121,7 +180,7 @@ const trackTypes = ref<TrackTypeConfig>({
 const clipConfigs = ref({
   video: {
     backgroundColor: "linear-gradient(45deg, #667eea 0%, #764ba2 100%)",
-    borderColor: "#667eea",
+    borderColor: "#000000",
     height: 60,
     selected: {
       borderColor: "#ff6b6b",
@@ -147,13 +206,41 @@ const clipConfigs = ref({
 });
 
 const videoTrackRef = ref();
+const videoPreviewRef = ref<InstanceType<typeof videoPreview>>();
+const isExporting = ref(false);
 
-function handleImport() {
-  alert("导入功能 - 这里可以实现项目导入逻辑");
+async function handleExport() {
+  if (!videoPreviewRef.value) return;
+  if (isExporting.value) return;
+  isExporting.value = true;
+  try {
+    await videoPreviewRef.value.exportVideo();
+    window.$message.success("视频导出完成");
+  } catch (error: any) {
+    if (error.name === "AbortError") return; // 用户取消保存
+    window.$message.error(error.message || "导出失败");
+  } finally {
+    isExporting.value = false;
+  }
 }
 
-function handleExport() {
-  alert("导出功能 - 这里可以实现项目导出逻辑");
+function handleSplit() {
+  const selectedIds = Array.from(tracksStore.selectedClipIds);
+  if (selectedIds.length === 0) return;
+  const currentTime = playbackStore.currentTime;
+  selectedIds.forEach((id) => {
+    const clip = tracksStore.getClip(id);
+    if (!clip || currentTime <= clip.startTime || currentTime >= clip.endTime) return;
+    tracksStore.splitClip(id, currentTime);
+  });
+  historyStore.pushSnapshot("分割片段");
+}
+
+function handleDeleteClips() {
+  const selectedIds = Array.from(tracksStore.selectedClipIds);
+  if (selectedIds.length === 0) return;
+  tracksStore.removeClips(selectedIds);
+  historyStore.pushSnapshot("删除片段");
 }
 
 // 处理从资源库拖拽媒体到轨道
@@ -328,13 +415,25 @@ function initializeTracks() {
 
 onMounted(() => {
   initializeTracks();
+
+  if (previewWrapperRef.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        wrapperSize.width = entry.contentRect.width;
+        wrapperSize.height = entry.contentRect.height;
+      }
+    });
+    resizeObserver.observe(previewWrapperRef.value);
+  }
+
   nextTick(() => {
     const cursorLine = document.querySelector(".ruler__cursor-line") as HTMLElement;
     if (cursorLine) {
       cursorLine.style.display = "none";
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         cursorLine.style.display = "";
-      });
+      }, 1000);
     }
   });
 });
@@ -345,6 +444,10 @@ const theme = {
   textColor: "#ffffff",
   borderColor: "#ecedef",
 };
+
+onUnmounted(() => {
+  resizeObserver?.disconnect();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -352,10 +455,37 @@ const theme = {
   .content {
     height: calc(100vh - var(--td-comp-paddingTB-xl) * 2 - 50px - 1rem);
   }
+
+  .previewWrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: #f5f5f5;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+  }
+  .videoTrack {
+    height: 100%;
+    border: 1px solid #e8e8e8;
+    border-radius: 10px;
+  }
 }
 :deep(.ruler__cursor-handle) {
   &:hover {
     filter: none !important;
   }
+}
+:deep(.splitpanes__pane) {
+  background-color: transparent !important;
+}
+:deep(.splitpanes__splitter) {
+  border: none !important;
+  margin: 0px !important;
+}
+:deep(.tools-bar__select) {
+  display: none !important;
 }
 </style>

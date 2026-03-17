@@ -3,14 +3,14 @@
     <!-- AVCanvas 视频预览区域 -->
     <div ref="canvasContainer" class="previewScreen">
       <div v-if="!hasSprites" class="previewScreenPlaceholder">
-        <div class="placeholderIcon">🎬</div>
+        <div class="placeholderIcon"><i-film theme="outline" size="48" fill="#999" /></div>
         <div class="placeholderText">视频预览区域</div>
         <div class="placeholderTime">{{ formatTime(currentTimeInSeconds) }}</div>
       </div>
 
       <!-- 播放指示器 -->
       <div v-if="isPlaying && !hasSprites" class="previewScreenPlaying">
-        <div class="playingIndicator">▶</div>
+        <div class="playingIndicator"><i-play theme="outline" size="36" fill="#000000" /></div>
       </div>
     </div>
 
@@ -37,6 +37,17 @@ import {
   applyEffectsToFrame,
 } from "./utils/filterEffect";
 import { formatTime } from "./utils/clipMeta";
+
+const props = withDefaults(
+  defineProps<{
+    canvasWidth?: number;
+    canvasHeight?: number;
+  }>(),
+  {
+    canvasWidth: 1920,
+    canvasHeight: 1080,
+  },
+);
 
 // 转场信息（用于关联两个视频 clip）
 interface TransitionInfo {
@@ -99,7 +110,6 @@ type ExtendedClip = Clip & ExtendedClipProps;
 const playbackStore = usePlaybackStore();
 const tracksStore = useTracksStore();
 const playbackSpeed = ref(1);
-const activeTab = ref<"player" | "debug">("player");
 
 // AVCanvas 相关
 const canvasContainer = ref<HTMLElement | null>(null);
@@ -117,9 +127,9 @@ let isUpdatingFromStore = false;
 let isSyncing = false;
 let pendingSync = false;
 
-// Canvas 尺寸常量
-const CANVAS_WIDTH = 1920;
-const CANVAS_HEIGHT = 1080;
+// Canvas 尺寸（来自 props）
+const CANVAS_WIDTH = computed(() => props.canvasWidth);
+const CANVAS_HEIGHT = computed(() => props.canvasHeight);
 
 // 存储 clip ID 与 sprite 的映射关系
 const clipSpriteMap = new Map<string, VisibleSprite>();
@@ -163,8 +173,8 @@ const activeEffects = ref<ActiveEffect[]>([]);
 // AVCanvas 调试数据
 const avCanvasDebugData = reactive<AVCanvasDebugData>({
   initialized: false,
-  canvasWidth: CANVAS_WIDTH,
-  canvasHeight: CANVAS_HEIGHT,
+  canvasWidth: CANVAS_WIDTH.value,
+  canvasHeight: CANVAS_HEIGHT.value,
   isPlaying: false,
   currentTime: 0,
   duration: 0,
@@ -692,21 +702,21 @@ function createFilteredTickInterceptor(originalClip: Clip): ((time: number, tick
 // 计算 sprite 在 canvas 中的位置和尺寸（保持宽高比居中显示）
 function calculateSpriteRect(mediaWidth: number, mediaHeight: number) {
   const mediaAspect = mediaWidth / mediaHeight;
-  const canvasAspect = CANVAS_WIDTH / CANVAS_HEIGHT;
+  const canvasAspect = CANVAS_WIDTH.value / CANVAS_HEIGHT.value;
 
   let w: number, h: number, x: number, y: number;
 
   if (mediaAspect > canvasAspect) {
     // 媒体更宽，以宽度为基准
-    w = CANVAS_WIDTH;
-    h = CANVAS_WIDTH / mediaAspect;
+    w = CANVAS_WIDTH.value;
+    h = CANVAS_WIDTH.value / mediaAspect;
     x = 0;
-    y = (CANVAS_HEIGHT - h) / 2;
+    y = (CANVAS_HEIGHT.value - h) / 2;
   } else {
     // 媒体更高，以高度为基准
-    h = CANVAS_HEIGHT;
-    w = CANVAS_HEIGHT * mediaAspect;
-    x = (CANVAS_WIDTH - w) / 2;
+    h = CANVAS_HEIGHT.value;
+    w = CANVAS_HEIGHT.value * mediaAspect;
+    x = (CANVAS_WIDTH.value - w) / 2;
     y = 0;
   }
 
@@ -1029,8 +1039,8 @@ async function createSpriteFromClip(clip: Clip, track: Track): Promise<VisibleSp
 
         // 字幕默认位置：底部居中
         if (!extClip.rect || extClip.rect.w <= 0 || extClip.rect.h <= 0) {
-          const x = (CANVAS_WIDTH - originalWidth) / 2;
-          const y = CANVAS_HEIGHT - originalHeight - 80; // 距离底部 80px
+          const x = (CANVAS_WIDTH.value - originalWidth) / 2;
+          const y = CANVAS_HEIGHT.value - originalHeight - 80; // 距离底部 80px
           sprite.rect.x = x;
           sprite.rect.y = y;
           sprite.rect.w = originalWidth;
@@ -1268,8 +1278,8 @@ onMounted(async () => {
     try {
       avCanvas = new AVCanvas(canvasContainer.value, {
         bgColor: "#1a1a2e",
-        width: CANVAS_WIDTH,
-        height: CANVAS_HEIGHT,
+        width: CANVAS_WIDTH.value,
+        height: CANVAS_HEIGHT.value,
       });
 
       // 监听时间更新事件
@@ -1484,9 +1494,43 @@ function handleSeek(event: Event) {
   }
 }
 
+// 导出视频
+async function exportVideo() {
+  if (!avCanvas) {
+    throw new Error('AVCanvas 尚未初始化');
+  }
+  if (clipSpriteMap.size === 0) {
+    throw new Error('没有可导出的内容');
+  }
+
+  // 导出前暂停播放
+  if (isPlaying.value) {
+    avCanvas.pause();
+    isPlaying.value = false;
+    playbackStore.pause();
+  }
+
+  const combinator = await avCanvas.createCombinator();
+  const chunks: Uint8Array[] = [];
+  const reader = combinator.output().getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+  }
+  const blob = new Blob(chunks as BlobPart[], { type: 'video/mp4' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `WebAV-export-${Date.now()}.mp4`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 // 暴露 AVCanvas 实例供外部使用
 defineExpose({
   avCanvas: computed(() => avCanvas),
+  exportVideo,
   addSprite: async (sprite: any) => {
     if (avCanvas) {
       await avCanvas.addSprite(sprite);
@@ -1496,109 +1540,126 @@ defineExpose({
   removeSprite: (sprite: any) => {
     if (avCanvas) {
       avCanvas.removeSprite(sprite);
-      // 检查是否还有 sprites
-      // hasSprites.value = avCanvas.sprites.length > 0
     }
   },
 });
 </script>
 
 <style lang="scss" scoped>
+%flexCenter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .videoPreview {
   width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  background: #f5f5f5;
+  overflow: hidden;
+
   .previewScreen {
     width: 100%;
     flex: 1;
     min-height: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+    @extend %flexCenter;
+    position: relative;
     overflow: hidden;
+
     .previewScreenPlaceholder {
-      display: flex;
+      @extend %flexCenter;
       flex-direction: column;
-      align-items: center;
       gap: 12px;
-      opacity: 0.4;
+      color: #999;
       position: absolute;
       z-index: 1;
+
       .placeholderIcon {
-        font-size: 64px;
+        @extend %flexCenter;
       }
+
       .placeholderText {
         font-size: 14px;
-        color: var(--color-text-secondary);
+        color: #999;
         font-weight: 500;
       }
+
       .placeholderTime {
         font-size: 24px;
-        color: var(--color-primary);
+        color: #000000;
         font-family: "Courier New", monospace;
         font-weight: 700;
+        font-variant-numeric: tabular-nums;
       }
     }
+
     .previewScreenPlaying {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 2;
+
       .playingIndicator {
-        font-size: 48px;
-        color: var(--color-primary);
+        @extend %flexCenter;
         animation: pulse 1.5s ease-in-out infinite;
       }
     }
   }
+
   .previewProgress {
-    padding: 0 5px 5px 5px;
+    flex-shrink: 0;
+    padding: 10px 16px 12px;
+    background: rgba(255, 255, 255, 0.95);
+    border-top: 1px solid #e8e8e8;
+
     .progressSlider {
       width: 100%;
       height: 6px;
       -webkit-appearance: none;
       appearance: none;
-      background: var(--color-border);
+      background: #e8e8e8;
       border-radius: 3px;
       outline: none;
       cursor: pointer;
-    }
-    .progressSlider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 16px;
-      height: 16px;
-      background: var(--color-primary);
-      border-radius: 50%;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
 
-    .progressSlider::-webkit-slider-thumb:hover {
-      transform: scale(1.2);
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
-    }
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 14px;
+        height: 14px;
+        background: #fff;
+        border: 2px solid #000000;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.15s;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
 
-    .progressSlider::-moz-range-thumb {
-      width: 16px;
-      height: 16px;
-      background: var(--color-primary);
-      border: none;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: all var(--transition-fast);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
+        &:hover {
+          transform: scale(1.2);
+        }
+      }
 
-    .progressSlider::-moz-range-thumb:hover {
-      transform: scale(1.2);
-      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+      &::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        background: #fff;
+        border: 2px solid #000000;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: transform 0.15s;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+
+        &:hover {
+          transform: scale(1.2);
+        }
+      }
     }
   }
 }
+
 @keyframes pulse {
   0%,
   100% {

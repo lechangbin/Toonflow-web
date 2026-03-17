@@ -1,230 +1,220 @@
 <template>
   <div class="propertyPanel">
     <div class="panelHeader">
-      <h3 class="panelTitle">属性</h3>
+      <h3 class="panelTitle">属性面板</h3>
     </div>
 
     <div class="panelContent">
       <div v-if="!selectedClip" class="emptyState">
-        <div class="emptyIcon">📋</div>
-        <div class="emptyText">请选择一个 Clip 来查看属性</div>
+        <div class="emptyIconWrapper">
+          <i-inbox theme="outline" size="32" fill="#999" />
+        </div>
+        <div class="emptyText">选择一个 Clip 查看属性</div>
       </div>
 
       <div v-else class="properties">
         <!-- 基础信息 -->
-        <div class="section">
+        <div class="sectionCard">
           <div class="sectionHeader">
-            <span class="sectionIcon">{{ getClipIcon(selectedClip) }}</span>
-            <span class="sectionTitle">基础信息</span>
+            <div class="sectionIconBadge">
+              <component :is="getClipIcon(selectedClip)" theme="outline" size="16" />
+            </div>
+            <span class="sectionLabel">基础信息</span>
+            <t-tag size="small" theme="primary" variant="light">{{ getClipTypeName(selectedClip.type) }}</t-tag>
           </div>
-          <div class="sectionContent">
-            <div class="row">
-              <label class="label">名称</label>
-              <input v-model="clipName" type="text" class="propInput" @change="handleUpdateClip('name', clipName)" />
+          <div class="sectionBody">
+            <div class="propRow">
+              <label class="propLabel">名称</label>
+              <t-input v-model="clipName" size="small" placeholder="Clip 名称" @change="handleUpdateClip('name', clipName)" />
             </div>
-            <div class="row">
-              <label class="label">类型</label>
-              <div class="propValue">{{ getClipTypeName(selectedClip.type) }}</div>
-            </div>
-            <div class="row">
-              <label class="label">开始时间</label>
-              <div class="inputGroup">
-                <input
-                  :value="selectedClip.startTime.toFixed(2)"
-                  type="number"
-                  step="0.01"
-                  class="propInput small"
-                  @change="handleUpdateClip('startTime', parseFloat(($event.target as HTMLInputElement).value))" />
-                <span class="unit">秒</span>
+            <div class="propRowInline">
+              <div class="propField">
+                <label class="propLabel">开始</label>
+                <t-input-number
+                  :value="Number(selectedClip.startTime.toFixed(2))"
+                  size="small"
+                  :decimal-places="2"
+                  :step="0.01"
+                  theme="normal"
+                  suffix="s"
+                  @change="(val: any) => handleUpdateClip('startTime', Number(val))" />
+              </div>
+              <div class="propField">
+                <label class="propLabel">结束</label>
+                <t-input-number
+                  :value="Number(selectedClip.endTime.toFixed(2))"
+                  size="small"
+                  :decimal-places="2"
+                  :step="0.01"
+                  theme="normal"
+                  suffix="s"
+                  @change="(val: any) => handleUpdateClip('endTime', Number(val))" />
               </div>
             </div>
-            <div class="row">
-              <label class="label">结束时间</label>
-              <div class="inputGroup">
-                <input
-                  :value="selectedClip.endTime.toFixed(2)"
-                  type="number"
-                  step="0.01"
-                  class="propInput small"
-                  @change="handleUpdateClip('endTime', parseFloat(($event.target as HTMLInputElement).value))" />
-                <span class="unit">秒</span>
-              </div>
-            </div>
-            <div class="row">
-              <label class="label">时长</label>
-              <div class="propValue highlight">{{ (selectedClip.endTime - selectedClip.startTime).toFixed(2) }}s</div>
+            <div class="propRowInline durationRow">
+              <span class="durationLabel">总时长</span>
+              <t-tag size="small" theme="default" variant="outline">{{ (selectedClip.endTime - selectedClip.startTime).toFixed(2) }}s</t-tag>
             </div>
           </div>
         </div>
 
         <!-- 视频属性 -->
-        <div v-if="selectedClip.type === 'video'" class="section">
+        <div v-if="selectedClip.type === 'video'" class="sectionCard">
           <div class="sectionHeader">
-            <span class="sectionIcon">🎥</span>
-            <span class="sectionTitle">视频属性</span>
+            <div class="sectionIconBadge">
+              <i-video theme="outline" size="16" />
+            </div>
+            <span class="sectionLabel">视频属性</span>
           </div>
-          <div class="sectionContent">
-            <div class="row">
-              <label class="label">不透明度</label>
-              <div class="sliderGroup">
-                <input
-                  v-model.number="videoOpacity"
-                  type="range"
-                  min="0"
-                  max="100"
-                  step="1"
-                  class="slider"
-                  @input="handleUpdateClip('opacity', Math.round(videoOpacity) / 100)" />
-                <span class="sliderValue">{{ Math.round(videoOpacity) }}%</span>
+          <div class="sectionBody">
+            <div class="propRow">
+              <div class="propRowHead">
+                <label class="propLabel">不透明度</label>
+                <span class="propValueText">{{ Math.round(videoOpacity) }}%</span>
               </div>
+              <t-slider v-model="videoOpacity" :min="0" :max="100" :step="1" @change="handleUpdateClip('opacity', Math.round(videoOpacity) / 100)" />
             </div>
-            <div class="row">
-              <label class="label">音量</label>
-              <div class="sliderGroup">
-                <input
-                  v-model.number="videoVolume"
-                  type="range"
-                  min="0"
-                  max="200"
-                  step="1"
-                  class="slider"
-                  @input="handleUpdateClip('volume', Math.round(videoVolume) / 100)" />
-                <span class="sliderValue">{{ Math.round(videoVolume) }}%</span>
+            <div class="propRow">
+              <div class="propRowHead">
+                <label class="propLabel">音量</label>
+                <span class="propValueText">{{ Math.round(videoVolume) }}%</span>
               </div>
+              <t-slider v-model="videoVolume" :min="0" :max="200" :step="1" @change="handleUpdateClip('volume', Math.round(videoVolume) / 100)" />
             </div>
-            <div class="row">
-              <label class="label">速度</label>
-              <div class="inputGroup">
-                <input
-                  v-model.number="videoSpeed"
-                  type="number"
-                  min="0.1"
-                  max="10"
-                  step="0.1"
-                  class="propInput small"
-                  @change="handleUpdatePlaybackRate(videoSpeed)" />
-                <span class="unit">x</span>
-              </div>
+            <div class="propRow">
+              <label class="propLabel">播放速度</label>
+              <t-input-number
+                v-model="videoSpeed"
+                size="small"
+                :min="0.1"
+                :max="10"
+                :step="0.1"
+                :decimal-places="1"
+                theme="normal"
+                suffix="x"
+                @change="(val: any) => handleUpdatePlaybackRate(Number(val))" />
             </div>
           </div>
         </div>
 
         <!-- 音频属性 -->
-        <div v-if="selectedClip.type === 'audio'" class="section">
+        <div v-if="selectedClip.type === 'audio'" class="sectionCard">
           <div class="sectionHeader">
-            <span class="sectionIcon">🎵</span>
-            <span class="sectionTitle">音频属性</span>
+            <div class="sectionIconBadge">
+              <i-music theme="outline" size="16" />
+            </div>
+            <span class="sectionLabel">音频属性</span>
           </div>
-          <div class="sectionContent">
-            <div class="row">
-              <label class="label">音量</label>
-              <div class="sliderGroup">
-                <input
-                  v-model.number="audioVolume"
-                  type="range"
-                  min="0"
-                  max="200"
-                  step="1"
-                  class="slider"
-                  @input="handleUpdateClip('volume', Math.round(audioVolume) / 100)" />
-                <span class="sliderValue">{{ Math.round(audioVolume) }}%</span>
+          <div class="sectionBody">
+            <div class="propRow">
+              <div class="propRowHead">
+                <label class="propLabel">音量</label>
+                <span class="propValueText">{{ Math.round(audioVolume) }}%</span>
               </div>
+              <t-slider v-model="audioVolume" :min="0" :max="200" :step="1" @change="handleUpdateClip('volume', Math.round(audioVolume) / 100)" />
             </div>
-            <div class="row">
-              <label class="label">淡入时长</label>
-              <div class="inputGroup">
-                <input
-                  v-model.number="audioFadeIn"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  class="propInput small"
+            <div class="propRowInline">
+              <div class="propField">
+                <label class="propLabel">淡入</label>
+                <t-input-number
+                  v-model="audioFadeIn"
+                  size="small"
+                  :min="0"
+                  :step="0.1"
+                  :decimal-places="1"
+                  theme="normal"
+                  suffix="s"
                   @change="handleUpdateClip('fadeIn', audioFadeIn)" />
-                <span class="unit">秒</span>
               </div>
-            </div>
-            <div class="row">
-              <label class="label">淡出时长</label>
-              <div class="inputGroup">
-                <input
-                  v-model.number="audioFadeOut"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  class="propInput small"
+              <div class="propField">
+                <label class="propLabel">淡出</label>
+                <t-input-number
+                  v-model="audioFadeOut"
+                  size="small"
+                  :min="0"
+                  :step="0.1"
+                  :decimal-places="1"
+                  theme="normal"
+                  suffix="s"
                   @change="handleUpdateClip('fadeOut', audioFadeOut)" />
-                <span class="unit">秒</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- 转场属性 -->
-        <div v-if="selectedClip.type === 'transition'" class="section">
+        <div v-if="selectedClip.type === 'transition'" class="sectionCard">
           <div class="sectionHeader">
-            <span class="sectionIcon">🔀</span>
-            <span class="sectionTitle">转场属性</span>
-          </div>
-          <div class="sectionContent">
-            <div class="row">
-              <label class="label">转场类型</label>
-              <select v-model="transitionType" class="propSelect" @change="handleUpdateClip('transitionType', transitionType)">
-                <option value="fade">淡入淡出</option>
-                <option value="slide">滑动</option>
-                <option value="wipe">擦除</option>
-                <option value="dissolve">溶解</option>
-                <option value="zoom">缩放</option>
-                <option value="rotate">旋转</option>
-              </select>
+            <div class="sectionIconBadge">
+              <i-exchange theme="outline" size="16" />
             </div>
-            <div class="row">
-              <label class="label">转场时长</label>
-              <div class="inputGroup">
-                <input
-                  v-model.number="transitionDuration"
-                  type="number"
-                  min="0.1"
-                  max="5"
-                  step="0.1"
-                  class="propInput small"
-                  @change="handleUpdateTransitionDuration" />
-                <span class="unit">秒</span>
-              </div>
+            <span class="sectionLabel">转场属性</span>
+          </div>
+          <div class="sectionBody">
+            <div class="propRow">
+              <label class="propLabel">转场类型</label>
+              <t-select v-model="transitionType" size="small" @change="handleUpdateClip('transitionType', transitionType)">
+                <t-option value="fade" label="淡入淡出" />
+                <t-option value="slide" label="滑动" />
+                <t-option value="wipe" label="擦除" />
+                <t-option value="dissolve" label="溶解" />
+                <t-option value="zoom" label="缩放" />
+                <t-option value="rotate" label="旋转" />
+              </t-select>
+            </div>
+            <div class="propRow">
+              <label class="propLabel">转场时长</label>
+              <t-input-number
+                v-model="transitionDuration"
+                size="small"
+                :min="0.1"
+                :max="5"
+                :step="0.1"
+                :decimal-places="1"
+                theme="normal"
+                suffix="s"
+                @change="handleUpdateTransitionDuration" />
             </div>
           </div>
         </div>
 
         <!-- 字幕属性 -->
-        <div v-if="selectedClip.type === 'subtitle'" class="section">
+        <div v-if="selectedClip.type === 'subtitle'" class="sectionCard">
           <div class="sectionHeader">
-            <span class="sectionIcon">📝</span>
-            <span class="sectionTitle">字幕属性</span>
-          </div>
-          <div class="sectionContent">
-            <div class="row">
-              <label class="label">文本内容</label>
-              <textarea v-model="subtitleText" class="propTextarea" rows="3" @change="handleUpdateClip('text', subtitleText)"></textarea>
+            <div class="sectionIconBadge">
+              <i-editor theme="outline" size="16" />
             </div>
-            <div class="row">
-              <label class="label">字体大小</label>
-              <div class="inputGroup">
-                <input
-                  v-model.number="subtitleFontSize"
-                  type="number"
-                  min="12"
-                  max="72"
-                  class="propInput small"
-                  @change="handleUpdateClip('fontSize', subtitleFontSize)" />
-                <span class="unit">px</span>
-              </div>
+            <span class="sectionLabel">字幕属性</span>
+          </div>
+          <div class="sectionBody">
+            <div class="propRow">
+              <label class="propLabel">文本内容</label>
+              <t-textarea v-model="subtitleText" :autosize="{ minRows: 3, maxRows: 6 }" @change="handleUpdateClip('text', subtitleText)" />
+            </div>
+            <div class="propRow">
+              <label class="propLabel">字体大小</label>
+              <t-input-number
+                v-model="subtitleFontSize"
+                size="small"
+                :min="12"
+                :max="72"
+                theme="normal"
+                suffix="px"
+                @change="handleUpdateClip('fontSize', subtitleFontSize)" />
             </div>
           </div>
         </div>
 
         <!-- 操作按钮 -->
         <div class="actions">
-          <button class="btn danger" @click="handleDeleteClip">🗑️ 删除 Clip</button>
-          <button class="btn" @click="handleDuplicateClip">📋 复制 Clip</button>
+          <t-button theme="default" variant="outline" block @click="handleDuplicateClip">
+            <template #icon><i-copy theme="outline" size="16" /></template>
+            复制
+          </t-button>
+          <t-button theme="danger" variant="text" block @click="handleDeleteClip">
+            <template #icon><i-delete theme="outline" size="16" /></template>
+            删除
+          </t-button>
         </div>
       </div>
     </div>
@@ -234,6 +224,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
 import { useTracksStore, useHistoryStore, type Clip } from "vue-clip-track";
+import { DialogPlugin } from "tdesign-vue-next";
 import { getClipIcon, getClipTypeName } from "./utils/clipMeta";
 
 const tracksStore = useTracksStore();
@@ -355,10 +346,16 @@ function handleUpdateTransitionDuration() {
 function handleDeleteClip() {
   if (!selectedClip.value) return;
 
-  if (confirm("确定要删除这个 Clip 吗？")) {
-    tracksStore.removeClips([selectedClip.value.id]);
-    historyStore.pushSnapshot("删除 Clip");
-  }
+  const dialog = DialogPlugin.confirm({
+    header: "删除确认",
+    body: "确定要删除这个 Clip 吗？",
+    onConfirm: () => {
+      tracksStore.removeClips([selectedClip.value!.id]);
+      historyStore.pushSnapshot("删除 Clip");
+      dialog.destroy();
+    },
+    onClose: () => dialog.destroy(),
+  });
 }
 
 function handleDuplicateClip() {
@@ -383,85 +380,84 @@ function handleDuplicateClip() {
 </script>
 
 <style scoped lang="scss">
+%flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .propertyPanel {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--color-bg-medium);
-  border-left: 1px solid var(--color-border);
+  background: #f5f5f5;
+  border: 1px solid #e8e8e8;
+  border-radius: 10px;
   overflow: hidden;
-  transition: background-color var(--transition-base);
 
   .panelHeader {
     flex-shrink: 0;
-    padding: 16px 12px 12px;
-    border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg-elevated);
+    padding: 14px 12px;
+    border-bottom: 1px solid #e8e8e8;
+    background: #fff;
 
     .panelTitle {
       margin: 0;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
-      color: var(--color-text-primary);
-      letter-spacing: -0.01em;
+      color: #333;
     }
   }
 
   .panelContent {
     flex: 1;
     overflow-y: auto;
-    padding: 12px;
+    padding: 10px;
 
     &::-webkit-scrollbar {
-      width: 6px;
-    }
-    &::-webkit-scrollbar-track {
-      background: transparent;
+      width: 4px;
     }
     &::-webkit-scrollbar-thumb {
-      background: var(--color-border);
-      border-radius: 3px;
-      &:hover {
-        background: var(--color-border-light);
-      }
+      background: #ddd;
+      border-radius: 2px;
     }
 
     .emptyState {
-      display: flex;
+      @extend %flex-center;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
       height: 100%;
-      gap: 16px;
+      gap: 12px;
 
-      .emptyIcon {
-        font-size: 56px;
-        opacity: 0.2;
-        filter: grayscale(1);
+      .emptyIconWrapper {
+        width: 64px;
+        height: 64px;
+        @extend %flex-center;
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #e8e8e8;
       }
 
       .emptyText {
         font-size: 13px;
-        color: var(--color-text-tertiary);
-        text-align: center;
-        line-height: 1.5;
+        color: #999;
       }
     }
 
     .properties {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
 
-      .section {
-        background: var(--color-bg-light);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-lg);
+      .sectionCard {
+        background: #fff;
+        border: 1px solid transparent;
+        border-radius: 12px;
         overflow: hidden;
-        transition: all var(--transition-fast);
+        transition: all 0.2s;
 
         &:hover {
-          box-shadow: var(--shadow-sm);
+          border-color: #000000;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
         }
 
         .sectionHeader {
@@ -469,205 +465,88 @@ function handleDuplicateClip() {
           align-items: center;
           gap: 8px;
           padding: 10px 12px;
-          background: var(--color-bg-lighter);
-          border-bottom: 1px solid var(--color-border);
+          border-bottom: 1px solid #f5f5f5;
 
-          .sectionIcon {
-            font-size: 16px;
-            line-height: 1;
+          .sectionIconBadge {
+            width: 28px;
+            height: 28px;
+            @extend %flex-center;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 8px;
+            flex-shrink: 0;
+            color: #000000;
           }
 
-          .sectionTitle {
-            font-size: 12px;
+          .sectionLabel {
+            flex: 1;
+            font-size: 13px;
             font-weight: 600;
-            color: var(--color-text-primary);
-            letter-spacing: -0.01em;
+            color: #333;
           }
         }
 
-        .sectionContent {
+        .sectionBody {
           padding: 12px;
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 12px;
+        }
+      }
 
-          .row {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+      .propRow {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
 
-            .label {
-              font-size: 12px;
-              font-weight: 500;
-              color: var(--color-text-secondary);
-              line-height: 1;
-            }
+      .propRowHead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-            .inputGroup {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-            }
+      .propRowInline {
+        display: flex;
+        gap: 10px;
 
-            .unit {
-              font-size: 12px;
-              color: var(--color-text-tertiary);
-              white-space: nowrap;
-              font-weight: 500;
-            }
+        .propField {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          min-width: 0;
+        }
+      }
 
-            .propValue {
-              font-size: 13px;
-              color: var(--color-text-secondary);
-              padding: 8px 10px;
-              background: var(--color-bg-dark);
-              border-radius: var(--radius-md);
-              border: 1px solid var(--color-border);
+      .propLabel {
+        font-size: 12px;
+        font-weight: 500;
+        color: #999;
+        line-height: 1;
+      }
 
-              &.highlight {
-                color: var(--color-primary);
-                font-weight: 600;
-                border-color: var(--color-primary);
-                background: hsla(var(--theme-hue), var(--theme-saturation), var(--theme-lightness), 0.08);
-              }
-            }
+      .propValueText {
+        font-size: 12px;
+        font-weight: 600;
+        color: #333;
+        font-variant-numeric: tabular-nums;
+      }
 
-            .sliderGroup {
-              display: flex;
-              align-items: center;
-              gap: 10px;
+      .durationRow {
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 4px;
+        border-top: 1px dashed #f0f0f0;
 
-              .slider {
-                flex: 1;
-                height: 4px;
-                -webkit-appearance: none;
-                appearance: none;
-                background: var(--color-border);
-                border-radius: 2px;
-                outline: none;
-                cursor: pointer;
-
-                &::-webkit-slider-thumb {
-                  -webkit-appearance: none;
-                  appearance: none;
-                  width: 16px;
-                  height: 16px;
-                  background: var(--color-primary);
-                  border: 2px solid white;
-                  border-radius: 50%;
-                  cursor: pointer;
-                  transition: all var(--transition-fast);
-                  box-shadow: var(--shadow-md);
-
-                  &:hover {
-                    transform: scale(1.15);
-                    box-shadow: var(--shadow-lg);
-                  }
-                }
-
-                &::-moz-range-thumb {
-                  width: 16px;
-                  height: 16px;
-                  background: var(--color-primary);
-                  border: 2px solid white;
-                  border-radius: 50%;
-                  cursor: pointer;
-                  transition: all var(--transition-fast);
-                  box-shadow: var(--shadow-md);
-
-                  &:hover {
-                    transform: scale(1.15);
-                    box-shadow: var(--shadow-lg);
-                  }
-                }
-              }
-
-              .sliderValue {
-                font-size: 12px;
-                font-weight: 600;
-                color: var(--color-text-primary);
-                min-width: 45px;
-                text-align: right;
-                font-family: "Courier New", monospace;
-              }
-            }
-          }
-
-          .propInput,
-          .propSelect,
-          .propTextarea {
-            width: 100%;
-            padding: 8px 10px;
-            background: var(--color-bg-dark);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-md);
-            color: var(--color-text-primary);
-            font-size: 13px;
-            font-family: inherit;
-            transition: all var(--transition-fast);
-
-            &:hover {
-              border-color: var(--color-border-light);
-            }
-
-            &:focus {
-              outline: none;
-              border-color: var(--color-primary);
-              background: var(--color-bg-medium);
-              box-shadow: 0 0 0 2px hsla(var(--theme-hue), var(--theme-saturation), var(--theme-lightness), 0.1);
-            }
-
-            &.small {
-              width: auto;
-              flex: 1;
-            }
-          }
+        .durationLabel {
+          font-size: 12px;
+          color: #999;
         }
       }
 
       .actions {
         display: flex;
-        flex-direction: column;
         gap: 8px;
-        margin-top: 4px;
-
-        .btn {
-          padding: 10px 14px;
-          background: var(--color-bg-light);
-          border: 1px solid var(--color-border);
-          border-radius: var(--radius-lg);
-          color: var(--color-text-primary);
-          font-size: 13px;
-          font-weight: 400;
-          cursor: pointer;
-          transition: all var(--transition-fast);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-
-          &:hover {
-            background: var(--color-bg-lighter);
-            border-color: var(--color-primary);
-            color: var(--color-primary);
-            box-shadow: var(--shadow-sm);
-          }
-
-          &:active {
-            transform: scale(0.98);
-          }
-
-          &.danger {
-            color: var(--color-danger);
-            border-color: transparent;
-
-            &:hover {
-              background: rgba(255, 77, 79, 0.1);
-              border-color: var(--color-danger);
-              color: var(--color-danger);
-            }
-          }
-        }
       }
     }
   }

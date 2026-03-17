@@ -37,7 +37,9 @@
         :initial-tracks="mockTracks"
         :initial-media-items="mockMediaItems"
         :initial-audio-items="mockAudioItems"
-        :initial-image-items="mockImageItems" />
+        :initial-image-items="mockImageItems"
+        :canvas-width="canvasWidth"
+        :canvas-height="canvasHeight" />
     </div>
   </t-dialog>
 </template>
@@ -54,6 +56,10 @@ const visible = defineModel("visible", {
 });
 
 const activeMenu = ref("editVideo");
+
+// 画布尺寸配置
+const canvasWidth = ref(1920);
+const canvasHeight = ref(1080);
 
 // ============ 演示数据（可替换为在线资源地址） ============
 
