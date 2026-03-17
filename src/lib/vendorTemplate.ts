@@ -35,7 +35,15 @@ interface VideoModel {
   audio: "optional" | false | true; // 音频配置
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
 }
-
+interface TTSModel {
+  name: string; // 显示名称
+  modelName: string;
+  type: "tts";
+  voices: {
+    title: string; //显示名称
+    voice: string; //说话人
+  }[];
+}
 // 供应商配置
 interface VendorConfig {
   version: number;
@@ -482,3 +490,15 @@ const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) =>
   }
 };
 exports.videoRequest = videoRequest;
+
+interface TTSConfig {
+  text: string;
+  voice: string;
+  speechRate: number;
+  pitchRate: number;
+  volume: number;
+}
+const ttsRequest = async (ttsConfig: TTSConfig, ttsModel: TTSModel) => {
+  return null;
+};
+exports.ttsRequest = ttsRequest;

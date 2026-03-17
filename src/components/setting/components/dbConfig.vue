@@ -45,12 +45,11 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import axios from "@/utils/axios";
-
+import { LoadingPlugin } from 'tdesign-vue-next';
 const firstConfirmVisible = ref(false);
 const secondConfirmVisible = ref(false);
 const confirmInput = ref("");
 const currentAction = ref<"deleteAll" | null>(null);
-
 const confirmConfigs = {
   deleteAll: {
     title: "清空数据库",
@@ -87,13 +86,14 @@ async function handleSecondConfirm() {
   if (!canConfirm.value) return;
 
   secondConfirmVisible.value = false;
-
+  LoadingPlugin(true);
   try {
-    await axios.post("/other/deleteAllData");
+    await axios.get("/setting/dbConfig/clearData");
     window.$message.success("所有数据表已清空");
   } catch {
     window.$message.error("操作失败，请重试");
   } finally {
+      LoadingPlugin(false);
     currentAction.value = null;
     confirmInput.value = "";
   }
