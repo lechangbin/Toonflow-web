@@ -12,10 +12,6 @@ import "./assets/main.scss";
 
 import "@/utils/global";
 
-import { createRoot } from "react-dom/client";
-import { setVeauryOptions } from "veaury";
-setVeauryOptions({ react: { createRoot } });
-
 const app = createApp(App);
 install(app, "i");
 app.use(createPinia().use(piniaPluginPersistedstate));

@@ -102,6 +102,11 @@ body,
     height: 100% !important;
   }
 }
+.fullscreenDialog {
+  .t-dialog__wrap {
+    overflow: hidden !important;
+  }
+}
 
 :root,
 :root[theme-mode="light"] {

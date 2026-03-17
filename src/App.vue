@@ -38,6 +38,16 @@ watch(
   },
   { immediate: true, deep: true },
 );
+
+onBeforeMount(() => {
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "F8") {
+      event.preventDefault();
+      debugger;
+    }
+  });
+});
+
 // 初始化主题
 onMounted(() => {
   initTheme();
@@ -62,8 +72,10 @@ const customConfig: GlobalConfigProvider = {
 const globalConfig: GlobalConfigProvider = merge(empty, zhConfig, customConfig);
 
 // document.documentElement.setAttribute('theme-mode', 'dark');
-// document.documentElement.setAttribute('theme-mode', 'light');
+onBeforeMount(() => {
+  document.documentElement.setAttribute("theme-mode", "light");
+  document.documentElement.setAttribute("data-theme", "light");
+});
 </script>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>
