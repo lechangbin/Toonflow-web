@@ -17,7 +17,7 @@
       </template>
 
       <template #node-generated="{ id, data }">
-        <generatedNode :id="id" :data="data" @generate="handleGenerate" />
+        <generatedNode :id="id" :data="data" />
       </template>
       <template #edge-removeLine="edgeProps">
         <removeLine v-bind="edgeProps" />
@@ -63,7 +63,7 @@ const nodes = ref([
     type: "upload",
     position: { x: 100, y: 100 },
     data: {
-      image: "https://picsum.photos/300/200?random=1",
+      image: "https://tdesign.gtimg.com/demo/demo-image-1.png",
     },
   },
   {
@@ -71,7 +71,7 @@ const nodes = ref([
     type: "upload",
     position: { x: 100, y: 400 },
     data: {
-      image: "https://picsum.photos/300/400?random=2",
+      image: "https://tdesign.gtimg.com/demo/demo-image-1.png",
     },
   },
   {
@@ -80,7 +80,7 @@ const nodes = ref([
     position: { x: 500, y: 200 },
     data: {
       generatedImage: "https://picsum.photos/400/300?random=3",
-      references: [{ image: "https://picsum.photos/60/60?random=4" }, { image: "https://picsum.photos/60/60?random=5" }],
+      references: [{ image: "https://tdesign.gtimg.com/demo/demo-image-1.png" }, { image: "https://tdesign.gtimg.com/demo/demo-image-1.png" }],
       prompt: "将图二左侧的人换成图1",
       model: "banana-pro",
       ratio: "16:9",
@@ -137,12 +137,6 @@ const addUploadNode = () => {
       image: `https://picsum.photos/300/200?random=${nodeIdCounter}`,
     },
   });
-};
-
-// 处理生成
-const handleGenerate = (id: string) => {
-  console.log("Generate for node:", id);
-  // TODO: 实现生成逻辑
 };
 </script>
 
