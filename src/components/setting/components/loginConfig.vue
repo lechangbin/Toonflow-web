@@ -49,7 +49,7 @@ const formRules: FormRules<UserForm> = {
 
 async function fetchUserInfo() {
   try {
-    const res = await axios.get("/user/getUser");
+    const res = await axios.get("/setting/loginConfig/getUser");
     formData.value = {
       id: res.data.id ?? null,
       name: res.data.name ?? "",
@@ -63,7 +63,7 @@ async function fetchUserInfo() {
 async function saveUserInfo() {
   loading.value = true;
   try {
-    await axios.post("/user/saveUser", formData.value);
+    await axios.post("/setting/loginConfig/updateUserPwd", formData.value);
     window.$message.success("保存成功");
     await fetchUserInfo();
   } catch (error) {

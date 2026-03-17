@@ -37,6 +37,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { DialogPlugin, MessagePlugin } from "tdesign-vue-next";
+import axios from "@/utils/axios";
 
 interface MemoryConfigForm {
   shortTermMemoryLength: number;
@@ -63,6 +64,12 @@ const clearing = ref(false);
 async function getMemoryConfig() {
   loading.value = true;
   try {
+    const { data } = await axios.get("/setting/memoryConfig/getMemory");
+    formData.value = {
+      shortTermMemoryLength: data.shortTermMemoryLength ?? 10,
+      searchTopK: data.searchTopK ?? 3,
+      similarityThreshold: data.similarityThreshold ?? 0.3,
+    };
   } catch (error: any) {
     MessagePlugin.warning(error?.message);
   } finally {
@@ -73,6 +80,10 @@ async function getMemoryConfig() {
 async function handleSave() {
   saving.value = true;
   try {
+    await axios.post("/setting/memoryConfig/sureMemory", {
+      ...formData.value,
+    });
+
     MessagePlugin.success("记忆配置已保存");
   } catch (error: any) {
     MessagePlugin.warning(error?.message);
