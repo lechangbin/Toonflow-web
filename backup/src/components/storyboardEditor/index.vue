@@ -265,6 +265,7 @@ async function lensImage() {
   if (!files?.length) return;
 
   const file = files[0];
+  console.log("%c Line:268 🌮 file", "background:#42b983", file);
   //转成base64显示
   const reader = new FileReader();
   reader.onload = () => {
