@@ -459,7 +459,6 @@ const flowData = ref({
     position: { x: 2100, y: 24 },
     connectTo: "poster",
     name: "第2集 - 真相大白",
-    status: "渲染中",
     duration: "01:03",
     resolution: "1920×1080",
     fps: "30fps",

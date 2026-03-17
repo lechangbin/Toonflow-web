@@ -79,7 +79,6 @@ interface WorkbenchData {
   position: { x: number; y: number };
   connectTo?: string | null;
   name: string;
-  status: string;
   duration: string;
   resolution: string;
   fps: string;
@@ -186,7 +185,6 @@ export function useFlowBuilder(flowData: Ref<FlowData>) {
       position: data.workbench.position,
       data: {
         name: data.workbench.name,
-        status: data.workbench.status,
         duration: data.workbench.duration,
         resolution: data.workbench.resolution,
         fps: data.workbench.fps,

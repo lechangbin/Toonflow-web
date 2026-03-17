@@ -4,13 +4,12 @@
     <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar">
       <div class="title">视频工作台</div>
-      <t-tag theme="success" size="small">{{ props.data.status }}</t-tag>
     </div>
     <div class="videoPreview">
       <div class="videoPlaceholder" :style="{ background: props.data.gradient }">
         <t-image v-if="props.data.cover" :src="props.data.cover" fit="cover" class="videoCover" />
         <div class="playButton">
-          <t-icon name="play-circle" size="48px" />
+          <i-video theme="outline" size="48" />
         </div>
       </div>
       <div class="videoInfo">
@@ -24,20 +23,6 @@
         </div>
       </div>
     </div>
-    <div class="actionBar">
-      <t-button theme="primary" size="small">
-        <template #icon><t-icon name="play" /></template>
-        预览
-      </t-button>
-      <t-button variant="outline" size="small">
-        <template #icon><t-icon name="download" /></template>
-        导出
-      </t-button>
-      <t-button variant="outline" size="small">
-        <template #icon><t-icon name="edit" /></template>
-        编辑
-      </t-button>
-    </div>
     <workbench v-model:visible="visible" v-if="visible" />
   </t-card>
 </template>
@@ -46,13 +31,12 @@
 import workbench from "../components/workbench/index.vue";
 import { Handle, Position } from "@vue-flow/core";
 
-const visible = ref(true);
+const visible = ref(false);
 
 const props = defineProps<{
   id: string;
   data: {
     name: string;
-    status: string;
     duration: string;
     resolution: string;
     fps: string;
@@ -138,11 +122,6 @@ const props = defineProps<{
       margin: 0 6px;
       color: var(--td-border-level-1-color, #ddd);
     }
-  }
-
-  .actionBar {
-    display: flex;
-    gap: 8px;
   }
 }
 </style>

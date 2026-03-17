@@ -82,7 +82,7 @@ const tagColors = ["#9c7cfc", "#5b9afc", "#5bccb3", "#e8a855", "#e86b6b", "#7cb8
 
 <style lang="scss" scoped>
 .storyboardTable {
-  max-width: 100vw;
+  max-width: 40vw;
   width: fit-content;
   min-width: 300px;
 
