@@ -53,23 +53,30 @@
       <!-- 右侧信息面板 -->
       <div class="infoPanel">
         <div class="infoSection">
-          <div class="sectionTitle"><span class="titleIndicator" />分镜描述</div>
+          <div class="sectionTitle">
+            <span class="titleIndicator" />
+            分镜描述
+          </div>
           <div class="sectionContent">【序号 {{ currentShotIndex + 1 }}】{{ currentShot?.description || "暂无描述" }}</div>
         </div>
 
         <div class="infoSection">
-          <div class="sectionTitle"><span class="titleIndicator" />时长</div>
+          <div class="sectionTitle">
+            <span class="titleIndicator" />
+            时长
+          </div>
           <div class="sectionContent">{{ currentShot?.duration || "3 秒" }}</div>
         </div>
 
         <div class="infoSection">
-          <div class="sectionTitle"><span class="titleIndicator" />涉及资产</div>
+          <div class="sectionTitle">
+            <span class="titleIndicator" />
+            涉及资产
+          </div>
           <div class="characterList">
             <div v-for="(char, index) in currentCharacters" :key="index" class="characterItem">
               <t-image :src="char.avatar" fit="cover" class="characterAvatar" :style="{ width: '80px', height: '80px', borderRadius: '8px' }" />
-              <div class="characterInfo">
-                <span class="characterName">{{ char.name }}（{{ char.role }}）</span>
-              </div>
+              <t-tag>{{ char.name }}（{{ char.role }}）</t-tag>
             </div>
             <div v-if="!currentCharacters.length" class="noCharacter">
               <t-tag theme="default" variant="light">暂无出场人物</t-tag>
@@ -79,7 +86,10 @@
         </div>
 
         <div class="infoSection">
-          <div class="sectionTitle"><span class="titleIndicator" />提示词</div>
+          <div class="sectionTitle">
+            <span class="titleIndicator" />
+            提示词
+          </div>
           <div class="shootingTips">
             <div v-if="currentCharacters.length" class="tipItem">
               <span class="tipLabel">出场人物：</span>
@@ -361,8 +371,12 @@ const goToShot = (index: number, shouldStopPlay = true) => {
   scrollToCurrentShot();
 };
 
-const prevShot = () => { if (!isFirstShot.value) goToShot(currentShotIndex.value - 1); };
-const nextShot = () => { if (!isLastShot.value) goToShot(currentShotIndex.value + 1); };
+const prevShot = () => {
+  if (!isFirstShot.value) goToShot(currentShotIndex.value - 1);
+};
+const nextShot = () => {
+  if (!isLastShot.value) goToShot(currentShotIndex.value + 1);
+};
 const jumpToShot = (index: number) => goToShot(index);
 const selectShot = (index: number) => goToShot(index);
 
@@ -540,9 +554,15 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
                 border-radius: 3px;
                 transition: background 0.2s;
                 z-index: 1;
-                &.completed { background: rgba(102, 126, 234, 0.15); }
-                &.active { background: rgba(102, 126, 234, 0.1); }
-                &:hover { background: rgba(102, 126, 234, 0.25); }
+                &.completed {
+                  background: rgba(102, 126, 234, 0.15);
+                }
+                &.active {
+                  background: var(--td-brand-color-10-5) !important;
+                }
+                &:hover {
+                  background: var(--td-brand-color-10-3);
+                }
               }
 
               .segmentDivider {
@@ -561,7 +581,7 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
                 top: 0;
                 left: 0;
                 height: 100%;
-                background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+                background: var(--td-brand-color-10);
                 border-radius: 3px;
                 z-index: 2;
                 transition: width 0.05s linear;
@@ -574,14 +594,18 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
                 width: 14px;
                 height: 14px;
                 background: #fff;
-                border: 2px solid #667eea;
+                border: 2px solid var(--td-brand-color-10-10);
                 border-radius: 50%;
                 transform: translate(-50%, -50%);
                 z-index: 4;
                 box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
-                transition: left 0.05s linear, transform 0.15s;
+                transition:
+                  left 0.05s linear,
+                  transform 0.15s;
                 pointer-events: none;
-                &:hover { transform: translate(-50%, -50%) scale(1.2); }
+                &:hover {
+                  transform: translate(-50%, -50%) scale(1.2);
+                }
               }
             }
           }
@@ -595,14 +619,21 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
       overflow-y: auto;
       padding-right: 8px;
 
-      &::-webkit-scrollbar { width: 4px; }
-      &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+      &::-webkit-scrollbar {
+        width: 4px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 2px;
+      }
 
       .infoSection {
         margin-bottom: 20px;
         padding-bottom: 16px;
         border-bottom: 1px solid #f0f0f0;
-        &:last-child { border-bottom: none; }
+        &:last-child {
+          border-bottom: none;
+        }
 
         .sectionTitle {
           display: flex;
@@ -616,7 +647,7 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
           .titleIndicator {
             width: 3px;
             height: 14px;
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            background: var(--td-brand-color-10);
             border-radius: 2px;
           }
         }
@@ -638,18 +669,14 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
             align-items: flex-start;
             gap: 8px;
 
-            .characterAvatar { border: 2px solid #e8e8e8; }
-
-            .characterName {
-              font-size: 12px;
-              color: #333;
-              background: rgba(102, 126, 234, 0.1);
-              padding: 4px 8px;
-              border-radius: 4px;
+            .characterAvatar {
+              border: 2px solid #e8e8e8;
             }
           }
 
-          .noCharacter { padding: 8px 0; }
+          .noCharacter {
+            padding: 8px 0;
+          }
         }
 
         .characterDesc {
@@ -668,7 +695,10 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
             font-size: 13px;
             color: #666;
             line-height: 1.6;
-            .tipLabel { color: #333; font-weight: 500; }
+            .tipLabel {
+              color: #333;
+              font-weight: 500;
+            }
           }
         }
       }
@@ -693,13 +723,20 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
         gap: 8px;
       }
 
-      .exportBtn { color: #667eea; }
+      .exportBtn {
+        color: var(--td-brand-color-10-10);
+      }
     }
 
     .shotListWrapper {
       overflow-x: auto;
-      &::-webkit-scrollbar { height: 6px; }
-      &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 3px; }
+      &::-webkit-scrollbar {
+        height: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #ddd;
+        border-radius: 3px;
+      }
 
       .shotList {
         display: flex;
@@ -717,7 +754,7 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
 
           &:hover,
           &.active {
-            border-color: #667eea;
+            border-color: var(--td-brand-color-10-10);
           }
 
           .shotCheckbox {
@@ -763,7 +800,7 @@ const onDragEnd = () => nextTick(() => (isDragging.value = false));
 .shotGhost {
   opacity: 0.5;
   background: #c8ebfb;
-  border: 2px dashed #667eea !important;
+  border: 2px dashed var(--td-brand-color-10-10) !important;
 }
 
 .shotDrag {

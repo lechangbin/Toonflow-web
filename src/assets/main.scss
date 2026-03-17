@@ -107,19 +107,18 @@ body,
     overflow: hidden !important;
   }
 }
-
 :root,
 :root[theme-mode="light"] {
-  --td-brand-color-1: #fdefff;
-  --td-brand-color-2: #f2daff;
-  --td-brand-color-3: #e3bdff;
-  --td-brand-color-4: #d098ff;
-  --td-brand-color-5: #bb6cff;
-  --td-brand-color-6: #9810fa;
-  --td-brand-color-7: #8200dd;
-  --td-brand-color-8: #5f00a3;
-  --td-brand-color-9: #410073;
-  --td-brand-color-10: #2c0051;
+  --td-brand-color-1: #f3f3f3;
+  --td-brand-color-2: #e3e3e3;
+  --td-brand-color-3: #c6c6c6;
+  --td-brand-color-4: #a9a9a9;
+  --td-brand-color-5: #8c8c8c;
+  --td-brand-color-6: #717171;
+  --td-brand-color-7: #595959;
+  --td-brand-color-8: #434343;
+  --td-brand-color-9: #303030;
+  --td-brand-color-10: #000000;
   --td-warning-color-1: #fff1e9;
   --td-warning-color-2: #ffd9c2;
   --td-warning-color-3: #ffb98c;
@@ -172,13 +171,13 @@ body,
   --td-font-gray-2: rgba(0, 0, 0, 0.6);
   --td-font-gray-3: rgba(0, 0, 0, 0.4);
   --td-font-gray-4: rgba(0, 0, 0, 0.26);
-  --td-brand-color: var(--td-brand-color-6);
+  --td-brand-color: var(--td-brand-color-10);
   --td-warning-color: var(--td-warning-color-5);
   --td-error-color: var(--td-error-color-6);
   --td-success-color: var(--td-success-color-5);
-  --td-brand-color-hover: var(--td-brand-color-5);
+  --td-brand-color-hover: var(--td-brand-color-9);
   --td-brand-color-focus: var(--td-brand-color-2);
-  --td-brand-color-active: var(--td-brand-color-7);
+  --td-brand-color-active: var(--td-brand-color-10);
   --td-brand-color-disabled: var(--td-brand-color-3);
   --td-brand-color-light: var(--td-brand-color-1);
   --td-brand-color-light-hover: var(--td-brand-color-2);
@@ -241,17 +240,18 @@ body,
   --td-scroll-track-color: #fff;
 }
 
+:root.dark,
 :root[theme-mode="dark"] {
-  --td-brand-color-1: #2c0051;
-  --td-brand-color-2: #410073;
-  --td-brand-color-3: #5f00a3;
-  --td-brand-color-4: #8200dd;
-  --td-brand-color-5: #9810fa;
-  --td-brand-color-6: #bb6cff;
-  --td-brand-color-7: #d098ff;
-  --td-brand-color-8: #e3bdff;
-  --td-brand-color-9: #f2daff;
-  --td-brand-color-10: #fdefff;
+  --td-brand-color-1: #000000;
+  --td-brand-color-2: #303030;
+  --td-brand-color-3: #434343;
+  --td-brand-color-4: #595959;
+  --td-brand-color-5: #717171;
+  --td-brand-color-6: #8c8c8c;
+  --td-brand-color-7: #a9a9a9;
+  --td-brand-color-8: #c6c6c6;
+  --td-brand-color-9: #e3e3e3;
+  --td-brand-color-10: #f3f3f3;
   --td-warning-color-1: #3b1700;
   --td-warning-color-2: #532300;
   --td-warning-color-3: #713300;

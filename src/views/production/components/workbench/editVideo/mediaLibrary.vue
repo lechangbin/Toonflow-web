@@ -358,7 +358,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #000000;
+          border-color: var(--td-brand-color-10);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -432,7 +432,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #000000;
+          border-color: var(--td-brand-color-10);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -480,7 +480,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #000000;
+          border-color: var(--td-brand-color-10);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -527,7 +527,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #000000;
+          border-color: var(--td-brand-color-10);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -574,7 +574,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #000000;
+          border-color: var(--td-brand-color-10);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -638,7 +638,7 @@ onMounted(() => {
         transition: all 0.2s;
 
         &:hover {
-          border-color: #000000;
+          border-color: var(--td-brand-color-10);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
         }
@@ -660,7 +660,7 @@ onMounted(() => {
           .textItemContent {
             font-size: 14px;
             font-weight: 600;
-            color: #000000;
+            color: var(--td-brand-color-10);
           }
         }
 

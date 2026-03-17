@@ -1,5 +1,5 @@
 <template>
-  <t-card class="workbench">
+  <t-card class="workbench" @click="visible = !visible">
     <Handle :id="props.data.handleIds.target" type="target" :position="Position.Left" />
     <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar">
