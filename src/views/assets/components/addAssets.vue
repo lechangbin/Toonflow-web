@@ -16,10 +16,10 @@
           <t-form-item label="名称" name="name">
             <t-input v-model="props.formData.name" placeholder="请输入名称"></t-input>
           </t-form-item>
-          <t-form-item label="描述" name="describe">
+          <t-form-item label="描述" name="describe" v-if="props.type !== '剪辑素材'">
             <t-textarea v-model="props.formData.describe" placeholder="请输入描述"></t-textarea>
           </t-form-item>
-          <t-form-item label="备注" name="remark">
+          <t-form-item label="备注" name="remark" v-if="props.type !== '剪辑素材'">
             <t-input v-model="props.formData.remark" placeholder="请输入备注"></t-input>
           </t-form-item>
         </t-form>
@@ -51,9 +51,6 @@ const rules = ref<{}>({
   describe: [{ required: true, message: "请输入详情", trigger: "blur" }],
   remark: [{ required: true, message: "请输入备注", trigger: "blur" }],
 });
-function closeModal(): void {
-  addAssetsShow.value = false;
-}
 function handleCancel() {
   addAssetsShow.value = false;
 }

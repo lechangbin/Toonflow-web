@@ -19,7 +19,7 @@
                   </template>
                   新增{{ item.name }}
                 </t-button>
-                <t-button theme="primary" @click="handleBatchGenerate">
+                <t-button theme="primary" @click="handleBatchGenerate" v-if="assetOptions != 'clip'">
                   <template #icon>
                     <t-icon name="indent-left" />
                   </template>
@@ -38,11 +38,9 @@
                 </template>
               </t-input>
             </div>
-            <div v-if="tableData.length === 0" class="emptyState">
-              <t-empty />
-            </div>
-            <div v-else class="assetsList f w">
+            <div class="assetsList f w">
               <t-table
+                v-if="assetOptions !== 'clip'"
                 :columns="columns"
                 :data="tableData"
                 :selected-row-keys="selectedRowKeys"
@@ -148,6 +146,40 @@
                   </t-space>
                 </template>
               </t-table>
+              <t-table
+                v-if="assetOptions == 'clip'"
+                :columns="clipColumns"
+                :data="tableData"
+                :selected-row-keys="selectedRowKeys"
+                :expanded-row-keys="expandedRowKeys"
+                row-key="id"
+                hover
+                stripe
+                size="small"
+                :pagination="pagination"
+                :loading="loading"
+                lazy-load
+                table-layout="fixed"
+                @select-change="handleSelectChange"
+                @expand-change="handleExpandChange"
+                @page-change="handlePageChange">
+                <template #operation="{ row }">
+                  <t-space :size="0">
+                    <t-button theme="primary" variant="text" @click="handleEdit(row)">
+                      <template #icon>
+                        <t-icon name="edit" />
+                      </template>
+                      编辑
+                    </t-button>
+                    <t-button theme="danger" variant="text" @click="handleDelete(row)">
+                      <template #icon>
+                        <t-icon name="delete" />
+                      </template>
+                      删除
+                    </t-button>
+                  </t-space>
+                </template>
+              </t-table>
             </div>
           </div>
         </t-tab-panel>
@@ -161,6 +193,7 @@
 
 <script setup lang="ts">
 import dayjs from "dayjs";
+import { useFileDialog } from "@vueuse/core";
 import axios from "@/utils/axios";
 import type { TabValue, TableProps } from "tdesign-vue-next";
 import addAssets from "./components/addAssets.vue";
@@ -209,6 +242,11 @@ const themeData = ref([
     value: "scene",
     icon: "i-landscape",
   },
+  {
+    name: "剪辑素材",
+    value: "clip",
+    icon: "i-editing",
+  },
 ]);
 async function getFilteredData(type: string) {
   try {
@@ -241,6 +279,8 @@ async function loadCurrentTabData() {
     type = "道具";
   } else if (assetOptions.value === "scene") {
     type = "场景";
+  } else if (assetOptions.value === "clip") {
+    type = "剪辑素材";
   }
   await getFilteredData(type);
 }
@@ -252,6 +292,8 @@ function selectAssetOptions(value: TabValue) {
     activeTab.value = "道具";
   } else if (value === "scene") {
     activeTab.value = "场景";
+  } else if (value === "clip") {
+    activeTab.value = "剪辑素材";
   }
   searchText.value = "";
   selectedRowKeys.value = [];
@@ -259,23 +301,44 @@ function selectAssetOptions(value: TabValue) {
   pagination.value.page = 1;
   loadCurrentTabData();
 }
-const formData = ref<{ id: number; name: string; describe: string; remark: string }>({
+const formData = ref<{ id: number; name: string; describe: string; remark: string; filePath?: string }>({
   id: 0,
   name: "",
   describe: "",
   remark: "",
+  filePath: "",
 });
 const addAssetsShow = ref(false);
 // 新增
-function handleAdd(type: string) {
-  activeTab.value = type;
-  formData.value = {
-    id: 0,
-    name: "",
-    describe: "",
-    remark: "",
-  };
-  addAssetsShow.value = true;
+// 文件选择
+const { open, onChange, onCancel } = useFileDialog({ multiple: false, reset: true, accept: ".png,.jpg,.jpeg,.map3,.mp4" });
+async function handleAdd(type: string) {
+  if (type === "剪辑素材") {
+    const files = await new Promise<FileList | null>((resolve) => {
+      open();
+      onChange((f) => resolve(f));
+      onCancel(() => resolve(null));
+    });
+    if (!files?.length) return;
+
+    const file = files[0];
+    console.log("%c Line:308 🥃 file", "background:#3f7cff", file);
+    const reader = new FileReader();
+    reader.onload = () => {
+      console.log("%c Line:311 🌰 reader", "background:#42b983", reader);
+      const base64 = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    addAssetsShow.value = true;
+    activeTab.value = type;
+    formData.value = {
+      id: 0,
+      name: "",
+      describe: "",
+      remark: "",
+    };
+  }
 }
 const batchGenerationShow = ref(false);
 // 批量生成
@@ -404,6 +467,48 @@ const subColumns: TableProps["columns"] = [
     cell: "operation",
   },
 ];
+
+//剪辑表格列配置
+const clipColumns: TableProps["columns"] = [
+  { colKey: "row-select", type: "multiple", width: 50, align: "center", fixed: "left" },
+  {
+    colKey: "name",
+    title: "名称",
+    width: 200,
+    align: "left",
+    ellipsis: true,
+  },
+  {
+    colKey: "describe",
+    title: "描述",
+    width: 200,
+    align: "left",
+    ellipsis: true,
+  },
+  {
+    colKey: "remark",
+    title: "备注",
+    minWidth: 200,
+    align: "left",
+    ellipsis: true,
+  },
+  {
+    colKey: "startTime",
+    title: "创建时间",
+    width: 200,
+    align: "center",
+    cell: "startTime",
+  },
+  {
+    colKey: "operation",
+    title: "操作",
+    width: 180,
+    align: "center",
+    fixed: "right",
+    cell: "operation",
+  },
+];
+
 // 选择行
 function handleSelectChange(value: Array<string | number>) {
   selectedRowKeys.value = value;
@@ -497,10 +602,6 @@ function handleDelete(row: any) {
         align-items: center;
         margin-bottom: 16px;
         padding-bottom: 16px;
-      }
-      .emptyState {
-        padding: 40px 0;
-        text-align: center;
       }
       .assetsList {
         .expandedContent {

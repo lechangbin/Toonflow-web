@@ -15,28 +15,20 @@
             height: '100%',
             borderRadius: '10px',
           }" />
-        <div class="upload ac">
-          <t-upload
-            ref="referenceUploadRef"
-            action=""
-            v-model="referenceFileList"
-            :autoUpload="false"
-            theme="custom"
-            accept="image/*"
-            :max="1"
-            @change="handleReferenceChange"
-            :formatResponse="formatResponse"
-            :showImageFileName="true"></t-upload>
+        <div class="upload ac" @click="uploadFn">
+          <i-upload theme="outline" size="18" fill="#fff" />
+          <span style="margin-left: 5px; color: #fff">上传</span>
         </div>
       </div>
     </div>
   </div>
+  <AssetsData v-model="assetsDataShow" @confirmSelection="confirmSelection" />
 </template>
 
 <script setup lang="ts">
 import { Handle, Position, useVueFlow } from "@vue-flow/core";
 import { onBeforeUnmount, ref, watch } from "vue";
-
+import AssetsData from "./assetsData.vue";
 const props = defineProps<{
   id: string;
   data: {
@@ -44,8 +36,6 @@ const props = defineProps<{
   };
 }>();
 
-const { nodes } = useVueFlow();
-const referenceFileList = ref<any[]>([]);
 const currentImageUrl = ref(props.data?.image || "");
 const currentObjectUrl = ref<string | null>(null);
 
@@ -56,70 +46,18 @@ watch(
   },
 );
 
-function updateNodeImage(url: string) {
-  currentImageUrl.value = url;
-  if (!nodes?.value) return;
-
-  nodes.value = nodes.value.map((node: any) => {
-    if (node.id === props.id) {
-      return {
-        ...node,
-        data: {
-          ...node.data,
-          image: url,
-        },
-      };
-    }
-    return node;
-  });
-}
-
-function handleReferenceChange(files: any[]): void {
-  referenceFileList.value = files;
-  if (!files || !files.length) return;
-
-  const file = files[0]?.raw || files[0];
-  if (!file) return;
-
-  // 验证文件类型
-  if (file.type && !file.type.startsWith("image/")) {
-    MessagePlugin.warning("请上传图片文件");
-    return;
-  }
-
-  // 验证文件大小(限制 10MB)
-  if (file.size && file.size > 10 * 1024 * 1024) {
-    MessagePlugin.warning("图片大小不能超过 10MB");
-    return;
-  }
-
-  const url = URL.createObjectURL(file);
-  if (currentObjectUrl.value) {
-    URL.revokeObjectURL(currentObjectUrl.value);
-  }
-  currentObjectUrl.value = url;
-  updateNodeImage(url);
-}
-
 onBeforeUnmount(() => {
   if (currentObjectUrl.value) {
     URL.revokeObjectURL(currentObjectUrl.value);
   }
 });
-
-// 文件上传处理
-function formatResponse(res: any) {
-  if (res.status === "fail") {
-    MessagePlugin.error("上传失败");
-    return {
-      success: false,
-    };
-  }
-  MessagePlugin.success("上传成功");
-  return {
-    success: true,
-    url: res.data.url,
-  };
+const assetsDataShow = ref(false);
+function uploadFn() {
+  assetsDataShow.value = true;
+}
+//确认选中
+function confirmSelection(selectedAssets: string) {
+  console.log("%c Line:60 🌽 selectedAssets", "background:#7f2b82", selectedAssets);
 }
 </script>
 
@@ -148,6 +86,9 @@ function formatResponse(res: any) {
         top: 10px;
         right: 10px;
         z-index: 9999;
+        padding: 5px 10px;
+        border-radius: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
       }
     }
   }
