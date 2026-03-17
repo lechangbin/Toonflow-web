@@ -43,6 +43,7 @@
                 @mousedown.prevent="selectReference(index)">
                 <t-image :src="item.image" fit="cover" class="ref-popup-img" />
                 <span class="reference-label">图{{ index + 1 }}</span>
+                <span class="ref-index-badge">#{{ index + 1 }}</span>
               </div>
               <div v-if="!data.references?.length" class="no-references">暂无可引用的图片</div>
             </div>
@@ -72,7 +73,9 @@
 </template>
 
 <script setup lang="ts">
+import { h, render } from "vue";
 import { Handle, Position } from "@vue-flow/core";
+import { Popup, Tag } from "tdesign-vue-next";
 
 const selected = ref(false);
 const editorRef = ref<HTMLDivElement | null>(null);
@@ -185,11 +188,9 @@ function handleKeydown(e: KeyboardEvent) {
 function selectReference(index: number) {
   if (!editorRef.value || !savedRange) return;
 
-  // 找到光标所在文本节点，从最后一个 @ 开始删除
   const sel = window.getSelection();
   if (!sel) return;
 
-  // 恢复到触发 @ 时的范围
   const range = savedRange.cloneRange();
   const textNode = range.startContainer as Text;
   const cursorOffset = range.startOffset;
@@ -198,37 +199,44 @@ function selectReference(index: number) {
 
   if (lastAt === -1) return;
 
-  // 删除从 @ 到当前光标之间的文本（含 @）
   const deleteRange = document.createRange();
   deleteRange.setStart(textNode, lastAt);
   deleteRange.setEnd(textNode, cursorOffset);
   deleteRange.deleteContents();
 
-  // 创建 tag span 节点（图标 + 文字）
-  const tag = document.createElement("span");
-  tag.className = "reference-tag";
-  tag.contentEditable = "false";
-  tag.dataset.refIndex = String(index);
+  const container = document.createElement("span");
+  container.contentEditable = "false";
+  container.dataset.refIndex = String(index);
 
-  // 图标：使用 SVG 内联（iconpark pic outline）
-  const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" viewBox="0 0 48 48" fill="none" style="display:inline-block;vertical-align:middle;flex-shrink:0">
-    <rect x="6" y="6" width="36" height="36" rx="3" ry="3" stroke="currentColor" stroke-width="3" fill="none"/>
-    <circle cx="18" cy="18" r="4" stroke="currentColor" stroke-width="3" fill="none"/>
-    <path d="M6 32l10-10 8 8 6-6 12 12" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  </svg>`;
-  tag.innerHTML = iconSvg + `Image ${index + 1}`;
+  const imgSrc = props.data.references?.[index]?.image ?? "";
+  container.dataset.imgSrc = imgSrc;
 
-  // 在光标处插入 tag
+  const vnode = h(
+    Popup,
+    {
+      content: () =>
+        h("img", {
+          src: imgSrc,
+          style: { width: "200px", borderRadius: "8px", display: "block" },
+          alt: "",
+        }),
+      placement: "top",
+    },
+    {
+      default: () => [h("div", { class: "tag" }, [h("img", { src: imgSrc, alt: "" }), h("span", null, `图${index + 1}`)])],
+    },
+  );
+
+  render(vnode, container);
+
   const insertRange = document.createRange();
   insertRange.setStart(textNode, lastAt);
   insertRange.collapse(true);
-  insertRange.insertNode(tag);
+  insertRange.insertNode(container);
 
-  // 在 tag 后插入零宽空格，供光标停留
   const space = document.createTextNode("\u200B");
-  tag.after(space);
+  container.after(space);
 
-  // 将光标移到零宽空格后
   const newRange = document.createRange();
   newRange.setStart(space, 1);
   newRange.collapse(true);
@@ -269,10 +277,10 @@ function handleBlur() {
 // 生成
 function handleGenerate() {
   generating.value = true;
-  //拿到 prompt、model、ratio、quality 等参数，调用接口生成图片，接口返回后更新 data.generatedImage
   console.log("%c Line:263 🎂 props.data", "background:#2eafb0", props.data);
   setTimeout(() => {
     generating.value = false;
+    props.data.generatedImage = "https://tdesign.gtimg.com/demo/demo-image-1.png";
   }, 3000);
 }
 </script>
@@ -397,6 +405,7 @@ function handleGenerate() {
         word-break: break-all;
         margin-left: 5px;
         margin-top: 5px;
+        margin-top: 10px;
         cursor: text;
 
         &:empty::before {
@@ -409,48 +418,80 @@ function handleGenerate() {
       .references-popup {
         position: absolute;
         z-index: 99999;
-        min-width: 160px;
-        max-height: 200px;
+        min-width: 180px;
+        max-height: 220px;
         overflow-y: auto;
         background: #fff;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        border: 1px solid #e8e8e8;
+        border-radius: 10px;
+        box-shadow:
+          0 8px 24px rgba(0, 0, 0, 0.12),
+          0 2px 6px rgba(0, 0, 0, 0.06);
+        backdrop-filter: blur(4px);
 
         .references-list {
-          padding: 4px 0;
+          padding: 6px;
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
         }
 
         .reference-item {
           display: flex;
           align-items: center;
-          padding: 8px 12px;
+          padding: 6px 8px;
           cursor: pointer;
-          transition: background-color 0.2s;
+          border-radius: 7px;
+          transition: background-color 0.15s ease;
+          gap: 8px;
+
+          &:hover {
+            background-color: #f5f5f5;
+          }
 
           &.active {
-            background-color: #f0faf8;
+            background-color: #edfaf7;
+            box-shadow: inset 0 0 0 1px rgba(91, 204, 179, 0.3);
           }
 
           .ref-popup-img {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border-radius: 6px;
+            flex-shrink: 0;
+            border: 1px solid #efefef;
           }
 
           .reference-label {
-            margin-left: 10px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             color: #333;
+            flex: 1;
+          }
+
+          .ref-index-badge {
+            font-size: 11px;
+            color: #aaa;
+            background: #f0f0f0;
+            border-radius: 4px;
+            padding: 1px 5px;
           }
         }
 
         .no-references {
-          padding: 12px;
+          padding: 16px 12px;
           text-align: center;
-          color: #999;
+          color: #bbb;
           font-size: 13px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+
+          &::before {
+            font-size: 20px;
+            opacity: 0.5;
+          }
         }
       }
     }
@@ -484,28 +525,40 @@ function handleGenerate() {
     transform: rotate(360deg);
   }
 }
-:deep(.reference-tag) {
+:deep(.tag) {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: #e6f7f4;
-  color: #3aaa91;
-  border: 1px solid #b2e5da;
-  border-radius: 999px;
-  padding: 1px 6px 1px 4px;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 16px;
-  margin: 0 2px;
-  user-select: all;
-  cursor: default;
-  white-space: nowrap;
+  gap: 4px;
+  border-radius: 5px;
+  border: 1px solid rgba(91, 204, 179, 0.5);
+  background: linear-gradient(135deg, #edfaf7 0%, #f0fdfb 100%);
+  padding: 1px 6px 1px 3px;
+  cursor: pointer;
   vertical-align: middle;
-  gap: 2px;
+  line-height: 1;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2da68a;
+  user-select: none;
+  position: relative;
+  top: -1px;
+  margin-left: 5px;
 
-  svg {
+  &:hover {
+    border-color: #5bccb3;
+    background: linear-gradient(135deg, #d8f5ef 0%, #e5faf6 100%);
+  }
+
+  img {
+    width: 18px;
+    height: 18px;
+    border-radius: 3px;
+    object-fit: cover;
     flex-shrink: 0;
-    vertical-align: middle;
+    border: 1px solid rgba(91, 204, 179, 0.2);
   }
 }
 </style>
