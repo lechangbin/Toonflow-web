@@ -12,7 +12,7 @@
           <span>章节拆分正则</span>
           <t-button style="margin-left: 15px" @click="setDefaultReg" size="small">恢复默认</t-button>
         </template>
-        <t-input v-model="otherSetting.chapterReg" placeholder="请输入正则表达式" style="width: 400px" />
+        <t-textarea v-model="otherSetting.chapterReg" placeholder="请输入正则表达式" style="width: 400px" />
       </t-form-item>
     </t-form>
   </div>

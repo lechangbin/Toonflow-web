@@ -50,12 +50,7 @@
           </div>
           <div class="selectModel">
             <span style="font-size: 16px; font-weight: 900">选择模型</span>
-            <t-select
-              v-model="value2"
-              :options="optionsData"
-              :popupProps="{ overlayClassName: 'tdesign-demo-select__overlay-option' }"
-              placeholder="请选择生图模型"
-              style="margin-top: 10px" />
+            <modelSelect v-model="selectValue" :type="`image`" />
           </div>
           <div class="generateButton" style="margin-top: 20px">
             <t-button theme="primary" size="large" block :loading="generateLoading" @click="handleGenerate">生成图片</t-button>
@@ -132,6 +127,7 @@
 </template>
 
 <script setup lang="ts">
+import modelSelect from "@/components/modelSelect.vue";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import axios from "@/utils/axios";
@@ -161,37 +157,8 @@ const referenceFileList = ref<any[]>([]);
 const autoUpload = ref(false);
 const showImageFileName = ref(false);
 const generateLoading = ref(false);
-function getCurrentDate(needTime = false) {
-  const d = new Date();
-  let month = (d.getMonth() + 1) as any;
-  month = month < 10 ? `0${month}` : month;
-  const date = `${d.getFullYear()}-${month}-${d.getDate()}`;
-  const time = `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`;
-  if (needTime) return [date, time].join(" ");
-  return date;
-}
+const selectValue = ref(""); //选择的模型
 
-//生图模型选择
-const optionsData = ref([
-  {
-    label: "模型A",
-    value: "modelA",
-  },
-  {
-    label: "模型B",
-    value: "modelB",
-  },
-  {
-    label: "模型B",
-    value: "modelB",
-  },
-  {
-    label: "模型B",
-    value: "modelB",
-  },
-]);
-//获取模型选择API数据
-function handleModelChange() {}
 const value2 = ref("");
 //生图提示词
 const { id, name, describe, type, prompt, filePath } = props.formData;
