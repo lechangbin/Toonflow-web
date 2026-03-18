@@ -13,7 +13,8 @@
               <i-share theme="outline" />
             </template>
           </t-button>
-          <t-button @click="fillInKey">填入KEY</t-button>
+          <t-button @click="fillInKey" v-if="!fillIn">填入KEY</t-button>
+          <t-button @click="oneClickToFillIn" v-if="fillIn">一键填入</t-button>
         </div>
       </div>
     </div>
@@ -52,13 +53,13 @@
         </t-form>
       </div>
     </t-dialog>
-    <t-dialog v-model:visible="testKeyShow" header="填入Toonflow平台的官方KEY" width="480px" :on-confirm="keep">
+    <t-dialog v-model:visible="testKeyShow" header="填入Toonflow平台的官方KEY" width="480px">
       <div class="testKey">
         <t-input v-model="key" placeholder="请输入 KEY" style="margin-top: 20px" />
       </div>
       <template #footer>
         <t-button variant="outline" @click="testKeyShow = false">取消</t-button>
-        <t-button @click="keep">保存</t-button>
+        <t-button @click="keep" :loading="loading">保存</t-button>
       </template>
     </t-dialog>
   </div>
@@ -100,8 +101,6 @@ function startConfig(item: ModelType) {
 }
 
 const currentVendorId = ref<number | null>(null);
-const model = ref<string>("");
-
 function confirmConfig() {
   if (currentItem.value) {
     currentItem.value.modelName = selectValue.value;
@@ -134,23 +133,42 @@ function jumpToWebsite() {
 }
 const testKeyShow = ref(false);
 const key = ref("");
-const manufacturer = ref<{ label: string; value: string; inputValues: { apiKey: string }; code: string }[]>([]);
 //一键填入KEY
 function fillInKey() {
   testKeyShow.value = true;
+}
+const loading = ref(false);
+const fillIn = ref(false);
+//测试模型
+function testModel() {
+  axios
+    .post("/setting/vendorConfig/modelTest", {
+      type: "text",
+      modelName: "gpt-4.1",
+      apiKey: "",
+      id: 1,
+    })
+    .then(() => {
+      loading.value = false;
+      MessagePlugin.success("KEY有效，已成功连接Toonflow平台");
+      testKeyShow.value = false;
+      fillIn.value = true;
+    })
+    .catch((err) => {
+      loading.value = false;
+      MessagePlugin.error(`KEY无效，请检查后重新输入：${err.message}`);
+    });
 }
 function keep() {
   if (!key.value) {
     MessagePlugin.warning("请输入 KEY");
     return false;
   }
-  manufacturer.value[0].inputValues.apiKey = key.value;
-  let code = manufacturer.value[0].code;
-  return;
+  loading.value = true;
   axios
-    .post("/setting/agentDeploy/updateKey", { id: 1, inputValues: manufacturer.value[0].inputValues })
+    .post("/setting/agentDeploy/updateKey", { id: 1, key: key.value })
     .then(() => {
-      MessagePlugin.success("已保存");
+      testModel();
     })
     .catch((err) => {
       MessagePlugin.error(`保存失败：${err.message}`);
@@ -182,6 +200,38 @@ function getAgentDeploy() {
 onMounted(() => {
   getAgentDeploy();
 });
+//一键填入
+function oneClickToFillIn() {
+  const targets = ["剧本Agent", "分镜Agent", "资产AI", "润色AI"];
+  modelData.value.forEach((item) => {
+    if (targets.includes(item.name)) {
+      item.modelName = "1:gpt-4.1";
+      item.model = "gpt-4.1";
+      item.vendorId = 1;
+    }
+  });
+  for (let item of modelData.value) {
+    axios
+      .post("/setting/agentDeploy/deployAgentModel", {
+        id: item.id,
+        name: item.name,
+        model: item.model,
+        modelName: item.modelName,
+        vendorId: item.vendorId,
+        desc: item.desc,
+      })
+      .then(() => {
+        MessagePlugin.success("配置成功");
+        getAgentDeploy();
+      })
+      .catch((err) => {
+        MessagePlugin.error(`更新配置失败：${err.message}`);
+      })
+      .finally(() => {
+        modelDataShow.value = false;
+      });
+  }
+}
 </script>
 
 <style lang="scss" scoped>

@@ -1,21 +1,30 @@
 <template>
-  <t-select v-model="selectValue" placeholder="请选择模型" >
-    <t-option v-for="item in optionsData" :value="`${item.id}:${item.label}`" :key="item.id" :label="item.label">
-      <div class="jb">
-        <div>{{ item.label }}</div>
-        <span>{{ item.type == "video" ? "视频模型" : item.type === "text" ? "文本模型" : "图片模型" }}</span>
-      </div>
-    </t-option>
+  <t-select v-model="selectValue" placeholder="请选择">
+    <t-option-group v-for="(list, index) in optionsData" :key="index" :label="list.group" @change="onChange">
+      <t-option v-for="item in list.children" :key="item.id" :value="`${item.id}:${item.label}`" :label="item.label">
+        <div class="jb">
+          <div>{{ item.label }}</div>
+          <span>{{ item.type }}</span>
+        </div>
+      </t-option>
+    </t-option-group>
   </t-select>
 </template>
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
-interface ModelType {
+interface VendorChild {
   id: number;
   label: string;
   value: string;
+  vendorId: number;
   type: string;
+}
+
+interface VendorOption {
+  group: string;
+  id: number;
+  children: VendorChild[];
 }
 const selectValue = defineModel({
   type: String,
@@ -27,7 +36,10 @@ const props = defineProps({
     default: "",
   },
 });
-const optionsData = ref<ModelType[]>([]);
+function onChange(value: any, context: any) {
+  selectValue.value = context.option.id.value;
+}
+const optionsData = ref<VendorOption[]>([]);
 onMounted(() => {
   handleModelChange();
 });
@@ -36,7 +48,25 @@ function handleModelChange() {
   axios
     .post("/modelSelect/getModelList", { type: props.type })
     .then((response) => {
-      optionsData.value = response.data;
+      const groupMap = new Map<string, VendorOption>();
+      response.data.forEach((item: any) => {
+        const groupKey = item.name;
+        if (!groupMap.has(groupKey)) {
+          groupMap.set(groupKey, {
+            group: groupKey,
+            id: item.id,
+            children: [],
+          });
+        }
+        groupMap.get(groupKey)!.children.push({
+          id: item.id,
+          label: item.label,
+          value: item.value,
+          vendorId: item.vendorId,
+          type: item.type,
+        });
+      });
+      optionsData.value = Array.from(groupMap.values());
     })
     .catch((error) => {
       console.error("获取模型数据失败:", error);
