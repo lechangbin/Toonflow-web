@@ -181,11 +181,7 @@ async function handleBeforeUpload(file: UploadFile) {
     return false;
   }
 
-  LoadingPlugin({
-    fullscreen: true,
-    attach: "body",
-    text: "文件解析中...",
-  });
+  LoadingPlugin(true);
   try {
     content.value = await readFile(rawFile);
   } catch {

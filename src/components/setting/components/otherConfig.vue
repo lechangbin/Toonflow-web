@@ -7,6 +7,13 @@
       <t-form-item label="资产生成并发数" name="assetsBatchGenereateSize">
         <t-input-number auto-width suffix="个" :min="1" v-model="otherSetting.assetsBatchGenereateSize" placeholder="请输入个数" />
       </t-form-item>
+      <t-form-item name="chapterReg">
+        <template #label>
+          <span>章节拆分正则</span>
+          <t-button style="margin-left: 15px" @click="setDefaultReg" size="small">恢复默认</t-button>
+        </template>
+        <t-input v-model="otherSetting.chapterReg" placeholder="请输入正则表达式" style="width: 400px" />
+      </t-form-item>
     </t-form>
   </div>
 </template>
@@ -29,6 +36,10 @@ const axiosTimeOutInSeconds = computed({
     otherSetting.value.axiosTimeOut = val * 1000;
   },
 });
+
+function setDefaultReg() {
+  otherSetting.value.chapterReg = "/(第[d一二三四五六七八九十百千]+章)s*([^]*)/g";
+}
 </script>
 
 <style lang="scss" scoped>

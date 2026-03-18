@@ -45,7 +45,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 import axios from "@/utils/axios";
-import { LoadingPlugin } from 'tdesign-vue-next';
+import { LoadingPlugin } from "tdesign-vue-next";
 const firstConfirmVisible = ref(false);
 const secondConfirmVisible = ref(false);
 const confirmInput = ref("");
@@ -93,7 +93,7 @@ async function handleSecondConfirm() {
   } catch {
     window.$message.error("操作失败，请重试");
   } finally {
-      LoadingPlugin(false);
+    LoadingPlugin(false);
     currentAction.value = null;
     confirmInput.value = "";
   }

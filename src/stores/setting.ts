@@ -9,6 +9,7 @@ export default defineStore(
     const otherSetting = ref({
       axiosTimeOut: 60 * 10 * 1000,
       assetsBatchGenereateSize: 5,
+      chapterReg: "/(第[\d一二三四五六七八九十百千]+章)\s*([^\n\r]*)/g",
     });
 
     const themeSetting = ref({
