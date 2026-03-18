@@ -245,6 +245,7 @@ function handleCustomUpload(files: any[]): void {
       reader.onload = (e) => {
         const base64 = e.target?.result as string;
         resultImages.value.push({
+          id: "",
           filePath: base64,
           state: "生成成功",
         });
@@ -257,7 +258,7 @@ function handleCustomUpload(files: any[]): void {
 }
 
 //生成结果
-const resultImages = ref<{ filePath: string; state: string }[]>([]);
+const resultImages = ref<{ id: string; filePath: string; state: string; selected?: boolean }[]>([]);
 //预览图片
 const visible = ref(false);
 const trigger = ref();
@@ -284,17 +285,17 @@ watch(
 // 获取图片列表
 async function fetchGeneratedImages() {
   const { data } = await axios.post("/assets/getImage", { assetsId: props.formData.id });
-  const images = data.tempAssets.map((item: { filePath: string; state: string }) => ({
+  const images = data.tempAssets.map((item: { id: string; filePath: string; state: string; selected?: boolean }) => ({
+    id: item.id,
     filePath: item.filePath,
     state: item.state,
+    selected: item.selected ?? false,
   }));
-  if (data.filePath) {
-    images.unshift({
-      filePath: data.filePath,
-      state: "生成成功",
-    });
-  }
   resultImages.value = images;
+  const selectedIdx = images.findIndex((img: { selected?: boolean }) => img.selected);
+  if (selectedIdx !== -1) {
+    selectedImageIndex.value = selectedIdx;
+  }
 }
 
 //选择图片
@@ -320,7 +321,16 @@ function deleteImage(index: number) {
 async function onClick() {
   if (selectedImageIndex.value !== null) {
     const selectedImage = resultImages.value[selectedImageIndex.value];
-    await axios.post("/assets/saveAssets", { id: props.formData.id, projectId: project.value?.id, filePath: selectedImage.filePath });
+    const isLocalUpload = !selectedImage.id;
+
+    await axios.post("/assets/saveAssets", {
+      id: props.formData.id,
+      base64: isLocalUpload ? selectedImage.filePath : "",
+      type: props.formData.type,
+      prompt: props.formData.prompt,
+      projectId: project.value?.id,
+      imageId: isLocalUpload ? undefined : Number(selectedImage.id),
+    });
   }
 }
 </script>
