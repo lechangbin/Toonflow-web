@@ -57,7 +57,10 @@
 </template>
 
 <script setup lang="ts">
+import axios from "@/utils/axios";
 import dayjs from "dayjs";
+import projectStore from "@/stores/project";
+const { project } = storeToRefs(projectStore());
 // 分页信息
 const pagination = ref({
   page: 1,
@@ -76,16 +79,13 @@ function handlePageChange(pageInfo: { current: number; pageSize: number }) {
 async function getEvents() {
   loading.value = true;
   try {
-    // 这里应该替换为实际的接口请求代码
-    // const response = await axios.get("/novel/getNovel", {
-    //   params: {
-    //     projectId: project.value?.id,
-    //     page: pagination.value.page,
-    //     pageSize: pagination.value.pageSize,
-    //   },
-    // });
-    // tableData.value = response.data.records;
-    // pagination.value.total = response.data.total;
+    const { data } = await axios.post("/novel/event/getEvent", {
+      projectId: project.value?.id,
+      page: pagination.value.page,
+      pageSize: pagination.value.pageSize,
+    });
+    eventData.value = data.records;
+    pagination.value.total = data.total;
   } catch (e) {
     console.error("获取小说原文列表失败:", e);
   } finally {
@@ -122,40 +122,44 @@ function generateEvent() {
   isGenerating.value = true;
   loading.value = true;
   console.log("开始生成事件");
-  setTimeout(() => {
-    eventData.value = [
-      {
-        id: 1,
-        name: "事件一",
-        chapter: "第一章",
-        process: "这是事件一的描述",
-        startTime: new Date().getTime(),
-      },
-      {
-        id: 2,
-        name: "事件二",
-        chapter: "第二章",
-        process: "这是事件二的描述",
-        startTime: new Date().getTime(),
-      },
-    ];
-    pagination.value.total = eventData.value.length;
-    isGenerating.value = false;
-    loading.value = false;
-  }, 2000);
-  // 实际使用时的代码示例：
-  // axios.post("/novel/generateEvents", {
-  //   projectId: project.value?.id,
-  // }).then((response) => {
-  //   eventData.value = response.data.records;
-  //   pagination.value.total = response.data.total;
-  //   MessagePlugin.success("事件生成成功");
-  // }).catch((e) => {
-  //   MessagePlugin.error((e as Error).message);
-  // }).finally(() => {
+  // setTimeout(() => {
+  //   eventData.value = [
+  //     {
+  //       id: 1,
+  //       name: "事件一",
+  //       chapter: "第一章",
+  //       process: "这是事件一的描述",
+  //       startTime: new Date().getTime(),
+  //     },
+  //     {
+  //       id: 2,
+  //       name: "事件二",
+  //       chapter: "第二章",
+  //       process: "这是事件二的描述",
+  //       startTime: new Date().getTime(),
+  //     },
+  //   ];
+  //   pagination.value.total = eventData.value.length;
   //   isGenerating.value = false;
   //   loading.value = false;
-  // });
+  // }, 2000);
+  // // 实际使用时的代码示例：
+  axios
+    .post("/novel/event/generateEvents", {
+      projectId: project.value?.id,
+    })
+    .then((response) => {
+      eventData.value = response.data.records;
+      pagination.value.total = response.data.total;
+      MessagePlugin.success("事件生成成功");
+    })
+    .catch((e) => {
+      MessagePlugin.error((e as Error).message);
+    })
+    .finally(() => {
+      isGenerating.value = false;
+      loading.value = false;
+    });
 }
 // 重新生成事件
 function regenerateEvents() {

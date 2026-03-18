@@ -414,7 +414,7 @@ const columns: TableProps["columns"] = [
   {
     colKey: "operation",
     title: "操作",
-    width: 250,
+    width: 280,
     align: "center",
     fixed: "right",
     cell: "operation",

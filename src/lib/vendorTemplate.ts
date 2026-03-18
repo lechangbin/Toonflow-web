@@ -15,7 +15,6 @@ interface ImageModel {
   type: "image";
   mode: ("text" | "singleImage" | "multiReference")[];
 }
-
 // 视频模型
 interface VideoModel {
   name: string; // 显示名称
@@ -309,6 +308,7 @@ const buildDoubaoMetadata = (videoConfig: VideoConfig) => {
       }
     });
   }
+
   return metaData;
 };
 
