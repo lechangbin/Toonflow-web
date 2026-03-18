@@ -29,24 +29,26 @@
     <Background></Background>
     <Controls />
     <div class="floatingWindow">
-      <div class="anthology">
-        <t-select v-model="anthology" placeholder="-请选择-" autoWidth :options="anthologyOptions" filterable @change="changeFn">
+      <div class="episodesSelect">
+        <t-select v-model="episodesId" placeholder="-请选择-" autoWidth :options="episodesOptions" filterable>
           <template #label>
             <i-document-folder size="24" />
           </template>
         </t-select>
       </div>
-      <div class="openBtn c" v-show="!openShowVisible" @click.stop="openShowVisible = true">
+      <div class="openRightChatBoxBtn c" v-show="!openShowVisible" @click.stop="openShowVisible = true">
         <i-menu-unfold-one theme="outline" size="24" fill="#000000" />
       </div>
-      <transition name="slide">
-        <dialogue v-show="openShowVisible" v-model="openShowVisible" :anthology="anthology" />
+      <transition name="slide" v-show="openShowVisible">
+        <rightChatBox :title="rightChatTitle" @close="openShowVisible = false" :episodesId />
       </transition>
     </div>
   </VueFlow>
+  <t-guide v-model="current" :steps="steps" @finish="finishGuide" />
 </template>
 
 <script setup lang="ts">
+import { useLocalStorage } from "@vueuse/core";
 import { VueFlow, useVueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
@@ -61,25 +63,26 @@ import storyboard from "./node/storyboard.vue";
 import workbench from "./node/workbench.vue";
 import poster from "./node/poster.vue";
 //悬浮窗组件
-import dialogue from "./components/dialogue.vue";
+import rightChatBox from "./components/rightChatBox/index.vue";
 
 import { useFlowBuilder } from "./utils/flowBuilder";
 
 const { viewport } = useVueFlow();
+
 const openShowVisible = ref(true);
 
-const anthology = ref("第1集");
+const episodesId = ref(1);
 
-const anthologyOptions = [
-  { label: "第1集", value: "第1集" },
-  { label: "第2集", value: "第2集" },
-  { label: "第3集", value: "第3集" },
-];
-function changeFn(value: any) {
-  anthology.value = value;
-}
+const rightChatTitle = computed(() => {
+  const episode = episodesOptions.value.find((option) => option.value === episodesId.value);
+  return episode ? episode.label : "";
+});
 
-onMounted(() => {});
+const episodesOptions = ref([
+  { label: "第1集：真相大白，背叛之心", value: 1 },
+  { label: "第2集：123123123", value: 2 },
+  { label: "第3集：12313123123", value: 3 },
+]);
 
 // ==================== AI 操作数据区 ====================
 // AI 只需修改此对象即可控制整个故事线流程
@@ -450,9 +453,9 @@ const flowData = ref({
 
 // 节点位置（独立于 AI 数据，由用户拖拽控制）
 const nodePositions = ref<Record<string, { x: number; y: number }>>({
-  "script": { x: 10, y: 0 },
-  "assets": { x: -70, y: 1400 },
-  "storyboardTable": { x: 620, y: 0 },
+  script: { x: 10, y: 0 },
+  assets: { x: -70, y: 1400 },
+  storyboardTable: { x: 620, y: 0 },
   storyboard: { x: 1500, y: 24 },
   workbench: { x: 2100, y: 24 },
   poster: { x: 2500, y: 24 },
@@ -460,6 +463,19 @@ const nodePositions = ref<Record<string, { x: number; y: number }>>({
 
 // 自动构建 nodes 和 edges
 const { nodes, edges } = useFlowBuilder(flowData, nodePositions);
+
+const current = useLocalStorage("productionGuideCurrent", 0);
+const steps = [
+  {
+    element: ".episodesSelect",
+    title: "切换集数",
+    body: "切换集数挪移到这里了哦",
+    placement: "bottom",
+  },
+];
+function finishGuide() {
+  current.value = -1;
+}
 </script>
 <style lang="scss" scoped>
 .flowMain {
@@ -469,14 +485,14 @@ const { nodes, edges } = useFlowBuilder(flowData, nodePositions);
     height: 100%;
     position: relative;
     overflow: hidden;
-    .anthology {
+    .episodesSelect {
       position: absolute;
       top: 10px;
       left: 0px;
       z-index: 9999;
       cursor: pointer;
     }
-    .openBtn {
+    .openRightChatBoxBtn {
       position: absolute;
       top: 10px;
       right: 0;
