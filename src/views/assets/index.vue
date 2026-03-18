@@ -278,7 +278,7 @@ const props = withDefaults(
     /** 是否作为选择器弹窗使用 */
     selectorMode?: boolean;
     /** 限制显示的资产类型 */
-    allowedTypes?: ("角色" | "道具" | "场景" | "剪辑素材")[];
+    allowedTypes?: ("role" | "tool" | "scene" | "clip")[];
     /** 是否多选 */
     multiple?: boolean;
   }>(),
@@ -395,7 +395,7 @@ const formData = ref<{ id: number; name: string; describe: string; remark: strin
 const addAssetsShow = ref(false);
 // 新增
 // 文件选择
-const { open, onChange, onCancel } = useFileDialog({ multiple: false, reset: true, accept: ".png,.jpg,.jpeg,.map3,.mp4" });
+const { open, onChange, onCancel } = useFileDialog({ multiple: false, reset: true, accept: ".png,.jpg,.jpeg,.mp3,.mp4" });
 async function handleAdd(type: string) {
   if (type === "clip") {
     const files = await new Promise<FileList | null>((resolve) => {
@@ -406,13 +406,15 @@ async function handleAdd(type: string) {
     if (!files?.length) return;
 
     const file = files[0];
+
     const reader = new FileReader();
-    reader.onload = async () => {
+    reader.onload = async (e) => {
       const base64 = reader.result as string;
 
       await axios.post("/assets/uploadClip", {
         projectId: project.value?.id,
         base64Data: base64,
+        name: file.name,
       });
       MessagePlugin.success("上传成功");
       getFilteredData(assetOptions.value);
