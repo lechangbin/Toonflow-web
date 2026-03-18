@@ -6,15 +6,22 @@
         <i-pic theme="outline" size="16" fill="#000000" />
         <span style="margin-left: 5px; color: #4b4b4b">Image</span>
       </div>
-      <div class="image">
+      <div class="imageBox">
         <t-image
+          class="image"
           :src="currentImageUrl"
           fit="cover"
           :style="{
             width: '100%',
             height: '100%',
             borderRadius: '10px',
-          }" />
+          }">
+          <template #overlayContent>
+            <div class="imageToolsWrap">
+              <ImageTools :src="currentImageUrl" position="br" />
+            </div>
+          </template>
+        </t-image>
         <div class="upload ac" @click="uploadFn">
           <i-upload theme="outline" size="18" fill="#fff" />
           <span style="margin-left: 5px; color: #fff">上传</span>
@@ -76,12 +83,28 @@ async function uploadFn() {
       height: 30px;
       padding: 5px;
     }
-    .image {
+    .imageBox {
       border: 1px solid #e5e5e5;
       height: 320px;
       width: 100%;
       position: relative;
       border-radius: 10px;
+
+      .image {
+        .imageToolsWrap {
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.2s ease;
+        }
+
+        &:hover {
+          .imageToolsWrap {
+            opacity: 1;
+            pointer-events: auto;
+          }
+        }
+      }
+
       .upload {
         position: absolute;
         top: 10px;
