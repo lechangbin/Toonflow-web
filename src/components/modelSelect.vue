@@ -1,5 +1,5 @@
 <template>
-  <t-select v-model="selectValue" placeholder="请选择模型" >
+  <t-select v-model="selectValue" placeholder="请选择模型" @change="onChange">
     <t-option v-for="item in optionsData" :value="`${item.id}:${item.label}`" :key="item.id" :label="item.label">
       <div class="jb">
         <div>{{ item.label }}</div>
@@ -27,6 +27,9 @@ const props = defineProps({
     default: "",
   },
 });
+function onChange(value: any, context: any) {
+  selectValue.value = context.option.id.value;
+}
 const optionsData = ref<ModelType[]>([]);
 onMounted(() => {
   handleModelChange();
