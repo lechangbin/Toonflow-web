@@ -13,7 +13,7 @@
           <div class="panelContent">
             <div class="toolbar">
               <t-space>
-                <t-button theme="primary" @click="handleAdd(item.name)">
+                <t-button theme="primary" @click="handleAdd(item.value)">
                   <template #icon>
                     <t-icon name="add" />
                   </template>
@@ -163,6 +163,52 @@
                 @select-change="handleSelectChange"
                 @expand-change="handleExpandChange"
                 @page-change="handlePageChange">
+                <template #preview="{ row }">
+                  <div class="previewCell">
+                    <!-- 图片预览 -->
+                    <t-image-viewer
+                      v-if="getMediaType(row.filePath) === 'image'"
+                      :images="[row.filePath]"
+                      :closeOnEscKeydown="true"
+                      :closeOnOverlay="true">
+                      <template #trigger="{ open }">
+                        <div class="mediaTrigger" @click="row.filePath && open()">
+                          <img :src="row.filePath" :alt="row.name" />
+                          <div class="mediaHoverOverlay">
+                            <t-icon name="browse" size="20px" />
+                            <span class="hoverText">预览</span>
+                          </div>
+                        </div>
+                      </template>
+                    </t-image-viewer>
+                    <!-- 视频预览 -->
+                    <div
+                      v-else-if="getMediaType(row.filePath) === 'video'"
+                      class="mediaTrigger videoThumb"
+                      @click="openMediaPreview(row.filePath, row.name)">
+                      <video :src="row.filePath" class="thumbVideo" />
+                      <div class="mediaHoverOverlay">
+                        <t-icon name="play-circle" size="24px" />
+                        <span class="hoverText">播放</span>
+                      </div>
+                    </div>
+                    <!-- 音频预览 -->
+                    <div
+                      v-else-if="getMediaType(row.filePath) === 'audio'"
+                      class="mediaTrigger audioThumb"
+                      @click="openMediaPreview(row.filePath, row.name)">
+                      <t-icon name="music" size="28px" />
+                      <div class="mediaHoverOverlay">
+                        <t-icon name="play-circle" size="24px" />
+                        <span class="hoverText">播放</span>
+                      </div>
+                    </div>
+                    <!-- 无文件 -->
+                    <div v-else class="mediaTrigger noMedia">
+                      <t-icon name="image" size="24px" />
+                    </div>
+                  </div>
+                </template>
                 <template #operation="{ row }">
                   <t-space :size="0">
                     <t-button theme="primary" variant="text" @click="handleEdit(row)">
@@ -185,9 +231,35 @@
         </t-tab-panel>
       </t-tabs>
     </div>
-    <addAssets v-model="addAssetsShow" :type="activeTab" :formData="formData" @getFilteredData="getFilteredData(activeTab)" />
-    <batchGeneration v-model="batchGenerationShow" :type="activeTab" @update="loadCurrentTabData" />
+    <addAssets
+      v-model="addAssetsShow"
+      :type="assetOptions"
+      :title="tabNameMap[assetOptions]"
+      :formData="formData"
+      @getFilteredData="getFilteredData(assetOptions)" />
+    <batchGeneration v-model="batchGenerationShow" :type="assetOptions" @update="loadCurrentTabData" />
     <generateImage v-model="generateImageShow" @update="loadCurrentTabData" :formData="currentAssetData" />
+
+    <!-- 媒体预览弹窗（视频 / 音频） -->
+    <t-dialog
+      v-model:visible="mediaPreviewShow"
+      :header="mediaPreviewName || '媒体预览'"
+      :footer="false"
+      width="600px"
+      placement="center"
+      destroyOnClose
+      @close="closeMediaPreview">
+      <div class="mediaPreviewDialog">
+        <video v-if="mediaPreviewType === 'video'" :src="mediaPreviewSrc" controls autoplay class="mediaPlayer videoPlayer" />
+        <div v-else-if="mediaPreviewType === 'audio'" class="audioWrapper">
+          <div class="audioIcon">
+            <t-icon name="music" size="64px" />
+          </div>
+          <p class="audioName">{{ mediaPreviewName }}</p>
+          <audio :src="mediaPreviewSrc" controls autoplay class="mediaPlayer audioPlayer" />
+        </div>
+      </div>
+    </t-dialog>
   </div>
 </template>
 
@@ -235,18 +307,18 @@ const allThemeData = [
     icon: "i-landscape",
   },
   {
-    name: "剪辑素材",
+    name: "素材",
     value: "clip",
     icon: "i-editing",
   },
 ];
 const themeData = ref(props.allowedTypes?.length ? allThemeData.filter((item) => props.allowedTypes!.includes(item.value as any)) : allThemeData);
 
-const initialTab = themeData.value[0]?.value || "role";
-const assetOptions = ref<TabValue>(initialTab as TabValue);
+const initialTab = (themeData.value[0]?.value || "role") as "role" | "tool" | "scene" | "clip";
+const assetOptions = ref<"role" | "tool" | "scene" | "clip">(initialTab);
 const searchText = ref("");
 
-const tabNameMap: Record<string, string> = { role: "角色", tool: "道具", scene: "场景", clip: "剪辑素材" };
+const tabNameMap: Record<string, string> = { role: "角色", tool: "道具", scene: "场景", clip: "素材" };
 const activeTab = ref(tabNameMap[initialTab] || "角色");
 const selectedRowKeys = ref<Array<string | number>>([]);
 const expandedRowKeys = ref<Array<string | number>>([]);
@@ -302,21 +374,11 @@ async function loadCurrentTabData() {
   } else if (assetOptions.value === "scene") {
     type = "场景";
   } else if (assetOptions.value === "clip") {
-    type = "剪辑素材";
+    type = "素材";
   }
-  await getFilteredData(type);
+  await getFilteredData(assetOptions.value);
 }
 function selectAssetOptions(value: TabValue) {
-  assetOptions.value = value;
-  if (value === "role") {
-    activeTab.value = "角色";
-  } else if (value === "tool") {
-    activeTab.value = "道具";
-  } else if (value === "scene") {
-    activeTab.value = "场景";
-  } else if (value === "clip") {
-    activeTab.value = "剪辑素材";
-  }
   searchText.value = "";
   selectedRowKeys.value = [];
   expandedRowKeys.value = [];
@@ -335,7 +397,7 @@ const addAssetsShow = ref(false);
 // 文件选择
 const { open, onChange, onCancel } = useFileDialog({ multiple: false, reset: true, accept: ".png,.jpg,.jpeg,.map3,.mp4" });
 async function handleAdd(type: string) {
-  if (type === "剪辑素材") {
+  if (type === "clip") {
     const files = await new Promise<FileList | null>((resolve) => {
       open();
       onChange((f) => resolve(f));
@@ -345,13 +407,19 @@ async function handleAdd(type: string) {
 
     const file = files[0];
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const base64 = reader.result as string;
+
+      await axios.post("/assets/uploadClip", {
+        projectId: project.value?.id,
+        base64Data: base64,
+      });
+      MessagePlugin.success("上传成功");
+      getFilteredData(assetOptions.value);
     };
     reader.readAsDataURL(file);
   } else {
     addAssetsShow.value = true;
-    activeTab.value = type;
     formData.value = {
       id: 0,
       name: "",
@@ -381,7 +449,7 @@ function handleBatchDelete() {
     onConfirm: async () => {
       await axios.post("/assets/batchDelete", { id: selectedAssets.map((asset) => asset.id) });
       MessagePlugin.success("资产删除成功");
-      getFilteredData(activeTab.value);
+      getFilteredData(assetOptions.value);
       dialog.destroy();
     },
   });
@@ -493,6 +561,13 @@ const subColumns: TableProps["columns"] = [
 const clipColumns: TableProps["columns"] = [
   { colKey: "row-select", type: "multiple", width: 50, align: "center", fixed: "left" },
   {
+    colKey: "filePath",
+    title: "预览",
+    width: 100,
+    align: "center",
+    cell: "preview",
+  },
+  {
     colKey: "name",
     title: "名称",
     width: 200,
@@ -599,7 +674,7 @@ function handleDelete(row: any) {
       try {
         await axios.post("/assets/delAssets", { id: row.id });
         MessagePlugin.success("资产删除成功");
-        getFilteredData(activeTab.value);
+        getFilteredData(assetOptions.value);
         dialog.destroy();
       } catch (error) {
         console.error("删除资产失败:", error);
@@ -614,6 +689,35 @@ defineExpose({
   selectedRowKeys,
   tableData,
 });
+
+// ===== 媒体预览 =====
+type MediaType = "image" | "video" | "audio" | "unknown";
+
+function getMediaType(filePath?: string): MediaType {
+  if (!filePath) return "unknown";
+  const ext = filePath.split("?")[0].split(".").pop()?.toLowerCase() ?? "";
+  if (["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"].includes(ext)) return "image";
+  if (["mp4", "webm", "ogg", "mov", "avi", "mkv"].includes(ext)) return "video";
+  if (["mp3", "wav", "ogg", "aac", "flac", "m4a"].includes(ext)) return "audio";
+  return "unknown";
+}
+
+const mediaPreviewShow = ref(false);
+const mediaPreviewSrc = ref("");
+const mediaPreviewType = ref<MediaType>("unknown");
+const mediaPreviewName = ref("");
+
+function openMediaPreview(filePath: string, name: string) {
+  if (!filePath) return;
+  mediaPreviewSrc.value = filePath;
+  mediaPreviewType.value = getMediaType(filePath);
+  mediaPreviewName.value = name;
+  mediaPreviewShow.value = true;
+}
+function closeMediaPreview() {
+  mediaPreviewShow.value = false;
+  mediaPreviewSrc.value = "";
+}
 </script>
 
 <style lang="scss" scoped>
@@ -645,10 +749,17 @@ defineExpose({
         justify-content: center;
         align-items: center;
         padding: 4px 0;
-        .imageTrigger {
+        .imagetrigger {
+          width: 80px;
+          height: 80px;
+          .previewImage {
+            object-fit: contain;
+          }
+        }
+        .mediaTrigger {
           position: relative;
-          width: 60px;
-          height: 60px;
+          width: 80px;
+          height: 80px;
           border-radius: 4px;
           overflow: hidden;
           cursor: pointer;
@@ -658,7 +769,7 @@ defineExpose({
           transition: all 0.3s ease;
           &:hover {
             transform: scale(1.05);
-            .imageHoverOverlay {
+            .mediaHoverOverlay {
               opacity: 1;
             }
           }
@@ -667,14 +778,28 @@ defineExpose({
             height: 100%;
             object-fit: cover;
           }
-          .noImage {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 100%;
+          &.videoThumb {
+            background: #1a1a2e;
+            .thumbVideo {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              pointer-events: none;
+            }
           }
-          .imageHoverOverlay {
+          &.audioThumb {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+          }
+          &.noMedia {
+            background: var(--td-bg-color-component, #f5f5f5);
+            color: var(--td-text-color-placeholder, #c0c0c0);
+            cursor: default;
+            &:hover {
+              transform: none;
+            }
+          }
+          .mediaHoverOverlay {
             position: absolute;
             top: 0;
             left: 0;
@@ -695,6 +820,56 @@ defineExpose({
           }
         }
       }
+    }
+  }
+}
+</style>
+
+<style lang="scss">
+// 媒体预览弹窗内容（t-dialog 内容挂载在 body 下，需要全局样式）
+.mediaPreviewDialog {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 8px 0 16px;
+  .mediaPlayer {
+    display: block;
+    border-radius: 6px;
+    outline: none;
+  }
+  .videoPlayer {
+    width: 100%;
+    max-height: 60vh;
+    background: #000;
+  }
+  .audioWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: 16px 0;
+    .audioIcon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .audioName {
+      margin: 0;
+      font-size: 14px;
+      color: var(--td-text-color-secondary, #666);
+      max-width: 400px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .audioPlayer {
+      width: 100%;
     }
   }
 }

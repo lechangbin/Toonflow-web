@@ -185,7 +185,7 @@ function handleClearSelection() {
 }
 const { projectId } = storeToRefs(store());
 const props = defineProps<{
-  type: string;
+  type: "role" | "tool" | "scene" | "clip";
 }>();
 watch(
   () => batchGenerationShow.value,
@@ -240,7 +240,7 @@ function closeModal(): void {
   // 取消正在进行的生成任务
   promptGenerateCancel.value = true;
   imageGenerateCancel.value = true;
-  
+
   batchGenerationShow.value = false;
   selectedRowKeys.value = [];
   searchText.value = "";
@@ -331,7 +331,7 @@ async function generatePrompt(data: AssetItem) {
     const res = await axios.post("/assets/polishAssetsPrompt", {
       projectId: projectId.value,
       assetsId: data.id,
-      type: typeMap[data.type ?? ""] ?? "props",
+      type: props.type ?? "props",
       name: data.name,
       describe: data.describe ?? "",
     });
@@ -378,7 +378,7 @@ async function handleBatchGenerateImage() {
             id: item.id,
             name: item.name,
             prompt: item.prompt,
-            type: typeMap[item.type ?? ""] ?? "props",
+            type: props.type ?? "props",
           }),
         ),
       );
