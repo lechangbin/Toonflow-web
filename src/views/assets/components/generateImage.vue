@@ -182,6 +182,7 @@ async function generatePrompt() {
     promptLoading.value = false;
   }
 }
+const emit = defineEmits(["update"]);
 //生成图片
 async function handleGenerate() {
   generateLoading.value = true;
@@ -331,6 +332,9 @@ async function onClick() {
       projectId: project.value?.id,
       imageId: isLocalUpload ? undefined : Number(selectedImage.id),
     });
+    MessagePlugin.success("图片已保存");
+    generateImageShow.value = false;
+    emit("update");
   }
 }
 </script>
