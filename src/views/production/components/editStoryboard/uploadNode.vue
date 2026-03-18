@@ -22,13 +22,12 @@
       </div>
     </div>
   </div>
-  <AssetsData v-model="assetsDataShow" @confirmSelection="confirmSelection" />
 </template>
 
 <script setup lang="ts">
 import { Handle, Position, useVueFlow } from "@vue-flow/core";
 import { onBeforeUnmount, ref, watch } from "vue";
-import AssetsData from "./assetsData.vue";
+import openAssetsSelector from "@/utils/assetsCheck";
 const props = defineProps<{
   id: string;
   data: {
@@ -51,13 +50,15 @@ onBeforeUnmount(() => {
     URL.revokeObjectURL(currentObjectUrl.value);
   }
 });
-const assetsDataShow = ref(false);
-function uploadFn() {
-  assetsDataShow.value = true;
-}
-//确认选中
-function confirmSelection(selectedAssets: string) {
-  console.log("%c Line:60 🌽 selectedAssets", "background:#7f2b82", selectedAssets);
+
+async function uploadFn() {
+  const selectedAssets = await openAssetsSelector({
+    multiple: false,
+    title: "选择图片",
+  });
+  if (selectedAssets.length > 0) {
+    console.log("%c Line:60 🌽 selectedAssets", "background:#7f2b82", selectedAssets);
+  }
 }
 </script>
 
