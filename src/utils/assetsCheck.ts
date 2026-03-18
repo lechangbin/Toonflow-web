@@ -35,18 +35,16 @@ export default function openAssetsSelector(options: AssetsSelectOptions = {}): P
     let done = false;
 
     const cleanup = () => {
-      setTimeout(() => {
-        render(null, container);
-        container.remove();
-      }, 300);
+      render(null, container);
+      container.remove();
     };
 
     const finish = (assets: Asset[]) => {
       if (done) return;
       done = true;
       visible.value = false;
+      renderDialog();
       resolve(assets);
-      cleanup();
     };
 
     const renderDialog = () => {
@@ -68,6 +66,7 @@ export default function openAssetsSelector(options: AssetsSelectOptions = {}): P
           },
           onClose: () => finish([]),
           onCancel: () => finish([]),
+          onClosed: () => cleanup(),
         },
         {
           default: () =>
