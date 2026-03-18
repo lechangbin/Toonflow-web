@@ -71,7 +71,7 @@
           <div class="topInfo jb ac">
             <span class="modelCardName">{{ item.modelName }}</span>
             <div class="actionBtns">
-              <t-button size="small" variant="text" @click="handleTestModel(item)">
+              <t-button size="small" variant="text" :loading="!!testingModels[item.modelName]" @click="handleTestModel(item)">
                 <template #icon><i-lightning theme="outline" /></template>
                 测试
               </t-button>
@@ -392,6 +392,7 @@ async function getVendorList() {
   axios
     .post("/setting/vendorConfig/getVendorList")
     .then((res) => {
+      console.log("%c Line:395 🍖 res", "background:#b03734", res);
       vendorList.value = res.data;
 
       if (vendorList.value.length && !vendorList.value.some((v) => v.name === activeVendorName.value)) {
@@ -427,6 +428,7 @@ const testResultVisible = ref(false);
 const testResultUrl = ref("");
 const testResultType = ref<"image" | "video" | "">("");
 const testModelName = ref("");
+const testingModels = reactive<Record<string, boolean>>({});
 
 function getProviderIcon(name: string) {
   return ICON_MAP[name] || "server";
@@ -449,7 +451,7 @@ async function handleUpdateVendor() {
       id: currentVendor.value.id,
       tsCode: currentVendor.value.code,
       name: currentVendor.value.name,
-      version: currentVendor.value.version,
+      version: String(currentVendor.value.version),
       icon: currentVendor.value.icon,
       inputs: currentVendor.value.inputs,
       inputValues: currentVendor.value.inputValues,
@@ -778,13 +780,10 @@ function handleEditModel(model: VendorModel) {
 async function handleTestModel(item: (typeof vendorModels.value)[number]) {
   if (!currentVendor.value?.inputValues?.apiKey) return MessagePlugin.error("请先输入 API Key");
   if (!currentVendor.value?.inputValues?.baseUrl) return MessagePlugin.error("请先输入 API 地址");
+  if (testingModels[item.modelName]) return;
 
-  testModelName.value = item.modelName;
-  testResultType.value = "";
-  testResultUrl.value = "";
-  testResultVisible.value = true;
+  testingModels[item.modelName] = true;
 
-  MessagePlugin.success(`正在测试 ${item.modelName} 模型...`);
   try {
     const { data } = await axios.post(`/setting/vendorConfig/modelTest`, {
       type: item.type,
@@ -794,16 +793,18 @@ async function handleTestModel(item: (typeof vendorModels.value)[number]) {
     });
 
     if (item.type === "text") {
-      MessagePlugin.success(`测试成功！`);
-      testResultVisible.value = false;
+      MessagePlugin.success(`${item.modelName} 测试成功！`);
     } else if (item.type === "image" || item.type === "video") {
+      testModelName.value = item.modelName;
       testResultType.value = item.type;
       testResultUrl.value = data;
+      testResultVisible.value = true;
       MessagePlugin.success(`${item.type === "image" ? "图片" : "视频"}生成成功！`);
     }
   } catch (e) {
-    testResultVisible.value = false;
     MessagePlugin.error(`请求失败：${(e as any).message}`);
+  } finally {
+    delete testingModels[item.modelName];
   }
 }
 

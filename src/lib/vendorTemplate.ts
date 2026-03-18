@@ -15,7 +15,6 @@ interface ImageModel {
   type: "image";
   mode: ("text" | "singleImage" | "multiReference")[];
 }
-
 // 视频模型
 interface VideoModel {
   name: string; // 显示名称
@@ -29,8 +28,7 @@ interface VideoModel {
     | "endFrameOptional" // 首尾帧（尾帧可选）
     | "startFrameOptional" // 首尾帧（首帧可选）
     | "text" // 文本生视频
-    | "audioReference" // 音频参考
-    | "videoReference" // 视频参考
+    | ("video" | "image" | "audio" | "text")[] // 混合参考
   )[];
   audio: "optional" | false | true; // 音频配置
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
@@ -309,6 +307,7 @@ const buildDoubaoMetadata = (videoConfig: VideoConfig) => {
       }
     });
   }
+
   return metaData;
 };
 
