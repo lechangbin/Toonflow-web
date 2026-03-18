@@ -112,7 +112,7 @@ function confirmConfig() {
     name: currentItem.value?.name,
     model: selectValue.value.split(":")[1] || currentItem.value?.model,
     modelName: currentItem.value?.modelName,
-    vendorId: currentItem.value?.vendorId,
+    vendorId: Number(selectValue.value.split(":")[0]),
     desc: currentItem.value?.desc,
   };
   axios
