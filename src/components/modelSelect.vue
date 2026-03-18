@@ -1,19 +1,21 @@
 <template>
-  <div class="modelSelect">
-    <t-select
-      v-model="selectValue"
-      :options="optionsData"
-      :popupProps="{ overlayClassName: 'tdesign-demo-select__overlay-option' }"
-      placeholder="请选择模型"
-      style="margin-top: 10px" />
-  </div>
+  <t-select v-model="selectValue" placeholder="请选择模型" >
+    <t-option v-for="item in optionsData" :value="`${item.id}:${item.label}`" :key="item.id" :label="item.label">
+      <div class="jb">
+        <div>{{ item.label }}</div>
+        <span>{{ item.type == "video" ? "视频模型" : item.type === "text" ? "文本模型" : "图片模型" }}</span>
+      </div>
+    </t-option>
+  </t-select>
 </template>
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
 interface ModelType {
+  id: number;
   label: string;
   value: string;
+  type: string;
 }
 const selectValue = defineModel({
   type: String,
