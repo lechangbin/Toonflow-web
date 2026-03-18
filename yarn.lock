@@ -2226,10 +2226,10 @@ vscode-uri@^3.0.8:
   resolved "https://registry.npmmirror.com/vscode-uri/-/vscode-uri-3.1.0.tgz#dd09ec5a66a38b5c3fffc774015713496d14e09c"
   integrity sha512-/BpdSx+yCQGnCvecbyXdxHDkuk55/G3xwnC0GqY4gmQ3j+A+g8kzzgB4Nk/SINjqn6+waqw3EgbVF2QKExkRxQ==
 
-vue-clip-track@^0.1.4:
-  version "0.1.4"
-  resolved "https://registry.npmmirror.com/vue-clip-track/-/vue-clip-track-0.1.4.tgz#efec2af2957ba33e67c8a0b8955404b60970d97b"
-  integrity sha512-4D+4DxjWFz8G6NXc8iYnyaPHYHO4AA9IXJcmTrkJB3Kl3aE/yJqvuIAjlWf4H5qd4Uuu3bZaQEym26/hiJdutg==
+vue-clip-track@^0.1.5:
+  version "0.1.5"
+  resolved "https://registry.npmmirror.com/vue-clip-track/-/vue-clip-track-0.1.5.tgz#bb320895adde66953ede4bfb3c3b44cd6f9a4783"
+  integrity sha512-fpMwqjuKcyGQBah8ggEK+G5sWF/syBpL/rVlgxawIuiTA8srmUu/Xj4eBFGFJO0AidDsHUa86efByB467HeDiA==
 
 vue-demi@>=0.14.8, vue-demi@^0.14.10:
   version "0.14.10"
