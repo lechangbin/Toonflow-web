@@ -3,12 +3,8 @@ import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 import AutoImport from "unplugin-auto-import/vite";
 import Components from "unplugin-vue-components/vite";
-import { TDesignResolver } from "unplugin-vue-components/resolvers";
-import { lazyImport, VxeResolver } from "vite-plugin-lazy-import";
+import { TDesignResolver } from "@tdesign-vue-next/auto-import-resolver";
 import { viteSingleFile } from "vite-plugin-singlefile";
-import path from "node:path";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   base: "./",
@@ -29,6 +25,9 @@ export default defineConfig({
         TDesignResolver({
           library: "vue-next",
         }),
+        TDesignResolver({
+          library: "chat",
+        }),
       ],
     }),
     Components({
@@ -37,12 +36,8 @@ export default defineConfig({
         TDesignResolver({
           library: "vue-next",
         }),
-      ],
-    }),
-    lazyImport({
-      resolvers: [
-        VxeResolver({
-          libraryName: "vxe-table",
+        TDesignResolver({
+          library: "chat",
         }),
       ],
     }),

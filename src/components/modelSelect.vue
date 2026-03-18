@@ -1,6 +1,6 @@
 <template>
-  <t-select v-model="selectValue" placeholder="请选择">
-    <t-option-group v-for="(list, index) in optionsData" :key="index" :label="list.group" @change="onChange">
+  <t-select :size="props.size" v-model="selectValue" :placeholder="props.placeholder" @change="onChange">
+    <t-option-group v-for="(list, index) in optionsData" :key="index" :label="list.group">
       <t-option v-for="item in list.children" :key="item.id" :value="`${item.id}:${item.label}`" :label="item.label">
         <div class="jb">
           <div>{{ item.label }}</div>
@@ -32,12 +32,20 @@ const selectValue = defineModel({
 });
 const props = defineProps({
   type: {
+    type: String as () => "text" | "image" | "all",
+    default: "all",
+  },
+  size: {
+    type: String as () => "small" | "medium" | "large",
+    default: "medium",
+  },
+  placeholder: {
     type: String,
-    default: "",
+    default: "请选择模型",
   },
 });
-function onChange(value: any, context: any) {
-  selectValue.value = context.option.id.value;
+function onChange(value: any) {
+  selectValue.value = value;
 }
 const optionsData = ref<VendorOption[]>([]);
 onMounted(() => {
@@ -63,7 +71,7 @@ function handleModelChange() {
           label: item.label,
           value: item.value,
           vendorId: item.vendorId,
-          type: item.type == 'image' ? "图像生成" : item.type == 'text' ? "文本生成" : item.type,
+          type: item.type == "image" ? "图像生成" : item.type == "text" ? "文本生成" : item.type,
         });
       });
       optionsData.value = Array.from(groupMap.values());
