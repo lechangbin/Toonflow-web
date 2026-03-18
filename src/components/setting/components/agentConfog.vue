@@ -13,7 +13,7 @@
               <i-share theme="outline" />
             </template>
           </t-button>
-          <t-button>填入KEY</t-button>
+          <t-button @click="fillInKey">填入KEY</t-button>
         </div>
       </div>
     </div>
@@ -60,6 +60,15 @@
           </t-form-item>
         </t-form>
       </div>
+    </t-dialog>
+    <t-dialog v-model:visible="testKeyShow" header="填入Toonflow平台的官方KEY" width="480px" :on-confirm="keep">
+      <div class="testKey">
+        <t-input v-model="key" placeholder="请输入 KEY" style="margin-top: 20px" />
+      </div>
+      <template #footer>
+        <t-button variant="outline" @click="testKeyShow = false">取消</t-button>
+        <t-button @click="keep">保存</t-button>
+      </template>
     </t-dialog>
   </div>
 </template>
@@ -149,11 +158,43 @@ function confirmConfig() {
 function jumpToWebsite() {
   window.open("https://api.toonflow.net", "_blank");
 }
+const testKeyShow = ref(false);
+const key = ref("");
+const manufacturer = ref<{ label: string; value: string; inputValues: { apiKey: string }, code: string }[]>([]);
+//一键填入KEY
+function fillInKey() {
+  testKeyShow.value = true;
+}
+function keep() {
+  if (!key.value) {
+    MessagePlugin.warning("请输入 KEY");
+    return false;
+  }
+  manufacturer.value[0].inputValues.apiKey = key.value;
+  let code = manufacturer.value[0].code;
+  return
+  axios
+    .post("/setting/agentDeploy/updateKey", { id: 1, inputValues: manufacturer.value[0].inputValues })
+    .then(() => {
+      MessagePlugin.success("已保存");
+    })
+    .catch((err) => {
+      MessagePlugin.error(`保存失败：${err.message}`);
+    });
+}
 
 async function getVendorList() {
   axios
     .post("/setting/vendorConfig/getVendorList")
     .then((res) => {
+      manufacturer.value = res.data.map((i: any) => {
+        return {
+          label: i.name,
+          value: i.id,
+          inputValues: i.inputValues,
+          code: i.code,
+        };
+      });
       vendorList.value = res.data.map((i: any) => {
         return {
           group: i.name,
