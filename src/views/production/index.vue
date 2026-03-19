@@ -3,7 +3,7 @@
     class="flowMain"
     :nodes="nodes"
     :edges="edges"
-    :max-zoom="5"
+    :max-zoom="10"
     :min-zoom="0.1"
     fit-view-on-init
     :selection-key-code="null"
@@ -472,7 +472,7 @@ const steps = [
     body: "切换集数挪移到这里了哦",
     placement: "bottom",
   },
-];
+] as any;
 function finishGuide() {
   current.value = -1;
 }

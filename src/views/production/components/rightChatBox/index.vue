@@ -1,5 +1,6 @@
 <template>
-  <div class="rightChatBox">
+  <div class="rightChatBox" :style="{ width: boxWidth + 'px' }">
+    <div ref="resizeHandleRef" class="resize-handle"></div>
     <div class="header f ac jb">
       <span class="text">{{ props.title }}</span>
       <div class="close">
@@ -48,6 +49,7 @@ import type { ChatMessagesData, AgentToolcallConfig, ToolcallComponentProps, Cha
 import type { DefineComponent } from "vue";
 import { DialogPlugin, MessagePlugin } from "tdesign-vue-next";
 import chatBox from "@/components/chatBox.vue";
+import { useMousePressed, useMouse } from "@vueuse/core";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 const { baseUrl } = storeToRefs(settingStore());
@@ -59,7 +61,7 @@ const props = defineProps({
     default: "",
   },
   episodesId: {
-    type: String,
+    type: Number,
     required: true,
   },
 });
@@ -171,9 +173,33 @@ async function getHistory() {
   if (data && data.history) {
     history.value = [...history.value, ...data.history];
     charBoxRef.value?.setMessages(history.value, "replace");
+  }else{
+    charBoxRef.value?.setMessages([], 'replace');
   }
   loadingHistory.value = false;
 }
+
+// 拖拽调整宽度
+const resizeHandleRef = ref<HTMLElement | null>(null);
+const boxWidth = ref(400);
+const MIN_WIDTH = 400;
+const { pressed } = useMousePressed({ target: resizeHandleRef });
+const { x } = useMouse();
+const dragStartX = ref(0);
+const dragStartWidth = ref(400);
+
+watch(pressed, (isPressed) => {
+  if (isPressed) {
+    dragStartX.value = x.value;
+    dragStartWidth.value = boxWidth.value;
+  }
+});
+
+watchEffect(() => {
+  if (pressed.value) {
+    boxWidth.value = Math.max(MIN_WIDTH, dragStartWidth.value + (dragStartX.value - x.value));
+  }
+});
 
 onMounted(async () => {
   await getHistory();
@@ -189,13 +215,26 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   z-index: 9999;
-  width: 400px;
+  min-width: 400px;
   height: calc(100% - 20px);
   margin-right: 5px;
   border-radius: 10px;
   border: 1px solid #e0e0e0;
   background-color: #fff;
   overflow-y: auto;
+
+  .resize-handle {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    cursor: col-resize;
+    z-index: 10;
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.08);
+    }
+  }
   box-shadow: -4px 2px 10px rgba(53, 53, 53, 0.1);
   .header {
     height: 40px;
