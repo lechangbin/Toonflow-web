@@ -138,6 +138,7 @@ function handleClearMemory(type: "long" | "short" | "all") {
       });
       MessagePlugin.success(`${memoryTypeLabel[type]}已清空`);
       dialog.destroy();
+      getHistory();
     },
   });
 }
