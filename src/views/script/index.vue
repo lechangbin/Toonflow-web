@@ -1,12 +1,18 @@
 <template>
   <div class="script">
     <div class="actionBar">
-      <div class="searchWrapper">
-        <t-input placeholder="搜索剧本名称..." v-model="searchQuery" @change="onChange" class="searchInput">
+      <div class="searchWrapper ac">
+        <t-input placeholder="搜索剧本名称..." v-model="searchQuery" class="searchInput">
           <template #suffixIcon>
             <i-search class="searchIcon" />
           </template>
         </t-input>
+        <t-button style="margin-left: 5px" @click="handleSearch">
+          <template #icon>
+            <t-icon name="search" />
+          </template>
+          搜索
+        </t-button>
       </div>
       <t-button theme="primary" @click="handleAddScript">
         <template #icon><i-plus /></template>
@@ -70,7 +76,7 @@ async function searchScripts() {
 }
 onMounted(searchScripts);
 // 搜索输入变化
-function onChange() {
+function handleSearch() {
   searchScripts();
 }
 // 新增剧本

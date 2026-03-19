@@ -16,10 +16,10 @@
           <t-form-item label="名称" name="name">
             <t-input v-model="props.formData.name" placeholder="请输入名称"></t-input>
           </t-form-item>
-          <t-form-item label="描述" name="describe" v-if="props.type !== 'clip'">
+          <t-form-item label="描述" name="describe">
             <t-textarea v-model="props.formData.describe" placeholder="请输入描述"></t-textarea>
           </t-form-item>
-          <t-form-item label="备注" name="remark" v-if="props.type !== 'clip'">
+          <t-form-item label="备注" name="remark">
             <t-input v-model="props.formData.remark" placeholder="请输入备注"></t-input>
           </t-form-item>
         </t-form>

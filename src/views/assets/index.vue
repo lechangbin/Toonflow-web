@@ -213,6 +213,9 @@
                     </div>
                   </div>
                 </template>
+                <template #startTime="{ row }">
+                  <span>{{ dayjs(row.startTime).format("YYYY-MM-DD HH:mm:ss") }}</span>
+                </template>
                 <template #operation="{ row }">
                   <t-space :size="0">
                     <t-button theme="primary" variant="text" @click="handleEdit(row)">
