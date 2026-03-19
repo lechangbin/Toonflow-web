@@ -427,7 +427,7 @@ async function getFilteredData(type: string) {
     loading.value = true;
     const { data } = await axios.post("/assets/getAssetsApi", {
       projectId: project.value?.id,
-      type,
+      type: type,
       name: searchText.value || undefined,
       page: pagination.value.page,
       limit: pagination.value.pageSize,
