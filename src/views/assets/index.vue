@@ -910,7 +910,33 @@ function closeMediaPreview() {
 
 <style lang="scss" scoped>
 .assets {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   .data {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    :deep(.t-tabs) {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      .t-tabs__content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .t-tab-panel {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+    }
     .tabLabel {
       display: flex;
       align-items: center;
@@ -918,6 +944,10 @@ function closeMediaPreview() {
     }
     .panelContent {
       margin-top: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
       .toolbar {
         display: flex;
         justify-content: space-between;
@@ -931,6 +961,9 @@ function closeMediaPreview() {
         gap: 12px;
       }
       .assetsList {
+        flex: 1;
+        overflow-y: auto;
+        min-height: 0;
         .expandedContent {
           padding: 16px 24px;
           border-radius: 4px;
