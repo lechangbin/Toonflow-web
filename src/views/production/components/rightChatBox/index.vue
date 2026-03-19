@@ -6,23 +6,47 @@
         <i-click-to-fold size="18" @click.stop="emit('close')" />
       </div>
     </div>
-    <chatBox ref="charBoxRef" v-model="inputValue" :config="config" :history="history" :handleActions="handleActions">
+    <chatBox v-loading="loadingHistory" ref="charBoxRef" v-model="inputValue" :config="config" :history="history" :handleActions="handleActions">
       <template #footer>
-        <t-button shape="square" variant="outline" size="small">
-          <template #icon>
-            <i-setting-config size="16" />
+        <t-popup trigger="click" placement="top-left">
+          <t-button shape="square" variant="outline" size="small">
+            <template #icon>
+              <i-setting-config size="16" />
+            </template>
+          </t-button>
+          <template #content>
+            <div class="settingMenu">
+              <div class="settingMenuItem" @click="handleAdjustModel">
+                <i-setting-config size="14" />
+                <span>调整偏好模型</span>
+              </div>
+              <div class="settingMenuItem" @click="handleClearMemory('long')">
+                <i-delete size="14" />
+                <span>清空长期记忆</span>
+              </div>
+              <div class="settingMenuItem" @click="handleClearMemory('short')">
+                <i-close size="14" />
+                <span>清空短期记忆</span>
+              </div>
+              <div class="settingMenuItem danger" @click="handleClearMemory('all')">
+                <i-delete-one size="14" />
+                <span>清空全部记忆</span>
+              </div>
+            </div>
           </template>
-        </t-button>
+        </t-popup>
       </template>
     </chatBox>
   </div>
 </template>
 
 <script setup lang="ts">
+import axios from "@/utils/axios";
 import modelTendencies from "./modelTendencies.vue";
 import { useAgentToolcall } from "@tdesign-vue-next/chat";
 import type { ChatMessagesData, AgentToolcallConfig, ToolcallComponentProps, ChatRequestParams, ChatServiceConfig } from "@tdesign-vue-next/chat";
 import type { DefineComponent } from "vue";
+import { DialogPlugin, MessagePlugin } from "tdesign-vue-next";
 import chatBox from "@/components/chatBox.vue";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
@@ -47,7 +71,7 @@ const charBoxRef = ref<InstanceType<typeof chatBox> | null>(null);
 const inputValue = ref<string>("");
 
 const config = ref<ChatServiceConfig>({
-  endpoint: `${baseUrl.value}/agents/scriptAgent`,
+  endpoint: `${baseUrl.value}/agents/productionAgent`,
   protocol: "agui", // 启用AG-UI协议
   stream: true,
   onRequest: (params: ChatRequestParams) => ({
@@ -88,6 +112,36 @@ const history = ref<ChatMessagesData[]>([
   },
 ]);
 
+function handleAdjustModel() {
+  charBoxRef.value?.sendText("调整偏好模型");
+}
+
+const memoryTypeLabel: Record<string, string> = {
+  long: "长期记忆",
+  short: "短期记忆",
+  all: "全部记忆",
+};
+
+function handleClearMemory(type: "long" | "short" | "all") {
+  const dialog = DialogPlugin.confirm({
+    header: "确认清空",
+    body: `确定要清空${memoryTypeLabel[type]}吗？此操作无法撤销。`,
+    confirmBtn: "确认清空",
+    cancelBtn: "取消",
+    theme: "warning",
+    onConfirm: async () => {
+      await axios.post(`/agents/clearMemory`, {
+        projectId: project.value?.id,
+        episodesId: props.episodesId,
+        agentType: "productionAgent",
+        memoryType: type,
+      });
+      MessagePlugin.success(`${memoryTypeLabel[type]}已清空`);
+      dialog.destroy();
+    },
+  });
+}
+
 const handleActions = {
   suggestion: (data?: any) => {
     charBoxRef.value?.sendText(data?.content?.prompt);
@@ -105,6 +159,25 @@ const toolcallActions: AgentToolcallConfig[] = [
 ];
 
 useAgentToolcall(toolcallActions);
+
+const loadingHistory = ref(false);
+async function getHistory() {
+  loadingHistory.value = true;
+  const { data } = await axios.post(`/agents/getMemory`, {
+    projectId: project.value?.id,
+    episodesId: props.episodesId,
+    agentType: "productionAgent",
+  });
+  if (data && data.history) {
+    history.value = [...history.value, ...data.history];
+    charBoxRef.value?.setMessages(history.value, "replace");
+  }
+  loadingHistory.value = false;
+}
+
+onMounted(async () => {
+  await getHistory();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -135,6 +208,25 @@ useAgentToolcall(toolcallActions);
     .close {
       cursor: pointer;
       aspect-ratio: 1/1;
+    }
+  }
+}
+
+.settingMenu {
+  padding: 4px 0;
+  .settingMenuItem {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 16px;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    &:hover {
+      background-color: #f3f3f3;
+    }
+    &.danger {
+      color: #e34d59;
     }
   }
 }

@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import type { ChatServiceConfig, ChatMessagesData } from "@tdesign-vue-next/chat";
+import type { ChatServiceConfig, ChatMessagesData, ChatMessageSetterMode } from "@tdesign-vue-next/chat";
 
 const props = defineProps({
   config: {
@@ -65,6 +65,7 @@ const stopRes = () => {
 defineExpose({
   sendText,
   stopRes,
+  setMessages: (messages: ChatMessagesData[], mode?: ChatMessageSetterMode) => chatEngine.value?.setMessages(messages, mode),
 });
 </script>
 
