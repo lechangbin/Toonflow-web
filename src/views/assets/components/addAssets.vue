@@ -22,6 +22,9 @@
           <t-form-item label="备注" name="remark">
             <t-input v-model="props.formData.remark" placeholder="请输入备注"></t-input>
           </t-form-item>
+          <t-form-item label="提示词" name="prompt" v-if="props.type !== 'clip'">
+            <t-textarea v-model="props.formData.prompt"  :autosize="{ minRows: 3, maxRows: 5 }" placeholder="请输入提示词"></t-textarea>
+          </t-form-item>
         </t-form>
       </div>
     </t-dialog>
@@ -42,6 +45,7 @@ const props = defineProps<{
     name: string;
     describe: string;
     remark: string;
+    prompt: string;
   };
 }>();
 const addAssetsShow = defineModel<boolean>({
@@ -67,6 +71,7 @@ function onConfirm() {
           name: props.formData.name,
           describe: props.formData.describe,
           remark: props.formData.remark,
+          prompt: props.formData.prompt,
         })
         .then(() => {
           MessagePlugin.success("资产更新成功");
@@ -82,6 +87,7 @@ function onConfirm() {
           remark: props.formData.remark,
           type: props.type,
           projectId: project.value?.id,
+          prompt: props.formData.prompt,
         })
         .then(() => {
           MessagePlugin.success("资产添加成功");
@@ -114,7 +120,6 @@ function onConfirm() {
   }
   .data {
     width: 100%;
-    height: 200px;
   }
 }
 </style>

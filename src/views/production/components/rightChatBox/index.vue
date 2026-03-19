@@ -20,13 +20,13 @@
                 <i-setting-config size="14" />
                 <span>调整偏好模型</span>
               </div>
-              <div class="settingMenuItem" @click="handleClearMemory('long')">
+              <div class="settingMenuItem" @click="handleClearMemory('message')">
                 <i-delete size="14" />
-                <span>清空长期记忆</span>
+                <span>清空消息记忆</span>
               </div>
-              <div class="settingMenuItem" @click="handleClearMemory('short')">
+              <div class="settingMenuItem" @click="handleClearMemory('summary')">
                 <i-close size="14" />
-                <span>清空短期记忆</span>
+                <span>清空摘要记忆</span>
               </div>
               <div class="settingMenuItem danger" @click="handleClearMemory('all')">
                 <i-delete-one size="14" />
@@ -122,7 +122,7 @@ const memoryTypeLabel: Record<string, string> = {
   all: "全部记忆",
 };
 
-function handleClearMemory(type: "long" | "short" | "all") {
+function handleClearMemory(type: "message" | "summary" | "all") {
   const dialog = DialogPlugin.confirm({
     header: "确认清空",
     body: `确定要清空${memoryTypeLabel[type]}吗？此操作无法撤销。`,
@@ -133,11 +133,11 @@ function handleClearMemory(type: "long" | "short" | "all") {
       await axios.post(`/agents/clearMemory`, {
         projectId: project.value?.id,
         episodesId: props.episodesId,
-        agentType: "productionAgent",
-        memoryType: type,
+        type: type,
       });
       MessagePlugin.success(`${memoryTypeLabel[type]}已清空`);
       dialog.destroy();
+      getHistory();
     },
   });
 }

@@ -19,12 +19,24 @@
                   </template>
                   新增{{ item.name }}
                 </t-button>
-                <t-button theme="primary" @click="handleBatchGenerate" v-if="assetOptions != 'clip'">
-                  <template #icon>
-                    <t-icon name="indent-left" />
+                <t-popup placement="bottom">
+                  <t-button theme="primary" v-if="assetOptions != 'clip'">
+                    <template #icon>
+                      <t-icon name="indent-left" />
+                    </template>
+                    批量生成
+                  </t-button>
+                  <template #content>
+                    <div class="data">
+                      <div class="generatePrompt">
+                        <span @click="batchGeneration(1)">生成提示词</span>
+                      </div>
+                      <div class="generateImage">
+                        <span @click="batchGeneration(2)">生成图片</span>
+                      </div>
+                    </div>
                   </template>
-                  批量生成
-                </t-button>
+                </t-popup>
                 <t-button theme="default" variant="outline" @click="handleBatchDelete">
                   <template #icon>
                     <t-icon name="delete" />
@@ -57,6 +69,7 @@
                 :loading="loading"
                 lazy-load
                 table-layout="fixed"
+                :select-on-row-click="false"
                 @select-change="handleSelectChange"
                 @expand-change="handleExpandChange"
                 @page-change="handlePageChange">
@@ -124,12 +137,40 @@
                     </t-image-viewer>
                   </div>
                 </template>
+                <template #prompt="{ row }">
+                  <div class="promptCell">
+                    <t-loading v-if="generatingIds.has(row.id)" size="small" style="margin-right: 4px" />
+                    <span :class="{ 'generating-text': generatingIds.has(row.id) }">{{ row.prompt }}</span>
+                  </div>
+                </template>
+                <template #previewWithLoading="{ row }">
+                  <div class="previewCell">
+                    <div v-if="generatingImageIds.has(row.id)" class="imageTrigger generatingImage">
+                      <t-loading size="small" />
+                      <span class="generatingLabel">生成中</span>
+                    </div>
+                    <t-image-viewer v-else :images="[row.filePath]" :closeOnEscKeydown="true" :closeOnOverlay="true">
+                      <template #trigger="{ open }">
+                        <div class="imageTrigger" @click="row.filePath && open()">
+                          <img v-if="row.filePath" :src="row.filePath" :alt="row.name" class="previewImage" />
+                          <div v-else class="noImage">
+                            <t-icon name="image" size="24px" />
+                          </div>
+                          <div v-if="row.filePath" class="imageHoverOverlay">
+                            <t-icon name="browse" size="20px" />
+                            <span class="hoverText">预览</span>
+                          </div>
+                        </div>
+                      </template>
+                    </t-image-viewer>
+                  </div>
+                </template>
                 <template #startTime="{ row }">
                   <span>{{ dayjs(row.startTime).format("YYYY-MM-DD HH:mm:ss") }}</span>
                 </template>
                 <template #operation="{ row }">
                   <t-space :size="0">
-                    <t-button theme="primary" variant="text" @click="generate(row)">
+                    <t-button theme="primary" variant="text" :disabled="isGenerating(row.id)" @click="generate(row)">
                       <template #icon>
                         <i-magic :size="18" />
                       </template>
@@ -141,7 +182,7 @@
                       </template>
                       编辑
                     </t-button>
-                    <t-button theme="danger" variant="text" @click="handleDelete(row)">
+                    <t-button theme="danger" variant="text" :disabled="isGenerating(row.id)" @click="handleDelete(row)">
                       <template #icon>
                         <t-icon name="delete" />
                       </template>
@@ -169,7 +210,6 @@
                 @page-change="handlePageChange">
                 <template #preview="{ row }">
                   <div class="previewCell">
-                    <!-- 图片预览 -->
                     <t-image-viewer
                       v-if="getMediaType(row.filePath) === 'image'"
                       :images="[row.filePath]"
@@ -185,7 +225,6 @@
                         </div>
                       </template>
                     </t-image-viewer>
-                    <!-- 视频预览 -->
                     <div
                       v-else-if="getMediaType(row.filePath) === 'video'"
                       class="mediaTrigger videoThumb"
@@ -196,7 +235,6 @@
                         <span class="hoverText">播放</span>
                       </div>
                     </div>
-                    <!-- 音频预览 -->
                     <div
                       v-else-if="getMediaType(row.filePath) === 'audio'"
                       class="mediaTrigger audioThumb"
@@ -207,7 +245,6 @@
                         <span class="hoverText">播放</span>
                       </div>
                     </div>
-                    <!-- 无文件 -->
                     <div v-else class="mediaTrigger noMedia">
                       <t-icon name="image" size="24px" />
                     </div>
@@ -244,10 +281,8 @@
       :title="tabNameMap[assetOptions]"
       :formData="formData"
       @getFilteredData="getFilteredData(assetOptions)" />
-    <batchGeneration v-model="batchGenerationShow" :type="assetOptions" @update="loadCurrentTabData" />
     <generateImage v-model="generateImageShow" @update="loadCurrentTabData" :formData="currentAssetData" />
 
-    <!-- 媒体预览弹窗（视频 / 音频） -->
     <t-dialog
       v-model:visible="mediaPreviewShow"
       :header="mediaPreviewName || '媒体预览'"
@@ -267,18 +302,44 @@
         </div>
       </div>
     </t-dialog>
+    <t-dialog
+      v-model:visible="batchGenerationShow"
+      :header="batchType"
+      width="600px"
+      top="10vh"
+      placement="center"
+      destroyOnClose
+      @confirm="keep"
+      @close="batchGenerationShow = false">
+      <div class="batch">
+        <span>是否确认{{ batchType }}!</span>
+        <t-form labelAlign="top">
+          <t-form-item label="模型" name="selectValue" v-if="batchType === '批量生成图片'">
+            <modelSelect v-model="selectValue" :type="`image`" />
+          </t-form-item>
+          <t-form-item label="分辨率" name="resolution" v-if="batchType === '批量生成图片'">
+            <t-select v-model="resolution" placeholder="请选择分辨率">
+              <t-option key="1k" label="1k" value="1k" />
+              <t-option key="2k" label="2k" value="2k" />
+              <t-option key="4k" label="4k" value="4k" />
+            </t-select>
+          </t-form-item>
+        </t-form>
+      </div>
+    </t-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import dayjs from "dayjs";
+import modelSelect from "@/components/modelSelect.vue";
 import { useFileDialog } from "@vueuse/core";
 import axios from "@/utils/axios";
 import type { TabValue, TableProps } from "tdesign-vue-next";
 import addAssets from "./components/addAssets.vue";
-import batchGeneration from "./components/batchGeneration.vue";
 import generateImage from "./components/generateImage.vue";
 import projectStore from "@/stores/project";
+import { f } from "vue-router/dist/router-CWoNjPRp.mjs";
 
 const props = withDefaults(
   defineProps<{
@@ -295,6 +356,9 @@ const props = withDefaults(
   },
 );
 
+onMounted(() => {
+  loadCurrentTabData();
+});
 const { project } = storeToRefs(projectStore());
 
 const allThemeData = [
@@ -326,10 +390,15 @@ const assetOptions = ref<"role" | "tool" | "scene" | "clip">(initialTab);
 const searchText = ref("");
 
 const tabNameMap: Record<string, string> = { role: "角色", tool: "道具", scene: "场景", clip: "素材" };
-const activeTab = ref(tabNameMap[initialTab] || "角色");
 const selectedRowKeys = ref<Array<string | number>>([]);
 const expandedRowKeys = ref<Array<string | number>>([]);
 const loading = ref(false);
+// 正在生成提示词的资产 id 集合
+const generatingIds = ref<Set<number>>(new Set());
+// 正在生成图片的资产 id 集合
+const generatingImageIds = ref<Set<number>>(new Set());
+// 是否正在处于任意生成中（提示词或图片）
+const isGenerating = (id: number) => generatingIds.value.has(id) || generatingImageIds.value.has(id);
 //表格数据类型定义
 interface Asset {
   id: number;
@@ -396,12 +465,13 @@ function selectAssetOptions(value: TabValue) {
   pagination.value.page = 1;
   loadCurrentTabData();
 }
-const formData = ref<{ id: number; name: string; describe: string; remark: string; filePath?: string }>({
+const formData = ref<{ id: number; name: string; describe: string; remark: string; filePath?: string; prompt: string }>({
   id: 0,
   name: "",
   describe: "",
   remark: "",
   filePath: "",
+  prompt: "",
 });
 const addAssetsShow = ref(false);
 // 新增
@@ -438,13 +508,109 @@ async function handleAdd(type: string) {
       name: "",
       describe: "",
       remark: "",
+      prompt: "",
     };
   }
 }
 const batchGenerationShow = ref(false);
-// 批量生成
-function handleBatchGenerate() {
+const selectValue = ref(""); //选择的模型
+const resolution = ref("1k"); //选择的分辨率
+const batchType = ref("");
+function batchGeneration(type: number) {
+  batchType.value = type === 1 ? "批量生成提示词" : "批量生成图片";
   batchGenerationShow.value = true;
+}
+function keep() {
+  if (batchType.value === "批量生成提示词") {
+    handleBatchGeneratePrompt();
+  } else if (batchType.value === "批量生成图片") {
+    handleBatchGenerateImage();
+  }
+}
+// 批量生成提示词
+async function handleBatchGeneratePrompt() {
+  const selectedAssets = tableData.value.filter((item: any) => selectedRowKeys.value.includes(item.id));
+  if (selectedAssets.length === 0) {
+    MessagePlugin.warning("请至少选择一个资产");
+    return;
+  }
+  const newSet = new Set(generatingIds.value);
+  selectedAssets.forEach((asset) => newSet.add(asset.id));
+  generatingIds.value = newSet;
+  selectedRowKeys.value = selectedRowKeys.value.filter((key) => !selectedAssets.some((a) => a.id === key));
+  batchGenerationShow.value = false;
+
+  for (const asset of selectedAssets) {
+    try {
+      await axios.post("/assetsGenerate/polishAssetsPrompt", {
+        projectId: project.value?.id,
+        assetsId: asset.id,
+        type: asset.type ?? "props",
+        name: asset.name,
+        describe: asset.describe ? asset.describe : "无描述",
+      });
+      await getFilteredData(assetOptions.value);
+      MessagePlugin.success(`「${asset.name}」提示词生成成功`);
+    } catch (e: any) {
+      MessagePlugin.error(`「${asset.name}」提示词生成失败：${e.message ?? ""}`);
+    } finally {
+      const s = new Set(generatingIds.value);
+      s.delete(asset.id);
+      generatingIds.value = s;
+    }
+  }
+}
+// 批量生成图片
+async function handleBatchGenerateImage() {
+  const selectedAssets = tableData.value.filter((item: any) => selectedRowKeys.value.includes(item.id));
+  if (selectedAssets.length === 0) {
+    MessagePlugin.warning("请至少选择一个资产");
+    return;
+  }
+  if (!selectValue.value) {
+    MessagePlugin.error("请选择模型");
+    return;
+  }
+  if (!resolution.value) {
+    MessagePlugin.error("请选择分辨率");
+    return;
+  }
+
+  const newSet = new Set(generatingImageIds.value);
+  selectedAssets.forEach((asset) => newSet.add(asset.id));
+  generatingImageIds.value = newSet;
+  selectedRowKeys.value = selectedRowKeys.value.filter((key) => !selectedAssets.some((a) => a.id === key));
+  batchGenerationShow.value = false;
+
+  for (const asset of selectedAssets) {
+    if (!asset.prompt) {
+      MessagePlugin.warning(`「${asset.name}」没有提示词，无法生成图片`);
+      const s = new Set(generatingImageIds.value);
+      s.delete(asset.id);
+      generatingImageIds.value = s;
+      continue;
+    }
+    try {
+      await axios.post("/assetsGenerate/generateAssets", {
+        type: asset.type ?? "props",
+        projectId: project.value?.id,
+        name: asset.name,
+        base64: "",
+        prompt: asset.prompt,
+        model: selectValue.value,
+        id: asset.id,
+        resolution: resolution.value,
+      });
+      await getFilteredData(assetOptions.value);
+      MessagePlugin.success(`「${asset.name}」图片生成成功`);
+    } catch (e: any) {
+      MessagePlugin.error(`「${asset.name}」图片生成失败：${e.message ?? ""}`);
+    } finally {
+      const s = new Set(generatingImageIds.value);
+      s.delete(asset.id);
+      generatingImageIds.value = s;
+    }
+  }
 }
 // 批量删除
 function handleBatchDelete() {
@@ -470,13 +636,20 @@ function handleBatchDelete() {
 // 父资产表格列配置
 const selectType = props.multiple ? "multiple" : "single";
 const columns: TableProps["columns"] = [
-  { colKey: "row-select", type: selectType, width: 50, align: "center", fixed: "left" },
+  {
+    colKey: "row-select",
+    type: selectType,
+    width: 50,
+    align: "center",
+    fixed: "left",
+    disabled: (row: any) => isGenerating(row.row?.id ?? row.id),
+  },
   {
     colKey: "filePath",
     title: "预览",
     width: 100,
     align: "center",
-    cell: "preview",
+    cell: "previewWithLoading",
   },
   {
     colKey: "name",
@@ -491,6 +664,7 @@ const columns: TableProps["columns"] = [
     width: 200,
     align: "left",
     ellipsis: true,
+    cell: "prompt",
   },
   {
     colKey: "describe",
@@ -618,12 +792,13 @@ const clipColumns: TableProps["columns"] = [
   },
 ];
 
-// 选择行
+// 选择行（正在生成中的行不允许勾选）
 function handleSelectChange(value: Array<string | number>) {
+  const filtered = value.filter((key) => !isGenerating(key as number));
   if (!props.multiple) {
-    selectedRowKeys.value = value.length > 0 ? [value[value.length - 1]] : [];
+    selectedRowKeys.value = filtered.length > 0 ? [filtered[filtered.length - 1]] : [];
   } else {
-    selectedRowKeys.value = value;
+    selectedRowKeys.value = filtered;
   }
 }
 function handleExpandChange(value: Array<string | number>) {
@@ -750,11 +925,38 @@ function closeMediaPreview() {
         margin-bottom: 16px;
         padding-bottom: 16px;
       }
+      .data {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
       .assetsList {
         .expandedContent {
           padding: 16px 24px;
           border-radius: 4px;
           margin: 8px 0;
+        }
+        .promptCell {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          .generating-text {
+            color: var(--td-text-color-placeholder, #aaa);
+            font-style: italic;
+          }
+        }
+        .generatingImage {
+          flex-direction: column;
+          gap: 6px;
+          background: var(--td-bg-color-component, #f5f5f5);
+          cursor: default;
+          &:hover {
+            transform: none !important;
+          }
+          .generatingLabel {
+            font-size: 11px;
+            color: var(--td-text-color-placeholder, #aaa);
+          }
         }
       }
       .previewCell {
@@ -888,7 +1090,16 @@ function closeMediaPreview() {
 </style>
 
 <style lang="scss">
-// 媒体预览弹窗内容（t-dialog 内容挂载在 body 下，需要全局样式）
+/* t-popup 的 content 插槽会 teleport 到 body，必须用全局样式 */
+.generatePrompt,
+.generateImage {
+  cursor: pointer;
+  padding: 8px 16px;
+  &:hover {
+    background: var(--td-bg-color-hover, #f0f0f0);
+  }
+}
+
 .mediaPreviewDialog {
   display: flex;
   justify-content: center;

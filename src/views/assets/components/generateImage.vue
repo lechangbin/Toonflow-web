@@ -48,9 +48,19 @@
               </t-loading>
             </div>
           </div>
-          <div class="selectModel">
-            <span style="font-size: 16px; font-weight: 900">选择模型</span>
-            <modelSelect v-model="selectValue" :type="`image`" />
+          <div class="selectModel f">
+            <div style="width: 60%">
+              <span style="font-size: 16px; font-weight: 900">选择模型</span>
+              <modelSelect v-model="selectValue" :type="`image`" />
+            </div>
+            <div style="width: 40%; margin-left: 15px">
+              <span style="font-size: 16px; font-weight: 900">选择分辨率</span>
+              <t-select v-model="resolution">
+                <t-option key="1k" label="1k" value="1k" />
+                <t-option key="2k" label="2k" value="2k" />
+                <t-option key="4k" label="4k" value="4k" />
+              </t-select>
+            </div>
           </div>
           <div class="generateButton" style="margin-top: 20px">
             <t-button theme="primary" size="large" block :loading="generateLoading" @click="handleGenerate">生成图片</t-button>
@@ -151,6 +161,7 @@ const generateImageShow = defineModel({
 //关闭生成图片的弹窗
 function handleCancel() {
   generateImageShow.value = false;
+  emit("update");
 }
 //上传参考图片
 const referenceFileList = ref<any[]>([]);
@@ -183,11 +194,22 @@ async function generatePrompt() {
   }
 }
 const emit = defineEmits(["update"]);
+const resolution = ref("1k");
 //生成图片
 async function handleGenerate() {
   generateLoading.value = true;
   if (!props.formData.prompt) {
     MessagePlugin.error("请填写提示词");
+    generateLoading.value = false;
+    return;
+  }
+  if (!resolution.value) {
+    MessagePlugin.error("请选择分辨率");
+    generateLoading.value = false;
+    return;
+  }
+  if (!selectValue.value) {
+    MessagePlugin.error("请选择模型");
     generateLoading.value = false;
     return;
   }
@@ -214,6 +236,7 @@ async function handleGenerate() {
       prompt: props.formData.prompt,
       model: selectValue.value,
       id: props.formData.id,
+      resolution: resolution.value,
     });
 
     setTimeout(() => fetchGeneratedImages(), 500);
