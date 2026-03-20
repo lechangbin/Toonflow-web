@@ -4,8 +4,8 @@
     <div class="titleBar dragHandle">
       <div class="title c">剧本</div>
     </div>
-    <div class="block pr" :style="{ '--block-color': colors[index % colors.length] }" v-for="(item, index) in props.data.blocks" :key="item.id">
-      <pre>{{ item.content }}</pre>
+    <div class="block pr" :style="{ '--block-color': colors[index % colors.length] }" v-for="(item, index) in props.data.blocks" :key="index">
+      <pre>{{ item }}</pre>
     </div>
     <Handle :id="props.data.handleIds.assets" type="source" :position="Position.Bottom" />
   </t-card>
@@ -14,15 +14,10 @@
 <script setup lang="ts">
 import { Handle, Position } from "@vue-flow/core";
 
-interface Block {
-  id: string;
-  content: string;
-}
-
 const props = defineProps<{
   id: string;
   data: {
-    blocks: Block[];
+    blocks: string[];
     handleIds: {
       assets: string;
       source: string;

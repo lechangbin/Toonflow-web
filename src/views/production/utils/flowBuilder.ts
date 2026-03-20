@@ -12,11 +12,6 @@ const NODE_IDS = {
 } as const;
 
 // ==================== 类型定义 ====================
-interface Block {
-  id: string;
-  content: string;
-}
-
 interface Character {
   name: string;
   desc: string;
@@ -78,7 +73,7 @@ interface PosterItem {
 
 export interface FlowData {
   script: {
-    blocks: Block[];
+    blocks: string[];
   };
   assets: {
     characters: Character[];
