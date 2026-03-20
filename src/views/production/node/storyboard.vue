@@ -25,7 +25,7 @@
               <t-tag class="frameTag" :style="{ backgroundColor: tagColors[(groupIndex * 10 + index) % tagColors.length] }">
                 S{{ String(index + 1).padStart(2, "0") }}
               </t-tag>
-              <t-image v-if="frame.image" :src="frame.image" fit="contain" class="frameImg" @click.stop="visible = true">
+              <t-image v-if="frame.image" :src="frame.image" fit="contain" class="frameImg" @click="visible = true">
                 <template #overlayContent>
                   <div class="imageToolsWrap show">
                     <ImageTools :src="frame.image" position="br" />

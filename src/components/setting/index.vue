@@ -50,7 +50,7 @@ const menuItems = [
   { key: "themeConfig", label: "主题", icon: "i-platte" },
   { key: "vendorConfig", label: "模型服务", icon: "i-computer" },
   { key: "agentConfog", label: "Agent配置", icon: "i-color-filter" },
-  { key: "memoryConfig", label: "AI记忆配置", icon: "i-memory-card-one" },
+  { key: "memoryConfig", label: "Agent记忆配置", icon: "i-memory-card-one" },
   { key: "loginConfig", label: "登录配置", icon: "i-lock" },
   { key: "dbConfig", label: "数据库操作", icon: "i-data" },
   { key: "fileManagement", label: "文件管理", icon: "i-hard-disk" },
