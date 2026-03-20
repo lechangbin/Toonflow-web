@@ -5,9 +5,9 @@
         <t-form labelAlign="top">
           <t-form-item label="快捷指令">
             <div class="quickActions">
-              <t-button theme="primary" variant="outline" @click="selectByState('')">全选未生成项</t-button>
-              <t-button theme="primary" variant="outline" @click="selectByState('生成成功')">全选已生成项</t-button>
-              <t-button theme="primary" variant="outline" @click="selectByState('生成失败')">全选错误项</t-button>
+              <t-button theme="primary" variant="outline" @click="selectByState('pending')">全选未生成项</t-button>
+              <t-button theme="primary" variant="outline" @click="selectByState('done')">全选已生成项</t-button>
+              <t-button theme="primary" variant="outline" @click="selectByState('error')">全选错误项</t-button>
               <t-button theme="primary" variant="outline" @click="toggleSelectAll">反选</t-button>
               <t-button theme="primary" variant="outline" @click="clearSelection">取消选择</t-button>
               <t-image-viewer :images="previewImages" :closeOnEscKeydown="true" :closeOnOverlay="true">
@@ -18,7 +18,7 @@
             </div>
           </t-form-item>
           <t-form-item label="素材类型筛选">
-            <t-checkbox-group @change="onChangeFn" v-model="checkboxValue" :options="options" class="filterGroup" />
+            <t-checkbox-group v-model="checkboxValue" :options="['人物', '场景', '道具']" class="filterGroup" />
           </t-form-item>
           <t-form-item label="生成模型">
             <modelSelect v-model="selectValue" :type="`image`" />
@@ -37,7 +37,7 @@
             <t-input-number v-model="concurrentCount" autoWidth placeholder="请输入并发数"></t-input-number>
           </t-form-item>
           <t-form-item>
-            <t-button theme="primary" block @click="batchGeneration">开始批量生成</t-button>
+            <t-button theme="primary" block>开始批量生成</t-button>
           </t-form-item>
         </t-form>
       </t-card>
@@ -46,65 +46,57 @@
       <t-card v-show="dataList.length > 0" shadow class="card" v-for="item in dataList" :key="item.id" @click.stop="openDrawer(item)">
         <div class="imageBox">
           <t-checkbox class="selectBox" :checked="selectedIds.includes(item.id)" @change="toggleSelect(item.id)" />
-          <t-empty v-if="!item.state" type="maintenance" title="等待生成" />
-          <div v-else-if="item.state === '生成中'" class="generatingBox">
+          <t-empty v-if="item.state === 'pending'" type="maintenance" title="等待生成" />
+          <div v-else-if="item.state === 'generating'" class="generatingBox">
             <t-loading />
             <span class="generatingText">生成中</span>
           </div>
-          <t-empty v-else-if="item.state === '生成失败'" type="fail" title="生成失败" />
-          <t-image v-else class="image" :src="item.filePath ?? undefined" fit="contain" :preview="true" :lazy="true">
+          <t-empty v-else-if="item.state === 'error'" type="fail" title="图片错误" />
+          <t-image v-else class="image" :src="item.src ?? undefined" fit="contain" :preview="true" :lazy="true">
             <template #error>
               <t-empty type="fail" title="图片错误" />
             </template>
             <template #overlayContent>
               <div class="imageToolsWrap">
-                <ImageTools :src="item.filePath!" position="br" />
+                <ImageTools :src="item.src!" position="br" />
               </div>
             </template>
           </t-image>
         </div>
         <div class="infoBox">
-          <div class="title">{{ item.name }}</div>
+          <div class="title">{{ item.title }}</div>
           <div class="meta">
-            <t-tag size="small" variant="light-outline" theme="warning" class="typeTag">
-              {{ item.type === "role" ? "角色" : item.type === "scene" ? "场景" : item.type === "tool" ? "工具" : "未知" }}
-            </t-tag>
-            <t-tag size="small" variant="outline" class="stateTag" v-if="item.model">
+            <t-tag size="small" variant="light-outline" theme="warning">{{ item.type }}</t-tag>
+            <t-tag size="small" variant="outline" theme="primary" :title="item.model" class="modelTag">
               {{ item.model }}
             </t-tag>
-            <t-tag size="small" variant="outline" v-if="item.resolution">
-              {{ item.resolution }}
-            </t-tag>
+            <t-tag size="small" variant="outline">{{ item.resolution?.toUpperCase() || "未设置" }}</t-tag>
           </div>
-          <div class="prompt" v-if="item.prompt">
-            {{ item.type === "role" ? "角色" : item.type === "scene" ? "场景" : item.type === "tool" ? "工具" : "未知" }}描述：{{ item.prompt }}
-          </div>
+          <div class="prompts" :title="item.prompts">{{ item.prompts }}</div>
         </div>
       </t-card>
       <t-empty v-if="dataList.length === 0" type="empty" title="请先操作剧本" />
       <t-drawer :closeBtn="true" closeOnEscKeydown :showOverlay="false" :footer="false" v-model:visible="drawerVisible" size="480px">
         <template #header>
           <div class="drawerHeader">
-            <span>{{ currentItem?.name }} - 单独配置</span>
-            <t-tag size="medium" variant="light-outline" theme="warning">
-              {{ currentItem?.type === "role" ? "角色" : currentItem?.type === "scene" ? "场景" : currentItem?.type === "tool" ? "工具" : "未知" }}
-            </t-tag>
+            <span>{{ currentItem?.title }} - 单独配置</span>
+            <t-tag size="medium" variant="light-outline" theme="warning">{{ currentItem?.type }}</t-tag>
           </div>
         </template>
         <div v-if="currentItem" class="drawerImageBox">
-          <t-empty v-if="!currentItem.state" type="maintenance" title="等待生成" />
-          <div v-else-if="currentItem.state === '生成中'" class="generatingBox">
+          <t-empty v-if="currentItem.state === 'pending'" type="maintenance" title="等待生成" />
+          <div v-else-if="currentItem.state === 'generating'" class="generatingBox">
             <t-loading />
             <span class="generatingText">生成中</span>
           </div>
-          <t-empty v-else-if="currentItem.state === '生成失败'" type="fail" title="生成失败" />
-          <t-image v-else-if="currentItem.filePath" class="image" :src="currentItem.filePath" fit="contain">
+          <t-empty v-else-if="currentItem.state === 'error'" type="fail" title="图片错误" />
+          <t-image v-else-if="currentItem.src" class="image" :src="currentItem.src" fit="contain">
             <template #error>
               <t-empty type="fail" title="图片错误" />
             </template>
             <template #overlayContent>
               <div class="imageToolsWrap show">
-                <ImageTools :src="currentItem.filePath!" position="br" />
+                <ImageTools :src="currentItem.src!" position="br" />
               </div>
             </template>
           </t-image>
@@ -112,13 +104,13 @@
         </div>
         <t-form v-if="currentItem" labelAlign="top">
           <t-form-item label="生成模型">
-            <modelSelect v-model="selectValue" :type="`image`" />
+            <modelSelect v-model="editForm.model" :type="`image`" />
           </t-form-item>
           <t-form-item label="分辨率">
             <t-select v-model="editForm.resolution" placeholder="请选择分辨率" :options="resolutionOptions" />
           </t-form-item>
           <t-form-item label="提示词">
-            <t-textarea v-model="editForm.prompt" placeholder="请输入提示词" :autosize="{ minRows: 4, maxRows: 10 }" :disabled="polishing" />
+            <t-textarea v-model="editForm.prompts" placeholder="请输入提示词" :autosize="{ minRows: 4, maxRows: 10 }" :disabled="polishing" />
           </t-form-item>
           <t-form-item>
             <div class="drawerActions">
@@ -139,21 +131,17 @@
 </template>
 
 <script setup lang="ts">
-import axios from "@/utils/axios";
-import projectStore from "@/stores/project";
 import modelSelect from "@/components/modelSelect.vue";
-import pLimit from "p-limit";
 
 interface DataItem {
   id: number;
   type: string;
-  name: string;
-  prompt: string;
-  filePath: string | null;
+  title: string;
+  prompts: string;
+  src: string | null;
   state: string;
   model: string;
   resolution: string;
-  describe: string;
 }
 
 const checkboxValue = ref<string[]>([]);
@@ -166,69 +154,106 @@ const resolutionOptions = [
   { label: "2K", value: "2k" },
   { label: "4K", value: "4k" },
 ];
-const options = ref([
-  { label: "人物", value: "role" },
-  { label: "场景", value: "scene" },
-  { label: "道具", value: "tool" },
+// const modelOptions = [
+//   { label: "模型1", value: "model1" },
+//   { label: "模型2", value: "model2" },
+//   { label: "模型3", value: "model3" },
+// ];
+
+// const modelLabelMap = Object.fromEntries(modelOptions.map((o) => [o.value, o.label]));
+// const modelLabel = (val) => modelLabelMap[val] || null;
+
+// const dataList = ref(
+//   Array.from({ length: 40 }, (_, i) => {
+//     const state = STATES[i % 4];
+//     const typeName = TYPE_NAMES[i % 3];
+//     return {
+//       id: i + 1,
+//       type: typeName,
+//       title: `${typeName}-${String(i + 1).padStart(3, "0")}`,
+//       prompts: `${typeName}描述：示例提示词，用于第 ${i + 1} 张图的生成指引`,
+//       src: state === "done" ? `https://picsum.photos/seed/${i + 1}/600/360` : null,
+//       state,
+//       model: MODELS[i % 3],
+//       resolution: RESOLUTIONS[i % 3],
+//     };
+//   }),
+// );
+const dataList = ref<DataItem[]>([
+  {
+    id: 1,
+    type: "人物",
+    title: "人物-001",
+    prompts: "人物描述：示例提示词，用于第 1 张图的生成指引",
+    src: "https://picsum.photos/seed/1/600/360",
+    state: "done",
+    model: "model1",
+    resolution: "2k",
+  },
+  {
+    id: 2,
+    type: "场景",
+    title: "场景-002",
+    prompts: "场景描述：示例提示词，用于第 2 张图的生成指引",
+    src: null,
+    state: "pending",
+    model: "model2",
+    resolution: "4k",
+  },
+  {
+    id: 3,
+    type: "道具",
+    title: "道具-003",
+    prompts: "道具描述：示例提示词，用于第 3 张图的生成指引",
+    src: null,
+    state: "error",
+    model: "model3",
+    resolution: "1k",
+  },
+  {
+    id: 4,
+    type: "人物",
+    title: "人物-004",
+    prompts: "人物描述：示例提示词，用于第 4 张图的生成指引",
+    src: "https://picsum.photos/seed/4/600/360",
+    state: "done",
+    model: "model1",
+    resolution: "2k",
+  },
+  {
+    id: 4,
+    type: "人物",
+    title: "人物-004",
+    prompts: "人物描述：示例提示词，用于第 4 张图的生成指引",
+    src: "https://picsum.photos/seed/4/600/360",
+    state: "done",
+    model: "model1",
+    resolution: "2k",
+  },
+  {
+    id: 4,
+    type: "人物",
+    title: "人物-004",
+    prompts: "人物描述：示例提示词，用于第 4 张图的生成指引",
+    src: "https://picsum.photos/seed/4/600/360",
+    state: "done",
+    model: "model1",
+    resolution: "2k",
+  },
 ]);
-const dataList = ref<DataItem[]>([]);
-const { project } = storeToRefs(projectStore());
-const loading = ref(false);
-
-// 用于取消进行中的生成请求
-let abortController: AbortController | null = null;
-
-function createAbortController() {
-  abortController?.abort();
-  abortController = new AbortController();
-  return abortController;
-}
-
-onMounted(() => {
-  getFilteredData();
-});
-
-onUnmounted(() => {
-  if (abortController) {
-    abortController.abort();
-    abortController = null;
-  }
-  // 将所有"生成中"的项重置为空状态
-  dataList.value.forEach((item) => {
-    if (item.state === "生成中") item.state = "";
-  });
-});
-function onChangeFn() {
-  getFilteredData();
-}
-async function getFilteredData() {
-  try {
-    loading.value = true;
-    const { data } = await axios.post("/cornerScape/getAllAssets", {
-      projectId: project.value?.id,
-      type: checkboxValue.value,
-    });
-    dataList.value = data;
-  } catch (error) {
-    console.error("加载资产数据失败:", error);
-    dataList.value = [];
-  } finally {
-    loading.value = false;
-  }
-}
 
 const selectedIds = ref<number[]>([]);
 
 const previewImages = computed((): string[] => {
   const selectedImageList = dataList.value
-    .filter((item) => selectedIds.value.includes(item.id) && item.filePath)
-    .map((item) => item.filePath as string);
+    .filter((item) => selectedIds.value.includes(item.id) && item.src)
+    .map((item) => item.src as string);
 
   if (selectedImageList.length > 0) {
     return selectedImageList;
   }
 
-  return dataList.value.filter((item) => item.filePath).map((item) => item.filePath as string);
+  return dataList.value.filter((item) => item.src).map((item) => item.src as string);
 });
 
 const hasPreviewImages = computed(() => previewImages.value.length > 0);
@@ -240,7 +265,7 @@ const toggleSelect = (id: number) => {
 };
 
 const selectByState = (state: string) => {
-  selectedIds.value = dataList.value.filter((item) => (state === "" ? !item.state : item.state === state)).map((item) => item.id);
+  selectedIds.value = dataList.value.filter((item) => item.state === state).map((item) => item.id);
 };
 
 function toggleSelectAll() {
@@ -258,158 +283,49 @@ function clearSelection() {
 const drawerVisible = ref(false);
 const currentItem = ref<DataItem | null>(null);
 const editForm = reactive({
-  assetsId: 0,
   model: "",
-  type: "",
   resolution: "",
-  prompt: "",
-  name: "",
+  prompts: "",
 });
 
 function openDrawer(item: DataItem) {
-  editForm.assetsId = item.id;
-  editForm.name = item.name || "";
-  editForm.type = item.type || "";
-  editForm.model = item.model || "";
   currentItem.value = item;
+  editForm.model = item.model || "";
   editForm.resolution = item.resolution || "";
-  editForm.prompt = item.prompt ? item.prompt : item.describe;
+  editForm.prompts = item.prompts || "";
   drawerVisible.value = true;
-}
-
-function setItemState(id: number, state: string) {
-  const item = dataList.value.find((i) => i.id === id);
-  if (item) item.state = state;
-  if (currentItem.value?.id === id) currentItem.value.state = state;
 }
 
 function regenerateItem() {
   if (!currentItem.value) return;
-  if (!selectValue.value) {
-    MessagePlugin.warning("请选择生成模型");
-    return;
-  }
-  if (!editForm.resolution) {
-    MessagePlugin.warning("请选择分辨率");
-    return;
-  }
-  if (!editForm.prompt.trim()) {
-    MessagePlugin.warning("请输入提示词");
-    return;
-  }
-  const item = currentItem.value;
-  setItemState(item.id, "生成中");
+  const item = dataList.value.find((d) => d.id === currentItem.value!.id);
+  if (!item) return;
+  item.model = editForm.model;
+  item.resolution = editForm.resolution;
+  item.prompts = editForm.prompts;
+  item.state = "generating";
+  item.src = null;
+  window.$message.success("已提交重新生成");
   drawerVisible.value = false;
-  const controller = createAbortController();
-  axios
-    .post(
-      "/assetsGenerate/generateAssets",
-      {
-        type: item.type ?? "props",
-        projectId: project.value?.id,
-        name: item.name ?? "未命名",
-        base64: "",
-        prompt: editForm.prompt,
-        model: selectValue.value,
-        id: item.id,
-        resolution: editForm.resolution,
-        concurrentCount: 1,
-      },
-      { signal: controller.signal },
-    )
-    .then(async () => {
-      MessagePlugin.success(`${item.name} 生成成功`);
-      await getFilteredData();
-    })
-    .catch((e: any) => {
-      if (e.name === "CanceledError" || e.code === "ERR_CANCELED") return;
-      MessagePlugin.error(e.message ?? `${item.name} 生成失败`);
-      setItemState(item.id, "生成失败");
-    });
 }
 
 // AI 润色
 const polishing = ref(false);
 async function polishPrompts() {
-  if (!editForm.prompt.trim()) {
+  if (!editForm.prompts.trim()) {
     window.$message.warning("请先输入提示词");
     return;
   }
   polishing.value = true;
   try {
-    const { data } = await axios.post("/assetsGenerate/polishAssetsPrompt", {
-      projectId: project.value?.id,
-      assetsId: editForm.assetsId,
-      type: editForm.type ?? "props",
-      name: editForm.name,
-      describe: editForm.prompt ? editForm.prompt : "无描述",
-    });
-    MessagePlugin.success("提示词生成成功");
-    if (data.assetsId === editForm.assetsId) {
-      editForm.prompt = data.prompt;
-    }
-    getFilteredData();
+    // TODO: 替换为实际 AI 润色 API 调用
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    editForm.prompts = `[AI润色] ${editForm.prompts}`;
+    window.$message.success("润色完成");
   } catch {
     window.$message.error("润色失败，请重试");
   } finally {
     polishing.value = false;
-  }
-}
-// 批量生成
-async function batchGeneration() {
-  if (selectedIds.value.length === 0) {
-    MessagePlugin.warning("请至少选择一个资产进行批量生成");
-    return;
-  }
-  if (!selectValue.value) {
-    MessagePlugin.warning("请选择生成模型");
-    return;
-  }
-  if (!resolution.value) {
-    MessagePlugin.warning("请选择分辨率");
-    return;
-  }
-
-  const items = dataList.value.filter((item) => selectedIds.value.includes(item.id));
-  const concurrent = Math.max(1, concurrentCount.value || 1);
-  const limit = pLimit(concurrent);
-  const controller = createAbortController();
-
-  MessagePlugin.success(`开始批量生成，共 ${items.length} 个，并发数 ${concurrent}`);
-
-  const tasks = items.map((item) =>
-    limit(async () => {
-      if (controller.signal.aborted) return;
-      setItemState(item.id, "生成中");
-      try {
-        await axios.post(
-          "/assetsGenerate/generateAssets",
-          {
-            type: item.type ?? "props",
-            projectId: project.value?.id,
-            name: item.name ?? "未命名",
-            base64: "",
-            prompt: item.prompt || item.describe,
-            model: selectValue.value,
-            id: item.id,
-            resolution: resolution.value,
-            concurrentCount: 1,
-          },
-          { signal: controller.signal },
-        );
-        setItemState(item.id, "生成成功");
-        await getFilteredData();
-      } catch (e: any) {
-        if (e.name === "CanceledError" || e.code === "ERR_CANCELED") return;
-        MessagePlugin.error(`${item.name} 生成失败：${e.message ?? ""}`);
-        setItemState(item.id, "生成失败");
-      }
-    }),
-  );
-
-  await Promise.all(tasks);
-  if (!controller.signal.aborted) {
-    MessagePlugin.success("批量生成完成");
   }
 }
 </script>
@@ -469,7 +385,7 @@ async function batchGeneration() {
     height: 100%;
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
     align-items: start;
     align-content: start;
     gap: 1rem;
@@ -488,17 +404,18 @@ async function batchGeneration() {
       .imageBox {
         position: relative;
         width: 100%;
-        height: 160px;
+        height: fit-content;
         background-color: #f5f7fa;
         flex-shrink: 0;
         display: flex;
         align-items: center;
         justify-content: center;
+        min-height: 120px;
         .selectBox {
           position: absolute;
           top: 0.5rem;
           left: 0.5rem;
-          z-index: 10;
+          z-index: 1;
         }
         .generatingBox {
           display: flex;
@@ -554,27 +471,18 @@ async function batchGeneration() {
         }
         .meta {
           display: flex;
-          flex-wrap: wrap;
           gap: 0.375rem;
           margin-top: 0.25rem;
-          .typeTag {
-            flex-shrink: 0;
-          }
-          .stateTag {
-            flex-shrink: 0;
-          }
           .modelTag {
-            min-width: 0;
-            max-width: 100%;
-            overflow: hidden;
-            :deep(.t-tag__text) {
+            max-width: 120px;
+            :deep(.t-tag--text) {
               overflow: hidden;
               text-overflow: ellipsis;
               white-space: nowrap;
             }
           }
         }
-        .prompt {
+        .prompts {
           margin-top: 0.25rem;
           font-size: 0.75rem;
           color: var(--td-text-color-secondary);

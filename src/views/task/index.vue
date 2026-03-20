@@ -27,6 +27,9 @@
               {{ row.state }}
             </span>
           </template>
+          <template #startTime="{ row }">
+            <span>{{ dayjs(row.startTime).format("YYYY-MM-DD HH:mm:ss") }}</span>
+          </template>
         </t-table>
         <t-pagination
           class="paginationWrap"
@@ -42,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import dayjs from "dayjs";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 
@@ -94,6 +98,7 @@ function onFilterChange() {
 
 async function getCategories() {
   const { data } = await axios.post("/task/getTaskCategories", { projectId: project.value?.id }).catch(() => ({ data: [] }));
+  console.log("%c Line:101 🥕 data", "background:#e41a6a", data);
   categoryOptions.value = [{ label: "全部", value: "" }, ...data.map((i: any) => ({ label: i.taskClass, value: i.taskClass }))];
 }
 
