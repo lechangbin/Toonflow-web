@@ -25,7 +25,9 @@
               <div class="cardDesc">{{ asset.desc }}</div>
             </div>
           </t-card>
-          <div class="divider c"></div>
+          <div class="divider c" v-if="asset.derive?.length">
+            <i-right size="32"></i-right>
+          </div>
           <div v-if="asset.derive?.length" class="deriveAssets f pr">
             <t-card v-for="d in asset.derive" :key="d.assetsId" class="assetImageWrap">
               <div v-if="d.src" class="deriveImageWrap">
@@ -136,7 +138,6 @@ const props = defineProps<{
         }
         .divider {
           width: 0px;
-          border-left: 2px dashed #eaeaea;
         }
         .deriveAssets {
           .tag {
