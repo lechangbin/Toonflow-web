@@ -5,23 +5,48 @@
       <div class="title">衍生资产</div>
     </div>
     <div class="content">
-      <div class="sectionTitle">人物设定</div>
-      <div class="cardList">
-        <div v-for="(character, index) in props.data.characters" :key="index" class="assetCard" :style="{ backgroundColor: character.bgColor }">
-          <t-tag size="small" class="cardTag">人设</t-tag>
-          <div class="cardInfo">
-            <div class="cardName">{{ character.name }}</div>
-            <div class="cardDesc">{{ character.desc }}</div>
+      <div class="cardGrid f fc">
+        <div v-for="asset in props.data.assets" :key="asset.assetsId" class="assetItemBox">
+          <t-card class="rawAssets c fc">
+            <div v-if="asset.src" class="assetImageWrap">
+              <t-image :src="asset.src" fit="cover" class="assetImage" :preview="true" :lazy="true">
+                <template #overlayContent>
+                  <div class="imageToolsWrap show">
+                    <ImageTools :src="asset.src" position="br" />
+                  </div>
+                </template>
+              </t-image>
+            </div>
+            <div class="cardInfo">
+              <div class="cardName jb ac">
+                {{ asset.name }}
+                <t-tag theme="success">原资产</t-tag>
+              </div>
+              <div class="cardDesc">{{ asset.desc }}</div>
+            </div>
+          </t-card>
+          <div class="divider c" v-if="asset.derive?.length">
+            <i-right size="32"></i-right>
           </div>
-        </div>
-      </div>
-      <div class="sectionTitle">场景设定</div>
-      <div class="cardList">
-        <div v-for="(scene, index) in props.data.scenes" :key="index" class="assetCard" :style="{ backgroundColor: scene.bgColor }">
-          <t-tag size="small" theme="success" class="cardTag">场设</t-tag>
-          <div class="cardInfo">
-            <div class="cardName">{{ scene.name }}</div>
-            <div class="cardDesc">{{ scene.desc }}</div>
+          <div v-if="asset.derive?.length" class="deriveAssets f pr">
+            <t-card v-for="d in asset.derive" :key="d.assetsId" class="assetImageWrap">
+              <div v-if="d.src" class="deriveImageWrap">
+                <t-image :src="d.src" fit="contain" class="assetImage" :preview="true" :lazy="true">
+                  <template #overlayContent>
+                    <div class="imageToolsWrap show">
+                      <ImageTools :src="d.src" position="br" />
+                    </div>
+                  </template>
+                </t-image>
+              </div>
+              <div class="cardInfo">
+                <div class="cardName jb ac">
+                  {{ d.name }}
+                  <t-tag theme="warning">衍生</t-tag>
+                </div>
+                <div class="cardDesc">{{ d.desc }}</div>
+              </div>
+            </t-card>
           </div>
         </div>
       </div>
@@ -32,23 +57,26 @@
 <script setup lang="ts">
 import { Handle, Position } from "@vue-flow/core";
 
-interface Character {
+interface DeriveAsset {
+  assetsId: string;
   name: string;
   desc: string;
-  bgColor: string;
+  src: string;
+  image?: string;
 }
 
-interface Scene {
+interface AssetItem {
+  assetsId: string;
   name: string;
   desc: string;
-  bgColor: string;
+  src: string;
+  derive?: DeriveAsset[];
 }
 
 const props = defineProps<{
   id: string;
   data: {
-    characters: Character[];
-    scenes: Scene[];
+    assets: AssetItem[];
     handleIds: {
       target: string;
     };
@@ -58,68 +86,88 @@ const props = defineProps<{
 
 <style lang="scss" scoped>
 .assets {
-  min-width: 400px;
+  width: fit-content;
   user-select: text;
   cursor: default;
+
   .titleBar {
     cursor: grab;
     user-select: none;
+
+    .title {
+      background-color: #000;
+      width: fit-content;
+      padding: 5px 10px;
+      color: #fff;
+      border-radius: 8px 0;
+      font-size: 16px;
+    }
   }
-  .title {
-    background-color: #000;
-    width: fit-content;
-    padding: 5px 10px;
-    color: #fff;
-    border-radius: 8px 0;
-    font-size: 16px;
-  }
+
   .content {
     margin-top: 8px;
-  }
-  .sectionTitle {
-    font-size: 14px;
-    font-weight: 600;
-    color: #333;
-    margin: 16px 0 12px;
-    &:first-child {
-      margin-top: 8px;
-    }
-  }
-  .cardList {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-  .assetCard {
-    width: 140px;
-    height: 120px;
-    border-radius: 8px;
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-    transition:
-      transform 0.2s,
-      box-shadow 0.2s;
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-  }
-  .cardTag {
-    width: fit-content;
-  }
-  .cardInfo {
-    .cardName {
+
+    .sectionTitle {
       font-size: 14px;
       font-weight: 600;
       color: #333;
-      margin-bottom: 4px;
+      margin: 16px 0 12px;
+      &:first-child {
+        margin-top: 8px;
+      }
     }
-    .cardDesc {
-      font-size: 12px;
-      color: #666;
+
+    .cardGrid {
+      display: flex;
+      .assetItemBox {
+        display: flex;
+        gap: 12px;
+        padding: 10px;
+        .cardInfo {
+          margin-top: 0.5rem;
+          .cardName {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+          }
+
+          .cardDesc {
+            font-size: 11px;
+            color: #999;
+          }
+        }
+        .divider {
+          width: 0px;
+        }
+        .deriveAssets {
+          .tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background-color: rgba(255, 255, 255, 0.8);
+            font-size: 10px;
+            padding: 2px 6px;
+          }
+        }
+        .assetImage {
+          height: 150px;
+          border-radius: 4px;
+          .imageToolsWrap {
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+          }
+          &:hover {
+            .imageToolsWrap {
+              opacity: 1;
+              pointer-events: auto;
+            }
+          }
+        }
+        &:not(:first-child) {
+          margin-top: 8px;
+        }
+      }
     }
   }
 }
