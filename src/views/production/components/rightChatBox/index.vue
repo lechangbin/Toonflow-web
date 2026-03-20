@@ -2,7 +2,10 @@
   <div class="rightChatBox" :style="{ width: boxWidth + 'px' }">
     <div ref="resizeHandleRef" class="resize-handle"></div>
     <div class="header f ac jb">
-      <span class="text">{{ props.title }}</span>
+      <span class="text">
+        <i-dot theme="outline" :fill="connected ? 'green' : 'red'" />
+        {{ props.title }}
+      </span>
       <div class="close">
         <i-click-to-fold size="18" @click.stop="emit('close')" />
       </div>
@@ -16,13 +19,19 @@
           :placement="message.role === 'user' ? 'right' : 'left'"
           :variant="message.role === 'user' ? 'base' : 'outline'"
           :handleActions="message.role === 'user' ? {} : handleActions"
-          allowContentSegmentCustom />
+          :status="message.status"
+          :action-bar="['replay', 'copy']"
+          allowContentSegmentCustom>
+          <!-- <template #actionbar>
+            <t-chat-actionbar :action-bar="['replay', 'copy']" />
+          </template> -->
+        </t-chat-message>
       </t-chat-list>
       <t-chat-sender
         class="inputBox"
         v-model="inputValue"
-        placeholder="请输入内容"
         :loading="status === 'pending' || status === 'streaming'"
+        placeholder="请输入内容"
         @send="handleSend"
         @stop="handleStop">
         <template #footer-prefix>
@@ -61,86 +70,129 @@
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
-import modelTendencies from "./modelTendencies.vue";
-import { useAgentToolcall } from "@tdesign-vue-next/chat";
-import type { ChatMessagesData, ToolcallComponentProps, ChatRequestParams, SSEChunkData } from "@tdesign-vue-next/chat";
-import type { DefineComponent } from "vue";
+import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import { DialogPlugin, MessagePlugin } from "tdesign-vue-next";
 import { useMousePressed, useMouse } from "@vueuse/core";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
+import { useSocket } from "@/utils/useSocket";
 
 const { baseUrl } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
-
 const props = defineProps({
   title: { type: String, default: "" },
   episodesId: { type: Number, required: true },
 });
-
 const emit = defineEmits(["close"]);
-const inputValue = ref("");
+// const inputValue = ref("请输出500字小作文，去洗车店洗车走路更快还是开车更快");
+const inputValue = ref("你好");
+const loadingHistory = ref(false);
+const status = ref<"idle" | "pending" | "streaming">("idle");
+const currentMessageId = ref<string | null>(null);
 
-const welcomeMessage: ChatMessagesData = {
-  id: "welcome",
-  role: "assistant",
-  content: [
-    { type: "text", status: "complete", data: "你好！我是 Toonflow 智能助手，需要我开始为您制作视频吗？" },
-    {
-      type: "suggestion",
-      status: "complete",
-      data: [
-        { title: "调整偏好模型", prompt: "调整偏好模型" },
-        { title: "开始制作视频", prompt: "请开始制作视频" },
-      ],
-    },
-  ],
-};
-
-const { chatEngine, messages, status } = useChat({
-  defaultMessages: [welcomeMessage],
-  chatServiceConfig: {
-    endpoint: `${baseUrl.value}/agents/productionAgent`,
-    protocol: "agui",
-    stream: true,
-    onRequest: (params: ChatRequestParams) => ({
-      headers: { Authorization: localStorage.getItem("token") || "" },
-      body: JSON.stringify({ ...params, projectId: project.value?.id, episodesId: props.episodesId }),
-    }),
-    onMessage: (chunk: SSEChunkData) => {
-      const event = typeof chunk.data === "string" ? JSON.parse(chunk.data) : chunk.data;
-      if (event?.type === "CUSTOM" && event.name === "systemMessage") {
-        chatEngine.value.messageStore.setState((draft: any) => {
-          const sysMsg = {
-            id: `sys-${Date.now()}`,
-            role: "system",
-            content: [{ type: "text", data: event.value, status: "complete" }],
-          };
-          // AI 占位消息是最后一条，在它前面插入系统消息
-          draft.messages.splice(-1, 0, sysMsg);
-          draft.messageIds.splice(-1, 0, sysMsg.id);
-        });
-        return [] as any;
-      }
-      return null;
-    },
+const messages = ref<ChatMessagesData[]>([
+  {
+    id: "welcome",
+    role: "assistant",
+    content: [
+      { type: "text", status: "complete", data: "你好！我是 Toonflow 智能助手，需要我开始为您制作视频吗？" },
+      {
+        type: "suggestion",
+        status: "complete",
+        data: [
+          { title: "调整偏好模型", prompt: "调整偏好模型" },
+          { title: "开始制作视频", prompt: "请开始制作视频" },
+        ],
+      },
+    ],
   },
+]);
+
+// ============== Socket ==============
+
+const { connected, socket } = useSocket(`${baseUrl.value}/socket/productionAgent`, {
+  isolationKey: `${project.value?.id}:${props.episodesId}`,
 });
 
-async function handleSend(text: string) {
-  await chatEngine.value.sendUserMessage({ prompt: text });
+const flowData = defineModel<any>();
+
+onMounted(() => {
+  socket.connect();
+  socket.on("textMessage", (data) => {
+    if (data.type === "start") {
+      currentMessageId.value = data.messageId;
+      status.value = "pending";
+      messages.value.push({ id: data.messageId, role: data.role, status: "pending", content: [{ type: "text", data: "" }] });
+    } else {
+      const msg = messages.value.find((m) => m.id === data.messageId);
+      if (!msg) return;
+      if (data.type === "content") {
+        status.value = "streaming";
+        msg.status = "streaming";
+        msg.content![0].data += data.delta!;
+      } else if (data.type === "end") {
+        status.value = "idle";
+        currentMessageId.value = null;
+        msg.status = "complete";
+        msg.content![0].status = "complete";
+      }
+    }
+    messages.value = messages.value.sort((a, b) => {
+      const aPending = a.status === "pending" ? 1 : 0;
+      const bPending = b.status === "pending" ? 1 : 0;
+      return aPending - bPending;
+    });
+  });
+
+  socket.on("systemMessage", (data) => {
+    messages.value.push({ id: data.messageId, role: "system", status: "complete", content: [{ type: "text", data: data.content }] });
+    messages.value = messages.value.sort((a, b) => {
+      const aPending = a.status === "pending" ? 1 : 0;
+      const bPending = b.status === "pending" ? 1 : 0;
+      return aPending - bPending;
+    });
+  });
+
+  socket.on("getFlowData", (_, callback) => {
+    callback(flowData.value);
+  });
+
+  socket.on("setFlowData", ({ key, value }) => {
+    console.log("%c Line:161 🍺 value", "background:#465975", value);
+    console.log("%c Line:161 🍖 key", "background:#3f7cff", key);
+    flowData.value[key] = value;
+  });
+
+  getHistory();
+});
+
+// ============== Actions ==============
+
+function handleSend(text: string) {
+  messages.value.push({ id: `user-${Date.now()}`, role: "user", content: [{ type: "text", data: text }] });
+  socket.send("message", text);
   inputValue.value = "";
 }
 
 function handleStop() {
-  chatEngine.value.abortChat();
+  if (!currentMessageId.value) return;
+  socket.send("stop", currentMessageId.value);
+  const msg = messages.value.find((m) => m.id === currentMessageId.value);
+  if (msg) {
+    msg.status = "complete";
+    msg.content![0].status = "complete";
+  }
+  status.value = "idle";
+  currentMessageId.value = null;
 }
 
-const memoryTypeLabel: Record<string, string> = {
-  message: "消息记忆",
-  summary: "摘要记忆",
-  all: "全部记忆",
+const handleActions = {
+  suggestion: (data?: any) => handleSend(data?.content?.prompt),
 };
+
+// ============== Memory ==============
+
+const memoryTypeLabel: Record<string, string> = { message: "消息记忆", summary: "摘要记忆", all: "全部记忆" };
 
 function handleClearMemory(type: "message" | "summary" | "all") {
   const dialog = DialogPlugin.confirm({
@@ -150,11 +202,7 @@ function handleClearMemory(type: "message" | "summary" | "all") {
     cancelBtn: "取消",
     theme: "warning",
     onConfirm: async () => {
-      await axios.post(`/agents/clearMemory`, {
-        projectId: project.value?.id,
-        episodesId: props.episodesId,
-        type,
-      });
+      await axios.post(`/agents/clearMemory`, { projectId: project.value?.id, episodesId: props.episodesId, type });
       MessagePlugin.success(`${memoryTypeLabel[type]}已清空`);
       dialog.destroy();
       getHistory();
@@ -162,33 +210,18 @@ function handleClearMemory(type: "message" | "summary" | "all") {
   });
 }
 
-const handleActions = {
-  suggestion: (data?: any) => handleSend(data?.content?.prompt),
-};
-
-useAgentToolcall([
-  {
-    name: "collect_user_preferences",
-    description: "收集用户偏好",
-    parameters: [{ name: "destination", type: "string", required: true }],
-    component: modelTendencies as DefineComponent<ToolcallComponentProps>,
-  },
-]);
-
-const loadingHistory = ref(false);
 async function getHistory() {
   loadingHistory.value = true;
-  chatEngine.value.setMessages([], "replace");
   const { data } = await axios.post(`/agents/getMemory`, {
     projectId: project.value?.id,
     episodesId: props.episodesId,
     agentType: "productionAgent",
   });
-  chatEngine.value.setMessages(data?.history ? [welcomeMessage, ...data.history] : [welcomeMessage], "replace");
   loadingHistory.value = false;
 }
 
-// 拖拽调整宽度
+// ============== Resize ==============
+
 const resizeHandleRef = ref<HTMLElement | null>(null);
 const boxWidth = ref(400);
 const MIN_WIDTH = 400;
@@ -209,8 +242,6 @@ watchEffect(() => {
     boxWidth.value = Math.max(MIN_WIDTH, dragStartWidth.value + (dragStartX.value - x.value));
   }
 });
-
-onMounted(getHistory);
 </script>
 
 <style lang="scss" scoped>
