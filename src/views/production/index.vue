@@ -122,48 +122,28 @@ const flowData = ref({
       description: "凌玄跪在地上，面色苍白，嘴角带血",
       camera: "中景，缓慢推近",
       duration: 4,
-      frameMode: "firstFrame",
+      frameMode: "firstFrame" as const,
       lines: null,
       sound: "[音效】捣药声沉闷",
       associateAssetsIds: [1, 2],
+      src: null,
     },
   ],
   // 分镜（合并为一个 node）
-  storyboard: {
-    groups: [
-      {
-        frames: [
-          { id: 1, itemId: 1, description: "大殿全景，凌玄跪地，面色苍白", frameType: "首帧", image: "https://picsum.photos/seed/sb1-1/600/360" },
-          { id: 2, itemId: 2, description: "苏晚卿冷笑特写，眼神算计", frameType: "首帧", image: "https://picsum.photos/seed/sb1-2/600/360" },
-          { id: 3, itemId: 3, description: "青云令微距，表面光芒黯淡", frameType: "首帧", image: "https://picsum.photos/seed/sb1-3/600/360" },
-          { id: 4, itemId: 4, description: "黑风岭妖兽来袭，暗橙焦褐色调", frameType: "首帧", image: "https://picsum.photos/seed/sb1-4/600/360" },
-          { id: 5, itemId: 4, description: "凌玄护住苏晚卿，背影占画面50%", frameType: "尾帧", image: "https://picsum.photos/seed/sb1-5/600/360" },
-          { id: 6, itemId: 5, description: "凌玄瞳孔骤缩，难以置信", frameType: "首帧", image: "https://picsum.photos/seed/sb1-6/600/360" },
-          { id: 7, itemId: 6, description: "鲜血喷出，滴落青石板", frameType: "首帧", image: "https://picsum.photos/seed/sb1-7/600/360" },
-        ],
-      },
-      {
-        frames: [
-          { id: 1, itemId: 1, description: "鲜血在青石上开始晕开", frameType: "首帧", image: "https://picsum.photos/seed/sb2-1/600/360" },
-          { id: 2, itemId: 1, description: "血迹蔓延形成刺目红色", frameType: "尾帧", image: "https://picsum.photos/seed/sb2-2/600/360" },
-          { id: 3, itemId: 2, description: "凌玄愤怒表情，仰拍", frameType: "首帧", image: "https://picsum.photos/seed/sb2-3/600/360" },
-          { id: 4, itemId: 2, description: "青筋暴起，极致压迫感", frameType: "尾帧", image: "https://picsum.photos/seed/sb2-4/600/360" },
-          { id: 5, itemId: 3, description: "苏晚卿讥讽，轻蔑笑容", frameType: "首帧", image: "https://picsum.photos/seed/sb2-5/600/360" },
-          { id: 6, itemId: 4, description: "长老群像，面面相觑", frameType: "首帧", image: "https://picsum.photos/seed/sb2-6/600/360" },
-          { id: 7, itemId: 5, description: "沈清辞搂苏晚卿，志得意满", frameType: "首帧", image: "https://picsum.photos/seed/sb2-7/600/360" },
-        ],
-      },
-      {
-        frames: [
-          { id: 1, itemId: 1, description: "血迹特写，俯拍拉远", frameType: "首帧", image: "https://picsum.photos/seed/sb3-1/600/360" },
-          { id: 2, itemId: 2, description: "凌玄愤怒，青筋暴起", frameType: "首帧", image: "https://picsum.photos/seed/sb3-2/600/360" },
-          { id: 3, itemId: 3, description: "苏晚卿轻蔑笑容", frameType: "首帧", image: "https://picsum.photos/seed/sb3-3/600/360" },
-          { id: 4, itemId: 4, description: "长老群像横移扫过", frameType: "首帧", image: "https://picsum.photos/seed/sb3-4/600/360" },
-          { id: 5, itemId: 5, description: "沈清辞得意双人中景", frameType: "首帧", image: "https://picsum.photos/seed/sb3-5/600/360" },
-        ],
-      },
-    ],
-  },
+  storyboard: [
+    {
+      id: 1,
+      title: "大殿内景",
+      description: "凌玄跪在地上，面色苍白，嘴角带血",
+      camera: "中景，缓慢推近",
+      duration: 4,
+      frameMode: "firstFrame" as const,
+      lines: null,
+      sound: "[音效】捣药声沉闷",
+      associateAssetsIds: [1, 2],
+      src: null,
+    },
+  ],
   // 工作台（单个 node）
   workbench: {
     name: "第2集 - 真相大白",

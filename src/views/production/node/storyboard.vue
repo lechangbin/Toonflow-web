@@ -6,57 +6,46 @@
       <div class="title">分镜列表</div>
     </div>
     <div class="content">
-      <div v-for="(group, groupIndex) in props.data.groups" :key="group.id" class="groupSection">
-        <div class="groupHeader">
-          {{ group.name }}
-        </div>
-        <div class="frameGrid">
-          <template v-for="(frame, index) in group.frames" :key="`${group.id}-${frame.id}`">
+      <div class="frameGrid">
+        <template v-for="(item, index) in props.data.storyboard" :key="item.id">
+          <div class="frameItem" @mouseenter="setHoveredFrame(index)" @mouseleave="setHoveredFrame(null)">
             <div
-              class="frameItem"
-              @mouseenter="setHoveredFrame(group.id, index)"
-              @mouseleave="setHoveredFrame(null, null)"
-            >
-              <div
-                class="addBetween"
-                :class="{ expanded: isAddBetweenExpanded(group.id, index, 'left') }"
-                @click.stop="editStoryboaryImage([index > 0 ? group.frames[index - 1]?.image || '' : '', frame.image || ''])"
-              >
-                <span>+</span>
-              </div>
-              <div class="frameCard">
+              class="addBetween"
+              :class="{ expanded: isAddBetweenExpanded(index, 'left') }"
+              @click.stop="editStoryboaryImage([index > 0 ? props.data.storyboard[index - 1]?.src || '' : '', item.src || ''])">
+              <span>+</span>
+            </div>
+            <div class="frameCard">
               <div
                 class="frameImage"
                 :style="{
-                  background: frame.gradient || getDefaultGradient(groupIndex * 10 + index),
+                  background: getDefaultGradient(index),
                   maxWidth: `${300 * gridScale}px`,
                   maxHeight: `${300 * gridScale}px`,
                 }">
-                <t-tag v-if="frame.frameType" class="frameTypeTag" :style="{ backgroundColor: frame.frameType === '首帧' ? '#5bccb3' : '#e86b6b' }">
-                  {{ frame.frameType === "首帧" ? "首" : "尾" }}
+                <t-tag v-if="item.frameMode !== 'linesSoundEffects'" class="frameTypeTag" :style="{ backgroundColor: item.frameMode === 'firstFrame' ? '#5bccb3' : '#e86b6b' }">
+                  {{ item.frameMode === "firstFrame" ? "首" : "尾" }}
                 </t-tag>
-                <t-tag class="frameTag" :style="{ backgroundColor: tagColors[(groupIndex * 10 + index) % tagColors.length] }">
+                <t-tag class="frameTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
                   S{{ String(index + 1).padStart(2, "0") }}
                 </t-tag>
-                <t-image v-if="frame.image" :src="frame.image" fit="contain" class="frameImg" @click="editStoryboaryImage([frame.image], frame.id)">
+                <t-image v-if="item.src" :src="item.src" fit="contain" class="frameImg" @click="editStoryboaryImage([item.src], item.id)">
                   <template #overlayContent>
                     <div class="imageToolsWrap show">
-                      <ImageTools :src="frame.image" position="br" />
+                      <ImageTools :src="item.src" position="br" />
                     </div>
                   </template>
                 </t-image>
               </div>
-              <div class="frameInfo" :title="frame.description">{{ frame.description }}</div>
+              <div class="frameInfo" :title="item.description">{{ item.title }}</div>
             </div>
-            </div>
-          </template>
-          <div
-            class="addBetween"
-            :class="{ expanded: isAddBetweenExpanded(group.id, group.frames.length, 'right') }"
-            @click="editStoryboaryImage([group.frames[group.frames.length - 1]?.image || '', ''])"
-          >
-            <span>+</span>
           </div>
+        </template>
+        <div
+          class="addBetween"
+          :class="{ expanded: isAddBetweenExpanded(props.data.storyboard?.length ?? 0, 'right') }"
+          @click="editStoryboaryImage([(props.data.storyboard ?? []).at(-1)?.src || '', ''])">
+          <span>+</span>
         </div>
       </div>
       <div class="scaleControl">
@@ -76,26 +65,23 @@ import editStoryboard from "../components/editStoryboard/index.vue";
 import { LoadingPlugin } from "tdesign-vue-next";
 import { Handle, Position } from "@vue-flow/core";
 
-interface Frame {
+interface Storyboard {
   id: number;
+  title: string;
   description: string;
-  image?: string;
-  gradient?: string;
-  frameType?: "首帧" | "尾帧";
-  storyboardTableGroupId?: string;
-  storyboardTableItemId?: number;
-}
-
-interface StoryboardGroup {
-  id: string;
-  name: string;
-  frames: Frame[];
+  camera: string;
+  duration: number;
+  frameMode: "firstFrame" | "endFrame" | "linesSoundEffects";
+  lines: string | null;
+  sound: string | null;
+  associateAssetsIds: number[];
+  src: string | null;
 }
 
 const props = defineProps<{
   id: string;
   data: {
-    groups: StoryboardGroup[];
+    storyboard: Storyboard[];
     handleIds: {
       target: string;
       source: string;
@@ -108,21 +94,15 @@ const previewVisible = ref(false);
 const previewImages = ref<string[]>([]);
 const gridScale = useLocalStorage("storyboardGridScale", 1);
 
-// 当前 hover 的分镜位置
-const hoveredGroupId = ref<string | null>(null);
 const hoveredIndex = ref<number | null>(null);
 
-function setHoveredFrame(groupId: string | null, index: number | null) {
-  hoveredGroupId.value = groupId;
+function setHoveredFrame(index: number | null) {
   hoveredIndex.value = index;
 }
 
-// 判断某个 addBetween 是否应该展开
-// 每个 frameItem[index] 的左侧加号索引为 index，右侧加号索引为 index+1（即下一个 frameItem 的左侧或末尾加号）
-function isAddBetweenExpanded(groupId: string, addIndex: number, _side: string): boolean {
-  if (hoveredGroupId.value !== groupId || hoveredIndex.value === null) return false;
+function isAddBetweenExpanded(addIndex: number, _side: string): boolean {
+  if (hoveredIndex.value === null) return false;
   const i = hoveredIndex.value;
-  // addIndex === i 时是左侧加号，addIndex === i+1 时是右侧加号
   return addIndex === i || addIndex === i + 1;
 }
 
@@ -151,7 +131,7 @@ const getDefaultGradient = (index: number) => gradients[index % gradients.length
 
 async function previewAll() {
   LoadingPlugin(true);
-  const allImages = props.data.groups.flatMap((g) => g.frames.filter((f) => f.image).map((f) => f.image!));
+  const allImages = (props.data.storyboard ?? []).filter((s) => s.src).map((s) => s.src!);
   if (!allImages.length) {
     window.$message.warning("没有可预览的图片");
     return;
@@ -255,23 +235,6 @@ function editStoryboaryImage(images: string[], id: number | null = null) {
 
   .content {
     margin-top: 12px;
-  }
-
-  .groupSection {
-    margin-bottom: 20px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  .groupHeader {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--td-text-color-primary, #333);
-    padding: 8px 0;
-    border-bottom: 2px solid var(--td-brand-color, #0052d9);
-    margin-bottom: 12px;
   }
 
   .frameGrid {

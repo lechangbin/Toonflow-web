@@ -6,7 +6,7 @@
       <div class="title c">分镜表</div>
     </div>
     <div class="storyboardList">
-      <div v-for="(item, index) in props.data.groups" :key="item.id" class="storyboardItem">
+      <div v-for="(item, index) in props.data.storyboardTable" :key="item.id" class="storyboardItem">
         <div class="itemTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
           S{{ String(item.id).padStart(2, '0') }}
         </div>
@@ -58,7 +58,7 @@ interface StoryboardTableItem {
 const props = defineProps<{
   id: string;
   data: {
-    groups: StoryboardTableItem[];
+    storyboardTable: StoryboardTableItem[];
     handleIds: {
       target: string;
       source: string;
