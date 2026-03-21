@@ -690,7 +690,6 @@ async function handleAddMixedRef(refType: VideoMixedRef) {
       console.warn("[MixedRef] 仅支持音频文件");
       return;
     }
-
     if (!shot.mixedRefs) shot.mixedRefs = {};
     shot.mixedRefs[refType as keyof MixedRefs] = { type: "assets", id: selectedAssets[0].id, url: filePath };
   }
@@ -762,34 +761,38 @@ async function handleGenerate() {
   //拿到模式
   const modeData = shot?.mode || (mode.value.length > 0 ? mode.value[0].value : "singleImage");
 
-  // 组装 imageData
-  const imageData: ImageSource[] = [];
+  // 组装 imageData，只传 id 和 type，不传 url
+  type ImageDataItem = Pick<ImageSource, "type" | "id">;
+  const imageData: ImageDataItem[] = [];
+
+  const toItem = (src: ImageSource): ImageDataItem => ({ type: src.type, id: src.id });
 
   if (isMixedRefMode.value) {
     // 混合参考模式：按 mixedRefs 中实际存在的项收集
     const refs = shot?.mixedRefs;
-    if (refs?.videoReference) imageData.push(refs.videoReference);
-    if (refs?.imageReference) imageData.push(refs.imageReference);
-    if (refs?.audioReference) imageData.push(refs.audioReference);
+    if (refs?.videoReference) imageData.push(toItem(refs.videoReference));
+    if (refs?.imageReference) imageData.push(toItem(refs.imageReference));
+    if (refs?.audioReference) imageData.push(toItem(refs.audioReference));
   } else if (currentMode.value === "multiImage" || currentMode.value === "gridImage") {
-    // 多图模式：从 imageSources 取，如没有来源信息则降级用 imageUrls 构造 storyboard 类型
+    // 多图模式：从 imageSources 取，如没有来源信息则降级构造 storyboard 类型
     const sources = shot?.imageSources;
     const urls = shot?.imageUrls || [];
-    urls.forEach((url, idx) => {
-      imageData.push(sources?.[idx] ?? { type: "storyboard", id: shotId!, url });
+    urls.forEach((_url, idx) => {
+      const src = sources?.[idx] ?? { type: "storyboard" as const, id: shotId! };
+      imageData.push({ type: src.type, id: src.id });
     });
   } else if (isDualFrameMode.value) {
     // 首尾帧模式
     if (shot?.imageUrl) {
-      imageData.push(shot.imageSource ?? { type: "storyboard", id: shotId!, url: shot.imageUrl });
+      imageData.push(toItem(shot.imageSource ?? { type: "storyboard", id: shotId!, url: shot.imageUrl }));
     }
     if (shot?.endFrameUrl) {
-      imageData.push(shot.endFrameSource ?? { type: "storyboard", id: shotId!, url: shot.endFrameUrl });
+      imageData.push(toItem(shot.endFrameSource ?? { type: "storyboard", id: shotId!, url: shot.endFrameUrl }));
     }
   } else {
     // 单图模式（singleImage / text 等）
     if (shot?.imageUrl) {
-      imageData.push(shot.imageSource ?? { type: "storyboard", id: shotId!, url: shot.imageUrl });
+      imageData.push(toItem(shot.imageSource ?? { type: "storyboard", id: shotId!, url: shot.imageUrl }));
     }
   }
 
@@ -801,7 +804,7 @@ async function handleGenerate() {
     model,
     resolution,
     duration,
-    modeData,
+    mode: modeData,
   };
   if (audioOptions.value !== false) {
     payload.audio = audioOptions.value === null ? false : true;
