@@ -94,8 +94,10 @@ import settingStore from "@/stores/setting";
 const { otherSetting } = storeToRefs(settingStore());
 import { MessagePlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
-import store from "@/stores";
+import projectStore from "@/stores/project";
 import type { TableProps } from "tdesign-vue-next";
+
+const { project } = storeToRefs(projectStore());
 
 const batchGenerationShow = defineModel<boolean>({
   default: false,
@@ -183,7 +185,6 @@ function handleSelectAll() {
 function handleClearSelection() {
   selectedRowKeys.value = [];
 }
-const { projectId } = storeToRefs(store());
 const props = defineProps<{
   type: "role" | "tool" | "scene" | "clip";
 }>();
@@ -215,7 +216,7 @@ async function handlePageChange(pageInfo: { current: number; pageSize: number })
   try {
     loading.value = true;
     const { data } = await axios.post("/assets/batchGenerationData", {
-      projectId: projectId.value,
+      projectId: project.value?.id,
       type: props.type,
       name: searchText.value || undefined,
       page: pageInfo.current,
@@ -284,7 +285,7 @@ async function onConfirm() {
           base64: "",
           filePath: item.filePath,
           prompt: item.prompt,
-          projectId: projectId.value,
+          projectId: project.value!.id,
         });
       }
     });
@@ -329,7 +330,7 @@ async function generatePrompt(data: AssetItem) {
   rowPromptLoading.value[data.id] = true;
   try {
     const res = await axios.post("/assets/polishAssetsPrompt", {
-      projectId: projectId.value,
+      projectId: project.value?.id,
       assetsId: data.id,
       type: props.type ?? "props",
       name: data.name,
@@ -399,7 +400,7 @@ async function startGenerate(data: { id: number; prompt: string; name: string; t
   try {
     const res = await axios.post("/assets/generateAssets", {
       type: data.type,
-      projectId: projectId.value,
+      projectId: project.value?.id,
       name: data.name,
       base64: undefined,
       prompt: data.prompt ?? "",

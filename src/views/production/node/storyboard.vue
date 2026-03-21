@@ -11,52 +11,51 @@
           {{ group.name }}
         </div>
         <div class="frameGrid">
+          <!-- frames 为空时显示兜底新增按钮 -->
+          <div v-if="!group.frames || group.frames.length === 0" class="emptyAdd" style="height: 100px" @click.stop="editStoryboaryImage([], null)">
+            <span>+</span>
+            <span class="emptyAddText">新增分镜</span>
+          </div>
           <template v-for="(frame, index) in group.frames" :key="`${group.id}-${frame.id}`">
-            <div
-              class="frameItem"
-              @mouseenter="setHoveredFrame(group.id, index)"
-              @mouseleave="setHoveredFrame(null, null)"
-            >
+            <div class="frameItem" @mouseenter="hoveredFrameKey = `${group.id}-${index}`" @mouseleave="hoveredFrameKey = null">
               <div
-                class="addBetween"
-                :class="{ expanded: isAddBetweenExpanded(group.id, index, 'left') }"
-                @click.stop="editStoryboaryImage([index > 0 ? group.frames[index - 1]?.image || '' : '', frame.image || ''])"
-              >
+                class="addBetween addBetween--left"
+                :class="{ expanded: hoveredFrameKey === `${group.id}-${index}` }"
+                @click.stop="editStoryboaryImage([index > 0 ? group.frames[index - 1]?.image || '' : '', frame.image || ''])">
                 <span>+</span>
               </div>
               <div class="frameCard">
-              <div
-                class="frameImage"
-                :style="{
-                  background: frame.gradient || getDefaultGradient(groupIndex * 10 + index),
-                  maxWidth: `${300 * gridScale}px`,
-                  maxHeight: `${300 * gridScale}px`,
-                }">
-                <t-tag v-if="frame.frameType" class="frameTypeTag" :style="{ backgroundColor: frame.frameType === '首帧' ? '#5bccb3' : '#e86b6b' }">
-                  {{ frame.frameType === "首帧" ? "首" : "尾" }}
-                </t-tag>
-                <t-tag class="frameTag" :style="{ backgroundColor: tagColors[(groupIndex * 10 + index) % tagColors.length] }">
-                  S{{ String(index + 1).padStart(2, "0") }}
-                </t-tag>
-                <t-image v-if="frame.image" :src="frame.image" fit="contain" class="frameImg" @click="editStoryboaryImage([frame.image], frame.id)">
-                  <template #overlayContent>
-                    <div class="imageToolsWrap show">
-                      <ImageTools :src="frame.image" position="br" />
-                    </div>
-                  </template>
-                </t-image>
+                <div
+                  class="frameImage"
+                  :style="{
+                    background: frame.gradient || getDefaultGradient(groupIndex * 10 + index),
+                    maxWidth: `${300 * gridScale}px`,
+                    maxHeight: `${300 * gridScale}px`,
+                  }">
+                  <t-tag v-if="frame.frameType" class="frameTypeTag" :style="{ backgroundColor: frame.frameType === '首帧' ? '#5bccb3' : '#e86b6b' }">
+                    {{ frame.frameType === "首帧" ? "首" : "尾" }}
+                  </t-tag>
+                  <t-tag class="frameTag" :style="{ backgroundColor: tagColors[(groupIndex * 10 + index) % tagColors.length] }">
+                    S{{ String(index + 1).padStart(2, "0") }}
+                  </t-tag>
+                  <t-image v-if="frame.image" :src="frame.image" fit="contain" class="frameImg" @click="editStoryboaryImage([frame.image], frame.id)">
+                    <template #overlayContent>
+                      <div class="imageToolsWrap show">
+                        <ImageTools :src="frame.image" position="br" />
+                      </div>
+                    </template>
+                  </t-image>
+                </div>
+                <div class="frameInfo" :title="frame.description">{{ frame.description }}</div>
               </div>
-              <div class="frameInfo" :title="frame.description">{{ frame.description }}</div>
-            </div>
+              <div
+                class="addBetween addBetween--right"
+                :class="{ expanded: hoveredFrameKey === `${group.id}-${index}` }"
+                @click.stop="editStoryboaryImage([frame.image || '', index < group.frames.length - 1 ? group.frames[index + 1]?.image || '' : ''])">
+                <span>+</span>
+              </div>
             </div>
           </template>
-          <div
-            class="addBetween"
-            :class="{ expanded: isAddBetweenExpanded(group.id, group.frames.length, 'right') }"
-            @click="editStoryboaryImage([group.frames[group.frames.length - 1]?.image || '', ''])"
-          >
-            <span>+</span>
-          </div>
         </div>
       </div>
       <div class="scaleControl">
@@ -108,23 +107,8 @@ const previewVisible = ref(false);
 const previewImages = ref<string[]>([]);
 const gridScale = useLocalStorage("storyboardGridScale", 1);
 
-// 当前 hover 的分镜位置
-const hoveredGroupId = ref<string | null>(null);
-const hoveredIndex = ref<number | null>(null);
-
-function setHoveredFrame(groupId: string | null, index: number | null) {
-  hoveredGroupId.value = groupId;
-  hoveredIndex.value = index;
-}
-
-// 判断某个 addBetween 是否应该展开
-// 每个 frameItem[index] 的左侧加号索引为 index，右侧加号索引为 index+1（即下一个 frameItem 的左侧或末尾加号）
-function isAddBetweenExpanded(groupId: string, addIndex: number, _side: string): boolean {
-  if (hoveredGroupId.value !== groupId || hoveredIndex.value === null) return false;
-  const i = hoveredIndex.value;
-  // addIndex === i 时是左侧加号，addIndex === i+1 时是右侧加号
-  return addIndex === i || addIndex === i + 1;
-}
+// 当前 hover 的 frameItem 唯一标识，控制左右加号同时展开
+const hoveredFrameKey = ref<string | null>(null);
 
 const currentRow = ref<{
   images: string[];
@@ -278,38 +262,54 @@ function editStoryboaryImage(images: string[], id: number | null = null) {
     display: flex;
     flex-wrap: wrap;
     align-items: flex-start;
-    gap: 4px;
+    gap: 0;
   }
 
   .frameItem {
-    display: flex;
-    align-items: stretch;
+    position: relative;
+    display: inline-flex;
+    align-items: flex-start;
+    margin: 4px;
   }
 
   .addBetween {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    align-self: stretch;
-    width: 6px;
-    overflow: hidden;
+    width: 28px;
     cursor: pointer;
     color: transparent;
     font-size: 20px;
     border-radius: 6px;
     transition:
-      width 0.2s ease,
       background 0.2s ease,
-      color 0.2s ease;
+      color 0.2s ease,
+      opacity 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
     span {
       line-height: 1;
       white-space: nowrap;
     }
-    &:hover,
     &.expanded {
-      width: 28px;
-      background: rgba(0, 82, 217, 0.08);
+      opacity: 1;
+      pointer-events: auto;
+      background: rgba(0, 82, 217, 0.12);
       color: var(--td-brand-color, #0052d9);
+    }
+    &:hover {
+      background: rgba(0, 82, 217, 0.2);
+      color: var(--td-brand-color, #0052d9);
+    }
+    &--left {
+      left: -14px;
+    }
+    &--right {
+      right: -14px;
     }
   }
 
@@ -386,10 +386,34 @@ function editStoryboaryImage(images: string[], id: number | null = null) {
     font-size: 12px;
     color: var(--td-text-color-primary, #333);
     line-height: 1.4;
-    max-width: 100px;
+    max-width: 300px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .emptyAdd {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100px;
+    height: 80px;
+    border: 2px dashed var(--td-brand-color, #0052d9);
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--td-brand-color, #0052d9);
+    font-size: 24px;
+    gap: 4px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(0, 82, 217, 0.08);
+    }
+
+    .emptyAddText {
+      font-size: 12px;
+    }
   }
 }
 </style>

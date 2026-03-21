@@ -32,7 +32,6 @@
 </template>
 
 <script setup lang="ts">
-import store from "@/stores";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -61,7 +60,6 @@ function handleCancel() {
 }
 const formRef = ref();
 const emit = defineEmits(["getFilteredData"]);
-const { projectId } = storeToRefs(store());
 function onConfirm() {
   formRef.value?.validate().then(async () => {
     if (props.formData.id !== 0) {

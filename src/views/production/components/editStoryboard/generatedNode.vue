@@ -99,6 +99,7 @@ const activeIndex = ref(0);
 const popupPosition = ref({ left: 0, top: 0 });
 const generating = ref(false);
 const editorContent = ref("");
+const emit = defineEmits(["keep"]);
 
 // 保存 @ 触发时的范围，用于后续替换
 let savedRange: Range | null = null;
@@ -113,7 +114,6 @@ const props = defineProps<{
     ratio?: string;
     quality?: string;
     steps?: number;
-    imageId?: number;
   };
   projectId: number;
 }>();
@@ -275,13 +275,27 @@ function syncPrompt() {
     if (node.nodeType === Node.TEXT_NODE) {
       // 去掉零宽空格
       result += (node.textContent || "").replace(/\u200B/g, "");
-    } else if ((node as HTMLElement).classList?.contains("reference-tag")) {
-      // 只取文字部分（跳过 SVG），格式为 @Image X
+    } else if ((node as HTMLElement).dataset?.refIndex !== undefined) {
+      // container span 上有 data-ref-index，格式为 @图X
       const refIndex = (node as HTMLElement).dataset.refIndex;
-      result += `图${Number(refIndex) + 1}`;
+      result += ` @图${Number(refIndex) + 1} `;
     }
   });
   props.data.prompt = result;
+}
+
+// 构建引用映射：{ "@图X": imageUrl }
+function buildReferenceMap(): Record<string, string> {
+  if (!editorRef.value) return {};
+  const map: Record<string, string> = {};
+  editorRef.value.childNodes.forEach((node) => {
+    const el = node as HTMLElement;
+    if (el.dataset?.refIndex !== undefined) {
+      const alias = `@图${Number(el.dataset.refIndex) + 1}`;
+      map[alias] = el.dataset.imgSrc ?? "";
+    }
+  });
+  return map;
 }
 
 // 处理失焦
@@ -299,25 +313,25 @@ async function handleGenerate() {
 
   generating.value = true;
   try {
+    const referenceMap = buildReferenceMap();
     const { data } = await axios.post("/production/editStoryboard/generateStoryboardImage", {
       model: props.data.model,
-      references: props.data?.references?.map((i) => i.image) ?? [],
+      references: referenceMap ?? {},
       quality: props.data.quality,
       ratio: props.data.ratio,
       prompt: props.data.prompt,
       projectId: props.projectId,
     });
     props.data.generatedImage = data.url;
-    props.data.imageId = data.imageId;
   } catch (e) {
     return window.$message.error((e as any)?.message || "生成失败");
   } finally {
     generating.value = false;
   }
 }
-const emit = defineEmits(["keep"]);
 function kepp() {
-  emit("keep", props.data.imageId);
+  if (!props.data.generatedImage) return window.$message.error("请先生成图片");
+  emit("keep", props.data.generatedImage);
 }
 </script>
 

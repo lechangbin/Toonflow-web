@@ -60,7 +60,6 @@ import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
 import removeLine from "./removeLine.vue";
-import graphlib from "graphlib";
 import store from "@/stores";
 import axios from "@/utils/axios";
 const { projectId } = storeToRefs(store());
@@ -88,10 +87,12 @@ interface NodeGeneratedData {
     ratio?: string;
     quality?: string;
     steps: number;
-    imageId?: number;
   };
 }
 type NodeType = NodeUploadData | NodeGeneratedData;
+
+const emit = defineEmits(["save"]);
+
 const visible = defineModel("visible", {
   type: Boolean,
   default: false,
@@ -128,7 +129,6 @@ function syncReferences() {
 
 // 连接处理
 const onConnect = (params: any) => {
-  console.log("%c Line:122 🍊 params", "background:#33a5ff", params);
   // 禁止重复连线：同一 source → target 已存在则忽略
   const isDuplicate = getEdges.value.some((e) => e.source === params.source && e.target === params.target);
   if (isDuplicate) return;
@@ -187,22 +187,24 @@ const addUploadNode = (type: string, image: string = "") => {
   nodes.value.push(newNodeObj as NodeType);
 };
 //保存节点
-async function sureNode(imageId: number) {
+async function sureNode(imageUrl: string) {
   try {
     if (props.editData.id) {
       await axios.post("/production/editStoryboard/updateStoryboardFlow", {
-        nodes: nodes.value,
-        edges: edges.value,
-        imageId,
-      });
-      visible.value = false;
-    } else {
-      await axios.post("/production/editStoryboard/saveStoryboardFlow", {
         id: props.editData.id,
         nodes: nodes.value,
         edges: edges.value,
-        imageId,
+        imageUrl,
       });
+      visible.value = false;
+      emit("save");
+    } else {
+      await axios.post("/production/editStoryboard/saveStoryboardFlow", {
+        nodes: nodes.value,
+        edges: edges.value,
+        imageUrl,
+      });
+      emit("save");
       visible.value = false;
     }
   } catch (e) {
@@ -213,10 +215,14 @@ async function sureNode(imageId: number) {
 onMounted(async () => {
   if (props.editData.id) {
     const { data } = await axios.post("/production/editStoryboard/getStoryboardFlow", {
-      id: 1,
+      id: props.editData.id,
     });
-    edges.value = data.edges;
-    nodes.value = data.nodes;
+    if (data) {
+      edges.value = data.edges;
+      nodes.value = data.nodes;
+    } else {
+      buildFlow();
+    }
   } else {
     buildFlow();
   }
