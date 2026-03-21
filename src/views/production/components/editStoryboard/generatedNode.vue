@@ -4,7 +4,7 @@
     <div class="data" @click="selectedFn">
       <div class="title ac">
         <i-pic theme="outline" size="16" fill="#000000" />
-        <span class="title-text">图片生成</span>
+        <span class="title-text">图片生成 {{ props.data }}</span>
       </div>
       <div class="image">
         <div v-if="generating" class="imageLoading">

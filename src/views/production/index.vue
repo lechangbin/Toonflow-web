@@ -161,6 +161,19 @@ const flowData = ref({
       associateAssetsIds: [1, 2],
       src: "https://picsum.photos/seed/1/600/360",
     },
+      {
+      id: 1,
+      title: "大殿内景",
+      description: "凌玄跪在地上，面色苍白，嘴角带血",
+      camera: "中景，缓慢推近",
+      prompt: "这里时提示词",
+      duration: 4,
+      frameMode: "firstFrame" as const,
+      lines: null,
+      sound: "[音效】捣药声沉闷",
+      associateAssetsIds: [1, 2],
+      src: "https://picsum.photos/seed/1/360/600",
+    },
   ],
   // 工作台（单个 node）
   workbench: {

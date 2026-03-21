@@ -26,12 +26,8 @@
                   height: `${200 * gridScale}px`,
                 }">
                 <t-tag
-                  v-if="item.frameMode !== 'linesSoundEffects'"
                   class="frameTypeTag"
-                  :style="{ backgroundColor: item.frameMode === 'firstFrame' ? '#5bccb3' : '#e86b6b' }">
-                  {{ item.frameMode === "firstFrame" ? "首" : "尾" }}
-                </t-tag>
-                <t-tag class="frameTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
+                  :style="{ backgroundColor: tagColors[index % tagColors.length] }">
                   S{{ String(index + 1).padStart(2, "0") }}
                 </t-tag>
                 <t-image v-if="item.src" :src="item.src" fit="contain" class="frameImg" @click="editStoryboaryImage([item.src], item.id)">
