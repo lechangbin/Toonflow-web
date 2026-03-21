@@ -17,6 +17,7 @@ interface DeriveAsset {
   name: string;
   desc: string;
   src: string;
+  state: "未生成" | "生成中" | "已完成" | "生成失败";
 }
 
 interface AssetItem {
@@ -24,7 +25,7 @@ interface AssetItem {
   name: string;
   desc: string;
   src: string;
-  derive?: DeriveAsset[];
+  derive: DeriveAsset[];
 }
 
 interface StoryboardItem {

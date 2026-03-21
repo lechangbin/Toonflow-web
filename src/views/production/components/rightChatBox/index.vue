@@ -69,6 +69,7 @@
 </template>
 
 <script setup lang="ts">
+import _ from "lodash";
 import axios from "@/utils/axios";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import { DialogPlugin, MessagePlugin } from "tdesign-vue-next";
@@ -85,7 +86,7 @@ const props = defineProps({
 });
 const emit = defineEmits(["close"]);
 // const inputValue = ref("请输出500字小作文，去洗车店洗车走路更快还是开车更快");
-const inputValue = ref("你好");
+const inputValue = ref("生成衍生资产");
 const loadingHistory = ref(false);
 const status = ref<"idle" | "pending" | "streaming">("idle");
 const currentMessageId = ref<string | null>(null);
@@ -158,9 +159,7 @@ onMounted(() => {
   });
 
   socket.on("setFlowData", ({ key, value }) => {
-    console.log("%c Line:161 🍺 value", "background:#465975", value);
-    console.log("%c Line:161 🍖 key", "background:#3f7cff", key);
-    flowData.value[key] = value;
+    _.set(flowData.value, key, value);
   });
 
   getHistory();

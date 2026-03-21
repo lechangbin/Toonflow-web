@@ -5,9 +5,9 @@
       <div class="title">衍生资产</div>
     </div>
     <div class="content">
-      <div class="cardGrid f fc">
+      <div class="cardGrid">
         <div v-for="asset in props.data.assets" :key="asset.assetsId" class="assetItemBox">
-          <t-card class="rawAssets c fc">
+          <t-card class="assetCard">
             <div v-if="asset.src" class="assetImageWrap">
               <t-image :src="asset.src" fit="cover" class="assetImage" :preview="true" :lazy="true">
                 <template #overlayContent>
@@ -17,35 +17,45 @@
                 </template>
               </t-image>
             </div>
+            <div v-else class="assetImageWrap assetImagePlaceholder">
+              <t-empty size="small" title="未生成" />
+            </div>
             <div class="cardInfo">
-              <div class="cardName jb ac">
-                {{ asset.name }}
+              <div class="cardName">
+                <span class="nameText">{{ asset.name }}</span>
                 <t-tag theme="success">原资产</t-tag>
               </div>
               <div class="cardDesc">{{ asset.desc }}</div>
             </div>
           </t-card>
-          <div class="divider c" v-if="asset.derive?.length">
+          <div class="divider">
             <i-right size="32"></i-right>
           </div>
-          <div v-if="asset.derive?.length" class="deriveAssets f pr">
-            <t-card v-for="d in asset.derive" :key="d.assetsId" class="assetImageWrap">
-              <div v-if="d.src" class="deriveImageWrap">
-                <t-image :src="d.src" fit="contain" class="assetImage" :preview="true" :lazy="true">
+          <div class="deriveAssets">
+            <t-card v-for="(item, index) in asset.derive" :key="index" class="assetCard">
+              <div v-if="item.src" class="assetImageWrap">
+                <t-image :src="item.src" fit="contain" class="assetImage" :preview="true" :lazy="true">
                   <template #overlayContent>
                     <div class="imageToolsWrap show">
-                      <ImageTools :src="d.src" position="br" />
+                      <ImageTools :src="item.src" position="br" />
                     </div>
                   </template>
                 </t-image>
               </div>
+              <div v-else class="assetImageWrap assetImagePlaceholder">
+                <t-loading v-if="item.state === '生成中'" size="small" />
+                <t-empty v-else size="small" title="未生成" />
+              </div>
               <div class="cardInfo">
-                <div class="cardName jb ac">
-                  {{ d.name }}
+                <div class="cardName">
+                  <span class="nameText">{{ item.name }}</span>
                   <t-tag theme="warning">衍生</t-tag>
                 </div>
-                <div class="cardDesc">{{ d.desc }}</div>
+                <div class="cardDesc">{{ item.desc }}</div>
               </div>
+            </t-card>
+            <t-card v-if="asset.derive.length <= 0" class="assetCard emptyCard">
+              <t-empty title="无衍生资产"></t-empty>
             </t-card>
           </div>
         </div>
@@ -62,7 +72,7 @@ interface DeriveAsset {
   name: string;
   desc: string;
   src: string;
-  image?: string;
+  state: "未生成" | "生成中" | "已完成" | "生成失败";
 }
 
 interface AssetItem {
@@ -70,7 +80,7 @@ interface AssetItem {
   name: string;
   desc: string;
   src: string;
-  derive?: DeriveAsset[];
+  derive: DeriveAsset[];
 }
 
 const props = defineProps<{
@@ -107,65 +117,110 @@ const props = defineProps<{
   .content {
     margin-top: 8px;
 
-    .sectionTitle {
-      font-size: 14px;
-      font-weight: 600;
-      color: #333;
-      margin: 16px 0 12px;
-      &:first-child {
-        margin-top: 8px;
-      }
-    }
-
     .cardGrid {
       display: flex;
+      flex-direction: column;
+
       .assetItemBox {
         display: flex;
+        align-items: stretch;
         gap: 12px;
         padding: 10px;
-        .cardInfo {
-          margin-top: 0.5rem;
-          .cardName {
-            font-size: 13px;
-            font-weight: 600;
-            color: #333;
+
+        &:not(:first-child) {
+          margin-top: 8px;
+        }
+
+        .assetCard {
+          width: 200px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+
+          .assetImageWrap {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+
+            &.assetImagePlaceholder {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background-color: var(--td-bg-color-container-hover, #f5f5f5);
+              border-radius: 4px;
+              overflow: hidden;
+            }
+
+            .assetImage {
+              height: 100%;
+              border-radius: 4px;
+
+              .imageToolsWrap {
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s ease;
+              }
+
+              &:hover .imageToolsWrap {
+                opacity: 1;
+                pointer-events: auto;
+              }
+            }
           }
 
-          .cardDesc {
-            font-size: 11px;
-            color: #999;
-          }
-        }
-        .divider {
-          width: 0px;
-        }
-        .deriveAssets {
-          .tag {
-            position: absolute;
-            top: 8px;
-            left: 8px;
-            background-color: rgba(255, 255, 255, 0.8);
-            font-size: 10px;
-            padding: 2px 6px;
-          }
-        }
-        .assetImage {
-          height: 150px;
-          border-radius: 4px;
-          .imageToolsWrap {
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.2s ease;
-          }
-          &:hover {
-            .imageToolsWrap {
-              opacity: 1;
-              pointer-events: auto;
+          .cardInfo {
+            margin-top: 0.5rem;
+
+            .cardName {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              font-size: 13px;
+              font-weight: 600;
+              color: #333;
+
+              .nameText {
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                overflow: hidden;
+                max-width: 120px;
+              }
+            }
+
+            .cardDesc {
+              font-size: 11px;
+              color: #999;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
             }
           }
         }
-        &:not(:first-child) {
-          margin-top: 8px;
+
+        .divider {
+          display: flex;
+          align-items: center;
+          flex-shrink: 0;
+        }
+
+        .deriveAssets {
+          display: flex;
+          align-items: stretch;
+          gap: 12px;
+
+          .emptyCard {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            :deep(.t-card__body) {
+              width: 100%;
+              height: 100%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            }
+          }
         }
       }
     }

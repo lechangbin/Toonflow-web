@@ -97,27 +97,22 @@ const flowData = ref({
       name: "凌玄",
       desc: "男主 · 青云宗宗主 · 重伤废修",
       src: "https://picsum.photos/seed/character-1/240/180",
-      derive: [{ assetsId: "d-c-1", name: "青云令", desc: "宗主信物 · 令牌感应已被篡改", src: "https://picsum.photos/seed/derive-c-1/240/180" }],
+      derive: [],
     },
     {
       assetsId: "char-2",
       name: "苏晚卿",
       desc: "女配 · 凌玄未婚妻 · 背叛者",
       src: "https://picsum.photos/seed/character-2/240/180",
-      derive: [{ assetsId: "d-c-2", name: "婚约玉佩", desc: "定情信物 · 已被当成筹码", src: "https://picsum.photos/seed/derive-c-2/240/180" }],
+      derive: [],
     },
     {
       assetsId: "char-3",
       name: "沈清辞",
       desc: "反派 · 夺舍者 · 苏晚卿真爱",
       src: "https://picsum.photos/seed/character-3/240/180",
-      derive: [
-        { assetsId: "d-c-3", name: "夺灵法印", desc: "邪修秘术媒介 · 用于抽离本源灵力", src: "https://picsum.photos/seed/derive-c-3/240/180" },
-        { assetsId: "d-c-3", name: "夺灵法印", desc: "邪修秘术媒介 · 用于抽离本源灵力", src: "https://picsum.photos/seed/derive-c-3/240/180" },
-        { assetsId: "d-c-3", name: "夺灵法印", desc: "邪修秘术媒介 · 用于抽离本源灵力", src: "https://picsum.photos/seed/derive-c-3/240/180" },
-      ],
+      derive: [],
     },
-    { assetsId: "char-4", name: "长老甲", desc: "配角 · 墙头草 · 见风使舵", src: "https://picsum.photos/seed/character-4/240/180" },
   ],
   // 分镜表（合并为一个 node）
   storyboardTable: {

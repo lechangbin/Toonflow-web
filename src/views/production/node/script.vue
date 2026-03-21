@@ -4,8 +4,8 @@
     <div class="titleBar dragHandle">
       <div class="title c">剧本</div>
     </div>
-    <div class="content" @wheel.stop>
-      <t-textarea :model-value="props.data.script" class="scriptInput" readonly :autosize="{ minRows: 25, maxRows: 25 }" />
+    <div class="content">
+      <t-textarea :model-value="props.data.script" class="scriptInput" readonly :autosize="{ minRows: 25 }" />
     </div>
     <Handle :id="props.data.handleIds.assets" type="source" :position="Position.Bottom" />
   </t-card>
