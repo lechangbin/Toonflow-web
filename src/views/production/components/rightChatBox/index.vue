@@ -2,127 +2,197 @@
   <div class="rightChatBox" :style="{ width: boxWidth + 'px' }">
     <div ref="resizeHandleRef" class="resize-handle"></div>
     <div class="header f ac jb">
-      <span class="text">{{ props.title }}</span>
+      <span class="text">
+        <i-dot theme="outline" :fill="connected ? 'green' : 'red'" />
+        {{ props.title }}
+      </span>
       <div class="close">
         <i-click-to-fold size="18" @click.stop="emit('close')" />
       </div>
     </div>
-    <chatBox v-loading="loadingHistory" ref="charBoxRef" v-model="inputValue" :config="config" :history="history" :handleActions="handleActions">
-      <template #footer>
-        <t-popup trigger="click" placement="top-left">
-          <t-button shape="square" variant="outline" size="small">
-            <template #icon>
-              <i-setting-config size="16" />
+    <div class="chatBox" v-loading="loadingHistory">
+      <t-chat-list :clear-history="false">
+        <t-chat-message
+          v-for="message in messages"
+          :key="message.id"
+          :message="message"
+          :placement="message.role === 'user' ? 'right' : 'left'"
+          :variant="message.role === 'user' ? 'base' : 'outline'"
+          :handleActions="message.role === 'user' ? {} : handleActions"
+          :status="message.status"
+          :action-bar="['replay', 'copy']"
+          allowContentSegmentCustom>
+          <!-- <template #actionbar>
+            <t-chat-actionbar :action-bar="['replay', 'copy']" />
+          </template> -->
+        </t-chat-message>
+      </t-chat-list>
+      <t-chat-sender
+        class="inputBox"
+        v-model="inputValue"
+        :loading="status === 'pending' || status === 'streaming'"
+        placeholder="请输入内容"
+        @send="handleSend"
+        @stop="handleStop">
+        <template #footer-prefix>
+          <t-popup trigger="click" placement="top-left">
+            <t-button shape="square" variant="outline" size="small">
+              <template #icon>
+                <i-setting-config size="16" />
+              </template>
+            </t-button>
+            <template #content>
+              <div class="settingMenu">
+                <div class="settingMenuItem" @click="handleSend('调整偏好模型')">
+                  <i-setting-config size="14" />
+                  <span>调整偏好模型</span>
+                </div>
+                <div class="settingMenuItem" @click="handleClearMemory('message')">
+                  <i-delete size="14" />
+                  <span>清空消息记忆</span>
+                </div>
+                <div class="settingMenuItem" @click="handleClearMemory('summary')">
+                  <i-close size="14" />
+                  <span>清空摘要记忆</span>
+                </div>
+                <div class="settingMenuItem danger" @click="handleClearMemory('all')">
+                  <i-delete-one size="14" />
+                  <span>清空全部记忆</span>
+                </div>
+              </div>
             </template>
-          </t-button>
-          <template #content>
-            <div class="settingMenu">
-              <div class="settingMenuItem" @click="handleAdjustModel">
-                <i-setting-config size="14" />
-                <span>调整偏好模型</span>
-              </div>
-              <div class="settingMenuItem" @click="handleClearMemory('message')">
-                <i-delete size="14" />
-                <span>清空消息记忆</span>
-              </div>
-              <div class="settingMenuItem" @click="handleClearMemory('summary')">
-                <i-close size="14" />
-                <span>清空摘要记忆</span>
-              </div>
-              <div class="settingMenuItem danger" @click="handleClearMemory('all')">
-                <i-delete-one size="14" />
-                <span>清空全部记忆</span>
-              </div>
-            </div>
-          </template>
-        </t-popup>
-      </template>
-    </chatBox>
+          </t-popup>
+        </template>
+      </t-chat-sender>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
-import modelTendencies from "./modelTendencies.vue";
-import { useAgentToolcall } from "@tdesign-vue-next/chat";
-import type { ChatMessagesData, AgentToolcallConfig, ToolcallComponentProps, ChatRequestParams, ChatServiceConfig } from "@tdesign-vue-next/chat";
-import type { DefineComponent } from "vue";
+import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import { DialogPlugin, MessagePlugin } from "tdesign-vue-next";
-import chatBox from "@/components/chatBox.vue";
 import { useMousePressed, useMouse } from "@vueuse/core";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
+import { useSocket } from "@/utils/useSocket";
+
 const { baseUrl } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
-
 const props = defineProps({
-  title: {
-    type: String,
-    default: "",
-  },
-  episodesId: {
-    type: Number,
-    required: true,
-  },
+  title: { type: String, default: "" },
+  episodesId: { type: Number, required: true },
 });
-
 const emit = defineEmits(["close"]);
+// const inputValue = ref("请输出500字小作文，去洗车店洗车走路更快还是开车更快");
+const inputValue = ref("你好");
+const loadingHistory = ref(false);
+const status = ref<"idle" | "pending" | "streaming">("idle");
+const currentMessageId = ref<string | null>(null);
 
-const charBoxRef = ref<InstanceType<typeof chatBox> | null>(null);
-
-const inputValue = ref<string>("");
-
-const config = ref<ChatServiceConfig>({
-  endpoint: `${baseUrl.value}/agents/productionAgent`,
-  protocol: "agui", // 启用AG-UI协议
-  stream: true,
-  onRequest: (params: ChatRequestParams) => ({
-    headers: { Authorization: localStorage.getItem("token") || "" },
-    body: JSON.stringify({
-      ...params,
-      projectId: project.value?.id,
-      episodesId: props.episodesId,
-    }),
-  }),
-});
-
-const history = ref<ChatMessagesData[]>([
+const messages = ref<ChatMessagesData[]>([
   {
     id: "welcome",
     role: "assistant",
     content: [
-      {
-        type: "text",
-        status: "complete",
-        data: "你好！我是 Toonflow 智能助手，需要我开始为您制作视频吗？",
-      },
+      { type: "text", status: "complete", data: "你好！我是 Toonflow 智能助手，需要我开始为您制作视频吗？" },
       {
         type: "suggestion",
         status: "complete",
         data: [
-          {
-            title: "调整偏好模型",
-            prompt: "调整偏好模型",
-          },
-          {
-            title: "开始制作视频",
-            prompt: "请开始制作视频",
-          },
+          { title: "调整偏好模型", prompt: "调整偏好模型" },
+          { title: "开始制作视频", prompt: "请开始制作视频" },
         ],
       },
     ],
   },
 ]);
 
-function handleAdjustModel() {
-  charBoxRef.value?.sendText("调整偏好模型");
+// ============== Socket ==============
+
+const { connected, socket } = useSocket(`${baseUrl.value}/socket/productionAgent`, {
+  isolationKey: `${project.value?.id}:${props.episodesId}`,
+});
+
+const flowData = defineModel<any>();
+
+onMounted(() => {
+  socket.connect();
+  socket.on("textMessage", (data) => {
+    if (data.type === "start") {
+      currentMessageId.value = data.messageId;
+      status.value = "pending";
+      messages.value.push({ id: data.messageId, role: data.role, status: "pending", content: [{ type: "text", data: "" }] });
+    } else {
+      const msg = messages.value.find((m) => m.id === data.messageId);
+      if (!msg) return;
+      if (data.type === "content") {
+        status.value = "streaming";
+        msg.status = "streaming";
+        msg.content![0].data += data.delta!;
+      } else if (data.type === "end") {
+        status.value = "idle";
+        currentMessageId.value = null;
+        msg.status = "complete";
+        msg.content![0].status = "complete";
+      }
+    }
+    messages.value = messages.value.sort((a, b) => {
+      const aPending = a.status === "pending" ? 1 : 0;
+      const bPending = b.status === "pending" ? 1 : 0;
+      return aPending - bPending;
+    });
+  });
+
+  socket.on("systemMessage", (data) => {
+    messages.value.push({ id: data.messageId, role: "system", status: "complete", content: [{ type: "text", data: data.content }] });
+    messages.value = messages.value.sort((a, b) => {
+      const aPending = a.status === "pending" ? 1 : 0;
+      const bPending = b.status === "pending" ? 1 : 0;
+      return aPending - bPending;
+    });
+  });
+
+  socket.on("getFlowData", (_, callback) => {
+    callback(flowData.value);
+  });
+
+  socket.on("setFlowData", ({ key, value }) => {
+    console.log("%c Line:161 🍺 value", "background:#465975", value);
+    console.log("%c Line:161 🍖 key", "background:#3f7cff", key);
+    flowData.value[key] = value;
+  });
+
+  getHistory();
+});
+
+// ============== Actions ==============
+
+function handleSend(text: string) {
+  messages.value.push({ id: `user-${Date.now()}`, role: "user", content: [{ type: "text", data: text }] });
+  socket.send("message", text);
+  inputValue.value = "";
 }
 
-const memoryTypeLabel: Record<string, string> = {
-  long: "长期记忆",
-  short: "短期记忆",
-  all: "全部记忆",
+function handleStop() {
+  if (!currentMessageId.value) return;
+  socket.send("stop", currentMessageId.value);
+  const msg = messages.value.find((m) => m.id === currentMessageId.value);
+  if (msg) {
+    msg.status = "complete";
+    msg.content![0].status = "complete";
+  }
+  status.value = "idle";
+  currentMessageId.value = null;
+}
+
+const handleActions = {
+  suggestion: (data?: any) => handleSend(data?.content?.prompt),
 };
+
+// ============== Memory ==============
+
+const memoryTypeLabel: Record<string, string> = { message: "消息记忆", summary: "摘要记忆", all: "全部记忆" };
 
 function handleClearMemory(type: "message" | "summary" | "all") {
   const dialog = DialogPlugin.confirm({
@@ -132,11 +202,7 @@ function handleClearMemory(type: "message" | "summary" | "all") {
     cancelBtn: "取消",
     theme: "warning",
     onConfirm: async () => {
-      await axios.post(`/agents/clearMemory`, {
-        projectId: project.value?.id,
-        episodesId: props.episodesId,
-        type: type,
-      });
+      await axios.post(`/agents/clearMemory`, { projectId: project.value?.id, episodesId: props.episodesId, type });
       MessagePlugin.success(`${memoryTypeLabel[type]}已清空`);
       dialog.destroy();
       getHistory();
@@ -144,25 +210,6 @@ function handleClearMemory(type: "message" | "summary" | "all") {
   });
 }
 
-const handleActions = {
-  suggestion: (data?: any) => {
-    charBoxRef.value?.sendText(data?.content?.prompt);
-  },
-};
-
-// 注册工具配置
-const toolcallActions: AgentToolcallConfig[] = [
-  {
-    name: "collect_user_preferences",
-    description: "收集用户偏好",
-    parameters: [{ name: "destination", type: "string", required: true }],
-    component: modelTendencies as DefineComponent<ToolcallComponentProps>,
-  },
-];
-
-useAgentToolcall(toolcallActions);
-
-const loadingHistory = ref(false);
 async function getHistory() {
   loadingHistory.value = true;
   const { data } = await axios.post(`/agents/getMemory`, {
@@ -170,16 +217,11 @@ async function getHistory() {
     episodesId: props.episodesId,
     agentType: "productionAgent",
   });
-  if (data && data.history) {
-    history.value = [...history.value, ...data.history];
-    charBoxRef.value?.setMessages(history.value, "replace");
-  }else{
-    charBoxRef.value?.setMessages([], 'replace');
-  }
   loadingHistory.value = false;
 }
 
-// 拖拽调整宽度
+// ============== Resize ==============
+
 const resizeHandleRef = ref<HTMLElement | null>(null);
 const boxWidth = ref(400);
 const MIN_WIDTH = 400;
@@ -199,10 +241,6 @@ watchEffect(() => {
   if (pressed.value) {
     boxWidth.value = Math.max(MIN_WIDTH, dragStartWidth.value + (dragStartX.value - x.value));
   }
-});
-
-onMounted(async () => {
-  await getHistory();
 });
 </script>
 
@@ -236,6 +274,19 @@ onMounted(async () => {
     }
   }
   box-shadow: -4px 2px 10px rgba(53, 53, 53, 0.1);
+  .chatBox {
+    width: 100%;
+    height: calc(100% - 50px);
+    display: flex;
+    flex-direction: column;
+    padding-left: 0.5rem;
+    .inputBox {
+      padding-right: 0.5rem;
+    }
+  }
+  :deep(.t-chat__list) {
+    padding-right: 0.5rem;
+  }
   .header {
     height: 40px;
     line-height: 40px;

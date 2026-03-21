@@ -1,146 +1,74 @@
 <template>
-  <t-chatbot ref="chatRef" :default-messages="defaultMessages" :message-props="messageProps" :chat-service-config="chatServiceConfig" />
+  <div class="chatBox">
+    <t-chat-list :clear-history="false">
+      <t-chat-message
+        v-for="message in messages"
+        :key="message.id"
+        :message="message"
+        :placement="message.role === 'user' ? 'right' : 'left'"
+        :variant="message.role === 'user' ? 'base' : 'outline'"
+        :handleActions="message.role === 'user' ? {} : props.handleActions"
+        allowContentSegmentCustom />
+    </t-chat-list>
+    <t-chat-sender
+      class="inputBox"
+      v-model="inputValue"
+      placeholder="请输入内容"
+      :loading="status === 'pending' || status === 'streaming'"
+      @send="handleSend"
+      @stop="emit('stop')">
+      <template #footer-prefix>
+        <slot name="footer"></slot>
+      </template>
+    </t-chat-sender>
+  </div>
 </template>
 
 <script setup lang="ts">
-import settingStore from "@/stores/setting";
-const { baseUrl } = storeToRefs(settingStore());
-import type { ChatRequestParams, ChatMessagesData, ChatServiceConfig, TdChatbotApi, SuggestionItem } from "@tdesign-vue-next/chat";
+import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 
-const chatRef = ref<TdChatbotApi | null>(null);
-const hasHistory = ref(false);
-
-// 初始化消息
-const defaultMessages: ChatMessagesData[] = [
-  {
-    id: "welcome",
-    role: "assistant",
-    content: [
-      {
-        type: "text",
-        status: "complete",
-        data: "你好！我是 Tonnflow 智能助手，有什么可以帮助你的吗？",
-      },
-      {
-        type: "suggestion",
-        status: "complete",
-        data: [
-          {
-            title: "开始制作流程",
-            prompt: "请介绍一下 Tonnflow 设计体系",
-          },
-        ],
-      },
-    ],
+const props = defineProps({
+  messages: {
+    type: Array as () => ChatMessagesData[],
+    default: () => [],
   },
-];
-
-// 模拟历史消息数据（通常从后端接口获取）
-const historyMessages: ChatMessagesData[] = [
-  {
-    id: "history-1",
-    role: "user",
-    datetime: "2024-01-01 10:00:00",
-    content: [
-      {
-        type: "text",
-        data: "TDesign 支持哪些框架？",
-      },
-    ],
+  status: {
+    type: String,
+    default: "idle",
   },
-  {
-    id: "history-2",
-    role: "assistant",
-    datetime: "2024-01-01 10:00:05",
-    status: "complete",
-    content: [
-      {
-        type: "markdown",
-        data: "TDesign 目前支持以下框架：\n\n- **React**\n- **Vue 2/3**\n- **Flutter**\n- **小程序**",
-      },
-    ],
+  handleActions: {
+    type: Object,
+    default: () => () => {},
   },
-  {
-    id: "history-3",
-    role: "user",
-    datetime: "2024-01-01 10:01:00",
-    content: [
-      {
-        type: "text",
-        data: "如何安装 TDesign React？",
-      },
-    ],
-  },
-  {
-    id: "history-4",
-    role: "assistant",
-    datetime: "2024-01-01 10:01:03",
-    status: "complete",
-    content: [
-      {
-        type: "markdown",
-        data: "安装 TDesign React 非常简单：\n\n```bash\nnpm install tdesign-react\n```",
-      },
-    ],
-  },
-];
-
-onMounted(() => {
-  loadHistory();
 });
 
-// 加载历史消息
-const loadHistory = () => {
-  chatRef.value?.setMessages(historyMessages, "replace");
-  hasHistory.value = true;
-};
+const emit = defineEmits<{
+  send: [text: string];
+  stop: [];
+}>();
 
-// 清空消息
-const clearMessages = () => {
-  chatRef.value?.clearMessages();
-  hasHistory.value = false;
-};
+const inputValue = defineModel<string>({
+  default: () => "",
+});
 
-// 聊天服务配置
-const chatServiceConfig: ChatServiceConfig = {
-  endpoint: `${baseUrl.value}/agents/scriptAgent`,
-  protocol: "agui", // 启用AG-UI协议
-  stream: true,
-  onRequest: (params: ChatRequestParams) => ({
-    headers: { Authorization: localStorage.getItem("token") || "" },
-    body: JSON.stringify(params),
-  }),
-};
-
-// 消息配置：处理建议问题点击
-const messageProps = {
-  assistant: {
-    handleActions: {
-      // 点击建议问题时，填充到输入框
-      suggestion: ({ content }: { content: SuggestionItem }) => {
-        chatRef.value?.addPrompt(content.prompt!);
-      },
-    },
-  },
+const handleSend = (text: string) => {
+  emit("send", text);
+  inputValue.value = "";
 };
 </script>
 
-<style scoped lang="scss">
-.quick-actions {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: var(--td-bg-color-secondarycontainer);
-  border-radius: 4px;
-
-  .actions-title {
-    margin-bottom: 8px;
-    font-size: 14px;
-    font-weight: 500;
+<style lang="scss" scoped>
+.chatBox {
+  width: 100%;
+  height: calc(100% - 50px);
+  display: flex;
+  flex-direction: column;
+  padding-left: 0.5rem;
+  .inputBox {
+    padding-right: 0.5rem;
   }
-
-  .actions-buttons {
-    display: flex;
-    gap: 8px;
-  }
+}
+:deep(.t-chat__list) {
+  padding-right: 0.5rem;
 }
 </style>

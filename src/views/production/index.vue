@@ -40,7 +40,7 @@
         <i-menu-unfold-one theme="outline" size="24" fill="#000000" />
       </div>
       <transition name="slide" v-show="openShowVisible">
-        <rightChatBox :title="rightChatTitle" @close="openShowVisible = false" :episodesId />
+        <rightChatBox v-model="flowData" :title="rightChatTitle" @close="openShowVisible = false" :episodesId />
       </transition>
     </div>
   </VueFlow>
@@ -88,69 +88,37 @@ const episodesOptions = ref([
 // AI 只需修改此对象即可控制整个故事线流程
 const flowData = ref({
   // 剧本
-  script: {
-    blocks: [
-      {
-        id: "b1",
-        content: `# 第2集：真相大白，背叛之心
-※ 青云宗，宗门大殿
-△ 凌玄心脏猛地一缩，瞳孔骤缩
-苏晚卿冷笑：「还有你当宝贝的青云令」
-「若不是我趁你养伤时，偷偷在令牌上动了手脚」
-「让你没法引动令牌力量，我们怎么能这么容易逼你交出来？」
-△ 凌玄盯着她，声音在抖：「你什么意思？」
-苏晚卿语气平静，像在说别人的事
-「当年是我故意把妖兽引去黑风岭，又假装被困」
-「让你不得不为了救我，硬接妖兽三道致命攻击」
-「清辞当时修炼遇到瓶颈，需要你的青云宗本源灵力」
-「可你修为太高，只有让你重伤废修，他才能取走本源」
-「至于青云令，我早就用秘法削弱了令牌和你的感应」
-「你以为你还能靠这令牌反抗？」
-△ 凌玄气血逆流，再次一口鲜血喷出`,
-      },
-      {
-        id: "b2",
-        content: `【特效】鲜血在青石上晕开刺目的红
-「苏晚卿！！！」
-「我待你掏心掏肺，你为什么要这么害我？」
-「连我视若性命的青云令，你都要算计！」
-△ 苏晚卿像是听到大笑话
-「清辞才是真心对我，他能给我想要的大道」
-「而你只会让我困在这宗门里，做个有名无实的夫人！」
-△ 几个以前受过凌玄恩惠的长老突然开口
-长老甲：「凌玄，识时务者为俊杰！」
-长老乙：「你现在修为全废，青云令也没用了」
-长老丙：「早就不配管青云宗，不如乖乖交出令牌，还能保住一条命！」`,
-      },
-      {
-        id: "b3",
-        content: `△ 凌玄看着这些人，心里凉得厉害
-△ 沈清辞搂住苏晚卿的腰，笑得更加嚣张
-「听到了吗？现在宗门上下都站在我们这边」
-「你识相点，就现在把青云令交出来」
-「要是敢反抗，我就废了你最后一点修为」
-「把你扔去妖兽谷，让你尝尝被妖兽分食的滋味！」
-△ 凌玄浑身颤抖，眼中血丝密布
-△ 指着苏晚卿，指尖疯狂颤抖
-【独白】她的真面目...我全看清楚了
-【卡黑】`,
-      },
-    ],
-  },
+  script:
+    " # 第2集：真相大白，背叛之心\n※ 青云宗，宗门大殿\n△ 凌玄心脏猛地一缩，瞳孔骤缩\n苏晚卿冷笑：「还有你当宝贝的青云令」\n「若不是我趁你养伤时，偷偷在令牌上动了手脚」\n「让你没法引动令牌力量，我们怎么能这么容易逼你交出来？」\n△ 凌玄盯着她，声音在抖：「你什么意思？」\n苏晚卿语气平静，像在说别人的事\n「当年是我故意把妖兽引去黑风岭，又假装被困」\n「让你不得不为了救我，硬接妖兽三道致命攻击」\n「清辞当时修炼遇到瓶颈，需要你的青云宗本源灵力」\n「可你修为太高，只有让你重伤废修，他才能取走本源」\n「至于青云令，我早就用秘法削弱了令牌和你的感应」\n「你以为你还能靠这令牌反抗？」\n△ 凌玄气血逆流，再次一口鲜血喷出`,\n 【特效】鲜血在青石上晕开刺目的红\n「苏晚卿！！！」\n「我待你掏心掏肺，你为什么要这么害我？」\n「连我视若性命的青云令，你都要算计！」\n△ 苏晚卿像是听到大笑话\n「清辞才是真心对我，他能给我想要的大道」\n「而你只会让我困在这宗门里，做个有名无实的夫人！」\n△ 几个以前受过凌玄恩惠的长老突然开口\n长老甲：「凌玄，识时务者为俊杰！」\n长老乙：「你现在修为全废，青云令也没用了」\n长老丙：「早就不配管青云宗，不如乖乖交出令牌，还能保住一条命！」`,\n △ 凌玄看着这些人，心里凉得厉害\n△ 沈清辞搂住苏晚卿的腰，笑得更加嚣张\n「听到了吗？现在宗门上下都站在我们这边」\n「你识相点，就现在把青云令交出来」\n「要是敢反抗，我就废了你最后一点修为」\n「把你扔去妖兽谷，让你尝尝被妖兽分食的滋味！」\n△ 凌玄浑身颤抖，眼中血丝密布\n△ 指着苏晚卿，指尖疯狂颤抖\n【独白】她的真面目...我全看清楚了\n【卡黑】",
   // 资产
-  assets: {
-    characters: [
-      { name: "凌玄", desc: "男主 · 青云宗宗主 · 重伤废修", bgColor: "#e0f2fe" },
-      { name: "苏晚卿", desc: "女配 · 凌玄未婚妻 · 背叛者", bgColor: "#ffe4e6" },
-      { name: "沈清辞", desc: "反派 · 夺舍者 · 苏晚卿真爱", bgColor: "#fef08a" },
-      { name: "长老甲", desc: "配角 · 墙头草 · 见风使舵", bgColor: "#e0e7ff" },
-    ],
-    scenes: [
-      { name: "青云宗大殿", desc: "主场景 · 庄严肃穆 · 冷色调", bgColor: "#d1fae5" },
-      { name: "黑风岭", desc: "回忆场景 · 阴森危险", bgColor: "#7b91b5" },
-      { name: "妖兽谷", desc: "威胁场景 · 凶险之地", bgColor: "#fca5a5" },
-    ],
-  },
+  assets: [
+    {
+      assetsId: "char-1",
+      name: "凌玄",
+      desc: "男主 · 青云宗宗主 · 重伤废修",
+      src: "https://picsum.photos/seed/character-1/240/180",
+      derive: [{ assetsId: "d-c-1", name: "青云令", desc: "宗主信物 · 令牌感应已被篡改", src: "https://picsum.photos/seed/derive-c-1/240/180" }],
+    },
+    {
+      assetsId: "char-2",
+      name: "苏晚卿",
+      desc: "女配 · 凌玄未婚妻 · 背叛者",
+      src: "https://picsum.photos/seed/character-2/240/180",
+      derive: [{ assetsId: "d-c-2", name: "婚约玉佩", desc: "定情信物 · 已被当成筹码", src: "https://picsum.photos/seed/derive-c-2/240/180" }],
+    },
+    {
+      assetsId: "char-3",
+      name: "沈清辞",
+      desc: "反派 · 夺舍者 · 苏晚卿真爱",
+      src: "https://picsum.photos/seed/character-3/240/180",
+      derive: [
+        { assetsId: "d-c-3", name: "夺灵法印", desc: "邪修秘术媒介 · 用于抽离本源灵力", src: "https://picsum.photos/seed/derive-c-3/240/180" },
+        { assetsId: "d-c-3", name: "夺灵法印", desc: "邪修秘术媒介 · 用于抽离本源灵力", src: "https://picsum.photos/seed/derive-c-3/240/180" },
+        { assetsId: "d-c-3", name: "夺灵法印", desc: "邪修秘术媒介 · 用于抽离本源灵力", src: "https://picsum.photos/seed/derive-c-3/240/180" },
+      ],
+    },
+    { assetsId: "char-4", name: "长老甲", desc: "配角 · 墙头草 · 见风使舵", src: "https://picsum.photos/seed/character-4/240/180" },
+  ],
   // 分镜表（合并为一个 node）
   storyboardTable: {
     groups: [
@@ -524,5 +492,14 @@ $handelSize: 12px;
 :deep(.target) {
   height: $handelSize;
   width: $handelSize;
+}
+:deep(.dragHandle) {
+  padding: 4px;
+  border-radius: 4px;
+  transition: backdrop-filter 0.3s ease-out;
+  &:hover {
+    cursor: move;
+    backdrop-filter: brightness(0.95);
+  }
 }
 </style>

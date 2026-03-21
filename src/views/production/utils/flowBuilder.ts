@@ -12,21 +12,19 @@ const NODE_IDS = {
 } as const;
 
 // ==================== 类型定义 ====================
-interface Block {
-  id: string;
-  content: string;
-}
-
-interface Character {
+interface DeriveAsset {
+  assetsId: string;
   name: string;
   desc: string;
-  bgColor: string;
+  src: string;
 }
 
-interface Scene {
+interface AssetItem {
+  assetsId: string;
   name: string;
   desc: string;
-  bgColor: string;
+  src: string;
+  derive?: DeriveAsset[];
 }
 
 interface StoryboardItem {
@@ -77,13 +75,8 @@ interface PosterItem {
 }
 
 export interface FlowData {
-  script: {
-    blocks: Block[];
-  };
-  assets: {
-    characters: Character[];
-    scenes: Scene[];
-  };
+  script: string;
+  assets: AssetItem[];
   storyboardTable: {
     groups: StoryboardTableGroup[];
   };
@@ -116,10 +109,10 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       {
         id: ids.script,
         type: "script",
-        dragHandle: '.dragHandle',
+        dragHandle: ".dragHandle",
         position: positions[ids.script] || { x: 0, y: 0 },
         data: {
-          blocks: data.script.blocks,
+          script: data.script,
           handleIds: {
             assets: `${ids.script}-assets`,
             source: `${ids.script}-source`,
@@ -130,11 +123,10 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       {
         id: ids.assets,
         type: "assets",
-        dragHandle: '.dragHandle',
+        dragHandle: ".dragHandle",
         position: positions[ids.assets] || { x: 0, y: 0 },
         data: {
-          characters: data.assets.characters,
-          scenes: data.assets.scenes,
+          assets: data.assets,
           handleIds: {
             target: `${ids.assets}-target`,
           },
@@ -144,7 +136,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       {
         id: ids.storyboardTable,
         type: "storyboardTable",
-        dragHandle: '.dragHandle',
+        dragHandle: ".dragHandle",
         position: positions[ids.storyboardTable] || { x: 0, y: 0 },
         data: {
           groups: data.storyboardTable.groups.map((g, i) => ({
@@ -161,7 +153,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       {
         id: ids.storyboard,
         type: "storyboard",
-        dragHandle: '.dragHandle',
+        dragHandle: ".dragHandle",
         position: positions[ids.storyboard] || { x: 0, y: 0 },
         data: {
           groups: data.storyboard.groups.map((g, i) => ({
@@ -179,7 +171,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       {
         id: ids.workbench,
         type: "workbench",
-        dragHandle: '.dragHandle',
+        dragHandle: ".dragHandle",
         position: positions[ids.workbench] || { x: 0, y: 0 },
         data: {
           ...data.workbench,
@@ -193,7 +185,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       {
         id: ids.poster,
         type: "poster",
-        dragHandle: '.dragHandle',
+        dragHandle: ".dragHandle",
         position: positions[ids.poster] || { x: 0, y: 0 },
         data: {
           items: data.poster.items,
