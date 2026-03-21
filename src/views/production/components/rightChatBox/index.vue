@@ -20,7 +20,6 @@
           :variant="message.role === 'user' ? 'base' : 'outline'"
           :handleActions="message.role === 'user' ? {} : handleActions"
           :status="message.status"
-          :action-bar="['replay', 'copy']"
           allowContentSegmentCustom>
           <!-- <template #actionbar>
             <t-chat-actionbar :action-bar="['replay', 'copy']" />
@@ -69,6 +68,7 @@
 </template>
 
 <script setup lang="ts">
+import _ from "lodash";
 import axios from "@/utils/axios";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import { DialogPlugin, MessagePlugin } from "tdesign-vue-next";
@@ -76,6 +76,7 @@ import { useMousePressed, useMouse } from "@vueuse/core";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 import { useSocket } from "@/utils/useSocket";
+import type { FlowData } from "../../utils/flowBuilder";
 
 const { baseUrl } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
@@ -85,7 +86,7 @@ const props = defineProps({
 });
 const emit = defineEmits(["close"]);
 // const inputValue = ref("请输出500字小作文，去洗车店洗车走路更快还是开车更快");
-const inputValue = ref("你好");
+const inputValue = ref("生成衍生资产");
 const loadingHistory = ref(false);
 const status = ref<"idle" | "pending" | "streaming">("idle");
 const currentMessageId = ref<string | null>(null);
@@ -114,7 +115,9 @@ const { connected, socket } = useSocket(`${baseUrl.value}/socket/productionAgent
   isolationKey: `${project.value?.id}:${props.episodesId}`,
 });
 
-const flowData = defineModel<any>();
+const flowData = defineModel<FlowData>({
+  required: true,
+});
 
 onMounted(() => {
   socket.connect();
@@ -137,20 +140,12 @@ onMounted(() => {
         msg.content![0].status = "complete";
       }
     }
-    messages.value = messages.value.sort((a, b) => {
-      const aPending = a.status === "pending" ? 1 : 0;
-      const bPending = b.status === "pending" ? 1 : 0;
-      return aPending - bPending;
-    });
+    sortMessages();
   });
 
   socket.on("systemMessage", (data) => {
     messages.value.push({ id: data.messageId, role: "system", status: "complete", content: [{ type: "text", data: data.content }] });
-    messages.value = messages.value.sort((a, b) => {
-      const aPending = a.status === "pending" ? 1 : 0;
-      const bPending = b.status === "pending" ? 1 : 0;
-      return aPending - bPending;
-    });
+    sortMessages();
   });
 
   socket.on("getFlowData", (_, callback) => {
@@ -158,13 +153,19 @@ onMounted(() => {
   });
 
   socket.on("setFlowData", ({ key, value }) => {
-    console.log("%c Line:161 🍺 value", "background:#465975", value);
-    console.log("%c Line:161 🍖 key", "background:#3f7cff", key);
-    flowData.value[key] = value;
+    _.set(flowData.value, key, value);
   });
 
   getHistory();
 });
+
+function sortMessages() {
+  messages.value = messages.value.sort((a, b) => {
+    const aPending = a.status === "pending" ? 1 : 0;
+    const bPending = b.status === "pending" ? 1 : 0;
+    return aPending - bPending;
+  });
+}
 
 // ============== Actions ==============
 

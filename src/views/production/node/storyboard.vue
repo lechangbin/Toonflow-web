@@ -6,57 +6,62 @@
       <div class="title">分镜列表</div>
     </div>
     <div class="content">
-      <div v-for="(group, groupIndex) in props.data.groups" :key="group.id" class="groupSection">
-        <div class="groupHeader">
-          {{ group.name }}
-        </div>
-        <div class="frameGrid">
-          <!-- frames 为空时显示兜底新增按钮 -->
-          <div v-if="!group.frames || group.frames.length === 0" class="emptyAdd" style="height: 100px" @click.stop="editStoryboaryImage([], null)">
-            <span>+</span>
-            <span class="emptyAddText">新增分镜</span>
-          </div>
-          <template v-for="(frame, index) in group.frames" :key="`${group.id}-${frame.id}`">
-            <div class="frameItem" @mouseenter="hoveredFrameKey = `${group.id}-${index}`" @mouseleave="hoveredFrameKey = null">
-              <div
-                class="addBetween addBetween--left"
-                :class="{ expanded: hoveredFrameKey === `${group.id}-${index}` }"
-                @click.stop="editStoryboaryImage([index > 0 ? group.frames[index - 1]?.image || '' : '', frame.image || ''])">
-                <span>+</span>
-              </div>
-              <div class="frameCard">
-                <div
-                  class="frameImage"
-                  :style="{
-                    background: frame.gradient || getDefaultGradient(groupIndex * 10 + index),
-                    maxWidth: `${300 * gridScale}px`,
-                    maxHeight: `${300 * gridScale}px`,
-                  }">
-                  <t-tag v-if="frame.frameType" class="frameTypeTag" :style="{ backgroundColor: frame.frameType === '首帧' ? '#5bccb3' : '#e86b6b' }">
-                    {{ frame.frameType === "首帧" ? "首" : "尾" }}
-                  </t-tag>
-                  <t-tag class="frameTag" :style="{ backgroundColor: tagColors[(groupIndex * 10 + index) % tagColors.length] }">
-                    S{{ String(index + 1).padStart(2, "0") }}
-                  </t-tag>
-                  <t-image v-if="frame.image" :src="frame.image" fit="contain" class="frameImg" @click="editStoryboaryImage([frame.image], frame.id)">
-                    <template #overlayContent>
-                      <div class="imageToolsWrap show">
-                        <ImageTools :src="frame.image" position="br" />
-                      </div>
-                    </template>
-                  </t-image>
-                </div>
-                <div class="frameInfo" :title="frame.description">{{ frame.description }}</div>
-              </div>
-              <div
-                class="addBetween addBetween--right"
-                :class="{ expanded: hoveredFrameKey === `${group.id}-${index}` }"
-                @click.stop="editStoryboaryImage([frame.image || '', index < group.frames.length - 1 ? group.frames[index + 1]?.image || '' : ''])">
-                <span>+</span>
-              </div>
+      <div class="frameGrid">
+        <template v-for="(item, index) in props.data.storyboard" :key="item.id">
+          <div class="frameItem" @mouseenter="setHoveredFrame(index)" @mouseleave="setHoveredFrame(null)">
+            <div
+              class="addBetween addBetween--left"
+              :class="{ expanded: hoveredIndex === index }"
+              @click.stop="editStoryboaryImage([index > 0 ? props.data.storyboard[index - 1]?.src || '' : '', item.src || ''])">
+              <t-button theme="primary" variant="outline" shape="circle">
+                <template #icon><i-plus /></template>
+              </t-button>
             </div>
-          </template>
-        </div>
+
+            <div class="frameCard">
+              <div
+                class="frameImage"
+                :style="{
+                  width: `${200 * gridScale}px`,
+                  height: `${200 * gridScale}px`,
+                }">
+                <t-tag
+                  v-if="item.frameMode !== 'linesSoundEffects'"
+                  class="frameTypeTag"
+                  :style="{ backgroundColor: item.frameMode === 'firstFrame' ? '#5bccb3' : '#e86b6b' }">
+                  {{ item.frameMode === "firstFrame" ? "首" : "尾" }}
+                </t-tag>
+                <t-tag class="frameTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
+                  S{{ String(index + 1).padStart(2, "0") }}
+                </t-tag>
+                <t-image v-if="item.src" :src="item.src" fit="contain" class="frameImg" @click="editStoryboaryImage([item.src], item.id)">
+                  <template #overlayContent>
+                    <div class="imageToolsWrap show">
+                      <ImageTools :src="item.src" position="br" />
+                    </div>
+                  </template>
+                </t-image>
+                <div v-else class="generatingPlaceholder">
+                  <t-empty size="small" title="未生成" />
+                </div>
+              </div>
+              <div class="frameInfo" :title="item.description">{{ item.title }}</div>
+            </div>
+            <div
+              class="addBetween addBetween--right"
+              :class="{ expanded: hoveredIndex === index }"
+              @click.stop="
+                editStoryboaryImage([
+                  item.src || '',
+                  index < (props.data.storyboard?.length ?? 0) - 1 ? props.data.storyboard[index + 1]?.src || '' : '',
+                ])
+              ">
+              <t-button theme="primary" variant="outline" shape="circle">
+                <template #icon><i-plus /></template>
+              </t-button>
+            </div>
+          </div>
+        </template>
       </div>
       <div class="scaleControl">
         <span>缩放比例</span>
@@ -75,26 +80,23 @@ import editStoryboard from "../components/editStoryboard/index.vue";
 import { LoadingPlugin } from "tdesign-vue-next";
 import { Handle, Position } from "@vue-flow/core";
 
-interface Frame {
+interface Storyboard {
   id: number;
+  title: string;
   description: string;
-  image?: string;
-  gradient?: string;
-  frameType?: "首帧" | "尾帧";
-  storyboardTableGroupId?: string;
-  storyboardTableItemId?: number;
-}
-
-interface StoryboardGroup {
-  id: string;
-  name: string;
-  frames: Frame[];
+  camera: string;
+  duration: number;
+  frameMode: "firstFrame" | "endFrame" | "linesSoundEffects";
+  lines: string | null;
+  sound: string | null;
+  associateAssetsIds: number[];
+  src: string | null;
 }
 
 const props = defineProps<{
   id: string;
   data: {
-    groups: StoryboardGroup[];
+    storyboard: Storyboard[];
     handleIds: {
       target: string;
       source: string;
@@ -107,8 +109,11 @@ const previewVisible = ref(false);
 const previewImages = ref<string[]>([]);
 const gridScale = useLocalStorage("storyboardGridScale", 1);
 
-// 当前 hover 的 frameItem 唯一标识，控制左右加号同时展开
-const hoveredFrameKey = ref<string | null>(null);
+const hoveredIndex = ref<number | null>(null);
+
+function setHoveredFrame(index: number | null) {
+  hoveredIndex.value = index;
+}
 
 const currentRow = ref<{
   images: string[];
@@ -135,7 +140,7 @@ const getDefaultGradient = (index: number) => gradients[index % gradients.length
 
 async function previewAll() {
   LoadingPlugin(true);
-  const allImages = props.data.groups.flatMap((g) => g.frames.filter((f) => f.image).map((f) => f.image!));
+  const allImages = (props.data.storyboard ?? []).filter((s) => s.src).map((s) => s.src!);
   if (!allImages.length) {
     window.$message.warning("没有可预览的图片");
     return;
@@ -241,23 +246,6 @@ function editStoryboaryImage(images: string[], id: number | null = null) {
     margin-top: 12px;
   }
 
-  .groupSection {
-    margin-bottom: 20px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-  }
-
-  .groupHeader {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--td-text-color-primary, #333);
-    padding: 8px 0;
-    border-bottom: 2px solid var(--td-brand-color, #0052d9);
-    margin-bottom: 12px;
-  }
-
   .frameGrid {
     display: flex;
     flex-wrap: wrap;
@@ -274,42 +262,35 @@ function editStoryboaryImage(images: string[], id: number | null = null) {
 
   .addBetween {
     position: absolute;
-    top: 0;
-    bottom: 0;
     z-index: 10;
+    top: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    cursor: pointer;
-    color: transparent;
-    font-size: 20px;
-    border-radius: 6px;
-    transition:
-      background 0.2s ease,
-      color 0.2s ease,
-      opacity 0.2s ease;
     opacity: 0;
     pointer-events: none;
     span {
       line-height: 1;
       white-space: nowrap;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     &.expanded {
       opacity: 1;
       pointer-events: auto;
-      background: rgba(0, 82, 217, 0.12);
-      color: var(--td-brand-color, #0052d9);
     }
     &:hover {
-      background: rgba(0, 82, 217, 0.2);
-      color: var(--td-brand-color, #0052d9);
+      // background: var(--td-brand-color);
+      // color: #fff;
+      // transform: scale(1.15);
     }
     &--left {
-      left: -14px;
+      transform: translate(calc(-50% - 4px), -50%);
     }
     &--right {
-      right: -14px;
+      transform: translate(calc(50% + 4px), -50%);
+      right: 0;
     }
   }
 
@@ -324,11 +305,21 @@ function editStoryboaryImage(images: string[], id: number | null = null) {
 
   .frameImage {
     position: relative;
-    width: 100%;
-    max-width: 300px;
-    max-height: 300px;
     border-radius: 8px;
     overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .generatingPlaceholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background-color: var(--td-bg-color-container-hover, #f5f5f5);
+    font-size: 12px;
   }
 
   .frameImg {
@@ -386,34 +377,13 @@ function editStoryboaryImage(images: string[], id: number | null = null) {
     font-size: 12px;
     color: var(--td-text-color-primary, #333);
     line-height: 1.4;
-    max-width: 300px;
+    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
-  .emptyAdd {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 100px;
-    height: 80px;
-    border: 2px dashed var(--td-brand-color, #0052d9);
-    border-radius: 8px;
-    cursor: pointer;
-    color: var(--td-brand-color, #0052d9);
-    font-size: 24px;
-    gap: 4px;
-    transition: background 0.2s ease;
-
-    &:hover {
-      background: rgba(0, 82, 217, 0.08);
-    }
-
-    .emptyAddText {
-      font-size: 12px;
-    }
-  }
+}
+:deep(.t-image__wrapper) {
+  background-color: transparent !important;
 }
 </style>
