@@ -222,20 +222,6 @@ const planData = ref({
   ],
 });
 
-async function getData() {
-  const { data } = await axios.post(`/novel/getNovel`, {
-    projectId: project.value?.id,
-    page: 1,
-    limit: 99999,
-  });
-  const eventString = data.data.map((i: any) => [`第${i.index}章，标题：${i.chapter}，事件：${i.event}`].join("\n")).join("\n");
-  planData.value.event = eventString;
-}
-
-onMounted(() => {
-  getData();
-});
-
 const welcomeMsg: ChatMessagesData = {
   id: "welcome",
   role: "assistant",
@@ -254,6 +240,7 @@ const messages = ref<ChatMessagesData[]>([welcomeMsg]);
 
 const { connected, socket } = useSocket(`${baseUrl.value}/socket/scriptAgent`, {
   isolationKey: `${project.value?.id}:scriptAgent`,
+  projectId: project.value?.id,
 });
 
 onMounted(() => {
