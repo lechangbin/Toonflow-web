@@ -54,7 +54,7 @@ const isLoggedIn = ref(false);
 const username = ref("");
 const input = ref("");
 
-const { connected, connect, disconnect, emit, on, off } = useSocket("http://localhost:60000/socket/chat");
+const { connected, connect, disconnect, emit, on, off } = useSocket("http://localhost:10588/socket/chat");
 
 const state = reactive({
   messages: [] as ChatMessage[],

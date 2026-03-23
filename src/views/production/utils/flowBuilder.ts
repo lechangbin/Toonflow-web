@@ -4,6 +4,7 @@ import { computed } from "vue";
 // ==================== 固定节点 ID ====================
 const NODE_IDS = {
   script: "script",
+  scriptPlan: "scriptPlan",
   assets: "assets",
   storyboardTable: "storyboardTable",
   storyboard: "storyboard",
@@ -11,8 +12,11 @@ const NODE_IDS = {
   poster: "poster",
 } as const;
 
+type NodeId = (typeof NODE_IDS)[keyof typeof NODE_IDS];
+
 // ==================== 类型定义 ====================
 interface DeriveAsset {
+  id: number;
   assetsId: string;
   name: string;
   desc: string;
@@ -58,8 +62,9 @@ interface PosterItem {
 
 export interface FlowData {
   script: string;
+  scriptPlan: string;
   assets: AssetItem[];
-  storyboardTable: Storyboard[];
+  storyboardTable: string;
   storyboard: Storyboard[];
   workbench: WorkbenchData;
   poster: {
@@ -75,6 +80,8 @@ const edgeStyle = {
   strokeWidth: 4,
 };
 
+
+
 // ==================== 构建函数 ====================
 export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodePositions>) {
   const nodes = computed(() => {
@@ -82,7 +89,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
     const positions = nodePositions.value;
     const ids = NODE_IDS;
 
-    return [
+    const allNodes = [
       // 1. Script 节点
       {
         id: ids.script,
@@ -94,6 +101,20 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
           handleIds: {
             assets: `${ids.script}-assets`,
             source: `${ids.script}-source`,
+          },
+        },
+      },
+      // 1.5 ScriptPlan 节点
+      {
+        id: ids.scriptPlan,
+        type: "scriptPlan",
+        dragHandle: ".dragHandle",
+        position: positions[ids.scriptPlan] || { x: 0, y: 0 },
+        data: {
+          scriptPlan: data.scriptPlan,
+          handleIds: {
+            target: `${ids.scriptPlan}-target`,
+            source: `${ids.scriptPlan}-source`,
           },
         },
       },
@@ -166,12 +187,14 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         },
       },
     ];
+
+    return allNodes;
   });
 
   const edges = computed(() => {
     const ids = NODE_IDS;
 
-    return [
+    const allEdges = [
       // Script -> Assets
       {
         id: `${ids.script}-${ids.assets}`,
@@ -184,10 +207,20 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       },
       // Script -> StoryboardTable
       {
-        id: `${ids.script}-${ids.storyboardTable}`,
+        id: `${ids.script}-${ids.scriptPlan}`,
         source: ids.script,
-        target: ids.storyboardTable,
+        target: ids.scriptPlan,
         sourceHandle: `${ids.script}-source`,
+        targetHandle: `${ids.scriptPlan}-target`,
+        animated: true,
+        style: edgeStyle,
+      },
+      // ScriptPlan -> StoryboardTable
+      {
+        id: `${ids.scriptPlan}-${ids.storyboardTable}`,
+        source: ids.scriptPlan,
+        target: ids.storyboardTable,
+        sourceHandle: `${ids.scriptPlan}-source`,
         targetHandle: `${ids.storyboardTable}-target`,
         animated: true,
         style: edgeStyle,
@@ -223,6 +256,8 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         style: edgeStyle,
       },
     ];
+
+    return allEdges;
   });
 
   return { nodes, edges };
