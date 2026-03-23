@@ -25,13 +25,7 @@
                   width: `${200 * gridScale}px`,
                   height: `${200 * gridScale}px`,
                 }">
-                <t-tag
-                  v-if="item.frameMode !== 'linesSoundEffects'"
-                  class="frameTypeTag"
-                  :style="{ backgroundColor: item.frameMode === 'firstFrame' ? '#5bccb3' : '#e86b6b' }">
-                  {{ item.frameMode === "firstFrame" ? "首" : "尾" }}
-                </t-tag>
-                <t-tag class="frameTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
+                <t-tag class="frameTypeTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
                   S{{ String(index + 1).padStart(2, "0") }}
                 </t-tag>
                 <t-image v-if="item.src" :src="item.src" fit="contain" class="frameImg" @click="editStoryboaryImage([item.src], item.id)">
@@ -69,17 +63,23 @@
       </div>
       <t-button block @click="previewAll">宫格预览</t-button>
     </div>
-    <editStoryboard v-model:visible="visible" v-if="visible" :editData="currentRow" />
+    <editImage
+      v-model:visible="visible"
+      v-if="visible"
+      :editData="currentRow"
+      :getFlowDataFn="getStoryboardFlowData"
+      :saveFlowFn="saveOrUpdateFlowData" />
     <t-image-viewer v-model:visible="previewVisible" :images="previewImages" :imageScale="{ max: 10, min: 0.1 }" />
   </t-card>
 </template>
 
 <script setup lang="ts">
 import { useLocalStorage } from "@vueuse/core";
-import editStoryboard from "../components/editStoryboard/index.vue";
+import editImage from "../components/editImage/index.vue";
 import { LoadingPlugin } from "tdesign-vue-next";
-import { Handle, Position } from "@vue-flow/core";
-
+import { Handle, Position, type Edge } from "@vue-flow/core";
+import axios from "@/utils/axios";
+import type { NodeType } from "../utils/editImageType";
 interface Storyboard {
   id: number;
   title: string;
@@ -207,6 +207,41 @@ function editStoryboaryImage(images: string[], id: number | null = null) {
     id,
   };
   visible.value = true;
+}
+
+async function getStoryboardFlowData() {
+  console.log("%c Line:103 🍩", "background:#2eafb0", "获取分镜工作流数据");
+  if (!currentRow.value.id) return null;
+  try {
+    const { data } = await axios.post("/production/editStoryboard/getStoryboardFlow", {
+      id: currentRow.value?.id,
+    });
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function saveOrUpdateFlowData(data: { nodes: NodeType[]; edges: Edge<any, any, string>[]; imageUrl: string }) {
+  const { nodes, edges, imageUrl } = data;
+  if (currentRow.value?.id) {
+    await axios.post("/production/editStoryboard/updateStoryboardFlow", {
+      id: currentRow.value?.id,
+      nodes: nodes,
+      edges: edges,
+      imageUrl,
+    });
+    visible.value = false;
+    console.log("%c Line:109 🍩", "background:#2eafb0", "更新分镜工作流数据");
+  } else {
+    await axios.post("/production/editStoryboard/saveStoryboardFlow", {
+      nodes: nodes,
+      edges: edges,
+      imageUrl,
+    });
+    visible.value = false;
+    console.log("%c Line:112 🍩", "background:#2eafb0", "保存分镜工作流数据");
+  }
 }
 </script>
 
