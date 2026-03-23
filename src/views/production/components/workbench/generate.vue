@@ -1088,9 +1088,7 @@ async function fetchVideoData(scriptId: number | string, specifyIds: Array<numbe
       const refreshed = updatedList.find((s) => s.id === currentShot.value!.id);
       if (refreshed) {
         // 检查是否有刚刚生成成功、但尚未被选中的视频
-        const relatedSucceeded = polledVideos.filter(
-          (v) => v.storyboardId === refreshed.id && v.state === "生成成功",
-        );
+        const relatedSucceeded = polledVideos.filter((v) => v.storyboardId === refreshed.id && v.state === "生成成功");
         let updatedShot = refreshed;
         if (relatedSucceeded.length > 0 && refreshed.selectedVideoId == null) {
           // 自动选中最新成功的视频
@@ -1172,7 +1170,32 @@ function handleConfirmSelection() {
 function handleBatchGenerate() {
   // 批量生成逻辑
   for (const shot of shotList.value) {
-    console.log("%c Line:1134 🍢 shot", "background:#33a5ff", shot);
+    const data = {
+      scriptId: shot.scriptId,
+      projectId: project.value?.id,
+      storyboardId: shot.id,
+      prompt: shot.prompt || "",
+      model: shot.model || "",
+      mode: shot.mode || "",
+      resolution: shot.resolution || "",
+      duration: Number(shot.duration) || 0,
+      audio: shot.sound ? true : false,
+      data: shot.imageUrl
+        ? [
+            {
+              type: shot.imageSource ?? "storyboard",
+              id: shot.imageId ?? shot.id,
+            },
+          ]
+        : [],
+    };
+    axios.post("/production/workbench/generateVideo", data).then(({ data }) => {
+      const newVideoIds: Array<number | string> = Array.isArray(data) ? data : [data];
+      const merged = new Set([...pendingResultIds.value, ...newVideoIds]);
+      pendingResultIds.value = [...merged];
+      getProductionData();
+      startPolling(true);
+    });
   }
 }
 //批量下载逻辑
