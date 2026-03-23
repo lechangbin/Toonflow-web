@@ -10,7 +10,7 @@ interface Asset {
   remark: string;
   filePath?: string;
   type: string;
-  imageId:number;
+  imageId: number;
   sonAssets?: Asset[];
 }
 
@@ -26,7 +26,6 @@ export interface AssetsSelectOptions {
 }
 
 export default function openAssetsSelector(options: AssetsSelectOptions = {}): Promise<Asset[]> {
-  console.log("%c Line:28 🍕 options", "background:#b03734", options);
   const { types, multiple = true, title = "选择资产" } = options;
   return new Promise((resolve) => {
     const container = document.createElement("div");
@@ -72,12 +71,14 @@ export default function openAssetsSelector(options: AssetsSelectOptions = {}): P
         },
         {
           default: () =>
-            h(AssetsView, {
-              ref: assetsRef,
-              selectorMode: true,
-              allowedTypes: types,
-              multiple,
-            }),
+            h("div", { style: "height: 72vh; overflow: auto;" }, [
+              h(AssetsView, {
+                ref: assetsRef,
+                selectorMode: true,
+                allowedTypes: types,
+                multiple,
+              }),
+            ]),
         },
       );
       // 继承主应用上下文，使全局注册的组件可用

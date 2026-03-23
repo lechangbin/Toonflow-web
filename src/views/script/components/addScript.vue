@@ -1,20 +1,21 @@
 <template>
   <div class="addScript">
     <t-dialog
-      :visible.sync="addScriptShow"
+      v-model:visible="addScriptShow"
       width="60vw"
       top="1vh"
       header="新增剧本"
       :closable="false"
       :maskClosable="false"
-      wrapClassName="no-header-margin"
-      dialogClass="custom-modal"
-      @close-btn-click="handleCancel">
+      >
       <div class="data">
-        <div class="name">
+        <div class="section name">
+          <span class="section-label">剧本名称</span>
           <t-input v-model="scriptName" placeholder="请输入剧本名称" />
         </div>
-        <div class="upload">
+
+        <div class="section upload">
+          <span class="section-label">上传文件</span>
           <div class="upload-area" @click="triggerUpload" @dragover.prevent @drop.prevent="handleDrop">
             <t-upload
               ref="uploadRef"
@@ -31,8 +32,26 @@
             <p class="upload-hint">支持 .txt, .docx 格式，建议文件大小不超过 10MB</p>
           </div>
         </div>
-        <div class="content">
-          <t-textarea v-model="scriptData" placeholder="请上传剧本内容..." name="description" :autosize="{ minRows: 15, maxRows: 15 }" />
+
+        <div class="section content">
+          <span class="section-label">剧本内容</span>
+          <t-textarea v-model="scriptData" placeholder="请上传或输入剧本内容..." name="description" :autosize="{ minRows: 12, maxRows: 12 }" />
+        </div>
+
+        <div class="section assets-section">
+          <div class="assets-header">
+            <span class="section-label">关联资产</span>
+            <t-button size="small" theme="primary" variant="outline" @click="handleSelectAssets">
+              <template #icon><i-plus /></template>
+              选择资产
+            </t-button>
+          </div>
+          <div class="assets-list" v-if="selectedAssets.length">
+            <t-tag v-for="asset in selectedAssets" :key="asset.id" closable variant="light-outline" @close="removeAsset(asset.id)">
+              {{ asset.name }}
+            </t-tag>
+          </div>
+          <div v-else class="assets-empty">暂未关联资产</div>
         </div>
       </div>
       <template #footer>
@@ -53,6 +72,7 @@ import { MessagePlugin } from "tdesign-vue-next";
 import type { UploadFile } from "tdesign-vue-next";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
+import openAssetsSelector from "@/utils/assetsCheck";
 
 const { project } = storeToRefs(projectStore());
 
@@ -64,9 +84,6 @@ const uploadRef = ref<any>(null);
 const content = ref<string>("");
 const fileList = ref<UploadFile[]>([]);
 const scriptData = ref<string>("");
-const LINE_HEIGHT: number = 28;
-const MIN_LINES: number = 20;
-const textareaRef = ref<HTMLTextAreaElement | null>(null);
 
 // 触发上传
 function triggerUpload(): void {
@@ -133,16 +150,41 @@ async function handleDrop(e: DragEvent): Promise<void> {
     await handleBeforeUpload({ raw: file } as UploadFile);
   }
 }
+// ============== Assets ==============
+interface SelectedAsset {
+  id: number;
+  name: string;
+}
+const selectedAssets = ref<SelectedAsset[]>([]);
+
+async function handleSelectAssets() {
+  const assets = await openAssetsSelector({ title: "选择关联资产", types: ["role", "tool", "scene"] });
+  if (assets.length) {
+    const existing = new Set(selectedAssets.value.map((a) => a.id));
+    for (const a of assets) {
+      if (!existing.has(a.id)) {
+        selectedAssets.value.push({ id: a.id, name: a.name });
+      }
+    }
+  }
+}
+
+function removeAsset(id: number) {
+  selectedAssets.value = selectedAssets.value.filter((a) => a.id !== id);
+}
+
 function handleCancel(): void {
   addScriptShow.value = false;
   scriptData.value = "";
   content.value = "";
   fileList.value = [];
+  selectedAssets.value = [];
 }
 function close(): void {
   scriptData.value = "";
   content.value = "";
   fileList.value = [];
+  selectedAssets.value = [];
   addScriptShow.value = false;
 }
 const emit = defineEmits(["searchScripts"]);
@@ -156,7 +198,12 @@ async function handleConfirm(): Promise<void> {
     return;
   }
   try {
-    await axios.post("/script/addScript", { name: scriptName.value, content: scriptData.value, projectId: project.value?.id });
+    await axios.post("/script/addScript", {
+      name: scriptName.value,
+      content: scriptData.value,
+      projectId: project.value?.id,
+      assets: selectedAssets.value.map((a) => a.id),
+    });
     MessagePlugin.success("剧本添加成功");
   } catch (error) {
     console.error("添加剧本失败:", error);
@@ -192,12 +239,25 @@ $line-height: 28px;
   }
 
   .data {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    .section {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--td-text-color-primary);
+    }
+
     .upload {
-      width: 100%;
-      height: 200px;
-      margin-top: 10px;
       .upload-area {
-        padding: 42px 20px;
+        padding: 32px 20px;
         border: 2px dashed var(--td-component-border);
         border-radius: 8px;
         text-align: center;
@@ -220,43 +280,31 @@ $line-height: 28px;
         .upload-hint {
           font-size: 12px;
           margin: 0;
+          color: var(--td-text-color-placeholder);
         }
       }
     }
 
-    .content {
-      margin-top: 20px;
-      width: 100%;
-      height: 400px;
-      overflow: auto;
-      background: var(--td-bg-color-container);
-
-      .notebook-textarea {
-        flex: 1;
-        padding: 12px 16px;
-        border: none;
-        outline: none;
-        resize: none;
-        overflow: hidden;
-        min-height: calc($line-height * 20);
-        width: 100%;
-        font-size: 16px;
-        line-height: $line-height;
-        background: transparent;
-        color: var(--td-text-color-primary);
-        font-family: "KaiTi", "STKaiti", "PingFang SC", sans-serif;
-        background-image: repeating-linear-gradient(
-          transparent,
-          transparent calc($line-height - 1px),
-          var(--td-component-border) calc($line-height - 1px),
-          var(--td-component-border) $line-height
-        );
-        background-position: 0 12px;
-
-        &::placeholder {
-          color: var(--td-text-color-placeholder);
-        }
+    .assets-section {
+      .assets-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
       }
+      .assets-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .assets-empty {
+        font-size: 13px;
+        color: var(--td-text-color-placeholder);
+      }
+    }
+
+    .content {
+      width: 100%;
+      overflow: auto;
     }
   }
 
