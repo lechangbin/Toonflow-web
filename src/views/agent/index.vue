@@ -97,7 +97,13 @@ const planData = ref({
   event: "",
   storySkeleton: "",
   adaptationStrategy: "",
-  script: [],
+  script: [
+    {
+      title: "第一幕",
+      content: "",
+      
+    }
+  ],
 });
 
 const welcomeMsg: ChatMessagesData = {

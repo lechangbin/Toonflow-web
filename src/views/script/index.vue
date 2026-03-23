@@ -63,6 +63,9 @@ const { project } = storeToRefs(projectStore());
 interface ScriptAsset {
   id: number;
   name: string;
+  describe: string;
+  prompt: string;
+  type: "角色" | "道具" | "场景" | "素材";
 }
 interface Script {
   id: number;
