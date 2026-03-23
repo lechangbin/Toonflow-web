@@ -1,5 +1,5 @@
 import settingStore from "@/stores/setting";
-const REEL_REGEX = /^(第[\d一二三四五六七八九十百千]+卷)\s*([^\n第]*)/gm;
+const REEL_REGEX = /第\s*([0-9０-９零一二三四五六七八九十百千万]+)\s*[章回节]\s*([^\n\r]*)/g;
 const DEFAULT_CHAPTER_REGEX = /(第[\d一二三四五六七八九十百千]+章)\s*([^\n\r]*)/g;
 const CHINESE_NUM_MAP: { [key: string]: number } = {
   零: 0,

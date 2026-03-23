@@ -61,10 +61,14 @@
             <div class="selectedInfo">已勾选：{{ selectedTextLength }}字(小于200000字)</div>
             <div style="margin-top: 16px; text-align: right">
               <t-button variant="outline" @click="activeKey = 'To1'">上一步</t-button>
+              <t-button variant="outline" @click="activeKey = 'To3'">下一步</t-button>
               <t-button theme="primary" style="margin-left: 10px" :disabled="selectedTextLength > 200000" :loading="nextLoading" @click="keep">
                 保存
               </t-button>
             </div>
+          </t-tab-panel>
+          <t-tab-panel value="To3" label="第三步" style="height: 680px; overflow-y: auto">
+            <eventAnalysis v-model="activeKey" />
           </t-tab-panel>
         </t-tabs>
       </div>
@@ -80,6 +84,7 @@ import mammoth from "mammoth";
 import { MessagePlugin } from "tdesign-vue-next";
 import type { UploadFile, PrimaryTableCol, TableRowData } from "tdesign-vue-next";
 import projectStore from "@/stores/project";
+import eventAnalysis from "./eventAnalysis.vue";
 const { project } = storeToRefs(projectStore());
 interface ChapterItem {
   index: number;

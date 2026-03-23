@@ -3,142 +3,73 @@
     <div class="data f">
       <div class="operate">
         <div class="box">
+          <t-chat-list :clear-history="false">
+            <t-chat-message
+              v-for="message in messages"
+              :key="message.id"
+              :message="message"
+              :placement="message.role === 'user' ? 'right' : 'left'"
+              :variant="message.role === 'user' ? 'base' : 'outline'"
+              :handleActions="message.role === 'user' ? {} : handleActions"
+              :status="message.status"
+              allowContentSegmentCustom>
+              <!-- <template #actionbar>
+            <t-chat-actionbar :action-bar="['replay', 'copy']" />
+          </template> -->
+            </t-chat-message>
+          </t-chat-list>
+          <t-chat-sender
+            class="inputBox"
+            v-model="inputValue"
+            :loading="status === 'pending' || status === 'streaming'"
+            placeholder="请输入内容"
+            @send="handleSend">
+            <template #footer-prefix>
+              <t-popup trigger="click" placement="top-left">
+                <t-button shape="square" variant="outline" size="small">
+                  <template #icon>
+                    <i-setting-config size="16" />
+                  </template>
+                </t-button>
+                <template #content>
+                  <div class="settingMenu">
+                    <div class="settingMenuItem" @click="handleSend('调整偏好模型')">
+                      <i-setting-config size="14" />
+                      <span>调整偏好模型</span>
+                    </div>
+                    <div class="settingMenuItem">
+                      <i-delete size="14" />
+                      <span>清空消息记忆</span>
+                    </div>
+                    <div class="settingMenuItem">
+                      <i-close size="14" />
+                      <span>清空摘要记忆</span>
+                    </div>
+                    <div class="settingMenuItem danger">
+                      <i-delete-one size="14" />
+                      <span>清空全部记忆</span>
+                    </div>
+                  </div>
+                </template>
+              </t-popup>
+            </template>
+          </t-chat-sender>
         </div>
       </div>
       <div class="data">
-        <div class="title jb ac"></div>
         <div class="tabsWrapper" :class="{ 'has-bottom': options === 2 }">
           <t-tabs v-model="options" :addable="options == 2" @add="addOutline">
             <t-tab-panel :value="1" label="故事线">
-              <div class="storyLine">
-                <div class="storyLineCard" v-if="isEditingStoryLine">
-                  <div class="cardHeader">
-                    <div class="headerLeft">
-                      <div class="headerInfo">
-                        <h3 class="cardTitle">编辑故事线</h3>
-                        <p class="cardSubtitle">Story Line Editing</p>
-                      </div>
-                    </div>
-                    <div class="headerRight">
-                      <div class="statsGroup">
-                        <div class="statItem">
-                          <span class="statValue">{{ storyLine.length }}</span>
-                          <span class="statLabel">/5000 字</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="textareaWrapper">
-                    <t-textarea v-model="storyLine" placeholder="在此输入你的故事线内容..." class="storylineTextarea" :maxlength="5000" />
-                  </div>
-                  <div class="footerActions">
-                    <div class="actionButtons">
-                      <t-button variant="outline" @click="cancelEditStoryLine">取消</t-button>
-                      <t-button theme="primary" @click="saveStoryLine">保存故事线</t-button>
-                    </div>
-                  </div>
-                </div>
-                <div class="storyLineCard viewMode" v-else-if="storyLine">
-                  <div class="cardHeader">
-                    <div class="headerLeft">
-                      <div class="headerInfo">
-                        <h3 class="cardTitle">故事线内容</h3>
-                        <p class="cardSubtitle">Story Line</p>
-                      </div>
-                    </div>
-                    <div class="headerRight">
-                      <t-button variant="outline" size="medium" @click="startEditStoryLine">
-                        <template #icon><i-edit theme="outline" size="18" /></template>
-                        编辑故事线
-                      </t-button>
-                    </div>
-                  </div>
-                  <div class="contentDisplay">
-                    <div class="storyContent">
-                      {{ storyLine }}
-                    </div>
-                  </div>
-                </div>
-                <div class="storyLineEmpty" v-else>
-                  <div class="emptyIcon">
-                    <i-file-text theme="outline" size="80" fill="#c9cdd4" />
-                  </div>
-                  <h3 class="emptyTitle">暂无故事线</h3>
-                  <p class="emptyDesc">开始创作你的故事，让角色和情节在此展开</p>
-                  <t-button theme="primary" size="large" @click="startEditStoryLine">
-                    <template #icon><i-edit theme="outline" size="20" /></template>
-                    开始创作
-                  </t-button>
-                </div>
+              <div>
+                <t-button size="small" variant="text" @click="openEdit(storyVal)">编辑</t-button>
+                <MdPreview v-model="storyVal" :theme="'light'" />
               </div>
             </t-tab-panel>
             <t-tab-panel :value="2" label="大纲">
-              <div class="outline f w">
-                <div v-for="(item, index) in outlineData" :key="index" class="cardWrapper" @click="editOutlineFn(item)">
-                  <t-card bordered hover-shadow class="episodeCard">
-                    <div class="deleteBtn" @click.stop="handleDelete(item)">
-                      <i-delete theme="outline" size="18" fill="#d0021b" />
-                    </div>
-                    <div class="cardHeader">
-                      <div class="sortBadge">Ep.{{ String(index + 1).padStart(2, "0") }}</div>
-                      <div class="titleText">{{ item.title }}</div>
-                    </div>
-                    <div class="charactersSection">
-                      <t-tag shape="round" variant="light" v-for="(figure, figureIndex) in item.characters" :key="figureIndex">
-                        {{ figure.name }}
-                      </t-tag>
-                    </div>
-                    <div class="contentSection">
-                      <div class="sectionItem">
-                        <div class="sectionLabel">
-                          <span>核心冲突</span>
-                        </div>
-                        <div class="sectionContent">{{ item.coreConflict }}</div>
-                      </div>
-                      <div class="sectionItem">
-                        <div class="sectionLabel">
-                          <span>黄金3秒</span>
-                        </div>
-                        <div class="sectionContent">{{ item.openingHook }}</div>
-                      </div>
-                    </div>
-                  </t-card>
-                </div>
-              </div>
+              <MdPreview v-model="keyVal" :theme="'light'" />
             </t-tab-panel>
-            <t-tab-panel :value="2" label="剧本">
-              <div class="outline f w">
-                <div v-for="(item, index) in outlineData" :key="index" class="cardWrapper" @click="editOutlineFn(item)">
-                  <t-card bordered hover-shadow class="episodeCard">
-                    <div class="deleteBtn" @click.stop="handleDelete(item)">
-                      <i-delete theme="outline" size="18" fill="#d0021b" />
-                    </div>
-                    <div class="cardHeader">
-                      <div class="sortBadge">Ep.{{ String(index + 1).padStart(2, "0") }}</div>
-                      <div class="titleText">{{ item.title }}</div>
-                    </div>
-                    <div class="charactersSection">
-                      <t-tag shape="round" variant="light" v-for="(figure, figureIndex) in item.characters" :key="figureIndex">
-                        {{ figure.name }}
-                      </t-tag>
-                    </div>
-                    <div class="contentSection">
-                      <div class="sectionItem">
-                        <div class="sectionLabel">
-                          <span>核心冲突</span>
-                        </div>
-                        <div class="sectionContent">{{ item.coreConflict }}</div>
-                      </div>
-                      <div class="sectionItem">
-                        <div class="sectionLabel">
-                          <span>黄金3秒</span>
-                        </div>
-                        <div class="sectionContent">{{ item.openingHook }}</div>
-                      </div>
-                    </div>
-                  </t-card>
-                </div>
-              </div>
+            <t-tab-panel :value="3" label="剧本">
+              <MdPreview v-model="scriptVal" :theme="'light'" />
             </t-tab-panel>
           </t-tabs>
         </div>
@@ -156,17 +87,74 @@
     </div>
     <editOutline v-model="outlineShow" :outline="selectedOutline" @update:outline="handleOutlineUpdate" />
   </div>
+  <editMdPreivew v-model="dialogVisible" @save="onConfirm" :content="editContent" />
 </template>
 
 <script setup lang="ts">
-import agent from "@/components/agent/index.vue";
 import editOutline from "./components/editOutline.vue";
 import projectStore from "@/stores/project";
+import { MdPreview } from "md-editor-v3";
+import editMdPreivew from "@/components/editMdPreivew.vue";
+import type { ChatMessagesData } from "@tdesign-vue-next/chat";
+
 const { project } = storeToRefs(projectStore());
 
-const openShowVisible = ref(true);
-const anthology = ref("剧本创作");
+const scriptVal = ref("12312");
+const storyVal = ref("1231231");
+const keyVal = ref("12312");
+const content = ref("# 1231231");
+const dialogVisible = ref(false);
+const editContent = ref("");
+const status = ref("");
+const inputValue = ref("生成衍生资产");
 
+const messages = ref<ChatMessagesData[]>([
+  {
+    id: "welcome",
+    role: "assistant",
+    content: [
+      { type: "text", status: "complete", data: "你好！我是 Toonflow 智能助手，需要我开始为您制作视频吗？" },
+      {
+        type: "suggestion",
+        status: "complete",
+        data: [
+          { title: "调整偏好模型", prompt: "调整偏好模型" },
+          { title: "开始制作视频", prompt: "请开始制作视频" },
+        ],
+      },
+    ],
+  },
+]);
+const handleActions = {
+  suggestion: (data?: any) => handleSend(data?.content?.prompt),
+};
+
+function handleSend(text: string) {
+  messages.value.push({ id: `user-${Date.now()}`, role: "user", content: [{ type: "text", data: text }] });
+  // socket.send("message", text);
+  inputValue.value = "";
+}
+
+function onConfirm(value: string) {
+  editContent.value = value;
+  switch (options.value) {
+    case 1:
+      storyVal.value = value;
+      return;
+    case 2:
+      keyVal.value = value;
+      return;
+    case 3:
+      scriptVal.value = value;
+      return;
+  }
+  dialogVisible.value = false;
+}
+
+function openEdit(value: string) {
+  editContent.value = value;
+  dialogVisible.value = true;
+}
 //类型
 interface ChatList {
   role: string;
@@ -770,7 +758,6 @@ function handleOutlineUpdate(updatedOutline: Outline) {
   if (index !== -1) {
     outlineData.value[index] = updatedOutline;
   }
-  console.log("更新后的大纲：", updatedOutline);
 }
 
 //添加数据
