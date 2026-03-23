@@ -1,73 +1,79 @@
 <template>
   <div class="novel">
-    <t-tabs v-model="activeKey">
-      <t-tab-panel value="To1" label="原文">
-        <div class="headBtn jb ac">
-          <t-space>
-            <t-button theme="primary" @click="importNovelFn">
-              <template #icon>
-                <t-icon name="add" />
-              </template>
-              导入原文
-            </t-button>
-            <t-button theme="danger" :disabled="selectedRowKeys.length === 0" @click="handleBatchDelete">
-              <template #icon>
-                <t-icon name="delete" />
-              </template>
-              批量删除 {{ selectedRowKeys.length > 0 ? `(${selectedRowKeys.length})` : "" }}
-            </t-button>
-          </t-space>
-          <div class="f">
-            <t-input v-model="searchText" placeholder="搜索原文名称..." clearable style="width: 260px" />
-            <t-button theme="primary" @click="onChange" style="margin-left: 10px">
-              <template #icon><t-icon name="search" /></template>
-              搜索
-            </t-button>
-          </div>
+    <div class="headBtn jb ac">
+      <t-space>
+        <t-button theme="primary" @click="importNovelFn">
+          <template #icon>
+            <t-icon name="add" />
+          </template>
+          导入原文
+        </t-button>
+        <t-button theme="danger" :disabled="selectedRowKeys.length === 0" @click="handleBatchDelete">
+          <template #icon>
+            <t-icon name="delete" />
+          </template>
+          批量删除 {{ selectedRowKeys.length > 0 ? `(${selectedRowKeys.length})` : "" }}
+        </t-button>
+        <t-button @click="startEventAnalysis" :disabled="selectedRowKeys.length === 0">
+          <template #icon>
+            <t-icon name="analytics" />
+          </template>
+          事件分析 {{ selectedRowKeys.length > 0 ? `(${selectedRowKeys.length})` : "" }}
+        </t-button>
+      </t-space>
+      <div class="f">
+        <t-input v-model="searchText" placeholder="搜索原文名称..." clearable style="width: 260px" />
+        <t-button @click="onChange" style="margin-left: 10px">
+          <template #icon><t-icon name="search" /></template>
+          搜索
+        </t-button>
+      </div>
+    </div>
+    <t-table
+      style="margin-top: 10px"
+      :columns="columns"
+      :data="tableData"
+      :max-height="600"
+      :selected-row-keys="selectedRowKeys"
+      :select-on-row-click="true"
+      :keyboardRowHover="false"
+      row-key="id"
+      hover
+      stripe
+      size="small"
+      :pagination="pagination"
+      :loading="loading"
+      lazy-load
+      table-layout="fixed"
+      @select-change="handleSelectChange"
+      @page-change="handlePageChange">
+      <template #startTime="{ row }">
+        <span>{{ dayjs(row.startTime).format("YYYY-MM-DD HH:mm:ss") }}</span>
+      </template>
+      <template #event="{ row }">
+        <t-loading v-if="row.eventState == 0" size="small" text="生成中..."></t-loading>
+        <span v-else-if="row.eventState == -1 && !row.event" style="color: red">生成失败</span>
+        <div v-else>
+          {{ row.event || "无" }}
         </div>
-        <t-table
-          style="margin-top: 10px"
-          :columns="columns"
-          :data="tableData"
-          :max-height="600"
-          :selected-row-keys="selectedRowKeys"
-          :select-on-row-click="true"
-          :keyboardRowHover="false"
-          row-key="id"
-          hover
-          stripe
-          size="small"
-          :pagination="pagination"
-          :loading="loading"
-          lazy-load
-          table-layout="fixed"
-          @select-change="handleSelectChange"
-          @page-change="handlePageChange">
-          <template #startTime="{ row }">
-            <span>{{ dayjs(row.startTime).format("YYYY-MM-DD HH:mm:ss") }}</span>
-          </template>
-          <template #operation="{ row }">
-            <t-space :size="0">
-              <t-button theme="primary" variant="text" @click="handleEdit(row)">
-                <template #icon>
-                  <t-icon name="edit" />
-                </template>
-                编辑
-              </t-button>
-              <t-button theme="danger" variant="text" @click="handleDelete(row)">
-                <template #icon>
-                  <t-icon name="delete" />
-                </template>
-                删除
-              </t-button>
-            </t-space>
-          </template>
-        </t-table>
-      </t-tab-panel>
-      <t-tab-panel value="To2" label="事件">
-        <event />
-      </t-tab-panel>
-    </t-tabs>
+      </template>
+      <template #operation="{ row }">
+        <t-space :size="0">
+          <t-button theme="primary" :disabled="row.eventState == 0" variant="text" @click="handleEdit(row)">
+            <template #icon>
+              <t-icon name="edit" />
+            </template>
+            编辑
+          </t-button>
+          <t-button theme="danger" :disabled="row.eventState == 0" variant="text" @click="handleDelete(row)">
+            <template #icon>
+              <t-icon name="delete" />
+            </template>
+            删除
+          </t-button>
+        </t-space>
+      </template>
+    </t-table>
     <importNovel v-model="importNovelShow" @select="getNovel" />
     <editNodel v-model="editNodelShow" :formData="formData" @select="getNovel" />
   </div>
@@ -78,11 +84,9 @@ import dayjs from "dayjs";
 import axios from "@/utils/axios";
 import importNovel from "./components/importNovel.vue";
 import editNodel from "./components/editNodel.vue";
-import event from "./components/event.vue";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 
-const activeKey = ref("To1");
 // 搜索文本
 const searchText = ref("");
 // 表头
@@ -100,10 +104,23 @@ const columns = ref<Record<string, unknown>[]>([
     align: "center",
   },
   { colKey: "reel", title: "卷", width: 200, align: "center", cell: "preview" },
-  { colKey: "chapter", title: "章节名称", width: 500, ellipsis: true },
+  { colKey: "chapter", title: "章节名称", width: 100, ellipsis: true },
   { colKey: "chapterData", title: "章节内容", ellipsis: true },
+  { colKey: "event", title: "事件", ellipsis: true },
   { colKey: "operation", title: "操作", width: 200, align: "center" },
 ]);
+const editNodelShow = ref(false);
+interface OriginalText {
+  id: number;
+  index: number;
+  reel: string;
+  chapter: string;
+  chapterData: string;
+  event: string;
+  eventState?: number;
+}
+const formData = ref<OriginalText>({ id: -1, index: 0, reel: "", chapter: "", chapterData: "", event: "" });
+
 // 表格数据
 const tableData = ref<OriginalText[]>([]);
 // 加载状态
@@ -116,6 +133,7 @@ const pagination = ref({
   pageSize: 10,
   total: 0,
 });
+
 onMounted(getNovel);
 function onChange() {
   pagination.value.page = 1;
@@ -170,15 +188,6 @@ function handleBatchDelete() {
     },
   });
 }
-const editNodelShow = ref(false);
-interface OriginalText {
-  id: number;
-  index: number;
-  reel: string;
-  chapter: string;
-  chapterData: string;
-}
-const formData = ref<OriginalText>({ id: -1, index: 0, reel: "", chapter: "", chapterData: "" });
 // 编辑
 function handleEdit(row: OriginalText) {
   editNodelShow.value = true;
@@ -205,6 +214,81 @@ function handleDelete(row: OriginalText) {
     },
   });
 }
+
+function startEventAnalysis() {
+  const dialog = DialogPlugin.confirm({
+    header: "事件分析",
+    body: `确定要对选中的 ${selectedRowKeys.value.length} 条数据进行事件分析吗?`,
+    onConfirm: () => {
+      dialog.destroy();
+      axios
+        .post("/novel/event/generateEvents", {
+          projectId: project.value?.id!,
+          novelIds: selectedRowKeys.value,
+        })
+        .then((res) => {
+          selectedRowKeys.value.length = 0;
+          getNovel();
+        });
+    },
+  });
+}
+
+const notCompultedData = computed(() => {
+  return tableData.value.filter((item) => !item.eventState);
+});
+
+// 轮询相关
+let pollingTimer: ReturnType<typeof setInterval> | null = null;
+
+async function pollEventState() {
+  if (notCompultedData.value.length === 0) return;
+  const ids = notCompultedData.value.map((item) => item.id);
+  try {
+    const { data } = await axios.post("/novel/getNovelEventState", { ids });
+    if (Array.isArray(data)) {
+      data.forEach((item: { id: number; eventState: number; event?: string }) => {
+        const target = tableData.value.find((row) => row.id === item.id);
+        if (target) {
+          target.eventState = item.eventState;
+          if (item.event !== undefined) target.event = item.event;
+        }
+      });
+    }
+  } catch (e) {
+    console.error("轮询事件状态失败:", e);
+  }
+}
+
+function startPolling() {
+  if (pollingTimer) return;
+  pollingTimer = setInterval(async () => {
+    if (notCompultedData.value.length === 0) {
+      stopPolling();
+      return;
+    }
+    await pollEventState();
+  }, 3000);
+}
+
+function stopPolling() {
+  if (pollingTimer) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
+  }
+}
+
+watch(notCompultedData, (val) => {
+  if (val.length > 0) {
+    startPolling();
+  } else {
+    stopPolling();
+  }
+});
+
+onUnmounted(() => {
+  stopPolling();
+});
 </script>
 
 <style lang="scss" scoped>

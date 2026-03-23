@@ -61,14 +61,25 @@
             <div class="selectedInfo">已勾选：{{ selectedTextLength }}字(小于200000字)</div>
             <div style="margin-top: 16px; text-align: right">
               <t-button variant="outline" @click="activeKey = 'To1'">上一步</t-button>
-              <t-button variant="outline" @click="activeKey = 'To3'">下一步</t-button>
-              <t-button theme="primary" style="margin-left: 10px" :disabled="selectedTextLength > 200000" :loading="nextLoading" @click="keep">
+              <t-button variant="outline" style="margin-left: 10px" @click="activeKey = 'To3'">下一步</t-button>
+              <!-- <t-button theme="primary" style="margin-left: 10px" :disabled="selectedTextLength > 200000" :loading="nextLoading" @click="keep">
                 保存
-              </t-button>
+              </t-button> -->
             </div>
           </t-tab-panel>
           <t-tab-panel value="To3" label="第三步" style="height: 680px; overflow-y: auto">
-            <eventAnalysis v-model="activeKey" />
+            <div>
+              <div style="margin-top: 20px">
+                <t-empty title="事件分析">
+                  <template #action>
+                    <t-button @click="keep">保存原文并分析事件</t-button>
+                  </template>
+                </t-empty>
+              </div>
+              <div style="margin-top: 16px; text-align: right">
+                <t-button variant="outline" @click="activeKey = 'To2'">上一步</t-button>
+              </div>
+            </div>
           </t-tab-panel>
         </t-tabs>
       </div>

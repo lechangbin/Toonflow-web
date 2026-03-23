@@ -66,7 +66,6 @@ async function startEventAnalysis() {
     });
 }
 async function getNovelData() {
-  console.log("获取小说章节");
   const { data } = await axios.post("/novel/getNovelIndex", {
     projectId: project.value?.id!,
   });
