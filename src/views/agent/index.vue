@@ -58,10 +58,7 @@
         <div class="tabsWrapper">
           <t-tabs v-model="currentTable">
             <t-tab-panel :value="1" label="章节事件">
-              <div class="panelContent">
-                <MdPreview v-if="planData.event" :modelValue="planData.event" />
-                <t-empty v-else description="暂无内容" />
-              </div>
+              <pre>{{ planData.event }}</pre>
             </t-tab-panel>
             <t-tab-panel :value="2" label="故事骨架">
               <div class="panelContent">
@@ -128,6 +125,20 @@ const planData = ref({
   ],
 });
 
+async function getData() {
+  const { data } = await axios.post(`/novel/getNovel`, {
+    projectId: project.value?.id,
+    page: 1,
+    limit: 99999,
+  });
+  const eventString = data.data.map((i: any) => [`第${i.index}章，标题：${i.chapter}，事件：${i.event}`].join("\n")).join("\n");
+  planData.value.event = eventString
+}
+
+onMounted(() => {
+  getData();
+});
+
 const welcomeMsg: ChatMessagesData = {
   id: "welcome",
   role: "assistant",
@@ -186,6 +197,10 @@ onMounted(() => {
   });
 
   getHistory();
+});
+
+onUnmounted(() => {
+  socket.disconnect();
 });
 
 function sortMessages() {
