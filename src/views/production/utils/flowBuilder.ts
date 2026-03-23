@@ -80,77 +80,14 @@ const edgeStyle = {
   strokeWidth: 4,
 };
 
-const TOPO_ORDER = [
-  NODE_IDS.script,
-  NODE_IDS.scriptPlan,
-  NODE_IDS.assets,
-  NODE_IDS.storyboardTable,
-  NODE_IDS.storyboard,
-  NODE_IDS.workbench,
-  NODE_IDS.poster,
-] as const;
 
-const NODE_DEPENDENCIES: Record<NodeId, NodeId[]> = {
-  [NODE_IDS.script]: [],
-  [NODE_IDS.scriptPlan]: [NODE_IDS.script],
-  [NODE_IDS.assets]: [NODE_IDS.script],
-  [NODE_IDS.storyboardTable]: [NODE_IDS.scriptPlan],
-  [NODE_IDS.storyboard]: [NODE_IDS.storyboardTable],
-  [NODE_IDS.workbench]: [NODE_IDS.storyboard],
-  [NODE_IDS.poster]: [NODE_IDS.workbench],
-};
-
-function isNonEmptyString(value: unknown): value is string {
-  return typeof value === "string" && value.trim().length > 0;
-}
-
-const hasDataByNode: Record<NodeId, (data: FlowData) => boolean> = {
-  [NODE_IDS.script]: (data) => isNonEmptyString(data.script),
-  [NODE_IDS.scriptPlan]: (data) => isNonEmptyString(data.scriptPlan),
-  [NODE_IDS.assets]: (data) => Array.isArray(data.assets) && data.assets.length > 0,
-  [NODE_IDS.storyboardTable]: (data) => isNonEmptyString(data.storyboardTable),
-  [NODE_IDS.storyboard]: (data) => Array.isArray(data.storyboard) && data.storyboard.length > 0,
-  [NODE_IDS.workbench]: (data) =>
-    [
-      data.workbench?.name,
-      data.workbench?.duration,
-      data.workbench?.resolution,
-      data.workbench?.fps,
-      data.workbench?.cover,
-      data.workbench?.gradient,
-    ].some(isNonEmptyString),
-  [NODE_IDS.poster]: (data) => Array.isArray(data.poster?.items) && data.poster.items.length > 0,
-};
-
-function hasNodeData(id: NodeId, data: FlowData): boolean {
-  return hasDataByNode[id](data);
-}
-
-function getVisibleNodeIds(data: FlowData) {
-  const visibleNodeIds = new Set<NodeId>();
-
-  // 按拓扑顺序判断：当前节点有数据且所有前置节点可见，才允许显示。
-  TOPO_ORDER.forEach((id) => {
-    const dependencies = NODE_DEPENDENCIES[id] || [];
-    const allDependenciesVisible = dependencies.every((depId) => visibleNodeIds.has(depId));
-
-    if (hasNodeData(id, data) && allDependenciesVisible) {
-      visibleNodeIds.add(id);
-    }
-  });
-
-  return visibleNodeIds;
-}
 
 // ==================== 构建函数 ====================
 export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodePositions>) {
-  const visibleNodeIds = computed(() => getVisibleNodeIds(flowData.value));
-
   const nodes = computed(() => {
     const data = flowData.value;
     const positions = nodePositions.value;
     const ids = NODE_IDS;
-    const visibleIds = visibleNodeIds.value;
 
     const allNodes = [
       // 1. Script 节点
@@ -251,12 +188,11 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       },
     ];
 
-    return allNodes.filter((node) => visibleIds.has(node.id as NodeId));
+    return allNodes;
   });
 
   const edges = computed(() => {
     const ids = NODE_IDS;
-    const visibleIds = visibleNodeIds.value;
 
     const allEdges = [
       // Script -> Assets
@@ -321,7 +257,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       },
     ];
 
-    return allEdges.filter((edge) => visibleIds.has(edge.source as NodeId) && visibleIds.has(edge.target as NodeId));
+    return allEdges;
   });
 
   return { nodes, edges };

@@ -153,6 +153,8 @@ onMounted(() => {
   });
 
   socket.on("setFlowData", ({ key, value }) => {
+    console.log("%c Line:156 🥟 key", "background:#ea7e5c", key);
+    console.log("%c Line:156 🥖 value", "background:#33a5ff", value);
     _.set(flowData.value, key, value);
   });
 
