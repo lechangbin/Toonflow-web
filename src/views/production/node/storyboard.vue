@@ -1,18 +1,18 @@
 <template>
   <t-card class="storyboard">
-    <Handle :id="props.data.handleIds.target" type="target" :position="Position.Left" />
-    <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
+    <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
+    <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
       <div class="title">分镜列表</div>
     </div>
     <div class="content">
       <div class="frameGrid">
-        <template v-for="(item, index) in props.data.storyboard" :key="item.id">
+        <template v-for="(item, index) in storyboard" :key="item.id">
           <div class="frameItem" @mouseenter="setHoveredFrame(index)" @mouseleave="setHoveredFrame(null)">
             <div
               class="addBetween addBetween--left"
               :class="{ expanded: hoveredIndex === index }"
-              @click.stop="editStoryboaryImage([index > 0 ? props.data.storyboard[index - 1]?.src || '' : '', item.src || ''])">
+              @click.stop="editStoryboaryImage([index > 0 ? storyboard[index - 1]?.src || '' : '', item.src || ''])">
               <t-button theme="primary" variant="outline" shape="circle">
                 <template #icon><i-plus /></template>
               </t-button>
@@ -47,7 +47,7 @@
               @click.stop="
                 editStoryboaryImage([
                   item.src || '',
-                  index < (props.data.storyboard?.length ?? 0) - 1 ? props.data.storyboard[index + 1]?.src || '' : '',
+                  index < (storyboard?.length ?? 0) - 1 ? storyboard[index + 1]?.src || '' : '',
                 ])
               ">
               <t-button theme="primary" variant="outline" shape="circle">
@@ -95,14 +95,13 @@ interface Storyboard {
 
 const props = defineProps<{
   id: string;
-  data: {
-    storyboard: Storyboard[];
-    handleIds: {
-      target: string;
-      source: string;
-    };
+  handleIds: {
+    target: string;
+    source: string;
   };
 }>();
+
+const storyboard = defineModel<Storyboard[]>({ required: true });
 
 const visible = ref(false);
 const previewVisible = ref(false);
@@ -127,7 +126,7 @@ const tagColors = ["#5bccb3", "#9c7cfc", "#fbbf24", "#5b9afc", "#e86b6b", "#7cb8
 
 async function previewAll() {
   LoadingPlugin(true);
-  const allImages = (props.data.storyboard ?? []).filter((s) => s.src).map((s) => s.src!);
+  const allImages = (storyboard.value ?? []).filter((s) => s.src).map((s) => s.src!);
   if (!allImages.length) {
     window.$message.warning("没有可预览的图片");
     return;

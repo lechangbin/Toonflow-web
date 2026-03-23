@@ -1,12 +1,12 @@
 <template>
   <t-card class="assets">
-    <Handle :id="props.data.handleIds.target" type="target" :position="Position.Top" />
+    <Handle :id="props.handleIds.target" type="target" :position="Position.Top" />
     <div class="titleBar dragHandle">
       <div class="title">衍生资产</div>
     </div>
     <div class="content">
       <div class="cardGrid">
-        <div v-for="asset in props.data.assets" :key="asset.assetsId" class="assetItemBox">
+        <div v-for="asset in assets" :key="asset.assetsId" class="assetItemBox">
           <t-card class="assetCard">
             <div v-if="asset.src" class="assetImageWrap">
               <t-image :src="asset.src" fit="cover" class="assetImage" :preview="true" :lazy="true">
@@ -95,13 +95,12 @@ interface AssetItem {
 
 const props = defineProps<{
   id: string;
-  data: {
-    assets: AssetItem[];
-    handleIds: {
-      target: string;
-    };
+  handleIds: {
+    target: string;
   };
 }>();
+
+const assets = defineModel<AssetItem[]>({ required: true });
 const currentRow = ref<{
   id: null | number;
   images: string[];

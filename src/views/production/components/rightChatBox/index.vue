@@ -91,23 +91,23 @@ const loadingHistory = ref(false);
 const status = ref<"idle" | "pending" | "streaming">("idle");
 const currentMessageId = ref<string | null>(null);
 
-const messages = ref<ChatMessagesData[]>([
-  {
-    id: "welcome",
-    role: "assistant",
-    content: [
-      { type: "text", status: "complete", data: "你好！我是 Toonflow 智能助手，需要我开始为您制作视频吗？" },
-      {
-        type: "suggestion",
-        status: "complete",
-        data: [
-          { title: "调整偏好模型", prompt: "调整偏好模型" },
-          { title: "开始制作视频", prompt: "请开始制作视频" },
-        ],
-      },
-    ],
-  },
-]);
+const welcomeMsg: ChatMessagesData = {
+  id: "welcome",
+  role: "assistant",
+  content: [
+    { type: "text", status: "complete", data: "你好！我是 Toonflow 智能助手，需要我开始为您制作视频吗？" },
+    {
+      type: "suggestion",
+      status: "complete",
+      data: [
+        { title: "调整偏好模型", prompt: "调整偏好模型" },
+        { title: "开始制作视频", prompt: "请开始制作视频" },
+      ],
+    },
+  ],
+};
+
+const messages = ref<ChatMessagesData[]>([welcomeMsg]);
 
 // ============== Socket ==============
 
@@ -220,6 +220,8 @@ async function getHistory() {
     episodesId: props.episodesId,
     agentType: "productionAgent",
   });
+  messages.value = [welcomeMsg, ...data];
+  sortMessages();
   loadingHistory.value = false;
 }
 

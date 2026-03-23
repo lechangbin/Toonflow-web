@@ -11,7 +11,6 @@
     "license": "bun run scripts/license.ts"
   },
   "dependencies": {
-    "@ag-ui/client": "^0.0.47",
     "@devui-design/icons": "^1.4.0",
     "@icon-park/vue-next": "^1.4.2",
     "@tdesign-vue-next/chat": "^0.5.1",

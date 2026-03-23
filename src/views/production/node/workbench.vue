@@ -1,25 +1,25 @@
 <template>
   <t-card class="workbench" @click="visible = !visible">
-    <Handle :id="props.data.handleIds.target" type="target" :position="Position.Left" />
-    <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
+    <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
+    <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
       <div class="title">视频工作台</div>
     </div>
     <div class="videoPreview">
-      <div class="videoPlaceholder" :style="{ background: props.data.gradient }">
-        <t-image v-if="props.data.cover" :src="props.data.cover" fit="cover" class="videoCover" />
+      <div class="videoPlaceholder" :style="{ background: workbenchData?.gradient }">
+        <t-image v-if="workbenchData?.cover" :src="workbenchData.cover" fit="cover" class="videoCover" />
         <div class="playButton">
           <i-video theme="outline" size="48" />
         </div>
       </div>
       <div class="videoInfo">
-        <div class="videoName">{{ props.data.name }}</div>
+        <div class="videoName">{{ workbenchData?.name }}</div>
         <div class="videoMeta">
-          <span>{{ props.data.duration }}</span>
+          <span>{{ workbenchData?.duration }}</span>
           <span class="divider">|</span>
-          <span>{{ props.data.resolution }}</span>
+          <span>{{ workbenchData?.resolution }}</span>
           <span class="divider">|</span>
-          <span>{{ props.data.fps }}</span>
+          <span>{{ workbenchData?.fps }}</span>
         </div>
       </div>
     </div>
@@ -33,21 +33,24 @@ import { Handle, Position } from "@vue-flow/core";
 
 const visible = ref(false);
 
+interface WorkbenchData {
+  name: string;
+  duration: string;
+  resolution: string;
+  fps: string;
+  cover?: string;
+  gradient?: string;
+}
+
 const props = defineProps<{
   id: string;
-  data: {
-    name: string;
-    duration: string;
-    resolution: string;
-    fps: string;
-    cover?: string;
-    gradient?: string;
-    handleIds: {
-      target: string;
-      source: string;
-    };
+  handleIds: {
+    target: string;
+    source: string;
   };
 }>();
+
+const workbenchData = defineModel<WorkbenchData>({ required: true });
 </script>
 
 <style lang="scss" scoped>

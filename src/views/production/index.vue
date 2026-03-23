@@ -9,41 +9,42 @@
     :selection-key-code="null"
     :multi-selection-key-code="null">
     <template #node-script="props">
-      <scriptNode :id="props.id" :data="props.data" />
+      <scriptNode :id="props.id" v-model="flowData.script" :handleIds="props.data.handleIds" />
     </template>
-     <template #node-scriptPlan="props">
-      <scriptPlan :id="props.id" :data="props.data" />
+    <template #node-scriptPlan="props">
+      <scriptPlan :id="props.id" v-model="flowData.scriptPlan" :handleIds="props.data.handleIds" />
     </template>
     <template #node-storyboardTable="props">
-      <storyboardTable :id="props.id" :data="props.data" />
+      <storyboardTable :id="props.id" v-model="flowData.storyboardTable" :handleIds="props.data.handleIds" />
     </template>
     <template #node-assets="props">
-      <assets :id="props.id" :data="props.data" />
+      <assets :id="props.id" v-model="flowData.assets" :handleIds="props.data.handleIds" />
     </template>
     <template #node-storyboard="props">
-      <storyboard :id="props.id" :data="props.data" />
+      <storyboard :id="props.id" v-model="flowData.storyboard" :handleIds="props.data.handleIds" />
     </template>
     <template #node-workbench="props">
-      <workbench :id="props.id" :data="props.data" />
+      <workbench :id="props.id" v-model="flowData.workbench" :handleIds="props.data.handleIds" />
     </template>
     <template #node-poster="props">
-      <poster :id="props.id" :data="props.data" />
+      <poster :id="props.id" v-model="flowData.poster" :handleIds="props.data.handleIds" />
     </template>
     <Background></Background>
     <Controls />
     <div class="floatingWindow">
-      <div class="episodesSelect">
+      <div class="episodesSelect f ac">
         <t-select v-model="episodesId" placeholder="-请选择-" autoWidth :options="episodesOptions" filterable>
           <template #label>
             <i-document-folder size="24" />
           </template>
         </t-select>
+        <i-loading-four class="spin" size="16" style="margin-left: 0.5rem" v-show="loading"></i-loading-four>
       </div>
       <div class="openRightChatBoxBtn c" v-show="!openShowVisible" @click.stop="openShowVisible = true">
         <i-menu-unfold-one theme="outline" size="24" fill="#000000" />
       </div>
-      <transition name="slide" v-show="openShowVisible">
-        <rightChatBox v-model="flowData" :title="rightChatTitle" @close="openShowVisible = false" :episodesId />
+      <transition name="slide" v-show="openShowVisible" v-if="episodesId">
+        <rightChatBox v-model="flowData" :title="rightChatTitle" @close="openShowVisible = false" :episodesId="episodesId" />
       </transition>
     </div>
   </VueFlow>
@@ -74,30 +75,24 @@ import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 
 const { project } = storeToRefs(projectStore());
-const { viewport } = useVueFlow();
 
 const openShowVisible = ref(true);
 
-const episodesId = ref(1);
+const episodesId = ref<number | null>(null);
 
 const rightChatTitle = computed(() => {
   const episode = episodesOptions.value.find((option) => option.value === episodesId.value);
   return episode ? episode.label : "";
 });
 
-const episodesOptions = ref([
-  { label: "第1集：真相大白，背叛之心", value: 1 },
-  { label: "第2集：123123123", value: 2 },
-  { label: "第3集：12313123123", value: 3 },
-]);
+const episodesOptions = ref<{ label: string; value: number }[]>([]);
 
 // ==================== AI 操作数据区 ====================
 // AI 只需修改此对象即可控制整个故事线流程
 const flowData = ref({
   // 剧本
-  script:
-    " # 第2集：真相大白，背叛之心\n※ 青云宗，宗门大殿\n△ 凌玄心脏猛地一缩，瞳孔骤缩\n苏晚卿冷笑：「还有你当宝贝的青云令」\n「若不是我趁你养伤时，偷偷在令牌上动了手脚」\n「让你没法引动令牌力量，我们怎么能这么容易逼你交出来？」\n△ 凌玄盯着她，声音在抖：「你什么意思？」\n苏晚卿语气平静，像在说别人的事\n「当年是我故意把妖兽引去黑风岭，又假装被困」\n「让你不得不为了救我，硬接妖兽三道致命攻击」\n「清辞当时修炼遇到瓶颈，需要你的青云宗本源灵力」\n「可你修为太高，只有让你重伤废修，他才能取走本源」\n「至于青云令，我早就用秘法削弱了令牌和你的感应」\n「你以为你还能靠这令牌反抗？」\n△ 凌玄气血逆流，再次一口鲜血喷出,\n 【特效】鲜血在青石上晕开刺目的红\n「苏晚卿！！！」\n「我待你掏心掏肺，你为什么要这么害我？」\n「连我视若性命的青云令，你都要算计！」\n△ 苏晚卿像是听到大笑话\n「清辞才是真心对我，他能给我想要的大道」\n「而你只会让我困在这宗门里，做个有名无实的夫人！」\n△ 几个以前受过凌玄恩惠的长老突然开口\n长老甲：「凌玄，识时务者为俊杰！」\n长老乙：「你现在修为全废，青云令也没用了」\n长老丙：「早就不配管青云宗，不如乖乖交出令牌，还能保住一条命！」`,\n △ 凌玄看着这些人，心里凉得厉害\n△ 沈清辞搂住苏晚卿的腰，笑得更加嚣张\n「听到了吗？现在宗门上下都站在我们这边」\n「你识相点，就现在把青云令交出来」\n「要是敢反抗，我就废了你最后一点修为」\n「把你扔去妖兽谷，让你尝尝被妖兽分食的滋味！」\n△ 凌玄浑身颤抖，眼中血丝密布\n△ 指着苏晚卿，指尖疯狂颤抖\n【独白】她的真面目...我全看清楚了\n【卡黑】",
-  scriptPlan: ``,
+  script: "",
+  scriptPlan: "",
   // 资产
   assets: [
     {
@@ -212,19 +207,53 @@ const steps = [
 function finishGuide() {
   current.value = -1;
 }
-//获取集数
-function getepisodes() {
-  // episodesOptions.value = data;
-}
-async function getStoryboardData() {
-  const { data } = await axios.post("/production/getStoryboardData", {
+
+const loading = ref(false);
+
+async function getData() {
+  //获取剧本
+  const { data: scriptRes } = await axios.post("/script/getScrptApi", {
     projectId: project.value?.id,
+    name: "",
   });
-  console.log("%c Line:203 🍷 data", "background:#2eafb0", data);
-  // flowData.value.storyboard = data;
+
+  episodesOptions.value = scriptRes.map((ep: any) => ({
+    label: ep.name,
+    value: ep.id,
+  }));
+  episodesId.value = episodesOptions.value.length > 0 ? episodesOptions.value[0].value : null;
+
+  const { data } = await axios.post("/production/getFlowData", {
+    projectId: project.value?.id,
+    episodesId: episodesId.value,
+  });
+  flowData.value = data;
 }
+
+async function saveFlowData() {
+  await axios.post("/production/saveFlowData", {
+    projectId: project.value?.id,
+    episodesId: episodesId.value,
+    data: flowData.value,
+  });
+}
+
+watch(
+  flowData,
+  (newVal) => {
+    loading.value = true;
+    saveFlowData().finally(() => {
+      loading.value = false;
+    });
+  },
+  { deep: true },
+);
+
 onMounted(() => {
-  getStoryboardData();
+  loading.value = true;
+  getData().finally(() => {
+    loading.value = false;
+  });
 });
 </script>
 <style lang="scss" scoped>

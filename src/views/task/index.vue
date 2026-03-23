@@ -104,7 +104,7 @@ async function getCategories() {
 async function getTaskList() {
   pagination.value.loading = true;
   try {
-    const { data } = await axios.post("/task/getMyTaskApi", {
+    const { data } = await axios.post("/task/getTaskApi", {
       page: pagination.value.page,
       limit: pagination.value.limit,
       taskClass: taskClass.value,
