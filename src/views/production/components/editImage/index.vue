@@ -51,7 +51,7 @@
 </template>
 
 <script setup lang="ts">
-import { VueFlow, useVueFlow, Panel, MarkerType, type Node, type Edge } from "@vue-flow/core";
+import { VueFlow, useVueFlow, Panel, MarkerType, type Edge } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import uploadNode from "./uploadNode.vue";
@@ -62,34 +62,16 @@ import "@vue-flow/controls/dist/style.css";
 import removeLine from "./removeLine.vue";
 import store from "@/stores";
 import axios from "@/utils/axios";
+import type { NodeType } from "../../utils/editImageType";
 const { projectId } = storeToRefs(store());
 const props = defineProps<{
   editData: {
     images: string[];
     id?: number | null;
   };
+  getFlowDataFn: () => Promise<{ nodes: NodeType[]; edges: Edge<any, any, string>[] }> | null;
+  saveFlowFn: (data: { nodes: NodeType[]; edges: Edge<any, any, string>[]; imageUrl: string }) => Promise<void>;
 }>();
-interface NodeUploadData {
-  type: "upload";
-  id: string;
-  position: { x: number; y: number };
-  data: { image: string };
-}
-interface NodeGeneratedData {
-  type: "generated";
-  id: string;
-  position: { x: number; y: number };
-  data: {
-    generatedImage?: string;
-    references: { image: string }[];
-    prompt: string;
-    model?: string;
-    ratio?: string;
-    quality?: string;
-    steps: number;
-  };
-}
-type NodeType = NodeUploadData | NodeGeneratedData;
 
 const emit = defineEmits(["save"]);
 
@@ -213,18 +195,13 @@ async function sureNode(imageUrl: string) {
   }
 }
 onMounted(async () => {
-  if (props.editData.id) {
-    const { data } = await axios.post("/production/editStoryboard/getStoryboardFlow", {
-      id: props.editData.id,
-    });
-    if (data) {
-      edges.value = data.edges;
-      nodes.value = data.nodes;
-    } else {
-      buildFlow();
-    }
-  } else {
-    buildFlow();
+  try {
+    const data = await props.getFlowDataFn();
+    if (!data) return buildFlow();
+    edges.value = data.edges;
+    nodes.value = data.nodes;
+  } catch (e) {
+    window.$message.error((e as any).message || "获取数据失败");
   }
 });
 

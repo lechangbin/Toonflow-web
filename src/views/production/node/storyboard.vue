@@ -25,9 +25,7 @@
                   width: `${200 * gridScale}px`,
                   height: `${200 * gridScale}px`,
                 }">
-                <t-tag
-                  class="frameTypeTag"
-                  :style="{ backgroundColor: tagColors[index % tagColors.length] }">
+                <t-tag class="frameTypeTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
                   S{{ String(index + 1).padStart(2, "0") }}
                 </t-tag>
                 <t-image v-if="item.src" :src="item.src" fit="contain" class="frameImg" @click="editStoryboaryImage([item.src], item.id)">
@@ -65,17 +63,23 @@
       </div>
       <t-button block @click="previewAll">宫格预览</t-button>
     </div>
-    <editStoryboard v-model:visible="visible" v-if="visible" :editData="currentRow" />
+    <editImage
+      v-model:visible="visible"
+      v-if="visible"
+      :editData="currentRow"
+      :getFlowDataFn="getStoryboardFlowData"
+      :saveFlowFn="saveOrUpdateFlowData" />
     <t-image-viewer v-model:visible="previewVisible" :images="previewImages" :imageScale="{ max: 10, min: 0.1 }" />
   </t-card>
 </template>
 
 <script setup lang="ts">
 import { useLocalStorage } from "@vueuse/core";
-import editStoryboard from "../components/editStoryboard/index.vue";
+import editImage from "../components/editImage/index.vue";
 import { LoadingPlugin } from "tdesign-vue-next";
-import { Handle, Position } from "@vue-flow/core";
-
+import { Handle, Position, type Edge } from "@vue-flow/core";
+import axios from "@/utils/axios";
+import type { NodeType } from "../utils/editImageType";
 interface Storyboard {
   id: number;
   title: string;
@@ -120,19 +124,6 @@ const currentRow = ref<{
 });
 
 const tagColors = ["#5bccb3", "#9c7cfc", "#fbbf24", "#5b9afc", "#e86b6b", "#7cb8fc", "#e8a855", "#34d399"];
-
-const gradients = [
-  "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-  "linear-gradient(135deg, #c3cfe2 0%, #c3cfe2 100%)",
-  "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
-  "linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)",
-  "linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)",
-  "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
-  "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)",
-  "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)",
-];
-
-const getDefaultGradient = (index: number) => gradients[index % gradients.length];
 
 async function previewAll() {
   LoadingPlugin(true);
@@ -216,6 +207,41 @@ function editStoryboaryImage(images: string[], id: number | null = null) {
     id,
   };
   visible.value = true;
+}
+
+async function getStoryboardFlowData() {
+  console.log("%c Line:103 🍩", "background:#2eafb0", "获取分镜工作流数据");
+  if (!currentRow.value.id) return null;
+  try {
+    const { data } = await axios.post("/production/editStoryboard/getStoryboardFlow", {
+      id: currentRow.value?.id,
+    });
+    return data;
+  } catch (e) {
+    throw e;
+  }
+}
+
+async function saveOrUpdateFlowData(data: { nodes: NodeType[]; edges: Edge<any, any, string>[]; imageUrl: string }) {
+  const { nodes, edges, imageUrl } = data;
+  if (currentRow.value?.id) {
+    await axios.post("/production/editStoryboard/updateStoryboardFlow", {
+      id: currentRow.value?.id,
+      nodes: nodes,
+      edges: edges,
+      imageUrl,
+    });
+    visible.value = false;
+    console.log("%c Line:109 🍩", "background:#2eafb0", "更新分镜工作流数据");
+  } else {
+    await axios.post("/production/editStoryboard/saveStoryboardFlow", {
+      nodes: nodes,
+      edges: edges,
+      imageUrl,
+    });
+    visible.value = false;
+    console.log("%c Line:112 🍩", "background:#2eafb0", "保存分镜工作流数据");
+  }
 }
 </script>
 

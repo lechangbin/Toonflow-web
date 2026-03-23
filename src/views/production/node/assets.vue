@@ -32,7 +32,7 @@
             <i-right size="32"></i-right>
           </div>
           <div class="deriveAssets">
-            <t-card v-for="(item, index) in asset.derive" :key="index" class="assetCard">
+            <t-card v-for="(item, index) in asset.derive" :key="index" class="assetCard" @click="generateAssetsImage(item)">
               <div v-if="item.src" class="assetImageWrap">
                 <t-image :src="item.src" fit="contain" class="assetImage" :preview="true" :lazy="true">
                   <template #overlayContent>
@@ -61,11 +61,21 @@
         </div>
       </div>
     </div>
+    <editImage
+      v-model:visible="visible"
+      v-if="visible"
+      :editData="currentRow"
+      :getFlowDataFn="getAssetsFlowData"
+      :saveFlowFn="saveOrUpdateFlowData" />
   </t-card>
 </template>
 
 <script setup lang="ts">
-import { Handle, Position } from "@vue-flow/core";
+import axios from "@/utils/axios";
+import { Handle, Position, type Edge } from "@vue-flow/core";
+import editImage from "../components/editImage/index.vue";
+import type { NodeType } from "../utils/editImageType";
+import { images } from "mammoth";
 
 interface DeriveAsset {
   assetsId: string;
@@ -92,6 +102,44 @@ const props = defineProps<{
     };
   };
 }>();
+const currentRow = ref<{
+  id: null | number;
+  images: string[];
+}>({
+  images: [],
+  id: null,
+});
+const visible = ref(false);
+function generateAssetsImage(row: DeriveAsset) {
+  console.log("生成图片", row);
+  currentRow.value = { id: +row.assetsId as number, images: [row.src] };
+  visible.value = true;
+}
+
+function getAssetsFlowData() {
+  console.log("%c Line:103 🍩", "background:#2eafb0", "获取资产工作流数据");
+  return null;
+}
+
+async function saveOrUpdateFlowData(data: { nodes: NodeType[]; edges: Edge<any, any, string>[]; imageUrl: string }) {
+  const { nodes, edges, imageUrl } = data;
+  if (currentRow.value?.id) {
+    await axios.post("/production/editStoryboard/updateStoryboardFlow", {
+      id: currentRow.value?.id,
+      nodes: nodes,
+      edges: edges,
+      imageUrl,
+    });
+    console.log("%c Line:109 🍩", "background:#2eafb0", "更新分镜工作流数据");
+  } else {
+    await axios.post("/production/editStoryboard/saveStoryboardFlow", {
+      nodes: nodes,
+      edges: edges,
+      imageUrl,
+    });
+    console.log("%c Line:112 🍩", "background:#2eafb0", "保存分镜工作流数据");
+  }
+}
 </script>
 
 <style lang="scss" scoped>
