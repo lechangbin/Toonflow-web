@@ -1,12 +1,12 @@
 <template>
   <t-card class="poster">
-    <Handle :id="props.data.handleIds.target" type="target" :position="Position.Left" />
+    <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
     <div class="titleBar dragHandle">
       <div class="title">视频封面</div>
-      <t-tag size="small" variant="outline">{{ props.data.items.length }}张</t-tag>
+      <t-tag size="small" variant="outline">{{ poster?.items.length }}张</t-tag>
     </div>
     <div class="posterGrid">
-      <div v-for="(item, index) in props.data.items" :key="item.id" class="posterCard">
+      <div v-for="(item, index) in poster?.items" :key="item.id" class="posterCard">
         <div class="posterImage">
           <t-image v-if="item.image" :src="item.image" fit="cover" class="posterImg">
             <template #overlayContent>
@@ -31,13 +31,12 @@ interface PosterItem {
 
 const props = defineProps<{
   id: string;
-  data: {
-    items: PosterItem[];
-    handleIds: {
-      target: string;
-    };
+  handleIds: {
+    target: string;
   };
 }>();
+
+const poster = defineModel<{ items: PosterItem[] }>({ required: true });
 </script>
 
 <style lang="scss" scoped>

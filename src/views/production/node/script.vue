@@ -1,14 +1,14 @@
 <template>
   <t-card class="script">
-    <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
+    <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
       <div class="title c">剧本</div>
       <t-button size="small" variant="text" @click="openEdit">编辑</t-button>
     </div>
     <div class="content">
-      <MdPreview v-model="content" :theme="'light'" />
+      <MdPreview v-model="script" :theme="'light'" />
     </div>
-    <Handle :id="props.data.handleIds.assets" type="source" :position="Position.Bottom" />
+    <Handle :id="props.handleIds.assets" type="source" :position="Position.Bottom" />
   </t-card>
 
   <t-dialog
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { Handle, Position } from "@vue-flow/core";
 import { MdEditor, MdPreview } from "md-editor-v3";
 import type { ToolbarNames } from "md-editor-v3";
@@ -44,29 +44,15 @@ import "md-editor-v3/lib/style.css";
 
 const props = defineProps<{
   id: string;
-  data: {
-    script: string;
-    handleIds: {
-      assets: string;
-      source: string;
-    };
+  handleIds: {
+    assets: string;
+    source: string;
   };
 }>();
 
-const emit = defineEmits<{
-  (e: "update:script", value: string): void;
-}>();
-
-const content = ref(props.data.script);
+const script = defineModel<string>({ required: true });
 const editContent = ref("");
 const dialogVisible = ref(false);
-
-watch(
-  () => props.data.script,
-  (val) => {
-    content.value = val;
-  },
-);
 
 const toolbars: ToolbarNames[] = [
   "bold",
@@ -93,13 +79,12 @@ const toolbars: ToolbarNames[] = [
 ];
 
 function openEdit() {
-  editContent.value = content.value;
+  editContent.value = script.value ?? "";
   dialogVisible.value = true;
 }
 
 function onConfirm() {
-  content.value = editContent.value;
-  emit("update:script", editContent.value);
+  script.value = editContent.value;
   dialogVisible.value = false;
 }
 

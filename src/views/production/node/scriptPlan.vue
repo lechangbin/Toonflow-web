@@ -1,13 +1,13 @@
 <template>
   <t-card class="scriptPlan">
-    <Handle :id="props.data.handleIds.target" type="target" :position="Position.Left" />
-    <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
+    <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
+    <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
       <div class="title c">拍摄计划</div>
       <t-button size="small" variant="text" @click="openEdit">编辑</t-button>
     </div>
     <div class="content">
-      <MdPreview v-model="content" :theme="'light'" />
+      <MdPreview v-model="scriptPlan" :theme="'light'" />
     </div>
   </t-card>
 
@@ -36,7 +36,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref } from "vue";
 import { Handle, Position } from "@vue-flow/core";
 import { MdEditor, MdPreview } from "md-editor-v3";
 import type { ToolbarNames } from "md-editor-v3";
@@ -44,29 +44,15 @@ import "md-editor-v3/lib/style.css";
 
 const props = defineProps<{
   id: string;
-  data: {
-    scriptPlan: string;
-    handleIds: {
-      target: string;
-      source: string;
-    };
+  handleIds: {
+    target: string;
+    source: string;
   };
 }>();
 
-const emit = defineEmits<{
-  (e: "update:scriptPlan", value: string): void;
-}>();
-
-const content = ref(props.data.scriptPlan);
+const scriptPlan = defineModel<string>({ required: true });
 const editContent = ref("");
 const dialogVisible = ref(false);
-
-watch(
-  () => props.data.scriptPlan,
-  (val) => {
-    content.value = val;
-  },
-);
 
 const toolbars: ToolbarNames[] = [
   "bold",
@@ -93,13 +79,12 @@ const toolbars: ToolbarNames[] = [
 ];
 
 function openEdit() {
-  editContent.value = content.value;
+  editContent.value = scriptPlan.value ?? "";
   dialogVisible.value = true;
 }
 
 function onConfirm() {
-  content.value = editContent.value;
-  emit("update:scriptPlan", editContent.value);
+  scriptPlan.value = editContent.value;
   dialogVisible.value = false;
 }
 

@@ -54,6 +54,7 @@ export default function parseNovel(text: string): Reel[] {
   let CHAPTER_REGEX;
 
   const regStr = settingStore().otherSetting.chapterReg;
+  console.log("%c Line:57 🥐 regStr", "background:#4fff4B", regStr);
   if (regStr) {
     const match = regStr.match(/^\/(.*)\/([igmuy]*)$/);
     if (match) {
