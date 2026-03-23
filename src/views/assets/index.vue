@@ -410,6 +410,7 @@ interface Asset {
   filePath?: string;
   type: string; // "角色" | "道具" | "场景"
   sonAssets?: Asset[]; // 子资产列表
+  imageId: number;
 }
 const tableData = ref<Asset[]>([]);
 // 分页配置

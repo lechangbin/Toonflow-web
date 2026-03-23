@@ -38,7 +38,7 @@ const axiosTimeOutInSeconds = computed({
 });
 
 function setDefaultReg() {
-  otherSetting.value.chapterReg = "/(第[d一二三四五六七八九十百千]+章)s*([^]*)/g";
+  otherSetting.value.chapterReg = "/第\s*([0-9０-９零一二三四五六七八九十百千万]+)\s*[章回节]\s*([^\n\r]*)/g";
 }
 </script>
 

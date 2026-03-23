@@ -3,7 +3,6 @@
     <div class="data f">
       <div class="operate">
         <div class="box">
-          <agent v-model="openShowVisible" :chatList="chatList" :anthology="anthology" @sendData="handleSendData" />
         </div>
       </div>
       <div class="data">
@@ -74,6 +73,40 @@
               </div>
             </t-tab-panel>
             <t-tab-panel :value="2" label="大纲">
+              <div class="outline f w">
+                <div v-for="(item, index) in outlineData" :key="index" class="cardWrapper" @click="editOutlineFn(item)">
+                  <t-card bordered hover-shadow class="episodeCard">
+                    <div class="deleteBtn" @click.stop="handleDelete(item)">
+                      <i-delete theme="outline" size="18" fill="#d0021b" />
+                    </div>
+                    <div class="cardHeader">
+                      <div class="sortBadge">Ep.{{ String(index + 1).padStart(2, "0") }}</div>
+                      <div class="titleText">{{ item.title }}</div>
+                    </div>
+                    <div class="charactersSection">
+                      <t-tag shape="round" variant="light" v-for="(figure, figureIndex) in item.characters" :key="figureIndex">
+                        {{ figure.name }}
+                      </t-tag>
+                    </div>
+                    <div class="contentSection">
+                      <div class="sectionItem">
+                        <div class="sectionLabel">
+                          <span>核心冲突</span>
+                        </div>
+                        <div class="sectionContent">{{ item.coreConflict }}</div>
+                      </div>
+                      <div class="sectionItem">
+                        <div class="sectionLabel">
+                          <span>黄金3秒</span>
+                        </div>
+                        <div class="sectionContent">{{ item.openingHook }}</div>
+                      </div>
+                    </div>
+                  </t-card>
+                </div>
+              </div>
+            </t-tab-panel>
+            <t-tab-panel :value="2" label="剧本">
               <div class="outline f w">
                 <div v-for="(item, index) in outlineData" :key="index" class="cardWrapper" @click="editOutlineFn(item)">
                   <t-card bordered hover-shadow class="episodeCard">
