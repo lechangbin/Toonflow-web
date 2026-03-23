@@ -231,16 +231,15 @@ async function saveOrUpdateFlowData(data: { nodes: NodeType[]; edges: Edge<any, 
       edges: edges,
       imageUrl,
     });
-    visible.value = false;
-    console.log("%c Line:109 🍩", "background:#2eafb0", "更新分镜工作流数据");
+    // 更新对应分镜的 src
+    const target = props.data.storyboard.find((s) => s.id === currentRow.value.id);
+    if (target) target.src = imageUrl;
   } else {
     await axios.post("/production/editStoryboard/saveStoryboardFlow", {
       nodes: nodes,
       edges: edges,
       imageUrl,
     });
-    visible.value = false;
-    console.log("%c Line:112 🍩", "background:#2eafb0", "保存分镜工作流数据");
   }
 }
 </script>

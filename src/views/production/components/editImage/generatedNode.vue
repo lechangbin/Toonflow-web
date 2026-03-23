@@ -4,7 +4,7 @@
     <div class="data" @click="selectedFn">
       <div class="title ac">
         <i-pic theme="outline" size="16" fill="#000000" />
-        <span class="title-text">图片生成 {{ props.data }}</span>
+        <span class="title-text">图片生成</span>
       </div>
       <div class="image">
         <div v-if="generating" class="imageLoading">
@@ -20,6 +20,11 @@
             </template>
           </t-image>
         </div>
+        <t-tooltip theme="primary" content="删除节点">
+          <div class="remove ac" @click="removeNodes(props.id)">
+            <i-delete theme="outline" size="18" fill="#fff" />
+          </div>
+        </t-tooltip>
       </div>
     </div>
     <div v-if="selected" class="parameter">
@@ -56,19 +61,22 @@
           </div>
         </div>
       </div>
-      <div class="operate ac">
-        <modelSelect v-model="data.model" type="image" size="small" />
-        <t-select v-model="data.ratio" class="paramSelect ml-5" size="small" placeholder="比例">
-          <t-option value="16:9" label="16:9" />
-          <t-option value="9:16" label="9:16" />
-          <t-option value="1:1" label="1:1" />
-        </t-select>
-        <t-select v-model="data.quality" class="paramSelect ml-5" size="small" placeholder="质量">
-          <t-option value="1K" label="1K" />
-          <t-option value="2K" label="2K" />
-          <t-option value="4K" label="4K" />
-        </t-select>
-        <div class="f" style="gap: 5px; margin-left: auto">
+      <div class="operate ac jb">
+        <div class="ac">
+          <modelSelect v-model="data.model" type="image" size="small" />
+          <t-select v-model="data.ratio" class="paramSelect ml-5" size="small" placeholder="比例">
+            <t-option value="16:9" label="16:9" />
+            <t-option value="9:16" label="9:16" />
+            <t-option value="1:1" label="1:1" />
+          </t-select>
+          <t-select v-model="data.quality" class="paramSelect ml-5" size="small" placeholder="质量">
+            <t-option value="1K" label="1K" />
+            <t-option value="2K" label="2K" />
+            <t-option value="4K" label="4K" />
+          </t-select>
+        </div>
+
+        <div class="f" style="gap: 5px; margin-left: 5px">
           <t-popup content="生成">
             <t-button theme="primary" size="small" class="generateBtn" :disabled="generating" :loading="generating" @click="handleGenerate">
               <template #icon><i-arrow-up /></template>
@@ -87,7 +95,7 @@
 
 <script setup lang="ts">
 import { h, render } from "vue";
-import { Handle, Position } from "@vue-flow/core";
+import { Handle, useVueFlow, Position } from "@vue-flow/core";
 import { Popup, Tag } from "tdesign-vue-next";
 import modelSelect from "@/components/modelSelect.vue";
 import axios from "@/utils/axios";
@@ -100,6 +108,7 @@ const popupPosition = ref({ left: 0, top: 0 });
 const generating = ref(false);
 const editorContent = ref("");
 const emit = defineEmits(["keep"]);
+const { removeNodes } = useVueFlow({ id: "editStoryboard" });
 
 // 保存 @ 触发时的范围，用于后续替换
 let savedRange: Range | null = null;
@@ -359,7 +368,20 @@ function kepp() {
     .image {
       height: 320px;
       width: 100%;
-
+      position: relative;
+      .remove {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 9999;
+        padding: 5px;
+        border-radius: 10px;
+        background-color: rgba(220, 50, 50, 0.7);
+        cursor: pointer;
+        &:hover {
+          background-color: rgba(220, 50, 50, 1);
+        }
+      }
       .imageLoading {
         width: 100%;
         height: 100%;
@@ -563,6 +585,7 @@ function kepp() {
       height: 50px;
 
       .paramSelect {
+        min-width: 100px;
         width: 100px;
       }
 

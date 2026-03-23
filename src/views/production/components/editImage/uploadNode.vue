@@ -26,6 +26,11 @@
           <i-upload theme="outline" size="18" fill="#fff" />
           <span style="margin-left: 5px; color: #fff">上传</span>
         </div>
+        <t-tooltip theme="primary" content="删除节点">
+          <div class="remove ac" @click="removeFn">
+            <i-delete theme="outline" size="18" fill="#fff" />
+          </div>
+        </t-tooltip>
       </div>
     </div>
   </div>
@@ -42,7 +47,7 @@ const props = defineProps<{
   };
 }>();
 
-const { updateNodeData } = useVueFlow({ id: "editStoryboard" });
+const { updateNodeData, removeNodes } = useVueFlow({ id: "editStoryboard" });
 
 const currentImageUrl = ref(props.data?.image || "");
 const currentObjectUrl = ref<string | null>(null);
@@ -60,6 +65,10 @@ onBeforeUnmount(() => {
   }
 });
 
+function removeFn() {
+  removeNodes(props.id);
+}
+
 async function uploadFn() {
   const selectedAssets = await openAssetsSelector({
     multiple: false,
@@ -68,9 +77,7 @@ async function uploadFn() {
   if (selectedAssets.length > 0) {
     const filePath = selectedAssets[0].filePath!;
     currentImageUrl.value = filePath;
-    // 将新图片同步回节点 data，以便 index.vue 可以监听到变化并更新 references
     updateNodeData(props.id, { image: filePath });
-    console.log("%c Line:60 🌽 selectedAssets", "background:#7f2b82", selectedAssets);
   }
 }
 </script>
@@ -119,6 +126,20 @@ async function uploadFn() {
         padding: 5px 10px;
         border-radius: 10px;
         background-color: rgba(0, 0, 0, 0.5);
+      }
+
+      .remove {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 9999;
+        padding: 5px;
+        border-radius: 10px;
+        background-color: rgba(220, 50, 50, 0.7);
+        cursor: pointer;
+        &:hover {
+          background-color: rgba(220, 50, 50, 1);
+        }
       }
     }
   }

@@ -11,7 +11,7 @@
       </t-form-item>
       <t-form-item>
         <t-space size="small">
-          <t-button theme="primary" type="submit">保存</t-button>
+          <t-button theme="primary" type="submit" @click="handleSubmit">保存</t-button>
           <t-button theme="default" @click="handleReset">重置</t-button>
         </t-space>
       </t-form-item>
@@ -49,11 +49,9 @@ function loadSettings() {
   formData.value.baseUrl = settingStore.baseUrl;
 }
 
-function handleSubmit({ validateResult }: { validateResult: boolean }) {
-  if (validateResult) {
-    settingStore.baseUrl = formData.value.baseUrl;
-    MessagePlugin.success("请求地址保存成功");
-  }
+function handleSubmit() {
+  settingStore.baseUrl = formData.value.baseUrl;
+  MessagePlugin.success("请求地址保存成功");
 }
 
 function handleReset() {

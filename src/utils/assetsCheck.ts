@@ -10,6 +10,7 @@ interface Asset {
   remark: string;
   filePath?: string;
   type: string;
+  imageId:number;
   sonAssets?: Asset[];
 }
 

@@ -171,24 +171,12 @@ const addUploadNode = (type: string, image: string = "") => {
 //保存节点
 async function sureNode(imageUrl: string) {
   try {
-    if (props.editData.id) {
-      await axios.post("/production/editStoryboard/updateStoryboardFlow", {
-        id: props.editData.id,
-        nodes: nodes.value,
-        edges: edges.value,
-        imageUrl,
-      });
-      visible.value = false;
-      emit("save");
-    } else {
-      await axios.post("/production/editStoryboard/saveStoryboardFlow", {
-        nodes: nodes.value,
-        edges: edges.value,
-        imageUrl,
-      });
-      emit("save");
-      visible.value = false;
-    }
+    await props.saveFlowFn({
+      imageUrl,
+      nodes: nodes.value as NodeType[],
+      edges: edges.value as Edge<any, any, string>[],
+    });
+    visible.value = false;
   } catch (e) {
     window.$message.error((e as any).message || "保存失败");
   } finally {
