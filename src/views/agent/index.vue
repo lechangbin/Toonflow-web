@@ -1,7 +1,7 @@
 <template>
   <div class="scriptAgent">
-    <div class="data f">
-      <div class="operate">
+    <Splitpanes class="default-theme data f">
+      <Pane :size="25" :min-size="15" class="operate">
         <div class="box pr">
           <t-chat-list :clear-history="false">
             <t-chat-message
@@ -53,8 +53,8 @@
           </t-chat-sender>
           <i-dot class="dot" theme="outline" :fill="connected ? 'green' : 'red'" />
         </div>
-      </div>
-      <div class="data">
+      </Pane>
+      <Pane :size="75" :min-size="30" class="data">
         <div class="tabsWrapper">
           <t-tabs v-model="currentTable">
             <t-tab-panel :value="1" label="章节事件">
@@ -71,8 +71,8 @@
             </t-tab-panel>
           </t-tabs>
         </div>
-      </div>
-    </div>
+      </Pane>
+    </Splitpanes>
   </div>
 </template>
 
@@ -84,6 +84,8 @@ import { MdPreview } from "md-editor-v3";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import settingStore from "@/stores/setting";
 import { useSocket } from "@/utils/useSocket";
+import { Splitpanes, Pane } from "splitpanes";
+import "splitpanes/dist/splitpanes.css";
 
 const { baseUrl } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
@@ -112,7 +114,7 @@ async function getData() {
     limit: 99999,
   });
   const eventString = data.data.map((i: any) => [`第${i.index}章，标题：${i.chapter}，事件：${i.event}`].join("\n")).join("\n");
-  planData.value.event = eventString
+  planData.value.event = eventString;
 }
 
 onMounted(() => {
@@ -253,15 +255,22 @@ async function getHistory() {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  :deep(.splitpanes__pane) {
+    background-color: transparent !important;
+  }
+  :deep(.splitpanes__splitter) {
+    border-left: none;
+    margin-left: 1px;
+  }
   .data {
     flex: 1;
-    gap: 20px;
     overflow: hidden;
-    .operate {
-      width: 25%;
+    :deep(.operate) {
       display: flex;
       flex-direction: column;
       min-height: 0;
+      min-width: 250px;
+      height: 100%;
       .box {
         padding-top: 0.5rem;
         flex: 1;
@@ -273,7 +282,7 @@ async function getHistory() {
         overflow: hidden;
         position: relative;
         width: 100%;
-        height: calc(100% - 50px);
+        height: 100%;
         padding-left: 0.5rem;
         .inputBox {
           padding-right: 0.5rem;
@@ -285,13 +294,14 @@ async function getHistory() {
           left: 10px;
         }
       }
-      :deep(.t-chat__list) {
+      .t-chat__list {
         padding-right: 0.5rem;
       }
     }
-    .data {
+    :deep(.data) {
       display: flex;
       flex-direction: column;
+      height: 100%;
       position: relative;
       .tabsWrapper {
         flex: 1;
@@ -299,7 +309,7 @@ async function getHistory() {
         display: flex;
         flex-direction: column;
         transition: padding-bottom 0.3s ease;
-        :deep(.t-tabs) {
+        .t-tabs {
           display: flex;
           flex-direction: column;
           height: 100%;

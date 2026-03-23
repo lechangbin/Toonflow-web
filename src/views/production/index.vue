@@ -1,8 +1,8 @@
 <template>
   <VueFlow
     class="flowMain"
-    :nodes="nodes"
-    :edges="edges"
+    :nodes="episodesId ? nodes : []"
+    :edges="episodesId ? edges : []"
     :max-zoom="10"
     :min-zoom="0.1"
     fit-view-on-init
