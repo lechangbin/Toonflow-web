@@ -1,16 +1,6 @@
 <template>
   <div class="addAssets">
-    <t-dialog
-      :visible.sync="addAssetsShow"
-      :closable="false"
-      width="40vw"
-      :header="props.title"
-      :maskClosable="false"
-      wrapClassName="no-header-margin"
-      dialogClass="custom-modal"
-      @close-btn-click="handleCancel"
-      @confirm="onConfirm"
-      @cancel="handleCancel">
+    <t-dialog v-model:visible="addAssetsShow" :closable="false" width="40vw" :header="props.title" :maskClosable="false">
       <div class="data">
         <t-form :data="props.formData" :rules="rules" ref="formRef">
           <t-form-item label="名称" name="name">
@@ -23,7 +13,7 @@
             <t-input v-model="props.formData.remark" placeholder="请输入备注"></t-input>
           </t-form-item>
           <t-form-item label="提示词" name="prompt" v-if="props.type !== 'clip'">
-            <t-textarea v-model="props.formData.prompt"  :autosize="{ minRows: 3, maxRows: 5 }" placeholder="请输入提示词"></t-textarea>
+            <t-textarea v-model="props.formData.prompt" :autosize="{ minRows: 3, maxRows: 5 }" placeholder="请输入提示词"></t-textarea>
           </t-form-item>
         </t-form>
       </div>

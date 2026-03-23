@@ -1,6 +1,6 @@
 <template>
   <div class="migrateShow">
-    <t-dialog :visible.sync="visible" header="迁移数据" width="500px" :maskClosable="false" :closeBtn="false">
+    <t-dialog v-model:visible="visible" header="迁移数据" width="500px">
       <div class="taskList">
         <div class="item">
           <span>检测到您有旧版本的数据，是否需要迁移？</span>

@@ -7,8 +7,6 @@
       header="图片生成"
       :maskClosable="false"
       :footer="false"
-      wrapClassName="no-header-margin"
-      dialogClass="custom-modal"
       @close-btn-click="handleCancel">
       <div class="data f">
         <t-card :bordered="false" :style="{ width: '40%' }">

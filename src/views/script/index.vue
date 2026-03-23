@@ -27,12 +27,12 @@
         <t-empty />
       </div>
       <div v-else class="scriptsList f w">
-        <div v-for="(item, index) in scripts" :key="index" @click="handleScriptClick(item)">
-          <t-card shadow :title="item.name" hover-shadow :style="{ width: '400px', cursor: 'pointer' }">
+        <div v-for="(item, index) in scripts" :key="index" @click="handleScriptClick(item)" class="scriptCard">
+          <t-card shadow hover-shadow :style="{ width: '400px', cursor: 'pointer' }">
             <template #header>
-              <div class="cardHeader f ac">
-                <t-checkbox :checked="selectedIds.includes(item.id)" @click.stop @change="toggleSelect(item.id)" />
+              <div class="cardHeader">
                 <span class="cardTitle">{{ item.name }}</span>
+                <t-checkbox :checked="selectedIds.includes(item.id)" @click.stop @change="toggleSelect(item.id)" class="cardCheckbox" />
               </div>
             </template>
             <span class="content">{{ item.content }}</span>
@@ -48,15 +48,15 @@
         </div>
       </div>
     </div>
-    <Details v-model="detailsShow" :item="selectedScript" @searchScripts="searchScripts" />
-    <AddScript v-model="addScriptShow" @searchScripts="searchScripts" />
+    <editScript v-model="detailsShow" :item="selectedScript" @searchScripts="searchScripts" />
+    <addScript v-model="addScriptShow" @searchScripts="searchScripts" />
   </div>
 </template>
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
-import Details from "./components/details.vue";
-import AddScript from "./components/addScript.vue";
+import editScript from "./components/editScript.vue";
+import addScript from "./components/addScript.vue";
 import projectStore from "@/stores/project";
 
 const { project } = storeToRefs(projectStore());
@@ -200,6 +200,9 @@ async function handleDeleteScript(scriptId: number) {
   .contentArea {
     .scriptsList {
       gap: 20px;
+      .scriptCard {
+        position: relative;
+      }
       .content {
         display: -webkit-box;
         -webkit-box-orient: vertical;
@@ -207,11 +210,19 @@ async function handleDeleteScript(scriptId: number) {
         -webkit-line-clamp: 1;
       }
       .cardHeader {
-        gap: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
         .cardTitle {
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          flex: 1;
+        }
+        .cardCheckbox {
+          flex-shrink: 0;
+          margin-left: 12px;
         }
       }
       .assetTags {

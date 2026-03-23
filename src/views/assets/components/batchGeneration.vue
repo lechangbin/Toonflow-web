@@ -6,8 +6,6 @@
       top="3vh"
       width="80vw"
       :maskClosable="false"
-      wrapClassName="no-header-margin"
-      dialogClass="custom-modal"
       :footer="true"
       @close-btn-click="handleCancel"
       @confirm="onConfirm"

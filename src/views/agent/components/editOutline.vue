@@ -7,8 +7,6 @@
       header="剧情大纲"
       width="70vw"
       :maskClosable="false"
-      wrapClassName="no-header-margin"
-      dialogClass="custom-modal"
       :footer="true"
       @close-btn-click="handleCancel"
       @confirm="onConfirm">
