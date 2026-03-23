@@ -5,10 +5,10 @@
       <t-dialog v-model:visible="showSettingModal" header="服务器设置" @confirm="handleSaveSetting" :width="400">
         <t-form label-width="80px">
           <t-form-item label="请求地址">
-            <t-input v-model="tempBaseUrl" placeholder="http://localhost:60000" />
+            <t-input v-model="tempBaseUrl" placeholder="http://localhost:10588" />
           </t-form-item>
           <t-form-item label="WS地址">
-            <t-input v-model="tempWsBaseUrl" placeholder="ws://localhost:60000" />
+            <t-input v-model="tempWsBaseUrl" placeholder="ws://localhost:10588" />
           </t-form-item>
         </t-form>
       </t-dialog>

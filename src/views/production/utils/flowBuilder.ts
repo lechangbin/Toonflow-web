@@ -4,6 +4,7 @@ import { computed } from "vue";
 // ==================== 固定节点 ID ====================
 const NODE_IDS = {
   script: "script",
+  scriptPlan: "scriptPlan",
   assets: "assets",
   storyboardTable: "storyboardTable",
   storyboard: "storyboard",
@@ -11,8 +12,11 @@ const NODE_IDS = {
   poster: "poster",
 } as const;
 
+type NodeId = (typeof NODE_IDS)[keyof typeof NODE_IDS];
+
 // ==================== 类型定义 ====================
 interface DeriveAsset {
+  id: number;
   assetsId: string;
   name: string;
   desc: string;
@@ -58,8 +62,9 @@ interface PosterItem {
 
 export interface FlowData {
   script: string;
+  scriptPlan: string;
   assets: AssetItem[];
-  storyboardTable: Storyboard[];
+  storyboardTable: string;
   storyboard: Storyboard[];
   workbench: WorkbenchData;
   poster: {
@@ -75,14 +80,79 @@ const edgeStyle = {
   strokeWidth: 4,
 };
 
+const TOPO_ORDER = [
+  NODE_IDS.script,
+  NODE_IDS.scriptPlan,
+  NODE_IDS.assets,
+  NODE_IDS.storyboardTable,
+  NODE_IDS.storyboard,
+  NODE_IDS.workbench,
+  NODE_IDS.poster,
+] as const;
+
+const NODE_DEPENDENCIES: Record<NodeId, NodeId[]> = {
+  [NODE_IDS.script]: [],
+  [NODE_IDS.scriptPlan]: [NODE_IDS.script],
+  [NODE_IDS.assets]: [NODE_IDS.script],
+  [NODE_IDS.storyboardTable]: [NODE_IDS.scriptPlan],
+  [NODE_IDS.storyboard]: [NODE_IDS.storyboardTable],
+  [NODE_IDS.workbench]: [NODE_IDS.storyboard],
+  [NODE_IDS.poster]: [NODE_IDS.workbench],
+};
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+const hasDataByNode: Record<NodeId, (data: FlowData) => boolean> = {
+  [NODE_IDS.script]: (data) => isNonEmptyString(data.script),
+  [NODE_IDS.scriptPlan]: (data) => isNonEmptyString(data.scriptPlan),
+  [NODE_IDS.assets]: (data) => Array.isArray(data.assets) && data.assets.length > 0,
+  [NODE_IDS.storyboardTable]: (data) => isNonEmptyString(data.storyboardTable),
+  [NODE_IDS.storyboard]: (data) => Array.isArray(data.storyboard) && data.storyboard.length > 0,
+  [NODE_IDS.workbench]: (data) =>
+    [
+      data.workbench?.name,
+      data.workbench?.duration,
+      data.workbench?.resolution,
+      data.workbench?.fps,
+      data.workbench?.cover,
+      data.workbench?.gradient,
+    ].some(isNonEmptyString),
+  [NODE_IDS.poster]: (data) => Array.isArray(data.poster?.items) && data.poster.items.length > 0,
+};
+
+function hasNodeData(id: NodeId, data: FlowData): boolean {
+  return hasDataByNode[id](data);
+}
+
+function getVisibleNodeIds(data: FlowData) {
+  const visibleNodeIds = new Set<NodeId>();
+
+  // 按拓扑顺序判断：当前节点有数据且所有前置节点可见，才允许显示。
+  TOPO_ORDER.forEach((id) => {
+    const dependencies = NODE_DEPENDENCIES[id] || [];
+    const allDependenciesVisible = dependencies.every((depId) => visibleNodeIds.has(depId));
+
+    if (hasNodeData(id, data) && allDependenciesVisible) {
+      visibleNodeIds.add(id);
+    }
+  });
+
+  return visibleNodeIds;
+}
+
 // ==================== 构建函数 ====================
 export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodePositions>) {
+  const visibleNodeIds = computed(() => getVisibleNodeIds(flowData.value));
+
   const nodes = computed(() => {
     const data = flowData.value;
     const positions = nodePositions.value;
     const ids = NODE_IDS;
+    const visibleIds = visibleNodeIds.value;
 
-    return [
+    const allNodes = [
       // 1. Script 节点
       {
         id: ids.script,
@@ -94,6 +164,20 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
           handleIds: {
             assets: `${ids.script}-assets`,
             source: `${ids.script}-source`,
+          },
+        },
+      },
+      // 1.5 ScriptPlan 节点
+      {
+        id: ids.scriptPlan,
+        type: "scriptPlan",
+        dragHandle: ".dragHandle",
+        position: positions[ids.scriptPlan] || { x: 0, y: 0 },
+        data: {
+          scriptPlan: data.scriptPlan,
+          handleIds: {
+            target: `${ids.scriptPlan}-target`,
+            source: `${ids.scriptPlan}-source`,
           },
         },
       },
@@ -166,12 +250,15 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         },
       },
     ];
+
+    return allNodes.filter((node) => visibleIds.has(node.id as NodeId));
   });
 
   const edges = computed(() => {
     const ids = NODE_IDS;
+    const visibleIds = visibleNodeIds.value;
 
-    return [
+    const allEdges = [
       // Script -> Assets
       {
         id: `${ids.script}-${ids.assets}`,
@@ -184,10 +271,20 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
       },
       // Script -> StoryboardTable
       {
-        id: `${ids.script}-${ids.storyboardTable}`,
+        id: `${ids.script}-${ids.scriptPlan}`,
         source: ids.script,
-        target: ids.storyboardTable,
+        target: ids.scriptPlan,
         sourceHandle: `${ids.script}-source`,
+        targetHandle: `${ids.scriptPlan}-target`,
+        animated: true,
+        style: edgeStyle,
+      },
+      // ScriptPlan -> StoryboardTable
+      {
+        id: `${ids.scriptPlan}-${ids.storyboardTable}`,
+        source: ids.scriptPlan,
+        target: ids.storyboardTable,
+        sourceHandle: `${ids.scriptPlan}-source`,
         targetHandle: `${ids.storyboardTable}-target`,
         animated: true,
         style: edgeStyle,
@@ -223,6 +320,8 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         style: edgeStyle,
       },
     ];
+
+    return allEdges.filter((edge) => visibleIds.has(edge.source as NodeId) && visibleIds.has(edge.target as NodeId));
   });
 
   return { nodes, edges };

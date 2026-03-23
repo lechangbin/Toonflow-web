@@ -125,19 +125,6 @@ const currentRow = ref<{
 
 const tagColors = ["#5bccb3", "#9c7cfc", "#fbbf24", "#5b9afc", "#e86b6b", "#7cb8fc", "#e8a855", "#34d399"];
 
-const gradients = [
-  "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-  "linear-gradient(135deg, #c3cfe2 0%, #c3cfe2 100%)",
-  "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)",
-  "linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)",
-  "linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)",
-  "linear-gradient(135deg, #f6d365 0%, #fda085 100%)",
-  "linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)",
-  "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)",
-];
-
-const getDefaultGradient = (index: number) => gradients[index % gradients.length];
-
 async function previewAll() {
   LoadingPlugin(true);
   const allImages = (props.data.storyboard ?? []).filter((s) => s.src).map((s) => s.src!);

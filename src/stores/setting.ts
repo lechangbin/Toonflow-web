@@ -3,8 +3,8 @@ export default defineStore(
   () => {
     const showSetting = ref(false);
 
-    const baseUrl = ref<string>("http://localhost:60000/api");
-    const wsBaseUrl = ref<string>("ws://localhost:60000/api");
+    const baseUrl = ref<string>("http://localhost:10588/api");
+    const wsBaseUrl = ref<string>("ws://localhost:10588/api");
 
     const otherSetting = ref({
       axiosTimeOut: 60 * 10 * 1000,

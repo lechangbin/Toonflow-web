@@ -76,8 +76,8 @@ function handleSubmit({ validateResult }: { validateResult: boolean }) {
 }
 
 function handleReset() {
-  formData.value.baseUrl = "http://localhost:60000";
-  formData.value.wsBaseUrl = "ws://localhost:60000";
+  formData.value.baseUrl = "http://localhost:10588";
+  formData.value.wsBaseUrl = "ws://localhost:10588";
   settingStore.baseUrl = formData.value.baseUrl;
   settingStore.wsBaseUrl = formData.value.wsBaseUrl;
   MessagePlugin.success("已重置为默认地址");

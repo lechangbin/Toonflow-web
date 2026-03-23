@@ -1,19 +1,19 @@
 <template>
-  <t-card class="storyboardTable">
+  <t-card class="scriptPlan">
     <Handle :id="props.data.handleIds.target" type="target" :position="Position.Left" />
     <Handle :id="props.data.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
-      <div class="title c">分镜表</div>
+      <div class="title c">拍摄计划</div>
       <t-button size="small" variant="text" @click="openEdit">编辑</t-button>
     </div>
-    <div class="storyboardList">
+    <div class="content">
       <MdPreview v-model="content" :theme="'light'" />
     </div>
   </t-card>
 
   <t-dialog
     v-model:visible="dialogVisible"
-    header="编辑分镜表"
+    header="编辑拍摄计划"
     :width="'90vw'"
     :confirm-btn="'保存'"
     :cancel-btn="'取消'"
@@ -45,7 +45,7 @@ import "md-editor-v3/lib/style.css";
 const props = defineProps<{
   id: string;
   data: {
-    storyboardTable: string;
+    scriptPlan: string;
     handleIds: {
       target: string;
       source: string;
@@ -54,15 +54,15 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-  (e: "update:storyboardTable", value: string): void;
+  (e: "update:scriptPlan", value: string): void;
 }>();
 
-const content = ref(props.data.storyboardTable);
+const content = ref(props.data.scriptPlan);
 const editContent = ref("");
 const dialogVisible = ref(false);
 
 watch(
-  () => props.data.storyboardTable,
+  () => props.data.scriptPlan,
   (val) => {
     content.value = val;
   },
@@ -99,7 +99,7 @@ function openEdit() {
 
 function onConfirm() {
   content.value = editContent.value;
-  emit("update:storyboardTable", editContent.value);
+  emit("update:scriptPlan", editContent.value);
   dialogVisible.value = false;
 }
 
@@ -120,10 +120,10 @@ function onPaste(e: ClipboardEvent) {
 </script>
 
 <style lang="scss" scoped>
-.storyboardTable {
-  max-width: 50vw;
+.scriptPlan {
+  max-width: 40vw;
   width: fit-content;
-  min-width: 100px;
+  min-width: 200px;
   user-select: text;
   cursor: default;
 
@@ -144,80 +144,11 @@ function onPaste(e: ClipboardEvent) {
     font-size: 16px;
   }
 
-  .storyboardList {
-    display: flex;
-    flex-direction: column;
+  .content {
     margin-top: 8px;
 
     :deep(.md-editor) {
       border: none;
-      box-shadow: none;
-    }
-
-    :deep(.md-editor-preview-wrapper) {
-      padding: 0;
-    }
-  }
-
-  .storyboardItem {
-    display: flex;
-    align-items: flex-start;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--td-border-level-1-color, #e7e7e7);
-
-    &:last-child {
-      border-bottom: none;
-    }
-  }
-
-  .itemTag {
-    flex-shrink: 0;
-    width: 36px;
-    height: 22px;
-    border-radius: 4px;
-    color: #fff;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    margin-top: 2px;
-  }
-
-  .itemContent {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .itemHeader {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 4px;
-  }
-
-  .itemTags {
-    display: flex;
-    gap: 5px;
-    flex-shrink: 0;
-    margin-left: 12px;
-  }
-
-  .itemTitle {
-    font-size: 14px;
-    color: var(--td-text-color-primary, #333);
-    line-height: 1.5;
-  }
-
-  .itemDetail {
-    font-size: 12px;
-    color: var(--td-text-color-secondary, #999);
-    line-height: 1.4;
-
-    .sep {
-      margin: 0 6px;
-      color: var(--td-border-level-1-color, #ddd);
     }
   }
 }
