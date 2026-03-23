@@ -253,7 +253,13 @@
                   @click="handleSelectHistoryVideo(video)">
                   <!-- 成功：正常显示视频 -->
                   <template v-if="video.state === '生成成功'">
-                    <video :src="video.filePath" class="historyCardThumb" preload="metadata" muted />
+                    <video
+                      :src="video.filePath"
+                      class="historyCardThumb"
+                      :poster="videoFrameCache.get(video.filePath) || currentShot?.imageUrl || currentShot?.filePath || ''"
+                      preload="metadata"
+                      muted
+                      @loadedmetadata="(e: Event) => extractLastFrame(video.filePath, e.target as HTMLVideoElement)" />
                   </template>
                   <!-- 生成中：灰色背景 + 转圈 -->
                   <template v-else-if="video.state === '生成中'">
@@ -323,7 +329,14 @@
                 @click.stop
                 @change="(val: boolean) => handleItemCheck(item.id, val)" />
               <template v-if="getVideoRecord(item)">
-                <video :src="getVideoRecord(item)!.filePath" class="shotImage" muted loop preload="metadata" />
+                <video
+                  :src="getVideoRecord(item)!.filePath"
+                  class="shotImage"
+                  :poster="videoFrameCache.get(getVideoRecord(item)!.filePath) || item.imageUrl || item.filePath || ''"
+                  muted
+                  loop
+                  preload="metadata"
+                  @loadedmetadata="(e: Event) => extractLastFrame(getVideoRecord(item)!.filePath, e.target as HTMLVideoElement)" />
               </template>
               <!-- 双帧模式：显示分镜图片 -->
               <template v-else-if="isDualFrame(item.config?.mode as VideoModelMode)">
@@ -361,12 +374,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, onUnmounted } from "vue";
+import { ref, computed, onMounted, nextTick, onUnmounted, reactive } from "vue";
 import { storeToRefs } from "pinia";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import modelSelect from "@/components/modelSelect.vue";
 import openAssetsSelector from "@/utils/assetsCheck";
+
+/** 视频最后一帧缓存：key 为视频 filePath，value 为 canvas 截帧的 dataURL */
+const videoFrameCache = reactive(new Map<string, string>());
+
+/**
+ * 提取视频最后一帧并写入缓存。
+ * 通过将 currentTime 设为 duration 跳到末尾，在 seeked 事件后用 canvas 截图。
+ * 避免第一帧黑屏问题。
+ */
+function extractLastFrame(videoUrl: string, videoEl: HTMLVideoElement) {
+  if (!videoUrl || videoFrameCache.has(videoUrl)) return;
+  const duration = videoEl.duration;
+  if (!duration || !isFinite(duration)) return;
+  // 跳到最后一帧（稍微往前一点避免刚好超出）
+  videoEl.currentTime = Math.max(0, duration - 0.01);
+  const onSeeked = () => {
+    videoEl.removeEventListener("seeked", onSeeked);
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = videoEl.videoWidth || 320;
+      canvas.height = videoEl.videoHeight || 180;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+      if (dataUrl && dataUrl !== "data:,") {
+        videoFrameCache.set(videoUrl, dataUrl);
+      }
+    } catch {
+      // 跨域资源无法截帧时忽略，poster 继续使用分镜图
+    }
+  };
+  videoEl.addEventListener("seeked", onSeeked);
+}
 
 //视频生成配置参数
 interface VideoGenerationConfig {
@@ -1460,12 +1507,11 @@ function handleBatchDownload() {
               border-radius: 8px;
               overflow: hidden;
               cursor: pointer;
-              border: 2.5px solid transparent;
+              border: 2.5px solid #e4e4e4;
               transition: border-color 0.2s;
 
               &:hover {
-                border-color: #999;
-
+                border-color: #aaa;
                 .historyCardDelete {
                   opacity: 1;
                 }
@@ -1488,7 +1534,7 @@ function handleBatchDownload() {
                 height: 100%;
                 object-fit: cover;
                 display: block;
-
+                border-radius: 8px;
                 &.historyCardThumbEmpty {
                   background: #1a1a1a;
                 }

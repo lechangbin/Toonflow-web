@@ -65,7 +65,24 @@
             <span class="titleIndicator" />
             时长
           </div>
-          <div class="sectionContent">{{ currentShot?.duration ? currentShot.duration + " 秒" : "3 秒" }}</div>
+          <div class="sectionContent">{{ currentShot?.duration != null ? currentShot.duration + " 秒" : "3 秒" }}</div>
+        </div>
+
+        <div class="infoSection">
+          <div class="sectionTitle">
+            <span class="titleIndicator" />
+            涉及资产
+          </div>
+          <div class="characterList">
+            <div v-for="(char, index) in currentCharacters" :key="index" class="characterItem">
+              <t-image :src="char.avatar" fit="cover" class="characterAvatar" :style="{ width: '80px', height: '80px', borderRadius: '8px' }" />
+              <t-tag>{{ char.name }}（{{ char.type == "role" ? "角色" : char.type == "tool" ? "道具" : "场景" }}）</t-tag>
+            </div>
+            <div v-if="!currentCharacters.length" class="noCharacter">
+              <t-tag theme="default" variant="light">暂无出场人物</t-tag>
+            </div>
+          </div>
+          <!-- <div v-if="currentShot?.characterDesc" class="characterDesc">{{ currentShot.characterDesc }}</div> -->
         </div>
 
         <div class="infoSection">
@@ -82,31 +99,6 @@
             </template>
           </div>
         </div>
-
-        <div class="infoSection">
-          <div class="sectionTitle">
-            <span class="titleIndicator" />
-            生成配置
-          </div>
-          <div class="shootingTips">
-            <div v-if="currentShot?.model" class="tipItem">
-              <span class="tipLabel">模型：</span>
-              <span class="tipValue">{{ currentShot.model }}</span>
-            </div>
-            <div v-if="currentShot?.resolution" class="tipItem">
-              <span class="tipLabel">分辨率：</span>
-              <span class="tipValue">{{ currentShot.resolution }}</span>
-            </div>
-            <div v-if="currentShot?.mode" class="tipItem">
-              <span class="tipLabel">模式：</span>
-              <span class="tipValue">{{ MODE_LABEL[currentShot.mode] ?? currentShot.mode }}</span>
-            </div>
-            <div v-if="currentShot?.camera" class="tipItem">
-              <span class="tipLabel">运镜方式：</span>
-              <span class="tipValue">{{ currentShot.camera }}</span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -120,7 +112,7 @@
             还原拖拽排序
           </t-button>
         </div>
-        <t-button theme="default" variant="text" size="small" class="exportBtn" @click="exportSelectedShots">
+        <t-button theme="default" variant="text" size="small" class="exportBtn">
           <template #icon><i-download theme="outline" size="16" /></template>
           导出图片
         </t-button>
@@ -167,37 +159,31 @@ import { VueDraggable } from "vue-draggable-plus";
 import { DialogPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
 
-interface Shot {
-  id: number | string;
-  title: string;
-  description: string;
-  duration?: string | number;
-  filePath?: string;
-  camera?: string | null;
-  prompt?: string;
-  mode?: string;
-  model?: string;
-  resolution?: string;
-  sound?: string | null;
-  frameMode?: string | null;
-  scriptId?: number;
-  createTime?: number;
-  status?: "generating" | "completed" | "failed";
-  selected?: boolean;
+interface ShotCharacter {
+  name: string;
+  type: string;
+  avatar?: string;
 }
-const MODE_LABEL: Record<string, string> = {
-  singleImage: "单图",
-  multiImage: "多图",
-  gridImage: "网格多图",
-  startEndRequired: "首尾帧",
-  endFrameOptional: "首尾帧",
-  startFrameOptional: "首尾帧",
-  text: "文生视频",
-  ["videoReference"]: "视频参考",
-  ["imageReference"]: "图片参考",
-  ["audioReference"]: "音频参考",
-  ["textReference"]: "文本参考",
-};
+
+interface Shot {
+  id: string;
+  camera?: number;
+  createTime?: number;
+  description?: string;
+  duration?: number;
+  filePath?: string;
+  frameMode?: number;
+  mode: string;
+  model: string;
+  prompt?: string;
+  resolution?: string;
+  scriptId?: number;
+  sound?: number;
+  title?: string;
+  selected?: boolean;
+  characters?: ShotCharacter[];
+}
+
 // 模拟分镜数据
 const shotList = ref<Shot[]>([]);
 onMounted(() => {
@@ -210,7 +196,8 @@ async function getShotList() {
   });
   shotList.value = data;
 }
-
+const currentShot = computed(() => shotList.value[currentShotIndex.value] || null);
+const currentCharacters = computed(() => currentShot.value?.characters || []);
 const currentShotIndex = ref(0);
 const selectAll = ref(false);
 const shotListWrapperRef = ref<HTMLElement>();
@@ -227,23 +214,26 @@ const initialOrder = shotList.value.map((shot) => shot.id);
 
 // ===== 计算属性 =====
 
-const currentShot = computed(() => shotList.value[currentShotIndex.value] || null);
-const currentShotDuration = computed(() => parseFloat(String(currentShot.value?.duration || 3)));
+const currentShotDuration = computed(() => currentShot.value?.duration ?? 3);
 const isFirstShot = computed(() => currentShotIndex.value === 0);
 const isLastShot = computed(() => currentShotIndex.value === shotList.value.length - 1);
 
-const totalDuration = computed(() => shotList.value.reduce((sum, s) => sum + parseFloat(String(s.duration || 3)), 0));
+const totalDuration = computed(() => shotList.value.reduce((sum, s) => sum + (s.duration ?? 3), 0));
 
 const totalProgress = computed(() => {
   const elapsed = getCumulativeDuration(currentShotIndex.value) + currentElapsed.value;
   return Math.min((elapsed / totalDuration.value) * 100, 100);
 });
 
-const promptTips = computed(() => [{ label: "提示词", value: currentShot.value?.prompt }]);
+const promptTips = computed(() => [
+  { label: "画面描述", value: currentShot.value?.description },
+  // { label: "运镜方式", value: currentShot.value?.camera != null ? String(currentShot.value.camera) : undefined },
+  { label: "提示词", value: currentShot.value?.prompt },
+]);
 
 // ===== 工具函数 =====
 
-const getDuration = (index: number) => parseFloat(String(shotList.value[index]?.duration || 3));
+const getDuration = (index: number) => shotList.value[index]?.duration ?? 3;
 
 const getCumulativeDuration = (index: number) => {
   let sum = 0;
@@ -388,23 +378,6 @@ watch(
 );
 
 const onDragEnd = () => nextTick(() => (isDragging.value = false));
-
-function exportSelectedShots() {
-  const selectedShots = shotList.value.filter((shot) => shot.selected);
-  if (selectedShots.length === 0) {
-    DialogPlugin.alert({
-      header: "提示",
-      body: "请至少选择一个分镜进行导出。",
-    });
-    return;
-  }
-  // 模拟导出逻辑
-  const exportedIds = selectedShots.map((s) => s.id).join(", ");
-  DialogPlugin.alert({
-    header: "导出成功",
-    body: `已导出分镜ID：${exportedIds}`,
-  });
-}
 </script>
 
 <style lang="scss" scoped>
