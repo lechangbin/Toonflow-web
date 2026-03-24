@@ -50,9 +50,9 @@
                     <div class="imageWrapper">
                       <img :src="item.fileUrl" :alt="item.label" class="artImage" loading="lazy" />
                       <div class="text">{{ item.label }}</div>
-                      <div class="editBtn" @click.stop="openArtStyleDialog(item)">
-                        <i-edit theme="outline" size="14" />
-                      </div>
+                    </div>
+                    <div class="editBtn" @click.stop="openArtStyleDialog(item)">
+                      <i-edit theme="outline" size="14" />
                     </div>
                   </div>
                 </div>
@@ -452,6 +452,7 @@ function fetchArtStyles() {
     transition: transform 0.2s ease;
     border: 2px solid transparent;
     border-radius: 6px;
+    position: relative;
 
     &:hover {
       transform: scale(1.03);
@@ -490,25 +491,24 @@ function fetchArtStyles() {
         font-size: 12px;
         line-height: 1;
       }
+    }
+    .editBtn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
 
-      .editBtn {
-        position: absolute;
-        top: 4px;
-        right: 4px;
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.9);
-        border-radius: 4px;
-        cursor: pointer;
-        opacity: 0;
-        transition: opacity 0.2s;
-
-        &:hover {
-          background: #fff;
-        }
+      &:hover {
+        background: #fff;
       }
     }
   }
