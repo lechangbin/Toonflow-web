@@ -13,6 +13,6 @@ declare global {
 
 window.$message = MessagePlugin;
 
-window.$electron = false;
+window.$electron = import.meta.env.DEV;
 
 window.$t = t;
