@@ -7,12 +7,13 @@ declare global {
   interface Window {
     $message: typeof MessagePlugin;
     $electron: boolean;
+    $port: string;
     $t: typeof t;
   }
 }
 
 window.$message = MessagePlugin;
 
-window.$electron = false;
+window.$electron = import.meta.env.DEV;
 
 window.$t = t;
