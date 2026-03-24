@@ -123,8 +123,7 @@
                     <span class="frameLabel">参考音频</span>
                   </div>
                 </template>
-                <template v-else-if="refType === 'textReference'">
-                </template>
+                <template v-else-if="refType === 'textReference'"></template>
               </template>
             </template>
 
@@ -241,7 +240,8 @@
                 <span class="historyCount">({{ currentHistoryList.length }})</span>
               </div>
               <div>
-                <t-button theme="primary" size="small" @click="handleConfirmSelection">确认选中</t-button>
+                <t-button theme="primary" size="small" @click="refresh">刷新</t-button>
+                <t-button theme="primary" size="small" @click="handleConfirmSelection" style="margin-left: 10px">确认选中</t-button>
               </div>
             </div>
             <div class="historyContent">
@@ -962,9 +962,26 @@ function handleSelectHistoryVideo(video: VideoRecord) {
 
 // 删除历史视频
 function handleDeleteHistoryVideo(videoId: number | string) {
-  axios.post("/production/workbench/delVideo", { videoId }).then(() => {
-    getProductionData();
-    MessagePlugin.success("视频删除成功");
+  const dialog = DialogPlugin.confirm({
+    header: "确认删除",
+    body: "确定要删除这个视频吗？此操作无法撤销。",
+    confirmBtn: "删除",
+    cancelBtn: "取消",
+    theme: "warning",
+    onConfirm: async () => {
+      try {
+        await axios.post("/production/workbench/delVideo", { videoId });
+        getProductionData();
+        MessagePlugin.success("视频删除成功");
+        dialog.destroy();
+      } catch (error) {
+        MessagePlugin.error("删除失败");
+        dialog.destroy();
+      }
+    },
+    onClose: () => {
+      dialog.destroy();
+    },
   });
 }
 const { project } = storeToRefs(projectStore());
@@ -1185,6 +1202,10 @@ function handleBatchDownload() {
     })
     .filter((v): v is NonNullable<typeof v> => !!v);
   emit("close", videos);
+}
+//刷新
+function refresh() {
+  getProductionData();
 }
 </script>
 
