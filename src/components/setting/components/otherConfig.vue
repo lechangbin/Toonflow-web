@@ -2,15 +2,25 @@
   <div class="otherConfig">
     <t-form label-align="top">
       <t-form-item :label="$t('settings.other.requestTimeout')" name="axiosTimeOut">
-        <t-input-number auto-width :suffix="$t('settings.other.seconds')" :min="10" v-model="axiosTimeOutInSeconds" :placeholder="$t('settings.other.inputSeconds')" />
+        <t-input-number
+          auto-width
+          :suffix="$t('settings.other.seconds')"
+          :min="10"
+          v-model="axiosTimeOutInSeconds"
+          :placeholder="$t('settings.other.inputSeconds')" />
       </t-form-item>
       <t-form-item :label="$t('settings.other.assetConcurrency')" name="assetsBatchGenereateSize">
-        <t-input-number auto-width :suffix="$t('settings.other.count')" :min="1" v-model="otherSetting.assetsBatchGenereateSize" :placeholder="$t('settings.other.inputCount')" />
+        <t-input-number
+          auto-width
+          :suffix="$t('settings.other.count')"
+          :min="1"
+          v-model="otherSetting.assetsBatchGenereateSize"
+          :placeholder="$t('settings.other.inputCount')" />
       </t-form-item>
       <t-form-item name="chapterReg">
         <template #label>
-          <span>{{ $t('settings.other.chapterRegex') }}</span>
-          <t-button style="margin-left: 15px" @click="setDefaultReg" size="small">{{ $t('settings.other.restoreDefault') }}</t-button>
+          <span>{{ $t("settings.other.chapterRegex") }}</span>
+          <t-button style="margin-left: 15px" @click="setDefaultReg" size="small">{{ $t("settings.other.restoreDefault") }}</t-button>
         </template>
         <t-textarea v-model="otherSetting.chapterReg" :placeholder="$t('settings.other.regexPlaceholder')" style="width: 400px" />
       </t-form-item>
@@ -23,7 +33,6 @@ import settingStore from "@/stores/setting";
 const { otherSetting } = storeToRefs(settingStore());
 
 import { computed } from "vue";
-
 // 将毫秒转换为秒显示，输入时转换回毫秒存储
 const axiosTimeOutInSeconds = computed({
   get: () => {
@@ -38,7 +47,7 @@ const axiosTimeOutInSeconds = computed({
 });
 
 function setDefaultReg() {
-  otherSetting.value.chapterReg = "/第\s*([0-9０-９零一二三四五六七八九十百千万]+)\s*[章回节]\s*([^\n\r]*)/g";
+  otherSetting.value.chapterReg = "/第\s*([0-9０-９零一二三四五六七八九十百千万]+)\s*[章回节]\`s*([^\\n\\r]*)/g";
 }
 </script>
 

@@ -18,7 +18,9 @@
               </t-image>
             </div>
             <div v-else class="assetImageWrap assetImagePlaceholder">
-              <t-empty size="small" title="未生成" />
+              <t-loading v-if="asset.state == '生成中'" size="small" />
+              <span v-else-if="asset.state == '生成失败'" style="color: red">生成失败</span>
+              <t-empty v-else size="small" title="未生成" />
             </div>
             <div class="cardInfo">
               <div class="cardName">
@@ -43,7 +45,7 @@
                 </t-image>
               </div>
               <div v-else class="assetImageWrap assetImagePlaceholder">
-                <t-loading v-if="item.state === '生成中'" size="small" />
+                <t-loading v-if="item.state == '生成中'" size="small" />
                 <t-empty v-else size="small" title="未生成" />
               </div>
               <div class="cardInfo">

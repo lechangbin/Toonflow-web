@@ -46,7 +46,7 @@ interface ScriptItem {
   id: number;
   name: string;
   content: string;
-  assets?: ScriptAsset[];
+  relatedAssets?: ScriptAsset[];
 }
 
 const detailsShow = defineModel<boolean>({
@@ -61,9 +61,9 @@ const props = defineProps<{
 const selectedAssets = ref<ScriptAsset[]>([]);
 
 watch(
-  () => props.item?.assets,
-  (assets) => {
-    selectedAssets.value = assets?.map((a) => ({ id: a.id, name: a.name })) ?? [];
+  () => props.item?.relatedAssets,
+  (relatedAssets) => {
+    selectedAssets.value = relatedAssets?.map((a) => ({ id: a.id, name: a.name })) ?? [];
   },
   { immediate: true },
 );
