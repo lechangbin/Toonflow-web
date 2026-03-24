@@ -244,7 +244,7 @@ onMounted(() => {
 function oneClickToFillIn() {
   const id = modelData.value.map((item) => item.id);
   axios
-    .post("/setting/agentDeploy/deployAgentModel", {
+    .post("/setting/agentDeploy/agentSetKey", {
       id: id,
     })
     .then(() => {

@@ -85,7 +85,7 @@
                     <div class="scriptCardHeader">
                       <div class="scriptCardHeaderLeft">
                         <span class="scriptIndex">#{{ index + 1 }}</span>
-                        <span class="scriptTitle">{{ item.title }}</span>
+                        <span class="scriptTitle">{{ item.name }}</span>
                       </div>
                       <div class="scriptCardActions">
                         <t-button size="small" @click="editScript(index)">
@@ -105,7 +105,7 @@
                       </span>
                       <div class="assetsTags">
                         <t-tag v-for="(asset, ai) in item.relatedAssets" size="small" :key="ai" variant="light" theme="warning">
-                          {{ asset }}
+                          {{ asset.name }}
                         </t-tag>
                       </div>
                     </div>
@@ -130,7 +130,7 @@
       <div class="scriptEditForm">
         <div class="scriptEditField">
           <label>标题</label>
-          <t-input v-model="scriptEditData.title" placeholder="请输入标题" />
+          <t-input v-model="scriptEditData.name" placeholder="请输入标题" />
         </div>
         <div class="scriptEditField">
           <label>内容</label>
@@ -191,16 +191,16 @@ interface Asset {
   prompt: string;
   type: "role" | "tool" | "scene" | "clip";
 }
-
+interface Script {
+  id: number;
+  name: string;
+  content: string;
+  relatedAssets: Asset[];
+}
 interface PlanData {
   storySkeleton: string;
   adaptationStrategy: string;
-  script: {
-    id: number;
-    title: string;
-    content: string;
-    relatedAssets: Asset[];
-  }[];
+  script: Script[];
 }
 
 const planData = ref<PlanData>({
@@ -357,13 +357,14 @@ async function getHistory() {
 const scriptEditVisible = ref(false);
 const scriptEditIndex = ref(-1);
 const newAssetInput = ref("");
-const scriptEditData = ref({ title: "", content: "", relatedAssets: [] as Asset[] });
+const scriptEditData = ref<Script>({ id: -1, name: "", content: "", relatedAssets: [] });
 
 function editScript(index: number) {
   const item = planData.value.script[index];
   scriptEditIndex.value = index;
   scriptEditData.value = {
-    title: item.title,
+    id: item.id,
+    name: item.name,
     content: item.content,
     relatedAssets: [...(item.relatedAssets ?? [])],
   };
@@ -377,7 +378,21 @@ async function saveScript() {
     ...planData.value.script[scriptEditIndex.value],
     ...scriptEditData.value,
   };
-  scriptEditVisible.value = false;
+
+  try {
+    await axios.post("/script/updateScript", {
+      id: scriptEditData.value.id,
+      name: scriptEditData.value.name,
+      content: scriptEditData.value.content,
+      assets: scriptEditData.value.relatedAssets.map((a) => a.id),
+    });
+    MessagePlugin.success("剧本更新成功");
+    scriptEditVisible.value = false;
+  } catch (error) {
+    console.error("更新剧本失败:", error);
+    MessagePlugin.error("更新剧本失败，请稍后再试");
+  } finally {
+  }
 }
 
 function removeAsset(id: number) {
@@ -420,6 +435,8 @@ async function getScriptApi() {
     const res = await axios.post("/script/getScrptApi", {
       projectId: project.value?.id,
     });
+    console.log("%c Line:424 🍻 res.data", "background:#33a5ff", res.data);
+
     planData.value.script = res.data;
   } catch (error) {
     console.error("搜索剧本失败:", error);
