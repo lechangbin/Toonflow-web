@@ -194,8 +194,19 @@ function keep() {
     return false;
   }
   loading.value = true;
-  axios
-    .post("/setting/agentDeploy/updateKey", { id: 1, key: key.value })
+  fetch("http://127.0.0.1:33332/v1/models", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${key.value}`,
+    },
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.text().then((text) => {
+          throw new Error(text);
+        });
+      }
+    })
     .then(() => {
       testModel();
     })
@@ -231,35 +242,21 @@ onMounted(() => {
 });
 //一键填入
 function oneClickToFillIn() {
-  const targets = ["剧本Agent", "生产Agent", "资产Agent", "润色Agent", "事件提取Agent"];
-  modelData.value.forEach((item) => {
-    if (targets.includes(item.name)) {
-      item.modelName = "1:gpt-4.1";
-      item.model = "gpt-4.1";
-      item.vendorId = 1;
-    }
-  });
-  for (let item of modelData.value) {
-    axios
-      .post("/setting/agentDeploy/deployAgentModel", {
-        id: item.id,
-        name: item.name,
-        model: item.model,
-        modelName: item.modelName,
-        vendorId: item.vendorId,
-        desc: item.desc,
-      })
-      .then(() => {
-        MessagePlugin.success("配置成功");
-        getAgentDeploy();
-      })
-      .catch((err) => {
-        MessagePlugin.error(`更新配置失败：${err.message}`);
-      })
-      .finally(() => {
-        modelDataShow.value = false;
-      });
-  }
+  const id = modelData.value.map((item) => item.id);
+  axios
+    .post("/setting/agentDeploy/deployAgentModel", {
+      id: id,
+    })
+    .then(() => {
+      MessagePlugin.success("配置成功");
+      getAgentDeploy();
+    })
+    .catch((err) => {
+      MessagePlugin.error(`更新配置失败：${err.message}`);
+    })
+    .finally(() => {
+      modelDataShow.value = false;
+    });
 }
 </script>
 

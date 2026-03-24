@@ -50,7 +50,6 @@
         </div>
       </div>
 
-      <!-- 右侧信息面板 -->
       <div class="infoPanel">
         <div class="infoSection">
           <div class="sectionTitle">
@@ -82,9 +81,7 @@
               <t-tag theme="default" variant="light">暂无出场人物</t-tag>
             </div>
           </div>
-          <!-- <div v-if="currentShot?.characterDesc" class="characterDesc">{{ currentShot.characterDesc }}</div> -->
         </div>
-
         <div class="infoSection">
           <div class="sectionTitle">
             <span class="titleIndicator" />
@@ -102,7 +99,6 @@
       </div>
     </div>
 
-    <!-- 底部分镜列表 -->
     <div class="shotListArea">
       <div class="shotListHeader">
         <div class="headerLeft">
