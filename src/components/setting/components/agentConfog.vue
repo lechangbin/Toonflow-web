@@ -23,9 +23,9 @@
       <t-card hoverShadow v-for="(item, index) in modelData" :key="index" class="skillCard" @click="startConfig(item)">
         <div class="skillCardHeader">
           <div class="headerLeft">
-            <t-avatar size="32px" v-if="getProviderLogo(item.icon)" :image="getProviderLogo(item.icon)!" />
-            <t-avatar size="32px" v-else shape="round">
-              <template #icon><i-help theme="outline" size="18" fill="currentColor" /></template>
+            <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
+            <t-avatar v-else shape="round" class="fallbackAvatar">
+              {{ getFallbackText(item.name) }}
             </t-avatar>
             <span class="skillName">{{ item.name }}</span>
           </div>
@@ -48,7 +48,7 @@
       <div class="dialogContent">
         <t-form label-align="left" :label-width="70">
           <t-form-item label="选择模型">
-            <modelSelect v-model="selectValue" type="all" />
+            <modelSelect v-model="selectValue" type="text" />
           </t-form-item>
         </t-form>
       </div>
@@ -87,10 +87,39 @@ const modelDataShow = ref(false);
 const currentItem = ref<ModelType | null>(null);
 const selectValue = ref<string>("");
 
+const modelProviderRules: Array<{ pattern: RegExp; provider: keyof typeof providersLogo }> = [
+  { pattern: /gpt|o1|o3|o4|openai/i, provider: "openai" },
+  { pattern: /claude|anthropic/i, provider: "anthropic" },
+  { pattern: /deepseek/i, provider: "deepSeek" },
+  { pattern: /gemini|veo/i, provider: "gemini" },
+  { pattern: /qwen|qwq|tongyi|通义|wanx|万相|wan/i, provider: "qwen" },
+  { pattern: /glm|zhipu|智谱/i, provider: "zhipu" },
+  { pattern: /doubao|seedream|seedance|volc/i, provider: "volcengine" },
+  { pattern: /kling|可灵/i, provider: "kling" },
+  { pattern: /vidu/i, provider: "vidu" },
+  { pattern: /runninghub/i, provider: "runninghub" },
+  { pattern: /grok|xai|grsai/i, provider: "grsai" },
+];
+
 function getProviderLogo(manufacturer: string) {
   if (!manufacturer) return null;
   const key = Object.keys(providersLogo).find((k) => k.toLowerCase() === manufacturer.toLowerCase());
   return key ? providersLogo[key as keyof typeof providersLogo] : null;
+}
+
+function inferProviderByModel(modelName?: string, model?: string) {
+  const source = `${modelName || ""} ${model || ""}`.trim();
+  if (!source) return null;
+  const matchedRule = modelProviderRules.find((rule) => rule.pattern.test(source));
+  return matchedRule ? providersLogo[matchedRule.provider] : null;
+}
+
+function getDisplayLogo(item: ModelType) {
+  return getProviderLogo(item.icon) || inferProviderByModel(item.modelName, item.model);
+}
+
+function getFallbackText(name: string) {
+  return name?.slice(0, 1) || "A";
 }
 
 function startConfig(item: ModelType) {
@@ -282,6 +311,12 @@ function oneClickToFillIn() {
   }
   .skillName {
     font-size: 15px;
+    font-weight: 600;
+  }
+  .fallbackAvatar {
+    background: var(--td-brand-color-light);
+    color: var(--td-brand-color);
+    font-size: 14px;
     font-weight: 600;
   }
 }

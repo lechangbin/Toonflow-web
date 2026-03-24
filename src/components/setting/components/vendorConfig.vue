@@ -10,9 +10,9 @@
       </div>
       <div class="listContent" v-loading="loading">
         <t-menu v-model="activeVendorName" theme="light" v-if="vendorList.length > 0">
-          <t-menu-item v-for="item in vendorList" :key="item.name" :value="item.name" @click="activeVendorName = item.name">
-            <template #icon>
-              <t-icon :name="getProviderIcon(item.name)" />
+          <t-menu-item v-for="(item, index) in vendorList" :key="index" :value="item.name" @click="activeVendorName = item.name">
+            <template #icon v-if="isValidBase64(item.icon)">
+              <t-avatar size="24px" shape="round" :image="item.icon" />
             </template>
             {{ item.name }}
           </t-menu-item>
@@ -274,15 +274,7 @@ interface VideoModel {
   name: string;
   modelName: string;
   type: "video";
-  mode: (
-    | "singleImage"
-    | "multiImage"
-    | "gridImage"
-    | "startEndRequired"
-    | "endFrameOptional"
-    | "startFrameOptional"
-    | "text"
-  )[];
+  mode: ("singleImage" | "multiImage" | "gridImage" | "startEndRequired" | "endFrameOptional" | "startFrameOptional" | "text")[];
   audio: "optional" | false | true;
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
 }
@@ -342,17 +334,6 @@ function getModeLabel(mode: string, type: string) {
   if (mode === "text") return type === "image" ? "文生图" : "文生视频";
   return MODE_LABEL_MAP[mode] || mode;
 }
-
-const ICON_MAP: Record<string, string> = {
-  OpenAI: "logo-github",
-  Claude: "chat",
-  通义千问: "cloud",
-  Gemini: "logo-google",
-  DeepSeek: "search",
-  Zhipu: "layers",
-  Moonshot: "moon",
-  Doubao: "sound",
-};
 
 const editorOptions = {
   fontSize: 14,
@@ -443,10 +424,6 @@ const testResultType = ref<"image" | "video" | "">("");
 const testModelName = ref("");
 const testingModels = reactive<Record<string, boolean>>({});
 
-function getProviderIcon(name: string) {
-  return ICON_MAP[name] || "server";
-}
-
 function getInputIcon(type: VendorInput["type"]) {
   if (type === "password") return "secured";
   if (type === "url") return "link";
@@ -455,6 +432,16 @@ function getInputIcon(type: VendorInput["type"]) {
 
 function getInputPlaceholder(input: VendorInput) {
   return input.placeholder?.trim() || "";
+}
+
+/**
+ * 检查字符串是否是有效的 base64 格式
+ */
+function isValidBase64(str?: string): boolean {
+  if (!str) return false;
+  // 检查是否是 base64 数据 URI 或纯 base64 字符串
+  const base64Regex = /^(?:data:[^;]+;base64,)?[A-Za-z0-9+/]*={0,2}$/;
+  return base64Regex.test(str) && str.length > 0;
 }
 async function handleUpdateVendor() {
   if (!currentVendor.value) return;
