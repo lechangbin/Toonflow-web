@@ -276,7 +276,8 @@
         "skillsDesc": "スキル・ヒント設定ファイル",
         "models": "data/models",
         "modelsDesc": "モデルファイルと設定"
-      }
+      },
+      "openFailed": "フォルダを開けませんでした"
     }
   },
   "workbench": {

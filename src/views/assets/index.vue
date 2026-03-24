@@ -330,7 +330,6 @@ import type { TabValue, TableProps } from "tdesign-vue-next";
 import addAssets from "./components/addAssets.vue";
 import generateImage from "./components/generateImage.vue";
 import projectStore from "@/stores/project";
-import { f } from "vue-router/dist/router-CWoNjPRp.mjs";
 
 const props = withDefaults(
   defineProps<{

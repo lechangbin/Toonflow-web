@@ -7,7 +7,7 @@
             <div class="folderName">{{ $t(item.label) }}</div>
             <div class="folderDesc">{{ $t(item.desc) }}</div>
           </div>
-          <t-button theme="primary" variant="outline" @click="handleOpenFolder(item.path)">{{ $t('settings.file.open') }}</t-button>
+          <t-button theme="primary" variant="outline" @click="handleOpenFolder(item.path)">{{ $t("settings.file.open") }}</t-button>
         </div>
       </div>
     </t-card>
@@ -21,6 +21,7 @@
 </template>
 
 <script setup lang="ts">
+import axios from "@/utils/axios";
 type QuickPathItem = {
   label: string;
   path: string;
@@ -38,7 +39,13 @@ const folderList: QuickPathItem[] = [
 const isDesktop = window.$electron === true;
 
 const handleOpenFolder = (path: string) => {
-  void path;
+  axios
+    .post("/setting/fileManagement/openFolder", {
+      path: path,
+    })
+    .catch((err) => {
+      window.$message?.error(err.message || $t("settings.file.openFailed"));
+    });
 };
 </script>
 
