@@ -82,19 +82,19 @@
                 <div v-if="img.state === '生成中'" class="generating-overlay f ac jc">
                   <t-loading text="生成中..." />
                 </div>
-                <div v-else-if="img.state === '生成失败' && !img.filePath" class="failed-overlay f ac jc">
+                <div v-else-if="img.state === '生成失败' && !img.src" class="failed-overlay f ac jc">
                   <div style="text-align: center">
                     <i-close-one theme="filled" size="40" fill="#d0021b" />
                     <div style="margin-top: 10px; color: #d0021b; font-weight: bold">生成失败</div>
                   </div>
                 </div>
-                <t-image v-else :src="img.filePath" fit="cover" :style="{ width: '100%', height: '100%', borderRadius: '20px' }">
+                <t-image v-else :src="img.src" fit="cover" :style="{ width: '100%', height: '100%', borderRadius: '20px' }">
                   <template #loading>
                     <t-loading />
                   </template>
                 </t-image>
                 <div class="preview" v-show="hoveredImageIndex === index && img.state === '生成成功'">
-                  <i-preview-open theme="outline" size="25" fill="#ffffff" @click.stop="handlePreview(img.filePath)" />
+                  <i-preview-open theme="outline" size="25" fill="#ffffff" @click.stop="handlePreview(img.src)" />
                 </div>
                 <div class="selected" v-show="selectedImageIndex === index && img.state === '生成成功'">
                   <i-check-one theme="filled" size="25" fill="#000" />
@@ -146,7 +146,7 @@ const props = defineProps<{
     describe?: string;
     type?: string;
     prompt?: string;
-    filePath: string;
+    src: string;
   };
 }>();
 
@@ -268,7 +268,7 @@ function handleCustomUpload(files: any[]): void {
         const base64 = e.target?.result as string;
         resultImages.value.push({
           id: "",
-          filePath: base64,
+          src: base64,
           state: "生成成功",
         });
         MessagePlugin.success("上传成功");
@@ -280,13 +280,13 @@ function handleCustomUpload(files: any[]): void {
 }
 
 //生成结果
-const resultImages = ref<{ id: string; filePath: string; state: string; selected?: boolean }[]>([]);
+const resultImages = ref<{ id: string; src: string; state: string; selected?: boolean }[]>([]);
 //预览图片
 const visible = ref(false);
 const trigger = ref();
-function handlePreview(filePath: string) {
+function handlePreview(src: string) {
   visible.value = true;
-  trigger.value = filePath;
+  trigger.value = src;
 }
 //选择生成的图片
 const selectedImageIndex = ref<number | null>(null);
@@ -307,9 +307,9 @@ watch(
 // 获取图片列表
 async function fetchGeneratedImages() {
   const { data } = await axios.post("/assets/getImage", { assetsId: props.formData.id });
-  const images = data.tempAssets.map((item: { id: string; filePath: string; state: string; selected?: boolean }) => ({
+  const images = data.tempAssets.map((item: { id: string; src: string; state: string; selected?: boolean }) => ({
     id: item.id,
-    filePath: item.filePath,
+    src: item.src,
     state: item.state,
     selected: item.selected ?? false,
   }));
@@ -347,7 +347,7 @@ async function onClick() {
 
     await axios.post("/assets/saveAssets", {
       id: props.formData.id,
-      base64: isLocalUpload ? selectedImage.filePath : "",
+      base64: isLocalUpload ? selectedImage.src : "",
       type: props.formData.type,
       prompt: props.formData.prompt,
       projectId: project.value?.id,

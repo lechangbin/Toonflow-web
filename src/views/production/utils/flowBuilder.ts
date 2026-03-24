@@ -15,26 +15,24 @@ const NODE_IDS = {
 type NodeId = (typeof NODE_IDS)[keyof typeof NODE_IDS];
 
 // ==================== 类型定义 ====================
-interface DeriveAsset {
+export interface DeriveAsset {
   id: number;
-  assetsId: string;
+  assetsId: number | null;
   name: string;
   prompt: string;
   desc: string;
   src: string;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
-  describe: string;
   type: "role" | "tool" | "scene" | "clip";
 }
 
-interface AssetItem {
+export interface AssetItem {
   id: number;
-  assetsId: string;
+  assetsId: number | null;
   name: string;
   desc: string;
   prompt: string;
   src: string;
-  describe: string;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
   type: "role" | "tool" | "scene" | "clip";
   derive: DeriveAsset[];

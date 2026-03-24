@@ -70,7 +70,7 @@ import poster from "./node/poster.vue";
 //悬浮窗组件
 import rightChatBox from "./components/rightChatBox/index.vue";
 
-import { useFlowBuilder } from "./utils/flowBuilder";
+import { useFlowBuilder, type FlowData } from "./utils/flowBuilder";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 
@@ -78,7 +78,7 @@ const { project } = storeToRefs(projectStore());
 
 const openShowVisible = ref(true);
 
-const episodesId = ref<number | null>(null);
+const episodesId = ref<number>();
 
 const rightChatTitle = computed(() => {
   const episode = episodesOptions.value.find((option) => option.value === episodesId.value);
@@ -89,31 +89,21 @@ const episodesOptions = ref<{ label: string; value: number }[]>([]);
 
 // ==================== AI 操作数据区 ====================
 // AI 只需修改此对象即可控制整个故事线流程
-const flowData = ref({
+const flowData = ref<FlowData>({
   // 剧本
   script: "",
   scriptPlan: "",
   // 资产
   assets: [
     {
-      assetsId: "char-1",
-      name: "凌玄",
-      desc: "男主 · 青云宗宗主 · 重伤废修",
-      src: "https://picsum.photos/seed/character-1/240/180",
-      derive: [],
-    },
-    {
-      assetsId: "char-2",
+      id: 1,
+      assetsId: 2,
+      prompt: "12312",
       name: "苏晚卿",
       desc: "女配 · 凌玄未婚妻 · 背叛者",
+      state: "已完成",
+      type: "role",
       src: "https://picsum.photos/seed/character-2/240/180",
-      derive: [],
-    },
-    {
-      assetsId: "char-3",
-      name: "沈清辞",
-      desc: "反派 · 夺舍者 · 苏晚卿真爱",
-      src: "https://picsum.photos/seed/character-3/240/180",
       derive: [],
     },
   ],
@@ -221,7 +211,9 @@ async function getData() {
     label: ep.name,
     value: ep.id,
   }));
-  episodesId.value = episodesOptions.value.length > 0 ? episodesOptions.value[0].value : null;
+  if (episodesOptions.value.length) {
+    episodesId.value = episodesOptions.value[0].value;
+  }
 
   const { data } = await axios.post("/production/getFlowData", {
     projectId: project.value?.id,

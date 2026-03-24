@@ -79,14 +79,14 @@
                     <t-table :columns="subColumns" :data="row.sonAssets || []" row-key="id" hover size="small" table-layout="fixed">
                       <template #preview="{ row: subRow }">
                         <div class="previewCell">
-                          <t-image-viewer :images="[subRow.filePath]" :closeOnEscKeydown="true" :closeOnOverlay="true">
+                          <t-image-viewer :images="[subRow.src]" :closeOnEscKeydown="true" :closeOnOverlay="true">
                             <template #trigger="{ open }">
-                              <div class="imageTrigger" @click="subRow.filePath && open()">
-                                <img v-if="subRow.filePath" :src="subRow.filePath" :alt="subRow.name" />
+                              <div class="imageTrigger" @click="subRow.src && open()">
+                                <img v-if="subRow.src" :src="subRow.src" :alt="subRow.name" />
                                 <div v-else class="noImage">
                                   <t-icon name="image" size="24px" />
                                 </div>
-                                <div v-if="subRow.filePath" class="imageHoverOverlay">
+                                <div v-if="subRow.src" class="imageHoverOverlay">
                                   <t-icon name="browse" size="20px" />
                                   <span class="hoverText">预览</span>
                                 </div>
@@ -122,14 +122,14 @@
                 </template>
                 <template #preview="{ row }">
                   <div class="previewCell">
-                    <t-image-viewer :images="[row.filePath]" :closeOnEscKeydown="true" :closeOnOverlay="true">
+                    <t-image-viewer :images="[row.src]" :closeOnEscKeydown="true" :closeOnOverlay="true">
                       <template #trigger="{ open }">
-                        <div class="imageTrigger" @click="row.filePath && open()">
-                          <img v-if="row.filePath" :src="row.filePath" :alt="row.name" class="previewImage" />
+                        <div class="imageTrigger" @click="row.src && open()">
+                          <img v-if="row.src" :src="row.src" :alt="row.name" class="previewImage" />
                           <div v-else class="noImage">
                             <t-icon name="image" size="24px" />
                           </div>
-                          <div v-if="row.filePath" class="imageHoverOverlay">
+                          <div v-if="row.src" class="imageHoverOverlay">
                             <t-icon name="browse" size="20px" />
                             <span class="hoverText">预览</span>
                           </div>
@@ -150,14 +150,14 @@
                       <t-loading size="small" />
                       <span class="generatingLabel">生成中</span>
                     </div>
-                    <t-image-viewer v-else :images="[row.filePath]" :closeOnEscKeydown="true" :closeOnOverlay="true">
+                    <t-image-viewer v-else :images="[row.src]" :closeOnEscKeydown="true" :closeOnOverlay="true">
                       <template #trigger="{ open }">
-                        <div class="imageTrigger" @click="row.filePath && open()">
-                          <img v-if="row.filePath" :src="row.filePath" :alt="row.name" class="previewImage" />
+                        <div class="imageTrigger" @click="row.src && open()">
+                          <img v-if="row.src" :src="row.src" :alt="row.name" class="previewImage" />
                           <div v-else class="noImage">
                             <t-icon name="image" size="24px" />
                           </div>
-                          <div v-if="row.filePath" class="imageHoverOverlay">
+                          <div v-if="row.src" class="imageHoverOverlay">
                             <t-icon name="browse" size="20px" />
                             <span class="hoverText">预览</span>
                           </div>
@@ -211,14 +211,10 @@
                 @page-change="handlePageChange">
                 <template #preview="{ row }">
                   <div class="previewCell">
-                    <t-image-viewer
-                      v-if="getMediaType(row.filePath) === 'image'"
-                      :images="[row.filePath]"
-                      :closeOnEscKeydown="true"
-                      :closeOnOverlay="true">
+                    <t-image-viewer v-if="getMediaType(row.src) === 'image'" :images="[row.src]" :closeOnEscKeydown="true" :closeOnOverlay="true">
                       <template #trigger="{ open }">
-                        <div class="mediaTrigger" @click="row.filePath && open()">
-                          <img :src="row.filePath" :alt="row.name" />
+                        <div class="mediaTrigger" @click="row.src && open()">
+                          <img :src="row.src" :alt="row.name" />
                           <div class="mediaHoverOverlay">
                             <t-icon name="browse" size="20px" />
                             <span class="hoverText">预览</span>
@@ -226,20 +222,14 @@
                         </div>
                       </template>
                     </t-image-viewer>
-                    <div
-                      v-else-if="getMediaType(row.filePath) === 'video'"
-                      class="mediaTrigger videoThumb"
-                      @click="openMediaPreview(row.filePath, row.name)">
-                      <video :src="row.filePath" class="thumbVideo" />
+                    <div v-else-if="getMediaType(row.src) === 'video'" class="mediaTrigger videoThumb" @click="openMediaPreview(row.src, row.name)">
+                      <video :src="row.src" class="thumbVideo" />
                       <div class="mediaHoverOverlay">
                         <t-icon name="play-circle" size="24px" />
                         <span class="hoverText">播放</span>
                       </div>
                     </div>
-                    <div
-                      v-else-if="getMediaType(row.filePath) === 'audio'"
-                      class="mediaTrigger audioThumb"
-                      @click="openMediaPreview(row.filePath, row.name)">
+                    <div v-else-if="getMediaType(row.src) === 'audio'" class="mediaTrigger audioThumb" @click="openMediaPreview(row.src, row.name)">
                       <t-icon name="music" size="28px" />
                       <div class="mediaHoverOverlay">
                         <t-icon name="play-circle" size="24px" />
@@ -403,12 +393,14 @@ const isGenerating = (id: number) => generatingIds.value.has(id) || generatingIm
 //表格数据类型定义
 interface Asset {
   id: number;
+  assetsId: number | null;
   name: string;
   prompt: string;
   describe: string;
   remark: string;
-  filePath?: string;
+  src?: string;
   type: "role" | "tool" | "scene" | "clip"; // "角色" | "道具" | "场景" | "素材"
+  state: "未生成" | "生成中" | "已完成" | "生成失败";
   sonAssets?: Asset[]; // 子资产列表
   imageId: number;
 }
@@ -467,12 +459,12 @@ function selectAssetOptions(value: TabValue) {
   pagination.value.page = 1;
   loadCurrentTabData();
 }
-const formData = ref<{ id: number; name: string; describe: string; remark: string; filePath?: string; prompt: string }>({
+const formData = ref<{ id: number; name: string; describe: string; remark: string; src?: string; prompt: string }>({
   id: 0,
   name: "",
   describe: "",
   remark: "",
-  filePath: "",
+  src: "",
   prompt: "",
 });
 const addAssetsShow = ref(false);
@@ -647,7 +639,7 @@ const columns: TableProps["columns"] = [
     disabled: (row: any) => isGenerating(row.row?.id ?? row.id),
   },
   {
-    colKey: "filePath",
+    colKey: "src",
     title: "预览",
     width: 100,
     align: "center",
@@ -702,7 +694,7 @@ const columns: TableProps["columns"] = [
 // 子资产表格列配置 - 不含勾选框和创建时间
 const subColumns: TableProps["columns"] = [
   {
-    colKey: "filePath",
+    colKey: "src",
     title: "预览",
     width: 100,
     align: "center",
@@ -750,7 +742,7 @@ const subColumns: TableProps["columns"] = [
 const clipColumns: TableProps["columns"] = [
   { colKey: "row-select", type: "multiple", width: 50, align: "center", fixed: "left" },
   {
-    colKey: "filePath",
+    colKey: "src",
     title: "预览",
     width: 100,
     align: "center",
@@ -825,14 +817,14 @@ const currentAssetData = ref<{
   describe?: string;
   type?: string;
   prompt?: string;
-  filePath: string;
+  src: string;
 }>({
   id: undefined,
   name: "",
   describe: "",
   type: "",
   prompt: "",
-  filePath: "",
+  src: "",
 });
 function generate(row: any) {
   currentAssetData.value = {
@@ -841,7 +833,7 @@ function generate(row: any) {
     describe: row.describe,
     type: row.type,
     prompt: row.prompt,
-    filePath: row.filePath,
+    src: row.src,
   };
   generateImageShow.value = true;
 }
@@ -883,9 +875,9 @@ defineExpose({
 // ===== 媒体预览 =====
 type MediaType = "image" | "video" | "audio" | "unknown";
 
-function getMediaType(filePath?: string): MediaType {
-  if (!filePath) return "unknown";
-  const ext = filePath.split("?")[0].split(".").pop()?.toLowerCase() ?? "";
+function getMediaType(src?: string): MediaType {
+  if (!src) return "unknown";
+  const ext = src.split("?")[0].split(".").pop()?.toLowerCase() ?? "";
   if (["png", "jpg", "jpeg", "gif", "webp", "bmp", "svg"].includes(ext)) return "image";
   if (["mp4", "webm", "ogg", "mov", "avi", "mkv"].includes(ext)) return "video";
   if (["mp3", "wav", "ogg", "aac", "flac", "m4a"].includes(ext)) return "audio";
@@ -897,10 +889,10 @@ const mediaPreviewSrc = ref("");
 const mediaPreviewType = ref<MediaType>("unknown");
 const mediaPreviewName = ref("");
 
-function openMediaPreview(filePath: string, name: string) {
-  if (!filePath) return;
-  mediaPreviewSrc.value = filePath;
-  mediaPreviewType.value = getMediaType(filePath);
+function openMediaPreview(src: string, name: string) {
+  if (!src) return;
+  mediaPreviewSrc.value = src;
+  mediaPreviewType.value = getMediaType(src);
   mediaPreviewName.value = name;
   mediaPreviewShow.value = true;
 }
