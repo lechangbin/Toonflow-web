@@ -51,11 +51,9 @@
       </div>
       <div class="viewBox">
         <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <KeepAlive>
-              <component :is="Component" :key="$route.fullPath" />
-            </KeepAlive>
-          </transition>
+          <KeepAlive>
+            <component :is="Component" :key="$route.fullPath" />
+          </KeepAlive>
         </router-view>
       </div>
     </div>
