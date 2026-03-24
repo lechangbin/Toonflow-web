@@ -94,63 +94,11 @@ const flowData = ref<FlowData>({
   script: "",
   scriptPlan: "",
   // 资产
-  assets: [
-    {
-      id: 1,
-      assetsId: 2,
-      prompt: "12312",
-      name: "苏晚卿",
-      desc: "女配 · 凌玄未婚妻 · 背叛者",
-      state: "已完成",
-      type: "role",
-      src: "https://picsum.photos/seed/character-2/240/180",
-      derive: [],
-    },
-  ],
+  assets: [],
   // 分镜表（合并为一个 node）
   storyboardTable: ``,
   // 分镜（合并为一个 node）
-  storyboard: [
-    {
-      id: 1,
-      title: "大殿内景",
-      description: "凌玄跪在地上，面色苍白，嘴角带血",
-      camera: "中景，缓慢推近",
-      prompt: "这里时提示词",
-      duration: 4,
-      frameMode: "firstFrame" as const,
-      lines: null,
-      sound: "[音效】捣药声沉闷",
-      associateAssetsIds: [1, 2],
-      src: "https://picsum.photos/seed/1/600/360",
-    },
-    {
-      id: 1,
-      title: "大殿内景",
-      description: "凌玄跪在地上，面色苍白，嘴角带血",
-      camera: "中景，缓慢推近",
-      prompt: "这里时提示词",
-      duration: 4,
-      frameMode: "firstFrame" as const,
-      lines: null,
-      sound: "[音效】捣药声沉闷",
-      associateAssetsIds: [1, 2],
-      src: "https://picsum.photos/seed/1/600/360",
-    },
-    {
-      id: 1,
-      title: "大殿内景",
-      description: "凌玄跪在地上，面色苍白，嘴角带血",
-      camera: "中景，缓慢推近",
-      prompt: "这里时提示词",
-      duration: 4,
-      frameMode: "firstFrame" as const,
-      lines: null,
-      sound: "[音效】捣药声沉闷",
-      associateAssetsIds: [1, 2],
-      src: "https://picsum.photos/seed/1/360/600",
-    },
-  ],
+  storyboard: [],
   // 工作台（单个 node）
   workbench: {
     name: "第2集 - 真相大白",
@@ -214,20 +162,25 @@ async function getData() {
   if (episodesOptions.value.length) {
     episodesId.value = episodesOptions.value[0].value;
   }
+}
+watch(
+  () => episodesId.value,
+  async (newVal) => {
+    const { data } = await axios.post("/production/getFlowData", {
+      projectId: project.value?.id,
+      episodesId: episodesId.value,
+    });
+    console.log("%c Line:222 🍇 data", "background:#ea7e5c", data);
 
-  const { data } = await axios.post("/production/getFlowData", {
+    flowData.value = data;
+  },
+);
+async function saveFlowData() {
+  await axios.post("/production/saveFlowData", {
     projectId: project.value?.id,
     episodesId: episodesId.value,
+    data: flowData.value,
   });
-  flowData.value = data;
-}
-
-async function saveFlowData() {
-  // await axios.post("/production/saveFlowData", {
-  //   projectId: project.value?.id,
-  //   episodesId: episodesId.value,
-  //   data: flowData.value,
-  // });
 }
 
 watch(

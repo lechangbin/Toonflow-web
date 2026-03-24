@@ -153,6 +153,40 @@ onMounted(() => {
   });
 
   socket.on("setFlowData", ({ key, value }) => {
+    console.log("%c Line:156 🍇 value", "background:#ffdd4d", value);
+    console.log("%c Line:156 🍐 key", "background:#6ec1c2", key);
+    if (key == "setAssetsImage") {
+      const { id, src, state } = value as any;
+      // 先在父资产中查找
+      const parentIndex = flowData.value.assets.findIndex((i) => i.id == id);
+      if (parentIndex !== -1) {
+        flowData.value.assets[parentIndex] = { ...flowData.value.assets[parentIndex], src, state };
+      } else {
+        // 再在子资产（derive）中查找
+        for (let ai = 0; ai < flowData.value.assets.length; ai++) {
+          const asset = flowData.value.assets[ai];
+          const deriveIndex = asset.derive?.findIndex((d) => d.id == id);
+          if (deriveIndex !== undefined && deriveIndex !== -1) {
+            const newDerive = [...asset.derive];
+            newDerive[deriveIndex] = { ...newDerive[deriveIndex], src, state };
+            flowData.value.assets[ai] = { ...asset, derive: newDerive };
+            break;
+          }
+        }
+      }
+      return;
+    }
+    if (key == "setStoryboardImage") {
+      const { id, src, state } = value as any;
+      // 先在父资产中查找
+      const parentIndex = flowData.value.storyboard.findIndex((i) => i.id == id);
+      console.log("%c Line:183 🍋 parentIndex", "background:#e41a6a", parentIndex);
+      if (parentIndex !== -1) {
+        console.log("%c Line:185 🌮", "background:#ffdd4d");
+        flowData.value.storyboard[parentIndex] = { ...flowData.value.storyboard[parentIndex], src, state };
+      }
+      return;
+    }
     _.set(flowData.value, key, value);
   });
 

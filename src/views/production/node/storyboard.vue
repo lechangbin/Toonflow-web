@@ -7,6 +7,7 @@
     </div>
     <div class="content">
       <div class="frameGrid">
+        {{ storyboard }}
         <template v-for="(item, index) in storyboard" :key="item.id">
           <div class="frameItem" @mouseenter="setHoveredFrame(index)" @mouseleave="setHoveredFrame(null)">
             <div
@@ -36,7 +37,8 @@
                   </template>
                 </t-image>
                 <div v-else class="generatingPlaceholder">
-                  <t-empty size="small" title="未生成" />
+                  <t-loading v-if="item.state === '生成中'" size="small" />
+                  <t-empty v-else size="small" title="未生成" />
                 </div>
               </div>
               <div class="frameInfo" :title="item.description">{{ item.title }}</div>
@@ -86,6 +88,7 @@ interface Storyboard {
   sound: string | null;
   associateAssetsIds: number[];
   src: string | null;
+  state: "未生成" | "生成中" | "已完成" | "生成失败";
 }
 
 const props = defineProps<{
@@ -124,6 +127,7 @@ async function previewAll() {
   const allImages = (storyboard.value ?? []).filter((s) => s.src).map((s) => s.src!);
   if (!allImages.length) {
     window.$message.warning("没有可预览的图片");
+    LoadingPlugin(false);
     return;
   }
 
