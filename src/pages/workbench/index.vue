@@ -25,7 +25,6 @@
             <i-setting-one class="icon" />
           </div>
         </t-tooltip>
-        <t-avatar style="margin-top: 8px" image="https://tdesign.gtimg.com/site/avatar.jpg" />
       </div>
     </div>
     <div class="view">
@@ -51,11 +50,9 @@
       </div>
       <div class="viewBox">
         <router-view v-slot="{ Component }">
-          <transition name="fade" mode="out-in">
-            <KeepAlive>
-              <component :is="Component" :key="$route.fullPath" />
-            </KeepAlive>
-          </transition>
+          <KeepAlive>
+            <component :is="Component" :key="$route.fullPath" />
+          </KeepAlive>
         </router-view>
       </div>
     </div>

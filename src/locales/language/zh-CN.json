@@ -276,7 +276,8 @@
         "skillsDesc": "技能与提示配置文件。",
         "models": "data/models",
         "modelsDesc": "模型文件与配置。"
-      }
+      },
+      "openFailed": "打开文件夹失败"
     }
   },
   "workbench": {

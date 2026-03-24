@@ -13,6 +13,6 @@ declare global {
 
 window.$message = MessagePlugin;
 
-window.$electron = true;
+window.$electron = false;
 
 window.$t = t;

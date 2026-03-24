@@ -276,7 +276,8 @@
         "skillsDesc": "Skills and prompt configuration files.",
         "models": "data/models",
         "modelsDesc": "Model files and configuration."
-      }
+      },
+      "openFailed": "Failed to open folder"
     }
   },
   "workbench": {
@@ -292,9 +293,7 @@
       "assetCenter": "Asset Center",
       "settings": "Setting"
     },
-    "settings": {
-      
-    }
+    "settings": {}
   },
   "login": {
     "slogan": "Intelligent short drama creation platform",

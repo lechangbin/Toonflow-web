@@ -1,18 +1,18 @@
 <template>
   <div class="languageConfig">
-    <p class="section-desc">{{ $t("settings.language.desc") }}</p>
-    <div class="lang-grid">
+    <p class="sectionDesc">{{ $t("settings.language.desc") }}</p>
+    <div class="langGrid">
       <div
         v-for="item in languageList"
         :key="item.value"
-        class="lang-card"
+        class="langCard"
         :class="{ active: selectedLang === item.value }"
         @click="selectLang(item.value)">
-        <div class="lang-info">
-          <div class="lang-name">{{ item.label }}</div>
-          <div class="lang-native">{{ item.tips }}</div>
+        <div class="langInfo">
+          <div class="langName">{{ item.label }}</div>
+          <div class="langNative">{{ item.tips }}</div>
         </div>
-        <t-icon v-if="selectedLang === item.value" name="check-circle-filled" class="check-icon" />
+        <t-icon v-if="selectedLang === item.value" name="check-circle-filled" class="checkIcon" />
       </div>
     </div>
   </div>
@@ -38,19 +38,19 @@ function selectLang(val: string) {
 .languageConfig {
   width: 100%;
 
-  .section-desc {
+  .sectionDesc {
     font-size: 13px;
     margin-bottom: 16px;
   }
 
-  .lang-grid {
+  .langGrid {
+    width: 100%;
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 12px;
-    max-width: 520px;
   }
 
-  .lang-card {
+  .langCard {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -70,28 +70,28 @@ function selectLang(val: string) {
       border-color: #b7b9bb;
     }
 
-    .lang-info {
+    .langInfo {
       flex: 1;
       min-width: 0;
 
-      .lang-name {
+      .langName {
         font-size: 14px;
         font-weight: 600;
       }
 
-      .lang-native {
+      .langNative {
         font-size: 12px;
         margin-top: 2px;
       }
     }
 
-    .check-icon {
+    .checkIcon {
       font-size: 18px;
       flex-shrink: 0;
     }
   }
 
-  .tip-alert {
+  .tipAlert {
     margin-top: 20px;
     max-width: 520px;
   }
