@@ -25,7 +25,6 @@
             <i-setting-one class="icon" />
           </div>
         </t-tooltip>
-        <t-avatar style="margin-top: 8px" image="https://tdesign.gtimg.com/site/avatar.jpg" />
       </div>
     </div>
     <div class="view">

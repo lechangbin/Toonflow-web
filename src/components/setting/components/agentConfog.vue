@@ -6,15 +6,17 @@
           <i-good-two class="icon" theme="filled" size="24" fill="currentColor" />
           <span>{{ $t("settings.agent.bannerDesc") }}</span>
         </div>
-        <div class="btnList">
+        <div class="btnList f w">
           <t-button @click="jumpToWebsite">
             {{ $t("settings.agent.visitWebsite") }}
             <template #suffix>
               <i-share theme="outline" />
             </template>
           </t-button>
-          <t-button @click="fillInKey" v-if="!fillIn">{{ $t("settings.agent.fillKey") }}</t-button>
-          <t-button @click="oneClickToFillIn" v-if="fillIn">{{ $t("settings.agent.oneClickFill") }}</t-button>
+          <div class="rightBtnList f nw">
+            <t-button @click="fillInKey" v-if="!fillIn">{{ $t("settings.agent.fillKey") }}</t-button>
+            <t-button @click="oneClickToFillIn" v-if="fillIn">{{ $t("settings.agent.oneClickFill") }}</t-button>
+          </div>
         </div>
       </div>
     </div>
@@ -278,8 +280,10 @@ function oneClickToFillIn() {
         margin-right: 0.5em;
       }
       .btnList {
-        & > * {
-          margin-left: 8px;
+        .rightBtnList {
+          & > * {
+            margin: 2px;
+          }
         }
       }
     }
