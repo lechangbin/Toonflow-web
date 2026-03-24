@@ -3,7 +3,7 @@
     <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
     <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
-      <div class="title">分镜列表</div>
+      <div class="title">分镜面板</div>
     </div>
     <div class="content">
       <div class="frameGrid">
@@ -63,6 +63,7 @@
       v-model:visible="visible"
       v-if="visible"
       :editData="currentRow"
+      type="storyboard"
       :getFlowDataFn="getStoryboardFlowData"
       :saveFlowFn="saveOrUpdateFlowData" />
     <t-image-viewer v-model:visible="previewVisible" :images="previewImages" :imageScale="{ max: 10, min: 0.1 }" />
@@ -210,7 +211,7 @@ async function getStoryboardFlowData() {
   console.log("%c Line:103 🍩", "background:#2eafb0", "获取分镜工作流数据");
   if (!currentRow.value.id) return null;
   try {
-    const { data } = await axios.post("/production/editStoryboard/getStoryboardFlow", {
+    const { data } = await axios.post("/production/editImage/getStoryboardFlow", {
       id: currentRow.value?.id,
     });
     return data;
@@ -222,7 +223,7 @@ async function getStoryboardFlowData() {
 async function saveOrUpdateFlowData(data: { nodes: NodeType[]; edges: Edge<any, any, string>[]; imageUrl: string }) {
   const { nodes, edges, imageUrl } = data;
   if (currentRow.value?.id) {
-    await axios.post("/production/editStoryboard/updateStoryboardFlow", {
+    await axios.post("/production/editImage/updateStoryboardFlow", {
       id: currentRow.value?.id,
       nodes: nodes,
       edges: edges,
@@ -232,7 +233,7 @@ async function saveOrUpdateFlowData(data: { nodes: NodeType[]; edges: Edge<any, 
     const target = storyboard.value.find((s) => s.id === currentRow.value.id);
     if (target) target.src = imageUrl;
   } else {
-    await axios.post("/production/editStoryboard/saveStoryboardFlow", {
+    await axios.post("/production/editImage/saveStoryboardFlow", {
       nodes: nodes,
       edges: edges,
       imageUrl,

@@ -818,7 +818,7 @@ async function handleAddImage() {
   const selected = await openAssetsSelector({ multiple: false, title: "选择参考图" });
   if (!selected.length) return;
   const asset = selected[0];
-  const url = asset.filePath ?? "";
+  const url = asset.src ?? "";
   if (!url) return;
   const newData = [{ id: asset.id, url, type: "assets" }];
   currentShot.value = updateShotData(currentShot.value, newData);
@@ -841,7 +841,7 @@ async function handleAddImageMulti() {
   if (!selected.length) return;
   const shot = currentShot.value;
   const existingData = getShotData(shot);
-  const newItems = selected.filter((a) => a.filePath).map((a) => ({ id: a.id, url: a.filePath ?? "", type: "assets" }));
+  const newItems = selected.filter((a) => a.src).map((a) => ({ id: a.id, url: a.src ?? "", type: "assets" }));
   // 去重（以 url 为标识）
   const urlSet = new Set(existingData.map((d) => d.url));
   const merged = [...existingData, ...newItems.filter((d) => !urlSet.has(d.url))];
@@ -864,7 +864,7 @@ async function handleAddEndFrame() {
   const selected = await openAssetsSelector({ multiple: false, title: "选择尾帧图" });
   if (!selected.length) return;
   const asset = selected[0];
-  const url = asset.filePath ?? "";
+  const url = asset.src ?? "";
   if (!url) return;
   const shot = currentShot.value;
   const existingData = getShotData(shot);
@@ -909,7 +909,7 @@ async function handleAddMixedRef(refType: "videoReference" | "imageReference" | 
   });
   if (!selected.length) return;
   const asset = selected[0];
-  const url = asset.filePath ?? "";
+  const url = asset.src ?? "";
   if (!url) return;
   const refTypeOrder: VideoMixedRef[] = ["videoReference", "imageReference", "audioReference"];
   const shot = currentShot.value;

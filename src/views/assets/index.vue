@@ -397,7 +397,7 @@ interface Asset {
   prompt: string;
   describe: string;
   remark: string;
-  src?: string;
+  src: string;
   type: "role" | "tool" | "scene" | "clip"; // "角色" | "道具" | "场景" | "素材"
   state: "未生成" | "生成中" | "已完成" | "生成失败";
   sonAssets?: Asset[]; // 子资产列表

@@ -68,16 +68,17 @@ onBeforeUnmount(() => {
 function removeFn() {
   removeNodes(props.id);
 }
-
+const emit = defineEmits(["upload"]);
 async function uploadFn() {
   const selectedAssets = await openAssetsSelector({
     multiple: false,
     title: "选择图片",
   });
   if (selectedAssets.length > 0) {
-    const filePath = selectedAssets[0].filePath!;
+    const filePath = selectedAssets[0].src!;
     currentImageUrl.value = filePath;
     updateNodeData(props.id, { image: filePath });
+    emit("upload");
   }
 }
 </script>

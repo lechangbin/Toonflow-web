@@ -212,7 +212,7 @@ const planData = ref<PlanData>({
 watch(
   () => [planData.value.storySkeleton, planData.value.adaptationStrategy],
   () => {
-    // setPlanData();
+    setPlanData();
   },
   { immediate: true },
 );
@@ -222,7 +222,9 @@ async function getPlanData() {
   planData.value.storySkeleton = data.storySkeleton;
   planData.value.adaptationStrategy = data.adaptationStrategy;
 }
-
+async function setPlanData() {
+  await axios.post("/scriptAgent/setPlanData", { projectId: project.value?.id, agentType: "scriptAgent", data: planData.value });
+}
 onMounted(() => {
   getPlanData();
 });

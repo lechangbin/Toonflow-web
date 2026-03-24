@@ -3,7 +3,7 @@
     <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
     <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
-      <div class="title c">分镜面板</div>
+      <div class="title c">分镜表</div>
       <t-button size="small" variant="text" @click="openEdit">编辑</t-button>
     </div>
     <div class="storyboardList">

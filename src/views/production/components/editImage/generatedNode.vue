@@ -125,6 +125,7 @@ const props = defineProps<{
     steps?: number;
   };
   projectId: number;
+  type?: string;
 }>();
 
 function selectedFn() {
@@ -323,13 +324,14 @@ async function handleGenerate() {
   generating.value = true;
   try {
     const referenceMap = buildReferenceMap();
-    const { data } = await axios.post("/production/editStoryboard/generateStoryboardImage", {
+    const { data } = await axios.post("/production/editImage/generateStoryboardImage", {
       model: props.data.model,
       references: referenceMap ?? {},
       quality: props.data.quality,
       ratio: props.data.ratio,
       prompt: props.data.prompt,
       projectId: props.projectId,
+      type: props.type,
     });
     props.data.generatedImage = data.url;
   } catch (e) {

@@ -9,7 +9,7 @@ interface Asset {
   prompt: string;
   describe: string;
   remark: string;
-  filePath?: string;
+  src: string;
   type: "role" | "tool" | "scene" | "clip";
   imageId: number | null;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
@@ -65,7 +65,6 @@ export default function openAssetsSelector(options: AssetsSelectOptions = {}): P
             const selectedKeys = assetsRef.value?.selectedRowKeys || [];
             const data = assetsRef.value?.tableData || [];
             const selected = data.filter((item) => selectedKeys.includes(item.id));
-            console.log("%c Line:67 🌮 selected", "background:#6ec1c2", selected);
             finish(selected);
           },
           onClose: () => finish([]),

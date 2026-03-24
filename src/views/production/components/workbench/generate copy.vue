@@ -679,7 +679,7 @@ async function handleAddImage() {
     const shot = shotList.value[currentShotIndex.value];
     if (!shot) return;
     const asset = selectedAssets[0];
-    const filePath = asset.filePath;
+    const filePath = asset.src;
     if (!filePath) return;
     const srcInfo: ImageSource = { type: "assets", id: asset.id, url: filePath };
     if (currentMode.value === "multiImage" || currentMode.value === "gridImage") {
@@ -711,7 +711,7 @@ async function handleAddMixedRef(refType: VideoMixedRef) {
   if (selectedAssets.length > 0) {
     const shot = shotList.value[currentShotIndex.value];
     if (!shot) return;
-    const filePath = selectedAssets[0].filePath;
+    const filePath = selectedAssets[0].src;
     if (!filePath) return;
 
     // 按 refType 校验后缀
@@ -756,9 +756,9 @@ async function handleAddEndFrame() {
     const shot = shotList.value[currentShotIndex.value];
     if (!shot) return;
     const asset = selectedAssets[0];
-    if (!asset.filePath) return;
-    shot.endFrameUrl = asset.filePath;
-    shot.endFrameSource = { type: "assets", id: asset.id, url: asset.filePath };
+    if (!asset.src) return;
+    shot.endFrameUrl = asset.src;
+    shot.endFrameSource = { type: "assets", id: asset.id, url: asset.src };
   }
 }
 
