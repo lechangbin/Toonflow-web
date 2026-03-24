@@ -6,7 +6,7 @@
     </div>
     <div class="content">
       <div class="cardGrid">
-        <div v-for="asset in assets" :key="asset.assetsId" class="assetItemBox">
+        <div v-for="asset in assets" :key="asset.id" class="assetItemBox">
           <t-card class="assetCard">
             <div v-if="asset.src" class="assetImageWrap">
               <t-image :src="asset.src" fit="cover" class="assetImage" :preview="true" :lazy="true">
@@ -76,22 +76,7 @@ import { Handle, Position, type Edge } from "@vue-flow/core";
 import editImage from "../components/editImage/index.vue";
 import type { NodeType } from "../utils/editImageType";
 import { images } from "mammoth";
-
-interface DeriveAsset {
-  assetsId: string;
-  name: string;
-  desc: string;
-  src: string;
-  state: "未生成" | "生成中" | "已完成" | "生成失败";
-}
-
-interface AssetItem {
-  assetsId: string;
-  name: string;
-  desc: string;
-  src: string;
-  derive: DeriveAsset[];
-}
+import { type AssetItem, type DeriveAsset } from "../utils/flowBuilder";
 
 const props = defineProps<{
   id: string;
@@ -111,7 +96,7 @@ const currentRow = ref<{
 const visible = ref(false);
 function generateAssetsImage(row: DeriveAsset) {
   console.log("生成图片", row);
-  currentRow.value = { id: +row.assetsId as number, images: [row.src] };
+  currentRow.value = { id: row.id, images: [row.src] };
   visible.value = true;
 }
 

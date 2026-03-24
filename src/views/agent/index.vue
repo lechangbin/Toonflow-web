@@ -138,23 +138,20 @@
         </div>
         <div class="scriptEditField">
           <label>关联资产</label>
-          <div class="assetsEditor">
-            <div class="assetsTagList">
-              <t-tag
-                v-for="(asset, i) in scriptEditData.relatedAssets"
-                :key="i"
-                size="small"
-                variant="light"
-                theme="primary"
-                closable
-                @close="removeAsset(i)">
-                {{ asset }}
+
+          <div class="assets-section">
+            <div class="assets-header">
+              <t-button size="small" theme="primary" variant="outline" @click="handleSelectAssets">
+                <template #icon><i-plus /></template>
+                选择资产
+              </t-button>
+            </div>
+            <div class="assets-list" v-if="selectedAssets.length">
+              <t-tag v-for="asset in selectedAssets" :key="asset.id" closable variant="light-outline" @close="removeAsset(asset.id)">
+                {{ asset.name }}
               </t-tag>
             </div>
-            <div class="assetsInputRow">
-              <t-input v-model="newAssetInput" size="small" placeholder="输入资产名称后回车添加" @enter="addAsset" style="flex: 1" />
-              <t-button size="small" variant="outline" @click="addAsset">添加</t-button>
-            </div>
+            <div v-else class="assets-empty">暂未关联资产</div>
           </div>
         </div>
       </div>
@@ -173,6 +170,7 @@ import { useSocket } from "@/utils/useSocket";
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import editMdPreivew from "@/components/editMdPreivew.vue";
+import openAssetsSelector from "@/utils/assetsCheck";
 const { baseUrl } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
 
@@ -186,7 +184,7 @@ const editContent = ref("");
 
 interface Asset {
   id: number;
-  assetsId: string;
+  assetsId: number | null; //父id
   name: string;
   prompt: string;
   desc: string;
@@ -361,7 +359,7 @@ async function getHistory() {
 const scriptEditVisible = ref(false);
 const scriptEditIndex = ref(-1);
 const newAssetInput = ref("");
-const scriptEditData = ref({ title: "", content: "", relatedAssets: [] as string[] });
+const scriptEditData = ref({ title: "", content: "", relatedAssets: [] as Asset[] });
 
 function editScript(index: number) {
   const item = planData.value.script[index];
@@ -375,7 +373,7 @@ function editScript(index: number) {
   scriptEditVisible.value = true;
 }
 
-function saveScript() {
+async function saveScript() {
   if (scriptEditIndex.value < 0) return;
   planData.value.script[scriptEditIndex.value] = {
     ...planData.value.script[scriptEditIndex.value],
@@ -384,15 +382,8 @@ function saveScript() {
   scriptEditVisible.value = false;
 }
 
-function addAsset() {
-  const val = newAssetInput.value.trim();
-  if (!val) return;
-  scriptEditData.value.relatedAssets.push(val);
-  newAssetInput.value = "";
-}
-
-function removeAsset(index: number) {
-  scriptEditData.value.relatedAssets.splice(index, 1);
+function removeAsset(id: number) {
+  selectedAssets.value = selectedAssets.value.filter((a) => a.id !== id);
 }
 
 //编辑markdown
@@ -412,6 +403,19 @@ function onConfirm(value: string) {
       return;
   }
   dialogVisible.value = false;
+}
+const selectedAssets = ref<Asset[]>([]);
+
+async function handleSelectAssets() {
+  const assets = await openAssetsSelector({ title: "选择关联资产", types: ["role", "tool", "scene"] });
+  if (assets.length) {
+    const existing = new Set(selectedAssets.value.map((a) => a.id));
+    for (const a of assets) {
+      if (!existing.has(a.id)) {
+        selectedAssets.value.push({ ...a, src: a.filePath!, desc: a.describe });
+      }
+    }
+  }
 }
 </script>
 
