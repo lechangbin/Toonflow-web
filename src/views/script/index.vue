@@ -151,6 +151,7 @@ const detailsShow = ref(false);
 // 点击剧本卡片
 function handleScriptClick(item: Script) {
   selectedScript.value = { ...item };
+  console.log("%c Line:154 🍊 selectedScript.value", "background:#ed9ec7", selectedScript.value);
   detailsShow.value = true;
 }
 // 删除剧本

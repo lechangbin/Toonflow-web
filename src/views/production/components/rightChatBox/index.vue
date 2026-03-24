@@ -34,33 +34,48 @@
         @send="handleSend"
         @stop="handleStop">
         <template #footer-prefix>
-          <t-popup trigger="click" placement="top-left">
-            <t-button shape="square" variant="outline" size="small">
-              <template #icon>
-                <i-setting-config size="16" />
+          <div class="ac" style="gap: 5px">
+            <t-popup trigger="click" placement="top-left">
+              <t-button shape="square" variant="outline" size="small">
+                <template #icon>
+                  <i-setting-config size="16" />
+                </template>
+              </t-button>
+              <template #content>
+                <div class="settingMenu">
+                  <div class="settingMenuItem" @click="handleSend('调整偏好模型')">
+                    <i-setting-config size="14" />
+                    <span>调整偏好模型</span>
+                  </div>
+                  <div class="settingMenuItem" @click="handleClearMemory('message')">
+                    <i-delete size="14" />
+                    <span>清空消息记忆</span>
+                  </div>
+                  <div class="settingMenuItem" @click="handleClearMemory('summary')">
+                    <i-close size="14" />
+                    <span>清空摘要记忆</span>
+                  </div>
+                  <div class="settingMenuItem danger" @click="handleClearMemory('all')">
+                    <i-delete-one size="14" />
+                    <span>清空全部记忆</span>
+                  </div>
+                </div>
               </template>
-            </t-button>
-            <template #content>
-              <div class="settingMenu">
-                <div class="settingMenuItem" @click="handleSend('调整偏好模型')">
-                  <i-setting-config size="14" />
-                  <span>调整偏好模型</span>
-                </div>
-                <div class="settingMenuItem" @click="handleClearMemory('message')">
-                  <i-delete size="14" />
-                  <span>清空消息记忆</span>
-                </div>
-                <div class="settingMenuItem" @click="handleClearMemory('summary')">
-                  <i-close size="14" />
-                  <span>清空摘要记忆</span>
-                </div>
-                <div class="settingMenuItem danger" @click="handleClearMemory('all')">
-                  <i-delete-one size="14" />
-                  <span>清空全部记忆</span>
-                </div>
-              </div>
-            </template>
-          </t-popup>
+            </t-popup>
+            <div class="ac modelSelCls">
+              <modelSelect class="paramSelect" v-model="imageModelData.modelId" type="image" size="small" />
+              <t-select v-model="imageModelData.ratio" class="paramSelect ml-5" size="small" placeholder="比例">
+                <t-option value="16:9" label="16:9" />
+                <t-option value="9:16" label="9:16" />
+                <t-option value="1:1" label="1:1" />
+              </t-select>
+              <t-select v-model="imageModelData.quality" class="paramSelect ml-5" size="small" placeholder="质量">
+                <t-option value="1K" label="1K" />
+                <t-option value="2K" label="2K" />
+                <t-option value="4K" label="4K" />
+              </t-select>
+            </div>
+          </div>
         </template>
       </t-chat-sender>
     </div>
@@ -77,6 +92,7 @@ import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 import { useSocket } from "@/utils/useSocket";
 import type { FlowData } from "../../utils/flowBuilder";
+import ModelSelect from "@/components/modelSelect.vue";
 
 const { baseUrl } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
@@ -108,11 +124,17 @@ const welcomeMsg: ChatMessagesData = {
 };
 
 const messages = ref<ChatMessagesData[]>([welcomeMsg]);
-
+const imageModelData = ref({
+  modelId: "",
+  ratio: "",
+  quality: "",
+});
 // ============== Socket ==============
 
 const { connected, socket } = useSocket(`${baseUrl.value}/socket/productionAgent`, {
   isolationKey: `${project.value?.id}:productionAgent:${props.episodesId}`,
+  projectId: project.value?.id,
+  scriptId: props.episodesId,
 });
 
 const flowData = defineModel<FlowData>({
@@ -159,6 +181,9 @@ onMounted(() => {
       const { id, src, state } = value as any;
       // 先在父资产中查找
       const parentIndex = flowData.value.assets.findIndex((i) => i.id == id);
+
+      console.log("%c Line:163 🍫 flowData.value.assets", "background:#42b983", flowData.value.assets);
+      console.log("资产查找索引", parentIndex);
       if (parentIndex !== -1) {
         flowData.value.assets[parentIndex] = { ...flowData.value.assets[parentIndex], src, state };
       } else {
@@ -174,6 +199,26 @@ onMounted(() => {
           }
         }
       }
+      console.log("%c Line:169 🍎 flowData.value", "background:#7f2b82", flowData.value);
+
+      return;
+    }
+    if (key == "addAssets") {
+      const deriveMap: any = {};
+      value.forEach((i: any) => {
+        if (!deriveMap[i.assetsId]) deriveMap[i.assetsId] = [i];
+        else deriveMap[i.assetsId].push(i);
+      });
+      console.log("%c Line:208 🍉 deriveMap", "background:#7f2b82", deriveMap);
+
+      flowData.value.assets.forEach((i) => {
+        if (deriveMap[i.id]) {
+          i.derive = [...i.derive, ...deriveMap[i.id]];
+          console.log("%c Line:217 🍅 i.derive", "background:#f5ce50", i.derive);
+        }
+      });
+      console.log("%c Line:215 🍖 flowData.value", "background:#93c0a4", flowData.value);
+
       return;
     }
     if (key == "setStoryboardImage") {
@@ -192,7 +237,6 @@ onMounted(() => {
 
   getHistory();
 });
-
 onUnmounted(() => {
   socket.disconnect();
 });
@@ -283,6 +327,22 @@ watchEffect(() => {
     boxWidth.value = Math.max(MIN_WIDTH, dragStartWidth.value + (dragStartX.value - x.value));
   }
 });
+watch(
+  () => imageModelData.value,
+  (newVal) => {
+    socket.send("setModelData", { ...imageModelData.value });
+  },
+  {
+    deep: true,
+  },
+);
+watch(
+  () => props.episodesId,
+  (newVal) => {
+    socket.send("setKeyScript", { key: `${project.value?.id}:productionAgent:${props.episodesId}`, scriptId: props.episodesId });
+    getHistory();
+  },
+);
 </script>
 
 <style lang="scss" scoped>
@@ -359,6 +419,12 @@ watchEffect(() => {
     &.danger {
       color: #e34d59;
     }
+  }
+}
+.modelSelCls {
+  gap: 5px;
+  .paramSelect {
+    max-width: 80px;
   }
 }
 </style>

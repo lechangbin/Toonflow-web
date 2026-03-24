@@ -28,7 +28,6 @@ export interface DeriveAsset {
 
 export interface AssetItem {
   id: number;
-  assetsId: number | null;
   name: string;
   desc: string;
   prompt: string;
