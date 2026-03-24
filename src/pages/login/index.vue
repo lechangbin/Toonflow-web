@@ -2,13 +2,10 @@
   <div class="loginPage">
     <div class="formBox">
       <!-- 设置弹窗 -->
-      <t-dialog v-model:visible="showSettingModal" header="服务器设置" @confirm="handleSaveSetting" :width="400">
-        <t-form label-width="80px">
-          <t-form-item label="请求地址">
+      <t-dialog v-model:visible="showSettingModal" :header="$t('login.settings')" @confirm="handleSaveSetting" :width="400">
+        <t-form label-width="80px" labelAlign="top">
+          <t-form-item :label="$t('login.requestAddress')">
             <t-input v-model="tempBaseUrl" placeholder="http://localhost:10588" />
-          </t-form-item>
-          <t-form-item label="WS地址">
-            <t-input v-model="tempWsBaseUrl" placeholder="ws://localhost:10588" />
           </t-form-item>
         </t-form>
       </t-dialog>
@@ -16,19 +13,28 @@
         <img :src="logo" alt="logo" class="logoImg" />
         <div class="fc c">
           <span class="logoText">ToonFlow</span>
-          <span class="slogan">智能短剧创作平台</span>
+          <span class="slogan">{{ $t("login.slogan") }}</span>
         </div>
       </div>
       <div class="login-form">
-        <t-input v-model="state.user.username" placeholder="用户名" autocomplete="username" size="large"></t-input>
-        <t-input v-model="state.user.password" type="password" placeholder="密码" size="large"></t-input>
-        <t-button class="loginBtn" theme="primary" size="large" :loading="state.loginLoading" @click="handleLogin" block>登录</t-button>
+        <t-input v-model="state.user.username" :placeholder="$t('login.username')" autocomplete="username" size="large"></t-input>
+        <t-input v-model="state.user.password" type="password" :placeholder="$t('login.password')" size="large"></t-input>
+        <t-button class="loginBtn" theme="primary" size="large" :loading="state.loginLoading" @click="handleLogin" block>
+          {{ $t("login.login") }}
+        </t-button>
       </div>
-      <div class="tips c">默认账号：admin / admin123</div>
+      <div class="tips c">{{ $t("login.tips") }}</div>
     </div>
   </div>
-  <div class="settingBtn" @click="showSettingModal = true">
-    <t-button shape="circle" theme="primary" size="large">
+  <div class="settingBtn">
+    <t-dropdown :options="langOptions" trigger="click" @click="handleChangeLang" :maxColumnWidth="150">
+      <t-button shape="circle" theme="default" size="large">
+        <template #icon>
+          <i-translate theme="outline" size="20" />
+        </template>
+      </t-button>
+    </t-dropdown>
+    <t-button shape="circle" theme="primary" size="large" @click="showSettingModal = true">
       <template #icon>
         <i-setting-two theme="outline" size="20" />
       </template>
@@ -38,17 +44,28 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import Router from "@/router/index.ts";
 import { MessagePlugin } from "tdesign-vue-next";
 import logo from "@/assets/logo.png";
 import axios from "@/utils/axios";
 import settingStore from "@/stores/setting";
 import { storeToRefs } from "pinia";
+import { languageList, cachedLocale } from "@/locales";
+
+const { locale } = useI18n();
+const langOptions = languageList.map((item) => ({
+  content: item.label,
+  value: item.value,
+}));
+const handleChangeLang = (data) => {
+  locale.value = data.value;
+  cachedLocale.value = data.value;
+};
 
 const store = settingStore();
 const { baseUrl, wsBaseUrl } = storeToRefs(store);
 
-const svgRef = ref(null);
 const showSettingModal = ref(false);
 const tempBaseUrl = ref(baseUrl.value);
 const tempWsBaseUrl = ref(wsBaseUrl.value);
@@ -66,25 +83,16 @@ const state = ref({
   user: {
     username: "",
     password: "",
-    captcha: "",
-    identity: "商家",
   },
   rules: {
-    username: [{ required: true, message: "请输入您的账号" }],
-    password: [{ required: true, message: "请输入密码" }],
-    captcha: [{ required: true, message: "请输入验证码" }],
+    username: [{ required: true, message: $t("login.usernameRequired") }],
+    password: [{ required: true, message: $t("login.passwordRequired") }],
   },
 });
 
-const svg = ref();
-const captcha = ref();
-
-onMounted(() => {
-  resSvg();
-});
 const handleLogin = () => {
   if (!state.value.user.username || !state.value.user.password) {
-    MessagePlugin.warning("请输入账号和密码");
+    MessagePlugin.warning($t("login.enterUsernameAndPassword"));
     return;
   }
   state.value.loginLoading = true;
@@ -95,21 +103,13 @@ const handleLogin = () => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("userId", data.id);
       Router.push("/project");
-      MessagePlugin.success("登录成功");
+      MessagePlugin.success($t("login.loginSuccess"));
       state.value.loginLoading = false;
     })
     .catch((e) => {
       state.value.loginLoading = false;
       MessagePlugin.error(e.message);
-      resSvg();
     });
-};
-
-const resSvg = async () => {
-  return;
-  const { data } = await axios.get("/other/getCaptcha");
-  svgRef.value.innerHTML = data.svg;
-  captcha.value = data.captcha;
 };
 </script>
 
@@ -149,6 +149,7 @@ const resSvg = async () => {
       }
       .slogan {
         opacity: 0.5;
+        white-space: nowrap;
       }
     }
 
@@ -213,5 +214,8 @@ const resSvg = async () => {
   right: 24px;
   bottom: 24px;
   z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 </style>

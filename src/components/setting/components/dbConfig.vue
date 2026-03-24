@@ -2,14 +2,14 @@
   <div class="dbConfig">
     <t-card class="actionItem">
       <div class="actionInfo">
-        <h4>清空数据库</h4>
-        <p>清空所有数据表中的数据，保留表结构</p>
+        <h4>{{ $t("settings.db.clearDb") }}</h4>
+        <p>{{ $t("settings.db.clearDbDesc") }}</p>
       </div>
       <t-button theme="danger" variant="outline" @click="deleteAllData">
         <template #icon>
           <i-clear theme="outline" size="14" fill="currentColor" />
         </template>
-        清空数据
+        {{ $t("settings.db.clearData") }}
       </t-button>
     </t-card>
 
@@ -17,7 +17,7 @@
     <t-dialog
       v-model:visible="firstConfirmVisible"
       :header="confirmConfig.title"
-      :confirm-btn="{ content: '确认', theme: 'danger' }"
+      :confirm-btn="{ content: $t('settings.db.msg.confirm'), theme: 'danger' }"
       @confirm="handleFirstConfirm"
       @cancel="handleCancel">
       <div class="confirmContent">
@@ -36,7 +36,10 @@
       <div class="confirmContent">
         <i-attention theme="filled" size="48" fill="#e34d59" />
         <p>{{ confirmConfig.secondMessage }}</p>
-        <t-input v-model="confirmInput" :placeholder="`请输入 ${confirmConfig.keyword} 确认操作`" class="confirmInput" />
+        <t-input
+          v-model="confirmInput"
+          :placeholder="`${$t('settings.db.msg.pleaseInput')} ${confirmConfig.keyword} ${$t('settings.db.confirmAction')}`"
+          class="confirmInput" />
       </div>
     </t-dialog>
   </div>
@@ -46,21 +49,28 @@
 import { ref, computed } from "vue";
 import axios from "@/utils/axios";
 import { LoadingPlugin } from "tdesign-vue-next";
+
 const firstConfirmVisible = ref(false);
 const secondConfirmVisible = ref(false);
 const confirmInput = ref("");
 const currentAction = ref<"deleteAll" | null>(null);
 const confirmConfigs = {
   deleteAll: {
-    title: "清空数据库",
-    firstMessage: "确定要清空所有数据表吗？数据清空后无法恢复！",
-    secondMessage: "这是最后一次确认，清空后所有数据将永久丢失！",
-    keyword: "清空",
+    title: () => $t("settings.db.msg.clearDbTitle"),
+    firstMessage: () => $t("settings.db.msg.firstConfirm"),
+    secondMessage: () => $t("settings.db.msg.secondConfirm"),
+    keyword: () => $t("settings.db.msg.keyword"),
   },
 };
 
 const confirmConfig = computed(() => {
-  return confirmConfigs[currentAction.value || "deleteAll"];
+  const config = confirmConfigs[currentAction.value || "deleteAll"];
+  return {
+    title: config.title(),
+    firstMessage: config.firstMessage(),
+    secondMessage: config.secondMessage(),
+    keyword: config.keyword(),
+  };
 });
 
 const canConfirm = computed(() => {
@@ -68,7 +78,7 @@ const canConfirm = computed(() => {
 });
 
 const confirmText = computed(() => {
-  return canConfirm.value ? "确认" : `请输入"${confirmConfig.value.keyword}"`;
+  return canConfirm.value ? $t("settings.db.msg.confirm") : `${$t("settings.db.msg.pleaseInput")}"${confirmConfig.value.keyword}"`;
 });
 
 function deleteAllData() {
@@ -89,9 +99,9 @@ async function handleSecondConfirm() {
   LoadingPlugin(true);
   try {
     await axios.get("/setting/dbConfig/clearData");
-    window.$message.success("所有数据表已清空");
+    window.$message.success($t("settings.db.msg.cleared"));
   } catch {
-    window.$message.error("操作失败，请重试");
+    window.$message.error($t("settings.db.msg.operationFailed"));
   } finally {
     LoadingPlugin(false);
     currentAction.value = null;
@@ -104,7 +114,7 @@ function handleCancel() {
   secondConfirmVisible.value = false;
   currentAction.value = null;
   confirmInput.value = "";
-  window.$message.info("操作已取消");
+  window.$message.info($t("settings.db.msg.cancelled"));
 }
 </script>
 

@@ -1,18 +1,18 @@
 <template>
   <div class="otherConfig">
     <t-form label-align="top">
-      <t-form-item label="请求超时时间" name="axiosTimeOut">
-        <t-input-number auto-width suffix="秒" :min="10" v-model="axiosTimeOutInSeconds" placeholder="请输入秒" />
+      <t-form-item :label="$t('settings.other.requestTimeout')" name="axiosTimeOut">
+        <t-input-number auto-width :suffix="$t('settings.other.seconds')" :min="10" v-model="axiosTimeOutInSeconds" :placeholder="$t('settings.other.inputSeconds')" />
       </t-form-item>
-      <t-form-item label="资产生成并发数" name="assetsBatchGenereateSize">
-        <t-input-number auto-width suffix="个" :min="1" v-model="otherSetting.assetsBatchGenereateSize" placeholder="请输入个数" />
+      <t-form-item :label="$t('settings.other.assetConcurrency')" name="assetsBatchGenereateSize">
+        <t-input-number auto-width :suffix="$t('settings.other.count')" :min="1" v-model="otherSetting.assetsBatchGenereateSize" :placeholder="$t('settings.other.inputCount')" />
       </t-form-item>
       <t-form-item name="chapterReg">
         <template #label>
-          <span>章节拆分正则</span>
-          <t-button style="margin-left: 15px" @click="setDefaultReg" size="small">恢复默认</t-button>
+          <span>{{ $t('settings.other.chapterRegex') }}</span>
+          <t-button style="margin-left: 15px" @click="setDefaultReg" size="small">{{ $t('settings.other.restoreDefault') }}</t-button>
         </template>
-        <t-textarea v-model="otherSetting.chapterReg" placeholder="请输入正则表达式" style="width: 400px" />
+        <t-textarea v-model="otherSetting.chapterReg" :placeholder="$t('settings.other.regexPlaceholder')" style="width: 400px" />
       </t-form-item>
     </t-form>
   </div>

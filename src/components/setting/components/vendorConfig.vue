@@ -5,7 +5,7 @@
       <div class="listFooter">
         <t-button block theme="primary" @click="handleAddVendor">
           <template #icon><t-icon name="add" /></template>
-          添加供应商
+          {{ $t("settings.vendor.addVendor") }}
         </t-button>
       </div>
       <div class="listContent" v-loading="loading">
@@ -17,7 +17,7 @@
             {{ item.name }}
           </t-menu-item>
         </t-menu>
-        <t-empty v-else title="暂无供应商，请先添加" style="margin-top: 1rem"></t-empty>
+        <t-empty v-else :title="$t('settings.vendor.noVendor')" style="margin-top: 1rem"></t-empty>
       </div>
     </div>
 
@@ -29,7 +29,7 @@
             <span class="requiredLabel">
               {{ input.label }}
               <span class="requiredMark">*</span>
-              <span class="requiredText">必填</span>
+              <span class="requiredText">{{ $t("settings.vendor.required") }}</span>
             </span>
           </template>
           <t-input v-model="currentVendor.inputValues[input.key]" :type="input.type" clearable>
@@ -44,7 +44,7 @@
 
         <div v-if="optionalInputs.length > 0" class="optionalSection">
           <t-collapse>
-            <t-collapse-panel value="optional-inputs" header="选填项">
+            <t-collapse-panel value="optional-inputs" :header="$t('settings.vendor.optionalSection')">
               <t-form-item v-for="input in optionalInputs" :key="input.key" :name="input.key" :label="input.label">
                 <t-input v-model="currentVendor.inputValues[input.key]" :type="input.type" clearable>
                   <template #prefix-icon>
@@ -60,10 +60,10 @@
         </div>
 
         <div class="jb ac">
-          <h4 class="sectionTitle">模型设置</h4>
+          <h4 class="sectionTitle">{{ $t("settings.vendor.modelSettings") }}</h4>
           <t-button variant="outline" size="small" @click="handleAddModel">
             <template #icon><i-plus theme="outline" /></template>
-            手动添加
+            {{ $t("settings.vendor.addManually") }}
           </t-button>
         </div>
 
@@ -73,33 +73,33 @@
             <div class="actionBtns">
               <t-button size="small" variant="text" :loading="!!testingModels[item.modelName]" @click="handleTestModel(item)">
                 <template #icon><i-lightning theme="outline" /></template>
-                测试
+                {{ $t("settings.vendor.test") }}
               </t-button>
               <t-button variant="text" size="small" @click="handleEditModel(item)">
                 <template #icon><i-pencil theme="outline" /></template>
-                编辑
+                {{ $t("settings.vendor.edit") }}
               </t-button>
               <t-button variant="text" size="small" theme="danger" @click="handleDeleteModel(item.modelName)">
                 <template #icon><i-delete theme="outline" /></template>
-                删除
+                {{ $t("settings.vendor.delete") }}
               </t-button>
             </div>
           </div>
           <div class="tags">
-            <t-tag theme="primary">{{ getTypeLabel(item.type) }}</t-tag>
+            <t-tag theme="primary">{{ $t(getTypeLabel(item.type)) }}</t-tag>
             <template v-for="(mode, mIdx) in (item as any).mode" :key="mIdx">
-              <t-tag v-if="!Array.isArray(mode)" variant="light">{{ getModeLabel(mode, item.type) }}</t-tag>
+              <t-tag v-if="!Array.isArray(mode)" variant="light">{{ $t(getModeLabel(mode, item.type)) }}</t-tag>
               <t-tag v-else variant="light" v-for="(m, mmIdx) in mode" :key="mmIdx">
-                {{ getModeLabel(m, item.type) }}
+                {{ $t(getModeLabel(m, item.type)) }}
               </t-tag>
             </template>
           </div>
         </t-card>
 
         <div class="updateAction">
-          <t-button theme="danger" :loading="updating" @click="handleDeleteVendor">删除供应商</t-button>
-          <t-button theme="default" :loading="updating" @click="handleEditVendorCode">编辑代码</t-button>
-          <t-button theme="primary" :loading="updating" @click="handleUpdateVendor">更新配置</t-button>
+          <t-button theme="danger" :loading="updating" @click="handleDeleteVendor">{{ $t("settings.vendor.deleteVendor") }}</t-button>
+          <t-button theme="default" :loading="updating" @click="handleEditVendorCode">{{ $t("settings.vendor.editCode") }}</t-button>
+          <t-button theme="primary" :loading="updating" @click="handleUpdateVendor">{{ $t("settings.vendor.updateConfig") }}</t-button>
         </div>
       </t-form>
     </div>
@@ -109,74 +109,80 @@
       placement="center"
       width="40vw"
       v-model:visible="modelDialogVisible"
-      :header="editingModelIndex === null ? '添加模型' : '编辑模型'"
+      :header="editingModelIndex === null ? $t('settings.vendor.addModel') : $t('settings.vendor.editModel')"
       :maskClosable="false"
       @confirm="handleConfirmModel">
       <div class="addBox">
         <t-form :data="modelFormData" labelAlign="top">
-          <t-form-item name="name" label="显示名称">
-            <t-input v-model="modelFormData.name" placeholder="例如：GPT-4o" clearable />
+          <t-form-item name="name" :label="$t('settings.vendor.displayName')">
+            <t-input v-model="modelFormData.name" :placeholder="$t('settings.vendor.displayNamePlaceholder')" clearable />
           </t-form-item>
 
-          <t-form-item name="modelName" label="模型标识">
-            <t-input v-model="modelFormData.modelName" placeholder="例如：gpt-4o" clearable />
+          <t-form-item name="modelName" :label="$t('settings.vendor.modelId')">
+            <t-input v-model="modelFormData.modelName" :placeholder="$t('settings.vendor.modelIdPlaceholder')" clearable />
           </t-form-item>
 
-          <t-form-item name="type" label="模型类型">
+          <t-form-item name="type" :label="$t('settings.vendor.modelType')">
             <t-select v-model="modelFormData.type">
-              <t-option v-for="item in modelTypeOptions" :key="item.value" :value="item.value">{{ item.label }}</t-option>
+              <t-option v-for="item in modelTypeOptions" :key="item.value" :value="item.value">{{ $t(item.label) }}</t-option>
             </t-select>
           </t-form-item>
 
           <template v-if="modelFormData.type === 'text'">
-            <t-form-item name="multimodal" label="多模态">
+            <t-form-item name="multimodal" :label="$t('settings.vendor.multimodal')">
               <t-radio-group v-model="modelFormData.multimodal">
-                <t-radio :value="true">支持</t-radio>
-                <t-radio :value="false">不支持</t-radio>
+                <t-radio :value="true">{{ $t("settings.vendor.supported") }}</t-radio>
+                <t-radio :value="false">{{ $t("settings.vendor.notSupported") }}</t-radio>
               </t-radio-group>
             </t-form-item>
-            <t-form-item name="tool" label="工具调用">
+            <t-form-item name="tool" :label="$t('settings.vendor.toolCall')">
               <t-radio-group v-model="modelFormData.tool">
-                <t-radio :value="true">支持</t-radio>
-                <t-radio :value="false">不支持</t-radio>
+                <t-radio :value="true">{{ $t("settings.vendor.supported") }}</t-radio>
+                <t-radio :value="false">{{ $t("settings.vendor.notSupported") }}</t-radio>
               </t-radio-group>
             </t-form-item>
           </template>
 
           <template v-if="modelFormData.type === 'image'">
-            <t-form-item name="mode" label="图像模式">
-              <t-checkbox-group v-model="modelFormData.mode" :options="imageModeOptions" />
+            <t-form-item name="mode" :label="$t('settings.vendor.imageMode')">
+              <t-checkbox-group v-model="modelFormData.mode">
+                <t-checkbox v-for="opt in imageModeOptions" :key="opt.value" :value="opt.value">{{ $t(opt.label) }}</t-checkbox>
+              </t-checkbox-group>
             </t-form-item>
           </template>
 
           <template v-if="modelFormData.type === 'video'">
-            <t-form-item name="mode" label="视频模式">
+            <t-form-item name="mode" :label="$t('settings.vendor.videoMode')">
               <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0">
-                <t-checkbox-group v-model="modelFormData.mode" :options="videoModeOptions" />
+                <t-checkbox-group v-model="modelFormData.mode">
+                  <t-checkbox v-for="opt in videoModeOptions" :key="opt.value" :value="opt.value">{{ $t(opt.label) }}</t-checkbox>
+                </t-checkbox-group>
                 <div style="border: 1px solid #ddd; border-radius: 6px; padding: 6px 12px; margin-top: 6px">
-                  <t-checkbox-group v-model="modelFormData.mixedMode" :options="otherOptions" style="display: flex; flex-direction: row; gap: 8px" />
+                  <t-checkbox-group v-model="modelFormData.mixedMode" style="display: flex; flex-direction: row; gap: 8px">
+                    <t-checkbox v-for="opt in otherOptions" :key="opt.value" :value="opt.value">{{ $t(opt.label) }}</t-checkbox>
+                  </t-checkbox-group>
                 </div>
               </div>
             </t-form-item>
-            <t-form-item name="audio" label="音频输出">
+            <t-form-item name="audio" :label="$t('settings.vendor.audioOutput')">
               <t-radio-group v-model="modelFormData.audio">
-                <t-radio v-for="item in audioOptions" :key="String(item.value)" :value="item.value">{{ item.label }}</t-radio>
+                <t-radio v-for="item in audioOptions" :key="String(item.value)" :value="item.value">{{ $t(item.label) }}</t-radio>
               </t-radio-group>
             </t-form-item>
-            <t-form-item name="durationResolutionMap" label="时长 / 分辨率映射">
+            <t-form-item name="durationResolutionMap" :label="$t('settings.vendor.durationResolution')">
               <div class="drmEditor">
                 <div class="drmHeader">
                   <div class="drmHeaderIndex"></div>
-                  <div class="drmHeaderLabel">时长（秒）</div>
+                  <div class="drmHeaderLabel">{{ $t("settings.vendor.durationSec") }}</div>
                   <div class="drmHeaderArrow"></div>
-                  <div class="drmHeaderLabel">分辨率</div>
+                  <div class="drmHeaderLabel">{{ $t("settings.vendor.resolution") }}</div>
                   <div class="drmHeaderAction"></div>
                 </div>
                 <div v-for="(row, rowIndex) in modelFormData.durationResolutionMap" :key="rowIndex" class="drmRow">
                   <div class="drmRowIndex">{{ rowIndex + 1 }}</div>
-                  <t-tag-input v-model="row.duration" placeholder="输入后回车" class="drmInput" />
+                  <t-tag-input v-model="row.duration" :placeholder="$t('settings.vendor.enterAndPress')" class="drmInput" />
                   <div class="drmArrow">→</div>
-                  <t-tag-input v-model="row.resolution" placeholder="输入后回车" class="drmInput" />
+                  <t-tag-input v-model="row.resolution" :placeholder="$t('settings.vendor.enterAndPress')" class="drmInput" />
                   <t-button
                     variant="text"
                     theme="danger"
@@ -192,7 +198,7 @@
                   block
                   @click="modelFormData.durationResolutionMap.push({ duration: [], resolution: [] })">
                   <template #icon><i-plus theme="outline" /></template>
-                  添加一组时长 / 分辨率
+                  {{ $t("settings.vendor.addDurationResolution") }}
                 </t-button>
               </div>
             </t-form-item>
@@ -202,16 +208,21 @@
     </t-dialog>
 
     <!-- 测试结果弹窗 -->
-    <t-dialog width="50vw" placement="center" v-model:visible="testResultVisible" :header="`测试结果 - ${testModelName}`" :footer="false">
+    <t-dialog
+      width="50vw"
+      placement="center"
+      v-model:visible="testResultVisible"
+      :header="$t('settings.vendor.testResult') + ' - ' + testModelName"
+      :footer="false">
       <div class="testResult">
         <div v-if="testResultType === 'image'" class="resultContent">
-          <img :src="testResultUrl" alt="生成的图片" />
+          <img :src="testResultUrl" alt="generated image" />
         </div>
         <div v-else-if="testResultType === 'video'" class="resultContent">
           <video :src="testResultUrl" controls autoplay loop></video>
         </div>
         <div v-else class="resultContent">
-          <t-loading size="large" text="正在生成中..." />
+          <t-loading size="large" :text="$t('settings.vendor.generating')" />
         </div>
       </div>
     </t-dialog>
@@ -221,22 +232,22 @@
       width="70vw"
       placement="center"
       v-model:visible="vendorDialogVisible"
-      header="添加供应商"
+      :header="$t('settings.vendor.addVendorDialog')"
       :maskClosable="false"
       @confirm="handleConfirmVendor">
       <div class="editorToolbar">
         <div class="editorInfo">
           <t-icon name="info-circle" size="16px" />
-          <span>请编写 TypeScript 代码配置供应商信息</span>
+          <span>{{ $t("settings.vendor.codeEditorInfo") }}</span>
         </div>
         <div class="editorActions">
           <t-button variant="text" size="small" @click="vendorCode = VENDOR_CODE_TEMPLATE">
             <template #icon><t-icon name="rollback" /></template>
-            重置
+            {{ $t("settings.vendor.reset") }}
           </t-button>
           <t-button variant="outline" size="small" @click="fileInputRef?.click()">
             <template #icon><t-icon name="upload" /></template>
-            导入文件
+            {{ $t("settings.vendor.importFile") }}
           </t-button>
           <input ref="fileInputRef" type="file" accept=".ts,.js,.txt,.json" style="display: none" @change="handleFileChange" />
         </div>
@@ -307,23 +318,23 @@ interface VendorItem {
 
 // ── 常量 ──
 const TYPE_LABEL_MAP: Record<string, string> = {
-  text: "文本模型",
-  image: "图像模型",
-  video: "视频模型",
+  text: "settings.vendor.textModel",
+  image: "settings.vendor.imageModel",
+  video: "settings.vendor.videoModel",
 };
 
 const MODE_LABEL_MAP: Record<string, string> = {
-  singleImage: "单图",
-  multiImage: "多图模式",
-  multiReference: "多图参考",
-  gridImage: "网格单图",
-  startEndRequired: "首尾帧（两张必填）",
-  endFrameOptional: "首尾帧（尾帧可选）",
-  startFrameOptional: "首尾帧（首帧可选）",
-  audioReference: "音频参考",
-  videoReference: "视频参考",
-  textReference: "文本参考",
-  imageReference: "图片参考",
+  singleImage: "settings.vendor.singleImage",
+  multiImage: "settings.vendor.multiImage",
+  multiReference: "settings.vendor.multiReference",
+  gridImage: "settings.vendor.gridImage",
+  startEndRequired: "settings.vendor.startEndRequired",
+  endFrameOptional: "settings.vendor.endFrameOptional",
+  startFrameOptional: "settings.vendor.startFrameOptional",
+  audioReference: "settings.vendor.audioRef",
+  videoReference: "settings.vendor.videoRef",
+  textReference: "settings.vendor.textRef",
+  imageReference: "settings.vendor.imageRef",
 };
 
 function getTypeLabel(type: string) {
@@ -331,7 +342,7 @@ function getTypeLabel(type: string) {
 }
 
 function getModeLabel(mode: string, type: string) {
-  if (mode === "text") return type === "image" ? "文生图" : "文生视频";
+  if (mode === "text") return type === "image" ? "settings.vendor.textToImage" : "settings.vendor.textToVideo";
   return MODE_LABEL_MAP[mode] || mode;
 }
 
@@ -345,37 +356,37 @@ const editorOptions = {
 };
 
 const modelTypeOptions = [
-  { value: "text", label: "文本模型" },
-  { value: "image", label: "图像模型" },
-  { value: "video", label: "视频模型" },
+  { value: "text", label: "settings.vendor.textModel" },
+  { value: "image", label: "settings.vendor.imageModel" },
+  { value: "video", label: "settings.vendor.videoModel" },
 ];
 
 const imageModeOptions = [
-  { label: "文生图", value: "text" },
-  { label: "单图", value: "singleImage" },
-  { label: "多图参考", value: "multiReference" },
+  { label: "settings.vendor.textToImage", value: "text" },
+  { label: "settings.vendor.singleImage", value: "singleImage" },
+  { label: "settings.vendor.multiReference", value: "multiReference" },
 ];
 
 const videoModeOptions = [
-  { label: "单图", value: "singleImage" },
-  { label: "多图模式", value: "multiImage" },
-  { label: "网格单图", value: "gridImage" },
-  { label: "首尾帧（两张必填）", value: "startEndRequired" },
-  { label: "首尾帧（尾帧可选）", value: "endFrameOptional" },
-  { label: "首尾帧（首帧可选）", value: "startFrameOptional" },
-  { label: "文生视频", value: "text" },
+  { label: "settings.vendor.singleImage", value: "singleImage" },
+  { label: "settings.vendor.multiImage", value: "multiImage" },
+  { label: "settings.vendor.gridImage", value: "gridImage" },
+  { label: "settings.vendor.startEndRequired", value: "startEndRequired" },
+  { label: "settings.vendor.endFrameOptional", value: "endFrameOptional" },
+  { label: "settings.vendor.startFrameOptional", value: "startFrameOptional" },
+  { label: "settings.vendor.textToVideo", value: "text" },
 ];
 const otherOptions = [
-  { label: "文本", value: "textReference" },
-  { label: "图片", value: "videoReference" },
-  { label: "视频", value: "imageReference" },
-  { label: "音频", value: "audioReference" },
+  { label: "settings.vendor.textRef", value: "textReference" },
+  { label: "settings.vendor.imageRef", value: "videoReference" },
+  { label: "settings.vendor.videoRef", value: "imageReference" },
+  { label: "settings.vendor.audioRef", value: "audioReference" },
 ];
 
 const audioOptions: { label: string; value: "optional" | false | true }[] = [
-  { label: "可选", value: "optional" },
-  { label: "仅输出有声视频", value: true },
-  { label: "仅输出无声视频", value: false },
+  { label: "settings.vendor.audioOptional", value: "optional" },
+  { label: "settings.vendor.audioOnly", value: true },
+  { label: "settings.vendor.noAudio", value: false },
 ];
 
 // ── 供应商列表 ──
@@ -394,7 +405,7 @@ async function getVendorList() {
       }
     })
     .catch((err) => {
-      MessagePlugin.error(`获取供应商列表失败：${err.message}`);
+      window.$message.error(`${$t("settings.vendor.msg.getVendorListFailed")}${err.message}`);
     })
     .finally(() => {
       loading.value = false;
@@ -458,11 +469,11 @@ async function handleUpdateVendor() {
       models: currentVendor.value.models,
     })
     .then(() => {
-      MessagePlugin.success("供应商配置更新成功");
+      window.$message.success($t("settings.vendor.msg.vendorConfigUpdated"));
       getVendorList();
     })
     .catch((err) => {
-      MessagePlugin.error(`更新失败：${err.message}`);
+      window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
     })
     .finally(() => {
       updating.value = false;
@@ -478,28 +489,28 @@ function handleConfirmVendor() {
   if (!id.value) {
     const firstConfirm = DialogPlugin.confirm({
       theme: "danger",
-      header: "高风险操作确认",
-      body: "服务端将直接执行当前代码以新增厂商。若代码包含恶意逻辑，可能导致秘钥泄露、服务异常或权限滥用。请仅使用可信代码，并建议先使用 AI 检查代码安全性。",
-      confirmBtn: { content: "我已知晓风险", theme: "danger" },
-      cancelBtn: "取消",
+      header: $t("settings.vendor.msg.highRiskConfirm"),
+      body: $t("settings.vendor.msg.addVendorRiskBody"),
+      confirmBtn: { content: $t("settings.vendor.msg.iKnowRisk"), theme: "danger" },
+      cancelBtn: $t("settings.vendor.msg.cancel"),
       onConfirm: () => {
         firstConfirm.destroy();
         const secondConfirm = DialogPlugin.confirm({
           theme: "danger",
-          header: "再次确认执行",
-          body: "请再次确认：系统将执行当前代码并尝试新增厂商。是否继续？",
-          confirmBtn: { content: "确认执行并新增", theme: "danger" },
-          cancelBtn: "返回检查",
+          header: $t("settings.vendor.msg.confirmAgain"),
+          body: $t("settings.vendor.msg.addVendorConfirmBody"),
+          confirmBtn: { content: $t("settings.vendor.msg.confirmAndAdd"), theme: "danger" },
+          cancelBtn: $t("settings.vendor.msg.goBackCheck"),
           onConfirm: async () => {
             axios
               .post("/setting/vendorConfig/addVendor", { tsCode: vendorCode.value })
               .then((res) => {
-                MessagePlugin.success("供应商添加成功");
+                window.$message.success($t("settings.vendor.msg.vendorAdded"));
                 vendorDialogVisible.value = false;
                 getVendorList();
               })
               .catch((err) => {
-                MessagePlugin.error(`添加失败：${err.message}`);
+                window.$message.error(`${$t("settings.vendor.msg.addFailed")}${err.message}`);
               })
               .finally(() => {
                 secondConfirm.destroy();
@@ -513,18 +524,18 @@ function handleConfirmVendor() {
   } else {
     const firstConfirm = DialogPlugin.confirm({
       theme: "danger",
-      header: "高风险操作确认",
-      body: "服务端将直接执行当前代码以更新厂商。若代码包含恶意逻辑，可能导致秘钥泄露、服务异常或权限滥用。请仅使用可信代码，并建议先使用 AI 检查代码安全性。",
-      confirmBtn: { content: "我已知晓风险", theme: "danger" },
-      cancelBtn: "取消",
+      header: $t("settings.vendor.msg.highRiskConfirm"),
+      body: $t("settings.vendor.msg.updateVendorRiskBody"),
+      confirmBtn: { content: $t("settings.vendor.msg.iKnowRisk"), theme: "danger" },
+      cancelBtn: $t("settings.vendor.msg.cancel"),
       onConfirm: () => {
         firstConfirm.destroy();
         const secondConfirm = DialogPlugin.confirm({
           theme: "danger",
-          header: "再次确认执行",
-          body: "请再次确认：系统将执行当前代码并尝试更新厂商。是否继续？",
-          confirmBtn: { content: "确认执行并更新", theme: "danger" },
-          cancelBtn: "返回检查",
+          header: $t("settings.vendor.msg.confirmAgain"),
+          body: $t("settings.vendor.msg.updateVendorConfirmBody"),
+          confirmBtn: { content: $t("settings.vendor.msg.confirmAndUpdate"), theme: "danger" },
+          cancelBtn: $t("settings.vendor.msg.goBackCheck"),
           onConfirm: async () => {
             axios
               .post("/setting/vendorConfig/updateVendor", {
@@ -532,12 +543,12 @@ function handleConfirmVendor() {
                 tsCode: vendorCode.value,
               })
               .then((res) => {
-                MessagePlugin.success("更新成功");
+                window.$message.success($t("settings.vendor.msg.updateSuccess"));
                 vendorDialogVisible.value = false;
                 getVendorList();
               })
               .catch((err) => {
-                MessagePlugin.error(`更新失败：${err.message}`);
+                window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
               })
               .finally(() => {
                 secondConfirm.destroy();
@@ -623,11 +634,11 @@ function buildModelFromForm(): VendorModel | null {
   const name = modelFormData.value.name.trim();
   const modelName = modelFormData.value.modelName.trim();
   if (!name) {
-    MessagePlugin.error("请填写显示名称");
+    window.$message.error($t("settings.vendor.msg.fillDisplayName"));
     return null;
   }
   if (!modelName) {
-    MessagePlugin.error("请填写模型标识");
+    window.$message.error($t("settings.vendor.msg.fillModelId"));
     return null;
   }
 
@@ -644,7 +655,7 @@ function buildModelFromForm(): VendorModel | null {
   if (modelFormData.value.type === "image") {
     const mode = modelFormData.value.mode as ImageModel["mode"];
     if (!mode.length) {
-      MessagePlugin.error("请至少选择一个图像模式");
+      window.$message.error($t("settings.vendor.msg.selectImageMode"));
       return null;
     }
     return {
@@ -661,7 +672,7 @@ function buildModelFromForm(): VendorModel | null {
     (mode as any[]).push([...modelFormData.value.mixedMode]);
   }
   if (!mode.length) {
-    MessagePlugin.error("请至少选择一个视频模式");
+    window.$message.error($t("settings.vendor.msg.selectVideoMode"));
     return null;
   }
 
@@ -671,11 +682,11 @@ function buildModelFromForm(): VendorModel | null {
     const duration = row.duration.map(Number).filter((n) => Number.isFinite(n) && n > 0);
     const resolution = row.resolution.filter(Boolean);
     if (!duration.length) {
-      MessagePlugin.error(`第 ${i + 1} 组：请至少添加一个有效时长`);
+      window.$message.error(`${$t("settings.vendor.msg.groupPrefix", { n: i + 1 })}${$t("settings.vendor.msg.addDuration")}`);
       return null;
     }
     if (!resolution.length) {
-      MessagePlugin.error(`第 ${i + 1} 组：请至少添加一个分辨率`);
+      window.$message.error(`${$t("settings.vendor.msg.groupPrefix", { n: i + 1 })}${$t("settings.vendor.msg.addResolution")}`);
       return null;
     }
     durationResolutionMap.push({ duration, resolution });
@@ -693,7 +704,7 @@ function buildModelFromForm(): VendorModel | null {
 
 function handleAddModel() {
   if (!currentVendor.value) {
-    MessagePlugin.error("请先选择供应商");
+    window.$message.error($t("settings.vendor.msg.selectVendorFirst"));
     return;
   }
   editingModelIndex.value = null;
@@ -715,16 +726,16 @@ function handleConfirmModel() {
     return item.modelName === model.modelName;
   });
   if (duplicateIndex !== -1) {
-    MessagePlugin.error("模型标识已存在，请更换后重试");
+    window.$message.error($t("settings.vendor.msg.modelIdExists"));
     return;
   }
 
   if (editingModelIndex.value === null) {
     list.push(model);
-    MessagePlugin.success("模型添加成功");
+    window.$message.success($t("settings.vendor.msg.modelAdded"));
   } else {
     list.splice(editingModelIndex.value, 1, model);
-    MessagePlugin.success("模型更新成功");
+    window.$message.success($t("settings.vendor.msg.modelUpdated"));
   }
 
   modelDialogVisible.value = false;
@@ -797,8 +808,8 @@ function handleEditModel(model: VendorModel) {
 }
 
 async function handleTestModel(item: (typeof vendorModels.value)[number]) {
-  if (!currentVendor.value?.inputValues?.apiKey) return MessagePlugin.error("请先输入 API Key");
-  if (!currentVendor.value?.inputValues?.baseUrl) return MessagePlugin.error("请先输入 API 地址");
+  if (!currentVendor.value?.inputValues?.apiKey) return window.$message.error($t("settings.vendor.msg.enterApiKey"));
+  if (!currentVendor.value?.inputValues?.baseUrl) return window.$message.error($t("settings.vendor.msg.enterApiUrl"));
   if (testingModels[item.modelName]) return;
 
   testingModels[item.modelName] = true;
@@ -812,16 +823,16 @@ async function handleTestModel(item: (typeof vendorModels.value)[number]) {
     });
 
     if (item.type === "text") {
-      MessagePlugin.success(`${item.modelName} 测试成功！`);
+      window.$message.success(`${item.modelName} ${$t("settings.vendor.msg.testSuccess")}`);
     } else if (item.type === "image" || item.type === "video") {
       testModelName.value = item.modelName;
       testResultType.value = item.type;
       testResultUrl.value = data;
       testResultVisible.value = true;
-      MessagePlugin.success(`${item.type === "image" ? "图片" : "视频"}生成成功！`);
+      window.$message.success(`${item.type === "image" ? $t("settings.vendor.msg.imageGenSuccess") : $t("settings.vendor.msg.videoGenSuccess")}`);
     }
   } catch (e) {
-    MessagePlugin.error(`请求失败：${(e as any).message}`);
+    window.$message.error(`${$t("settings.vendor.msg.requestFailed")}${(e as any).message}`);
   } finally {
     delete testingModels[item.modelName];
   }
@@ -831,16 +842,16 @@ function handleDeleteModel(modelName: string) {
   if (!currentVendor.value) return;
   const confirmDialog = DialogPlugin.confirm({
     theme: "danger",
-    header: "删除模型确认",
-    body: `您确定要删除模型 \"${modelName}\" 吗？此操作不可恢复。`,
-    confirmBtn: { content: "确认删除", theme: "danger" },
-    cancelBtn: "取消",
+    header: $t("settings.vendor.msg.deleteModelConfirm"),
+    body: `${$t("settings.vendor.msg.deleteModelBody", { name: modelName })}`,
+    confirmBtn: { content: $t("settings.vendor.msg.confirmDelete"), theme: "danger" },
+    cancelBtn: $t("settings.vendor.msg.cancel"),
     onConfirm: () => {
       const list = ensureVendorModels();
       const nextList = list.filter((item) => item.modelName !== modelName);
       currentVendor.value!.models = nextList;
       currentVendor.value!.model = nextList;
-      MessagePlugin.success("模型删除成功");
+      window.$message.success($t("settings.vendor.msg.modelDeleted"));
       confirmDialog.destroy();
     },
   });
@@ -855,15 +866,15 @@ function handleDeleteVendor() {
   if (!currentVendor.value) return;
   const confirmDialog = DialogPlugin.confirm({
     theme: "danger",
-    header: "删除供应商确认",
-    body: `您确定要删除供应商 "${currentVendor.value.name}" 吗？此操作不可恢复。`,
-    confirmBtn: { content: "确认删除", theme: "danger" },
-    cancelBtn: "取消",
+    header: $t("settings.vendor.msg.deleteVendorConfirm"),
+    body: `${$t("settings.vendor.msg.deleteVendorBody", { name: currentVendor.value.name })}`,
+    confirmBtn: { content: $t("settings.vendor.msg.confirmDelete"), theme: "danger" },
+    cancelBtn: $t("settings.vendor.msg.cancel"),
     onConfirm: () => {
       axios
         .post("/setting/vendorConfig/deleteVendor", { id: currentVendor.value?.id })
         .then(() => {
-          MessagePlugin.success("供应商删除成功");
+          window.$message.success($t("settings.vendor.msg.vendorDeleted"));
           if (activeVendorName.value === currentVendor.value?.name) {
             activeVendorName.value = "";
           }
@@ -871,7 +882,7 @@ function handleDeleteVendor() {
           confirmDialog.destroy();
         })
         .catch((err) => {
-          MessagePlugin.error(`删除失败：${err.message}`);
+          window.$message.error(`${$t("settings.vendor.msg.deleteFailed")}${err.message}`);
         });
     },
   });

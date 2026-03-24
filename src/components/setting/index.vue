@@ -1,16 +1,16 @@
 <template>
-  <t-dialog header="ToonFlow设置" :footer="false" placement="center" width="60%" v-model:visible="showSetting">
+  <t-dialog :header="$t('settings.title')" :footer="false" placement="center" width="60%" v-model:visible="showSetting">
     <div class="settingPanel">
       <t-menu class="settingMenu" v-model:value="activeMenu" :style="{ height: '70vh' }">
         <t-menu-item v-for="item in menuItems" :key="item.key" :value="item.key">
           <template #icon>
             <component :is="item.icon" class="icon" />
           </template>
-          {{ item.label }}
+          {{ $t(item.label) }}
         </t-menu-item>
       </t-menu>
       <div class="settingRight">
-        <div class="sectionTitle">{{ currentMenuItem?.label }}</div>
+        <div class="sectionTitle">{{ currentMenuItem ? $t(currentMenuItem.label) : "" }}</div>
         <div class="settingContent">
           <languageConfig v-if="activeMenu === 'language'" />
           <vendorConfig v-if="activeMenu === 'vendorConfig'" />
@@ -47,17 +47,17 @@ import memoryConfig from "./components/memoryConfig.vue";
 import fileManagement from "./components/fileManagement.vue";
 
 const menuItems = [
-  { key: "language", label: "语言设置", icon: "i-translate" },
-  { key: "vendorConfig", label: "模型服务", icon: "i-computer" },
-  { key: "agentConfog", label: "Agent配置", icon: "i-color-filter" },
-  { key: "memoryConfig", label: "Agent记忆配置", icon: "i-memory-card-one" },
-  { key: "loginConfig", label: "登录配置", icon: "i-lock" },
-  { key: "dbConfig", label: "数据库操作", icon: "i-data" },
-  { key: "fileManagement", label: "文件管理", icon: "i-hard-disk" },
-  { key: "otherConfig", label: "其他配置", icon: "i-application-menu" },
-  { key: "requestConfig", label: "请求地址", icon: "i-api" },
-  { key: "about", label: "检查更新", icon: "i-info" },
-  { key: "logoutConfig", label: "退出登录", icon: "i-logout" },
+  { key: "language", label: "settings.menu.language", icon: "i-translate" },
+  { key: "vendorConfig", label: "settings.menu.vendorConfig", icon: "i-computer" },
+  { key: "agentConfog", label: "settings.menu.agentConfig", icon: "i-color-filter" },
+  { key: "memoryConfig", label: "settings.menu.memoryConfig", icon: "i-memory-card-one" },
+  { key: "loginConfig", label: "settings.menu.loginConfig", icon: "i-lock" },
+  { key: "dbConfig", label: "settings.menu.dbConfig", icon: "i-data" },
+  { key: "fileManagement", label: "settings.menu.fileManagement", icon: "i-hard-disk" },
+  { key: "otherConfig", label: "settings.menu.otherConfig", icon: "i-application-menu" },
+  { key: "requestConfig", label: "settings.menu.requestConfig", icon: "i-api" },
+  { key: "about", label: "settings.menu.about", icon: "i-info" },
+  { key: "logoutConfig", label: "settings.menu.logoutConfig", icon: "i-logout" },
 ];
 
 const activeMenu = ref("language");
@@ -99,7 +99,7 @@ const currentMenuItem = computed(() => menuItems.find((item) => item.key === act
 
     .settingContent {
       width: 100%;
-      height: calc(70vh - 5vh);
+      height: calc(70vh - 5vh - 4px);
     }
   }
 }

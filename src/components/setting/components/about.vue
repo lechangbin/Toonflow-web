@@ -5,9 +5,9 @@
         <img src="@/assets/logo.png" alt="ToonFlow Logo" class="logo" />
         <div class="appName">
           <div class="name">ToonFlow</div>
-          <div class="data">开源的AI驱动漫画 / 分镜创作工具</div>
+          <div class="data">{{ $t('settings.about.slogan') }}</div>
           <div class="version">
-            <t-tag theme="primary" shape="round" size="small" style="padding: 10px">{{ version }} · 当前为最新版本</t-tag>
+            <t-tag theme="primary" shape="round" size="small" style="padding: 10px">{{ version }} · {{ $t('settings.about.latestVersion') }}</t-tag>
           </div>
         </div>
         <div class="renew ac">
@@ -15,13 +15,13 @@
             <template #icon>
               <i-refresh theme="outline" size="18" />
             </template>
-            <span style="margin-left: 5px">检查更新</span>
+            <span style="margin-left: 5px">{{ $t('settings.about.checkUpdate') }}</span>
           </t-button>
         </div>
       </div>
     </t-card>
     <div class="codeRepository">
-      <span>代码仓库</span>
+      <span>{{ $t('settings.about.codeRepository') }}</span>
       <t-card bordered :style="{ width: '100%' }" class="logoCard">
         <div class="ac jb" style="cursor: pointer" @click="openLink('https://github.com/HBAI-Ltd/Toonflow-app')">
           <div class="f">
@@ -30,7 +30,7 @@
             </div>
             <div style="margin-left: 15px">
               <div>
-                <span style="font-size: 15px; font-weight: 900">GitHub 仓库</span>
+                <span style="font-size: 15px; font-weight: 900">{{ $t('settings.about.githubRepo') }}</span>
               </div>
               <div>
                 <span style="font-size: 12px; color: #666">https://github.com/HBAI-Ltd/Toonflow-app</span>
@@ -47,7 +47,7 @@
             </div>
             <div style="margin-left: 15px">
               <div>
-                <span style="font-size: 15px; font-weight: 900">Gitee 仓库</span>
+                <span style="font-size: 15px; font-weight: 900">{{ $t('settings.about.giteeRepo') }}</span>
               </div>
               <div>
                 <span style="font-size: 12px; color: #666">https://gitee.com/HBAI-Ltd/Toonflow-app</span>
@@ -59,7 +59,7 @@
       </t-card>
     </div>
     <div class="versionUpdate">
-      <span>版本更新</span>
+      <span>{{ $t('settings.about.versionUpdate') }}</span>
       <t-card bordered :style="{ width: '100%' }" class="logoCard">
         <div class="ac jb" style="cursor: pointer" @click="openLink('https://github.com/HBAI-Ltd/Toonflow-app/releases')">
           <div class="f">
@@ -68,10 +68,10 @@
             </div>
             <div style="margin-left: 15px">
               <div>
-                <span style="font-size: 15px; font-weight: 900">检查更新(GitHub)</span>
+                <span style="font-size: 15px; font-weight: 900">{{ $t('settings.about.checkUpdateGithub') }}</span>
               </div>
               <div>
-                <span style="font-size: 12px; color: #666">从GiHub Release 获取最新版本</span>
+                <span style="font-size: 12px; color: #666">{{ $t('settings.about.getFromGithub') }}</span>
               </div>
             </div>
           </div>
@@ -85,10 +85,10 @@
             </div>
             <div style="margin-left: 15px">
               <div>
-                <span style="font-size: 15px; font-weight: 900">检查更新(Gitee)</span>
+                <span style="font-size: 15px; font-weight: 900">{{ $t('settings.about.checkUpdateGitee') }}</span>
               </div>
               <div>
-                <span style="font-size: 12px; color: #666">从Gitee Release获取最新版本</span>
+                <span style="font-size: 12px; color: #666">{{ $t('settings.about.getFromGitee') }}</span>
               </div>
             </div>
           </div>
@@ -97,7 +97,7 @@
       </t-card>
     </div>
     <div class="license">
-      <span>许可证</span>
+      <span>{{ $t('settings.about.license') }}</span>
       <t-card bordered :style="{ width: '100%' }" class="logoCard">
         <div class="ac jb" style="cursor: pointer" @click="licenseFn">
           <div class="f">
@@ -109,7 +109,7 @@
                 <span style="font-size: 15px; font-weight: 900">AGPL-3.0 License</span>
               </div>
               <div>
-                <span style="font-size: 12px; color: #666">开源许可协议·点击查看详情</span>
+                <span style="font-size: 12px; color: #666">{{ $t('settings.about.licenseDesc') }}</span>
               </div>
             </div>
           </div>

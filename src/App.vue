@@ -61,15 +61,22 @@ const theme = {
 
 import { merge } from "lodash-es";
 import zhConfig from "tdesign-vue-next/es/locale/zh_CN";
+import enConfig from "tdesign-vue-next/es/locale/en_US";
+import { cachedLocale } from "@/locales";
 
 import { type GlobalConfigProvider } from "tdesign-vue-next";
-const empty: GlobalConfigProvider = {};
+
+const tdesignLocaleMap: Record<string, object> = {
+  "zh-CN": zhConfig,
+  en: enConfig,
+};
+
 const customConfig: GlobalConfigProvider = {
   calendar: {},
   table: {},
   pagination: {},
 };
-const globalConfig: GlobalConfigProvider = merge(empty, zhConfig, customConfig);
+const globalConfig = computed<GlobalConfigProvider>(() => merge({}, tdesignLocaleMap[cachedLocale.value] || zhConfig, customConfig));
 
 // document.documentElement.setAttribute('theme-mode', 'dark');
 onBeforeMount(() => {

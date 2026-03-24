@@ -4,17 +4,17 @@
       <div class="content f ac jb">
         <div class="textContent ac">
           <i-good-two class="icon" theme="filled" size="24" fill="currentColor" />
-          <span>使用 Toonflow 官方中转站点，支持一键填入配置，开箱即用，无需手动配置。</span>
+          <span>{{ $t("settings.agent.bannerDesc") }}</span>
         </div>
         <div class="btnList">
           <t-button @click="jumpToWebsite">
-            进入网站
+            {{ $t("settings.agent.visitWebsite") }}
             <template #suffix>
               <i-share theme="outline" />
             </template>
           </t-button>
-          <t-button @click="fillInKey" v-if="!fillIn">填入KEY</t-button>
-          <t-button @click="oneClickToFillIn" v-if="fillIn">一键填入</t-button>
+          <t-button @click="fillInKey" v-if="!fillIn">{{ $t("settings.agent.fillKey") }}</t-button>
+          <t-button @click="oneClickToFillIn" v-if="fillIn">{{ $t("settings.agent.oneClickFill") }}</t-button>
         </div>
       </div>
     </div>
@@ -30,8 +30,10 @@
             <span class="skillName">{{ item.name }}</span>
           </div>
           <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
-          <t-tag v-else-if="item.disabled" variant="light" size="small">未开放</t-tag>
-          <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">未配置</t-tag>
+          <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
+          <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
+            {{ $t("settings.agent.notConfigured") }}
+          </t-tag>
         </div>
         <div class="skillCardBody">{{ item.desc }}</div>
       </t-card>
@@ -40,26 +42,26 @@
     <!-- 模型配置弹窗 -->
     <t-dialog
       v-model:visible="modelDataShow"
-      :header="currentItem?.name + ' 模型配置'"
+      :header="currentItem?.name + ' ' + $t('settings.agent.modelConfig')"
       width="480px"
       :on-confirm="confirmConfig"
-      confirm-btn="确认"
-      cancel-btn="取消">
+      :confirm-btn="$t('settings.agent.confirm')"
+      :cancel-btn="$t('settings.agent.cancel')">
       <div class="dialogContent">
         <t-form label-align="left" :label-width="70">
-          <t-form-item label="选择模型">
+          <t-form-item :label="$t('settings.agent.selectModel')">
             <modelSelect v-model="selectValue" type="text" />
           </t-form-item>
         </t-form>
       </div>
     </t-dialog>
-    <t-dialog v-model:visible="testKeyShow" header="填入Toonflow平台的官方KEY" width="480px">
+    <t-dialog v-model:visible="testKeyShow" :header="$t('settings.agent.fillKeyHeader')" width="480px">
       <div class="testKey">
-        <t-input v-model="key" placeholder="请输入 KEY" style="margin-top: 20px" />
+        <t-input v-model="key" :placeholder="$t('settings.agent.keyPlaceholder')" style="margin-top: 20px" />
       </div>
       <template #footer>
-        <t-button variant="outline" @click="testKeyShow = false">取消</t-button>
-        <t-button @click="keep" :loading="loading">保存</t-button>
+        <t-button variant="outline" @click="testKeyShow = false">{{ $t("settings.agent.cancel") }}</t-button>
+        <t-button @click="keep" :loading="loading">{{ $t("settings.agent.save") }}</t-button>
       </template>
     </t-dialog>
   </div>
@@ -123,7 +125,7 @@ function getFallbackText(name: string) {
 }
 
 function startConfig(item: ModelType) {
-  if (item.disabled) return MessagePlugin.warning("该功能暂未开放，敬请期待");
+  if (item.disabled) return MessagePlugin.warning($t("settings.agent.msg.notAvailable"));
   currentItem.value = item;
   selectValue.value = item.modelName;
   modelDataShow.value = true;
@@ -146,11 +148,11 @@ function confirmConfig() {
   axios
     .post("/setting/agentDeploy/deployAgentModel", data)
     .then(() => {
-      window.$message.success("配置成功");
+      window.$message.success($t("settings.agent.msg.configSuccess"));
       getAgentDeploy();
     })
     .catch((err) => {
-      MessagePlugin.error(`更新配置失败：${err.message}`);
+      MessagePlugin.error(`${$t("settings.agent.msg.updateConfigFailed")}${err.message}`);
     })
     .finally(() => {
       modelDataShow.value = false;
@@ -179,18 +181,18 @@ function testModel() {
     })
     .then(() => {
       loading.value = false;
-      MessagePlugin.success("KEY有效，已成功连接Toonflow平台");
+      MessagePlugin.success($t("settings.agent.msg.keyValid"));
       testKeyShow.value = false;
       fillIn.value = true;
     })
     .catch((err) => {
       loading.value = false;
-      MessagePlugin.error(`KEY无效，请检查后重新输入：${err.message}`);
+      MessagePlugin.error(`${$t("settings.agent.msg.keyInvalid")}${err.message}`);
     });
 }
 function keep() {
   if (!key.value) {
-    MessagePlugin.warning("请输入 KEY");
+    MessagePlugin.warning($t("settings.agent.msg.enterKey"));
     return false;
   }
   loading.value = true;
@@ -211,7 +213,7 @@ function keep() {
       testModel();
     })
     .catch((err) => {
-      MessagePlugin.error(`保存失败：${err.message}`);
+      MessagePlugin.error(`${$t("settings.agent.msg.saveFailed")}${err.message}`);
     });
 }
 //查询Agent配置列表
@@ -233,7 +235,7 @@ function getAgentDeploy() {
       });
     })
     .catch((err) => {
-      MessagePlugin.error(`获取Agent配置列表失败：${err.message}`);
+      MessagePlugin.error(`${$t("settings.agent.msg.getAgentListFailed")}${err.message}`);
     })
     .finally(() => {});
 }
@@ -248,11 +250,11 @@ function oneClickToFillIn() {
       id: id,
     })
     .then(() => {
-      MessagePlugin.success("配置成功");
+      MessagePlugin.success($t("settings.agent.msg.configSuccess"));
       getAgentDeploy();
     })
     .catch((err) => {
-      MessagePlugin.error(`更新配置失败：${err.message}`);
+      MessagePlugin.error(`${$t("settings.agent.msg.updateConfigFailed")}${err.message}`);
     })
     .finally(() => {
       modelDataShow.value = false;

@@ -1,48 +1,36 @@
 <template>
   <div class="languageConfig">
-    <p class="section-desc">选择界面显示语言</p>
+    <p class="section-desc">{{ $t("settings.language.desc") }}</p>
     <div class="lang-grid">
       <div
-        v-for="item in language"
+        v-for="item in languageList"
         :key="item.value"
         class="lang-card"
         :class="{ active: selectedLang === item.value }"
         @click="selectLang(item.value)">
         <div class="lang-info">
-          <div class="lang-name">{{ item.name }}</div>
-          <div class="lang-native">{{ item.nativeName }}</div>
+          <div class="lang-name">{{ item.label }}</div>
+          <div class="lang-native">{{ item.tips }}</div>
         </div>
         <t-icon v-if="selectedLang === item.value" name="check-circle-filled" class="check-icon" />
       </div>
     </div>
-    <t-alert class="tip-alert" theme="info" message="语言切换后将在下次启动时完全生效" :close="false" />
   </div>
 </template>
 
 <script setup lang="ts">
-import settingStore from "@/stores/setting";
-const store = settingStore();
-const { themeSetting } = storeToRefs(store);
+import { useI18n } from "vue-i18n";
+import { languageList, cachedLocale } from "@/locales";
 
-const language = ref([
-  {
-    name: "中文",
-    nativeName: "Chinese (Simplified)",
-    value: "zh-CN",
-  },
-  // {
-  //   name: "英文",
-  //   nativeName: "English",
-  //   value: "en-US",
-  // },
-]);
+const selectedLang = ref<string>(cachedLocale.value ?? "zh-CN");
 
-const selectedLang = ref<string>(store.language ?? "zh-CN");
+const { locale } = useI18n();
 
 function selectLang(val: string) {
+  locale.value = val;
   selectedLang.value = val;
-  store.language = val;
-  window.$message?.success("语言设置已保存");
+  cachedLocale.value = val;
+  window.$message?.success($t("settings.language.msg.saved"));
 }
 </script>
 

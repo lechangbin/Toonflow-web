@@ -1,18 +1,18 @@
 <template>
   <div class="fileManagement">
-    <t-card v-if="isDesktop" title="快捷打开目录" bordered>
+    <t-card v-if="isDesktop" :title="$t('settings.file.quickOpen')" bordered>
       <div class="folderList">
         <div v-for="item in folderList" :key="item.path" class="folderItem">
           <div class="folderInfo">
-            <div class="folderName">{{ item.label }}</div>
-            <div class="folderDesc">{{ item.desc }}</div>
+            <div class="folderName">{{ $t(item.label) }}</div>
+            <div class="folderDesc">{{ $t(item.desc) }}</div>
           </div>
-          <t-button theme="primary" variant="outline" @click="handleOpenFolder(item.path)">打开</t-button>
+          <t-button theme="primary" variant="outline" @click="handleOpenFolder(item.path)">{{ $t('settings.file.open') }}</t-button>
         </div>
       </div>
     </t-card>
 
-    <t-empty v-else description="Docker/前后端分离部署请前往“/data/*”目录手动管理文件。" title="该功能仅支持桌面端">
+    <t-empty v-else :description="$t('settings.file.dockerDesc')" :title="$t('settings.file.desktopOnly')">
       <template #image>
         <i-reduce-one theme="outline" fill="red" />
       </template>
@@ -28,11 +28,11 @@ type QuickPathItem = {
 };
 
 const folderList: QuickPathItem[] = [
-  { label: "data", path: "data", desc: "数据目录。" },
-  { label: "data/logs", path: "data/logs", desc: "运行日志与错误日志。" },
-  { label: "data/oss", path: "data/oss", desc: "对象存储相关资源。" },
-  { label: "data/skills", path: "data/skills", desc: "技能与提示配置文件。" },
-  { label: "data/models", path: "data/models", desc: "模型文件与配置。" },
+  { label: "settings.file.folders.data", path: "data", desc: "settings.file.folders.dataDesc" },
+  { label: "settings.file.folders.logs", path: "data/logs", desc: "settings.file.folders.logsDesc" },
+  { label: "settings.file.folders.oss", path: "data/oss", desc: "settings.file.folders.ossDesc" },
+  { label: "settings.file.folders.skills", path: "data/skills", desc: "settings.file.folders.skillsDesc" },
+  { label: "settings.file.folders.models", path: "data/models", desc: "settings.file.folders.modelsDesc" },
 ];
 
 const isDesktop = window.$electron === true;

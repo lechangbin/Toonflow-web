@@ -1,13 +1,13 @@
 <template>
   <div class="logout-config">
     <t-space direction="vertical" size="medium">
-      <t-alert theme="warning" message="退出登录后，您需要重新登录才能继续使用系统。" />
-      <t-popconfirm content="确定要退出登录吗？" @confirm="handleLogout">
+      <t-alert theme="warning" :message="$t('settings.logout.warning')" />
+      <t-popconfirm :content="$t('settings.logout.confirmLogout')" @confirm="handleLogout">
         <t-button theme="danger" :loading="loading">
           <template #icon>
             <t-icon name="logout" />
           </template>
-          退出登录
+          {{ $t("settings.logout.logout") }}
         </t-button>
       </t-popconfirm>
     </t-space>
@@ -17,7 +17,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
-import { MessagePlugin } from "tdesign-vue-next";
 
 const router = useRouter();
 const loading = ref(false);
@@ -29,13 +28,13 @@ async function handleLogout() {
     localStorage.removeItem("token");
     // 清除其他可能的用户数据
     localStorage.removeItem("user");
-    
-    MessagePlugin.success("退出登录成功");
-    
+
+    window.$message.success($t("settings.logout.msg.logoutSuccess"));
+
     // 跳转到登录页面
     router.push("/login");
   } catch (error) {
-    MessagePlugin.error("退出登录失败，请重试");
+    window.$message.error($t("settings.logout.msg.logoutFailed"));
   } finally {
     loading.value = false;
   }

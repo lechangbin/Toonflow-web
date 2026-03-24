@@ -20,7 +20,7 @@
         </t-tooltip>
       </div>
       <div class="footItem fc ac">
-        <t-tooltip content="设置" placement="right" theme="light" destroyOnClose :showArrow="false">
+        <t-tooltip :content="$t('workbench.menu.settings')" placement="right" theme="light" destroyOnClose :showArrow="false">
           <div class="item c" @click="showSetting = true">
             <i-setting-one class="icon" />
           </div>
@@ -31,7 +31,7 @@
     <div class="view">
       <div class="topMenu f ac jb" v-if="project?.id">
         <div class="title">
-          <h2>{{ project?.name || "请选择项目" }}</h2>
+          <h2>{{ project?.name || $t("workbench.selectProject") }}</h2>
         </div>
         <div class="rightBtnList f ac">
           <t-tooltip
@@ -74,19 +74,19 @@ import settingStore from "@/stores/setting";
 const { showSetting } = storeToRefs(settingStore());
 
 const menuList = ref([
-  { type: "btn", path: "/project", label: "我的项目", icon: "i-folder-close" },
-  { type: "btn", path: "/task", label: "任务中心", icon: "i-view-list" },
+  { type: "btn", path: "/project", label: $t("workbench.menu.myProject"), icon: "i-folder-close" },
+  { type: "btn", path: "/task", label: $t("workbench.menu.taskCenter"), icon: "i-view-list" },
   // { type: "divider" },
 ]);
 
 const rightBtnList = ref([
-  { type: "btn", path: "/novel", label: "小说原文", icon: "i-notebook" },
-  { type: "btn", path: "/agent", label: "剧本Agent", icon: "i-color-filter" },
-  { type: "btn", path: "/script", label: "剧本管理", icon: "i-document-folder" },
-  { type: "btn", path: "/cornerScape", label: "塑角造景", icon: "i-peoples-two" },
-  { type: "btn", path: "/production", label: "视频生产", icon: "i-carousel-video" },
+  { type: "btn", path: "/novel", label: $t("workbench.menu.novel"), icon: "i-notebook" },
+  { type: "btn", path: "/agent", label: $t("workbench.menu.scriptAgent"), icon: "i-color-filter" },
+  { type: "btn", path: "/script", label: $t("workbench.menu.scriptManage"), icon: "i-document-folder" },
+  { type: "btn", path: "/cornerScape", label: $t("workbench.menu.cornerScape"), icon: "i-peoples-two" },
+  { type: "btn", path: "/production", label: $t("workbench.menu.production"), icon: "i-carousel-video" },
   { type: "divider" },
-  { type: "btn", path: "/assets", label: "资产中心", icon: "i-receive" },
+  { type: "btn", path: "/assets", label: $t("workbench.menu.assetCenter"), icon: "i-receive" },
 ]);
 
 const router = useRouter();

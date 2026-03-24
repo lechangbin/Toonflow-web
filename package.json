@@ -39,6 +39,7 @@
     "vue": "^3.5.12",
     "vue-clip-track": "^0.1.5",
     "vue-draggable-plus": "^0.6.1",
+    "vue-i18n": "11",
     "vue-router": "^4.4.5"
   },
   "devDependencies": {
