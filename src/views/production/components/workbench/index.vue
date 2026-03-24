@@ -1,5 +1,6 @@
 <template>
   <t-dialog
+    body="String"
     :header="false"
     :footer="false"
     :closeBtn="false"
@@ -41,6 +42,13 @@
         :canvas-height="canvasHeight"
         ref="editVideoRef" />
     </div>
+    <!-- 全屏加载遮罩 -->
+    <div v-if="importLoading" class="importLoadingMask">
+      <div class="importLoadingContent">
+        <t-loading size="large" text="正在导入剪辑台，请稍候..." />
+      </div>
+    </div>
+
     <t-dialog theme="info" header="提示" body="是否从提取台词" v-model:visible="visible1">
       <template #footer>
         <div class="f ac" style="display: flex; justify-content: flex-end">
@@ -122,32 +130,39 @@ const mockImageItems: MediaItem[] = [
   },
 ];
 
-// 无需预先创建静态 mockTracks，改为通过 tracksStore 动态追加
-
 const visible1 = ref(false);
 const extractLines = ref(false);
 const batchDownloadValue = ref<any>(null);
+const importLoading = ref(false);
 
 async function onConfirm() {
   visible1.value = false;
   extractLines.value = true;
-  const value = batchDownloadValue.value;
-  const list = batchDownloadValue.value.map((item: any) => ({
-    videoId: item.videoId,
-    prompt:
-      "日系清新治愈风，暖色调，4K 画质，柔光滤镜，画面比例 9:16，帧率 30fps；0-3 秒俯拍镜头，清晨阳光透过窗户洒在木质书桌，镜头缓慢推进，聚焦一杯冒着热气的牛奶 + 全麦面包，背景轻响轻柔的钢琴 BGM；3-8 秒手持跟拍，人物赤脚踩在地毯上走向阳台，镜头侧跟，人物轻声台词：新的一天，从温柔的晨光开始；8-15 秒特写镜头，手指轻触窗边绿植的叶片，阳光落在指尖，温柔低语台词：把生活调成自己喜欢的模式，慢一点也没关系；15-25 秒全景镜头，人物坐在阳台藤椅上翻开纸质书，镜头拉远，背景是城市的温柔街景，台词：在平凡的日常里，藏着最珍贵的小美好；25-30 秒定格镜头，画面渐暗，出现文字热爱生活，永远热烈，BGM 渐弱收尾",
-  }));
-  const { data } = await axios.post("/production/workbench/getChatLines", { list });
-  // 计算当前视频轨道的末尾时间作为追加起点
-  appendClipsToStore(value, data);
-  activeMenu.value = "editVideo";
+  importLoading.value = true;
+  try {
+    const value = batchDownloadValue.value;
+    const list = batchDownloadValue.value.map((item: any) => ({
+      videoId: item.videoId,
+      prompt: item.prompt,
+    }));
+    const { data } = await axios.post("/production/workbench/getChatLines", { list });
+    appendClipsToStore(value, data);
+    activeMenu.value = "editVideo";
+  } finally {
+    importLoading.value = false;
+  }
 }
 
 function noFn() {
-  const value = batchDownloadValue.value;
-  appendClipsToStore(value, null);
   visible1.value = false;
-  activeMenu.value = "editVideo";
+  importLoading.value = true;
+  try {
+    const value = batchDownloadValue.value;
+    appendClipsToStore(value, null);
+    activeMenu.value = "editVideo";
+  } finally {
+    importLoading.value = false;
+  }
 }
 
 /** 追加视频片段（以及可选的字幕）到 tracksStore 对应轨道末尾 */
@@ -256,6 +271,25 @@ function handleBatchDownload(value: any) {
     flex-direction: column;
     height: 100%;
     overflow: hidden;
+    position: relative;
+  }
+
+  .importLoadingMask {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+
+    .importLoadingContent {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
   }
   .closure {
     position: absolute;
