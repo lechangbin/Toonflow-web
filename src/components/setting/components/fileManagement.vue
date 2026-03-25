@@ -35,7 +35,7 @@ const folderList: QuickPathItem[] = [
   { label: "settings.file.folders.skills", path: "skills", desc: "settings.file.folders.skillsDesc" },
   { label: "settings.file.folders.models", path: "models", desc: "settings.file.folders.modelsDesc" },
   { label: "settings.file.folders.web", path: "web", desc: "settings.file.folders.webDesc" },
-  { label: "settings.file.folders.serve", path: "models", desc: "settings.file.folders.modelsDesc" },
+  { label: "settings.file.folders.serve", path: "serve", desc: "settings.file.folders.serveDesc" },
 ];
 
 const isDesktop = window.$electron === true;

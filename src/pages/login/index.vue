@@ -73,7 +73,7 @@ const handleSaveSetting = () => {
   baseUrl.value = tempBaseUrl.value;
   wsBaseUrl.value = tempWsBaseUrl.value;
   showSettingModal.value = false;
-  window.$message.success("设置已保存");
+  window.$message.success($t("login.settingsSaved"));
 };
 const state = ref({
   show: true,

@@ -36,8 +36,8 @@
       <Panel position="top-right">
         <t-dropdown
           :options="[
-            { content: '上传', value: 1 },
-            { content: '生成', value: 2 },
+            { content: $t('workbench.production.editImage.upload'), value: 1 },
+            { content: $t('workbench.production.editImage.generate'), value: 2 },
           ]"
           @click="clickHandler">
           <t-button theme="primary" shape="circle">
@@ -220,7 +220,7 @@ async function sureNode(imageUrl: string = "") {
     emit("save", { imageUrl, insertId });
     visible.value = false;
   } catch (e) {
-    window.$message.error((e as any).message || "保存失败");
+    window.$message.error((e as any).message || $t("workbench.production.editImage.saveFailed"));
   } finally {
   }
 }
@@ -236,7 +236,7 @@ onMounted(async () => {
     nodes.value = data.nodes;
     flowId.value = data.id;
   } catch (e) {
-    window.$message.error((e as any).message || "获取数据失败");
+    window.$message.error((e as any).message || $t("workbench.production.editImage.fetchFailed"));
   }
 });
 

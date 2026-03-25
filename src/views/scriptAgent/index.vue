@@ -62,7 +62,7 @@
                 <t-button @click="editMdPreview">{{ $t('workbench.scriptAgent.edit') }}</t-button>
               </div>
             </template>
-            <!-- <t-tab-panel :value="1" label="章节事件">
+            <!-- <t-tab-panel :value="1" :label="$t('workbench.scriptAgent.chapterEvents')">
               <pre>{{ planData.event }}</pre>
             </t-tab-panel> -->
             <t-tab-panel :value="1" :label="$t('workbench.scriptAgent.storySkeleton')">
