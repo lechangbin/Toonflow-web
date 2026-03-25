@@ -3,7 +3,7 @@
     <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
     <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
-      <div class="title">{{ $t('workbench.production.node.storyboard.title') }}</div>
+      <div class="title">{{ $t("workbench.production.node.storyboard.title") }}</div>
     </div>
     <div class="content">
       <div class="frameGrid">
@@ -12,7 +12,7 @@
             <div
               class="addBetween addBetween--left"
               :class="{ expanded: hoveredIndex === index }"
-              @click.stop="editStoryboaryImage([index > 0 ? storyboard[index - 1]?.src || '' : '', item.src || ''])">
+              @click.stop="editStoryboaryImage(item, [index > 0 ? storyboard[index - 1]?.src || '' : '', item.src || ''], null, index - 1)">
               <t-button theme="primary" variant="outline" shape="circle">
                 <template #icon><i-plus /></template>
               </t-button>
@@ -28,7 +28,7 @@
                 <t-tag class="frameTypeTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
                   S{{ String(index + 1).padStart(2, "0") }}
                 </t-tag>
-                <t-image v-if="item.src" :src="item.src" fit="contain" class="frameImg" @click="editStoryboaryImage([item.src], item.id)">
+                <t-image v-if="item.src" :src="item.src" fit="contain" class="frameImg" @click="editStoryboaryImage(item, [item.src], item.id)">
                   <template #overlayContent>
                     <div class="imageToolsWrap show">
                       <ImageTools :src="item.src" position="br" />
@@ -45,7 +45,14 @@
             <div
               class="addBetween addBetween--right"
               :class="{ expanded: hoveredIndex === index }"
-              @click.stop="editStoryboaryImage([item.src || '', index < (storyboard?.length ?? 0) - 1 ? storyboard[index + 1]?.src || '' : ''])">
+              @click.stop="
+                editStoryboaryImage(
+                  item,
+                  [item.src || '', index < (storyboard?.length ?? 0) - 1 ? storyboard[index + 1]?.src || '' : ''],
+                  null,
+                  index,
+                )
+              ">
               <t-button theme="primary" variant="outline" shape="circle">
                 <template #icon><i-plus /></template>
               </t-button>
@@ -54,10 +61,10 @@
         </template>
       </div>
       <div class="scaleControl">
-        <span>{{ $t('workbench.production.node.storyboard.scaleRatio') }}</span>
+        <span>{{ $t("workbench.production.node.storyboard.scaleRatio") }}</span>
         <t-input-number v-model="gridScale" :min="0.1" :max="3" :step="0.1" :decimal-places="1" size="small" style="width: 120px" />
       </div>
-      <t-button block @click="previewAll">{{ $t('workbench.production.node.storyboard.gridPreview') }}</t-button>
+      <t-button block @click="previewAll">{{ $t("workbench.production.node.storyboard.gridPreview") }}</t-button>
     </div>
     <editImage v-model:visible="visible" v-if="visible" :editData="currentRow" type="storyboard" @save="save" />
     <t-image-viewer v-model:visible="previewVisible" :images="previewImages" :imageScale="{ max: 10, min: 0.1 }" />
@@ -71,16 +78,19 @@ import { LoadingPlugin } from "tdesign-vue-next";
 import { Handle, Position, type Edge } from "@vue-flow/core";
 import axios from "@/utils/axios";
 import type { NodeType } from "../utils/editImageType";
+import type { AssetItem } from "../utils/flowBuilder";
 interface Storyboard {
   id: number;
   title: string;
   description: string;
   camera: string;
   duration: number;
+  prompt?: string;
   frameMode: "firstFrame" | "endFrame" | "linesSoundEffects";
   lines: string | null;
   sound: string | null;
   associateAssetsIds: number[];
+  referenceIds?: number[];
   src: string | null;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
 }
@@ -91,6 +101,7 @@ const props = defineProps<{
     target: string;
     source: string;
   };
+  assetsData: AssetItem[];
 }>();
 
 const storyboard = defineModel<Storyboard[]>({ required: true });
@@ -107,11 +118,15 @@ function setHoveredFrame(index: number | null) {
 }
 
 const currentRow = ref<{
-  images: string[];
   id: number | null;
+  resultImages: string[];
+  referanceImages: string[];
+  insertAfterIndex: number | null;
 }>({
-  images: [],
   id: null,
+  insertAfterIndex: null,
+  resultImages: [],
+  referanceImages: [],
 });
 
 const tagColors = ["#5bccb3", "#9c7cfc", "#fbbf24", "#5b9afc", "#e86b6b", "#7cb8fc", "#e8a855", "#34d399"];
@@ -133,7 +148,7 @@ async function previewAll() {
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error($t('workbench.production.node.storyboard.loadFailed', { src })));
+            img.onerror = () => reject(new Error($t("workbench.production.node.storyboard.loadFailed", { src })));
             img.src = src;
           }),
       ),
@@ -193,32 +208,74 @@ async function previewAll() {
   }
 }
 
-function editStoryboaryImage(images: string[], id: number | null = null) {
+function editStoryboaryImage(item: Storyboard, images: string[], id: number | null = null, insertAfterIndex: number | null = null) {
+  console.log("%c Line:216 🥟 item", "background:#465975", item);
   currentRow.value = {
-    images: images.filter(Boolean),
     id,
+    insertAfterIndex,
+    resultImages: [],
+    referanceImages: [],
   };
+  if (id) {
+    let imagesPush = [];
+
+    if (item.associateAssetsIds && item.associateAssetsIds.length > 0) {
+      const assetsImages: string[] = [];
+      for (const asset of props.assetsData) {
+        if (item.associateAssetsIds.includes(asset.id) && asset.src) {
+          assetsImages.push(asset.src);
+        }
+        asset.derive?.forEach((d) => {
+          if (item.associateAssetsIds.includes(d.id) && d.src) {
+            assetsImages.push(d.src);
+          }
+        });
+      }
+      imagesPush = imagesPush.concat(assetsImages);
+    }
+    if (item?.referenceIds && item.referenceIds.length > 0) {
+      const referenImages = storyboard.value
+        .filter((s) => item.referenceIds!.includes(s.id))
+        .map((s) => s.src)
+        .filter(Boolean) as string[];
+      imagesPush = imagesPush.concat(referenImages);
+    }
+    currentRow.value.referanceImages = imagesPush;
+    currentRow.value.resultImages = images.filter(Boolean);
+  } else {
+    currentRow.value.referanceImages = images.filter(Boolean);
+  }
   visible.value = true;
 }
 
-async function getStoryboardFlowData() {
-  console.log("%c Line:103 🍩", "background:#2eafb0", "获取分镜工作流数据");
-  if (!currentRow.value.id) return null;
-  try {
-    const { data } = await axios.post("/production/editImage/getImageFlow", {
-      id: currentRow.value?.id,
-      type: "storyboard",
-    });
-    return data;
-  } catch (e) {
-    throw e;
-  }
-}
-
-async function save(imageUrl: string) {
-  // 更新对应分镜的 src
+async function save({ imageUrl, insertId }: { imageUrl: string; insertId: number }) {
   if (!imageUrl) return;
-  const target = storyboard.value.find((s) => s.id === currentRow.value.id);
+
+  const { id, insertAfterIndex } = currentRow.value;
+
+  // 插入模式：在两张图之间新增一条分镜
+  if (id === null && insertAfterIndex !== null) {
+    const newId = insertId;
+    const newFrame: Storyboard = {
+      id: newId,
+      title: "",
+      description: "",
+      camera: "",
+      duration: 0,
+      prompt: "",
+      frameMode: "firstFrame",
+      lines: null,
+      sound: null,
+      associateAssetsIds: [],
+      src: imageUrl,
+      state: "已完成",
+    };
+    storyboard.value.splice(insertAfterIndex + 1, 0, newFrame);
+    return;
+  }
+
+  // 更新模式：更新对应分镜的 src
+  const target = storyboard.value.find((s) => s.id === id);
   if (target) target.src = imageUrl;
 }
 </script>

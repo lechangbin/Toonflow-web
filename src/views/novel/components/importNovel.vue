@@ -124,6 +124,8 @@ const columns: PrimaryTableCol<TableRowData>[] = [
 const tableData = computed<ChapterItem[]>(() => {
   if (!content.value) return [];
   try {
+    const ddd = parseNovel(content.value)
+    console.log("%c Line:128 🍪 ddd", "background:#42b983", ddd);
     return parseNovel(content.value).flatMap((reel) =>
       reel.chapters.map((chapter) => ({
         index: chapter.index,

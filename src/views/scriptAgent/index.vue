@@ -36,15 +36,15 @@
                   <div class="settingMenu">
                     <div class="settingMenuItem" @click="handleClearMemory('message')">
                       <i-delete size="14" />
-                      <span>{{ $t('workbench.scriptAgent.clearMessageMemory') }}</span>
+                      <span>{{ $t("workbench.scriptAgent.clearMessageMemory") }}</span>
                     </div>
                     <div class="settingMenuItem" @click="handleClearMemory('summary')">
                       <i-close size="14" />
-                      <span>{{ $t('workbench.scriptAgent.clearSummaryMemory') }}</span>
+                      <span>{{ $t("workbench.scriptAgent.clearSummaryMemory") }}</span>
                     </div>
                     <div class="settingMenuItem danger" @click="handleClearMemory('all')">
                       <i-delete-one size="14" />
-                      <span>{{ $t('workbench.scriptAgent.clearAllMemory') }}</span>
+                      <span>{{ $t("workbench.scriptAgent.clearAllMemory") }}</span>
                     </div>
                   </div>
                 </template>
@@ -59,7 +59,7 @@
           <t-tabs v-model="currentTable" @change="changeTab">
             <template #action>
               <div class="ac" v-if="currentTable != 3">
-                <t-button @click="editMdPreview">{{ $t('workbench.scriptAgent.edit') }}</t-button>
+                <t-button @click="editMdPreview">{{ $t("workbench.scriptAgent.edit") }}</t-button>
               </div>
             </template>
             <!-- <t-tab-panel :value="1" :label="$t('workbench.scriptAgent.chapterEvents')">
@@ -90,18 +90,18 @@
                       <div class="scriptCardActions">
                         <t-button size="small" @click="editScript(index)">
                           <template #icon><i-edit size="14" /></template>
-                          {{ $t('workbench.scriptAgent.edit') }}
+                          {{ $t("workbench.scriptAgent.edit") }}
                         </t-button>
                       </div>
                     </div>
                     <div class="scriptCardBody">
                       <pre v-if="item.content">{{ item.content }}</pre>
-                      <span v-else class="emptyContent">{{ $t('workbench.scriptAgent.noContent') }}</span>
+                      <span v-else class="emptyContent">{{ $t("workbench.scriptAgent.noContent") }}</span>
                     </div>
                     <div v-if="item.relatedAssets?.length" class="scriptCardFooter ac">
                       <span class="assetsLabel">
                         <i-link size="12" />
-                        {{ $t('workbench.scriptAgent.relatedAssets') }}
+                        {{ $t("workbench.scriptAgent.relatedAssets") }}
                       </span>
                       <div class="assetsTags">
                         <t-tag v-for="(asset, ai) in item.relatedAssets" size="small" :key="ai" variant="light" theme="warning">
@@ -130,21 +130,24 @@
       @close="scriptEditVisible = false">
       <div class="scriptEditForm">
         <div class="scriptEditField">
-          <label>{{ $t('workbench.scriptAgent.scriptTitle') }}</label>
+          <label>{{ $t("workbench.scriptAgent.scriptTitle") }}</label>
           <t-input v-model="scriptEditData.name" :placeholder="$t('workbench.scriptAgent.titlePlaceholder')" />
         </div>
         <div class="scriptEditField">
-          <label>{{ $t('workbench.scriptAgent.content') }}</label>
-          <t-textarea v-model="scriptEditData.content" :placeholder="$t('workbench.scriptAgent.contentPlaceholder')" :autosize="{ minRows: 8, maxRows: 16 }" />
+          <label>{{ $t("workbench.scriptAgent.content") }}</label>
+          <t-textarea
+            v-model="scriptEditData.content"
+            :placeholder="$t('workbench.scriptAgent.contentPlaceholder')"
+            :autosize="{ minRows: 8, maxRows: 16 }" />
         </div>
         <div class="scriptEditField">
-          <label>{{ $t('workbench.scriptAgent.relatedAssets') }}</label>
+          <label>{{ $t("workbench.scriptAgent.relatedAssets") }}</label>
 
           <div class="assets-section">
             <div class="assets-header">
               <t-button size="small" theme="primary" variant="outline" @click="handleSelectAssets">
                 <template #icon><i-plus /></template>
-                {{ $t('workbench.scriptAgent.selectAssets') }}
+                {{ $t("workbench.scriptAgent.selectAssets") }}
               </t-button>
             </div>
             <div class="assets-list" v-if="scriptEditData.relatedAssets.length">
@@ -152,7 +155,7 @@
                 {{ asset.name }}
               </t-tag>
             </div>
-            <div v-else class="assets-empty">{{ $t('workbench.scriptAgent.noAssets') }}</div>
+            <div v-else class="assets-empty">{{ $t("workbench.scriptAgent.noAssets") }}</div>
           </div>
         </div>
       </div>
@@ -184,9 +187,9 @@ const currentMessageId = ref<string | null>(null);
 const dialogVisible = ref(false);
 const editContent = ref("");
 const memoryTypeLabel: Record<string, string> = {
-  message: $t('workbench.scriptAgent.memoryType.message'),
-  summary: $t('workbench.scriptAgent.memoryType.summary'),
-  all: $t('workbench.scriptAgent.memoryType.all'),
+  message: $t("workbench.scriptAgent.memoryType.message"),
+  summary: $t("workbench.scriptAgent.memoryType.summary"),
+  all: $t("workbench.scriptAgent.memoryType.all"),
 };
 const currentTable = ref(1);
 interface Asset {
@@ -217,9 +220,10 @@ const planData = ref<PlanData>({
 watch(
   () => [planData.value.storySkeleton, planData.value.adaptationStrategy],
   () => {
+    console.log("%c Line:221 🍰", "background:#4fff4B");
     setPlanData();
   },
-  { immediate: true },
+  { immediate: false },
 );
 
 async function getPlanData() {
@@ -239,11 +243,11 @@ const welcomeMsg: ChatMessagesData = {
   id: "welcome",
   role: "assistant",
   content: [
-    { type: "text", status: "complete", data: $t('workbench.scriptAgent.welcomeMsg') },
+    { type: "text", status: "complete", data: $t("workbench.scriptAgent.welcomeMsg") },
     {
       type: "suggestion",
       status: "complete",
-      data: [{ title: $t('workbench.scriptAgent.start'), prompt: $t('workbench.scriptAgent.start') }],
+      data: [{ title: $t("workbench.scriptAgent.start"), prompt: $t("workbench.scriptAgent.start") }],
     },
   ],
 };
@@ -336,14 +340,14 @@ const handleActions = {
 
 function handleClearMemory(type: "message" | "summary" | "all") {
   const dialog = DialogPlugin.confirm({
-    header: $t('workbench.scriptAgent.msg.clearConfirm'),
-    body: $t('workbench.scriptAgent.msg.clearBody', { type: memoryTypeLabel[type] }),
-    confirmBtn: $t('workbench.scriptAgent.msg.confirmClear'),
-    cancelBtn: $t('workbench.scriptAgent.msg.cancel'),
+    header: $t("workbench.scriptAgent.msg.clearConfirm"),
+    body: $t("workbench.scriptAgent.msg.clearBody", { type: memoryTypeLabel[type] }),
+    confirmBtn: $t("workbench.scriptAgent.msg.confirmClear"),
+    cancelBtn: $t("workbench.scriptAgent.msg.cancel"),
     theme: "warning",
     onConfirm: async () => {
       await axios.post(`/agents/clearMemory`, { projectId: project.value?.id, agentType: "scriptAgent", type });
-      window.$message.success($t('workbench.scriptAgent.msg.memoryCleared', { type: memoryTypeLabel[type] }));
+      window.$message.success($t("workbench.scriptAgent.msg.memoryCleared", { type: memoryTypeLabel[type] }));
       dialog.destroy();
       getHistory();
     },
@@ -390,7 +394,7 @@ async function saveScript() {
       content: scriptEditData.value.content,
       assets: scriptEditData.value.relatedAssets.map((a) => a.id),
     });
-    window.$message.success($t('workbench.scriptAgent.msg.scriptUpdated'));
+    window.$message.success($t("workbench.scriptAgent.msg.scriptUpdated"));
     planData.value.script[scriptEditIndex.value] = {
       ...planData.value.script[scriptEditIndex.value],
       ...scriptEditData.value,
@@ -398,7 +402,7 @@ async function saveScript() {
     scriptEditVisible.value = false;
   } catch (error) {
     console.error("更新剧本失败:", error);
-    window.$message.error($t('workbench.scriptAgent.msg.scriptUpdateFailed'));
+    window.$message.error($t("workbench.scriptAgent.msg.scriptUpdateFailed"));
   } finally {
   }
 }
@@ -427,7 +431,7 @@ function onConfirm(value: string) {
 }
 
 async function handleSelectAssets() {
-  const assets = await openAssetsSelector({ title: $t('workbench.scriptAgent.selectAssetsTitle'), types: ["role", "tool", "scene"] });
+  const assets = await openAssetsSelector({ title: $t("workbench.scriptAgent.selectAssetsTitle"), types: ["role", "tool", "scene"] });
   if (assets.length) {
     const existing = new Set(scriptEditData.value.relatedAssets.map((a) => a.id));
     for (const a of assets) {
@@ -448,7 +452,7 @@ async function getScriptApi() {
     planData.value.script = res.data;
   } catch (error) {
     console.error("搜索剧本失败:", error);
-    window.$message.error($t('workbench.scriptAgent.msg.searchScriptFailed'));
+    window.$message.error($t("workbench.scriptAgent.msg.searchScriptFailed"));
   }
 }
 function changeTab(value: TabValue) {
@@ -654,7 +658,7 @@ function changeTab(value: TabValue) {
       font-weight: 500;
       color: var(--td-text-color-secondary);
     }
-    .assets-list{
+    .assets-list {
       display: flex;
       align-items: center;
       flex-wrap: wrap;

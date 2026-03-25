@@ -66,7 +66,8 @@ import { flow } from "lodash";
 const { projectId } = storeToRefs(store());
 const props = defineProps<{
   editData: {
-    images: string[];
+    resultImages: string[];
+    referanceImages: string[];
     id?: number | null;
   };
   type?: string;
@@ -171,11 +172,12 @@ const addUploadNode = (type: string, image: string = "") => {
   } else {
     newNodeId = `upload-${nodeIdCounter++}`;
   }
-  const lastUploadNode = nodes.value.filter((n) => n.type === "upload").pop();
+  const lastUploadNode = nodes.value.filter((n) => n.type === type).pop();
   const newY = lastUploadNode ? lastUploadNode.position.y + 350 : 100;
+  const newX = type === "generated" ? 600 : 100;
   const refeceImage = {
-    generatedImage: "",
-    references: image ? [image] : [],
+    generatedImage: image,
+    references: [],
     prompt: "",
     model: "",
     ratio: "",
@@ -185,18 +187,20 @@ const addUploadNode = (type: string, image: string = "") => {
   const newNodeObj = {
     id: newNodeId,
     type: type,
-    position: { x: 100, y: newY },
+    position: { x: newX, y: newY },
     data: {
       ...(type == "generated" ? { ...refeceImage } : { image: image }),
     },
   };
 
   nodes.value.push(newNodeObj as NodeType);
+  return newNodeId;
 };
 //保存节点
 async function sureNode(imageUrl: string = "") {
   try {
     const id = props.editData?.id;
+    let insertId = "";
     if (flowId.value) {
       await axios.post("/production/editImage/updateImageFlow", {
         id: id,
@@ -207,15 +211,16 @@ async function sureNode(imageUrl: string = "") {
         type: props.type,
       });
     } else {
-      await axios.post("/production/editImage/saveImageFlow", {
+      const { data } = await axios.post("/production/editImage/saveImageFlow", {
         id: id,
         nodes: nodes.value,
         edges: edges.value,
         imageUrl,
         type: props.type,
       });
+      insertId = data?.id || null;
     }
-    emit("save", imageUrl);
+    emit("save", { imageUrl, insertId });
     visible.value = false;
   } catch (e) {
     window.$message.error((e as any).message || $t("workbench.production.editImage.saveFailed"));
@@ -239,9 +244,28 @@ onMounted(async () => {
 });
 
 function buildFlow() {
-  props.editData.images.forEach((i) => {
-    addUploadNode("upload", i);
+  const uploadIds: string[] = [];
+  const generatedIds: string[] = [];
+  props.editData.referanceImages.forEach((i) => {
+    uploadIds.push(addUploadNode("upload", i));
   });
+  props.editData.resultImages.forEach((i) => {
+    generatedIds.push(addUploadNode("generated", i));
+  });
+  // 将每个 upload 节点连接到每个 generated 节点
+  for (const sourceId of uploadIds) {
+    for (const targetId of generatedIds) {
+      edges.value.push({
+        id: `e-${edgeIdCounter++}`,
+        source: sourceId,
+        target: targetId,
+        type: "removeLine",
+        animated: true,
+        style: { stroke: "#a3e635" },
+      });
+    }
+  }
+  nextTick(syncReferences);
 }
 
 function closeFn() {
