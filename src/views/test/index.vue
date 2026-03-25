@@ -5,7 +5,12 @@
 </template>
 
 <script setup lang="ts">
-function test() {}
+import axios from "@/utils/axios";
+function test() {
+  axios.get("/test/test").then((res) => {
+    console.log("test res:", res);
+  });
+}
 </script>
 
 <style lang="scss" scoped></style>
