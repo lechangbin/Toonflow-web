@@ -33,6 +33,7 @@ onMounted(() => {
   setTimeout(() => {
     if (window.$electron) {
       const port = window.$port;
+      console.log("%c Line:36 🍧 port", "background:#b03734", port);
       if (port) baseUrl.value = `http://localhost:${window.$port}/api`;
     }
   }, 1000);

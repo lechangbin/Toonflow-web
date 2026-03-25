@@ -3,43 +3,43 @@
     <t-dialog
       placement="center"
       v-model:visible="addProjectShow"
-      :header="isEdit ? '编辑项目' : '新建项目'"
+      :header="isEdit ? $t('workbench.project.dialog.editTitle') : $t('workbench.project.dialog.addTitle')"
       width="60%"
       @confirm="handleOk"
       @close-btn-click="handleCancel"
       @cancel="handleCancel"
-      :confirm-btn="isEdit ? '保存' : '确定'"
-      cancel-btn="取消">
-      <t-form :data="formState" label-align="left">
-        <t-form-item v-if="!isEdit" label="项目类型">
-          <t-select v-model="formState.projectType" placeholder="选择项目类型">
-            <t-option key="基于小说原文" label="基于小说原文" value="基于小说原文" />
+      :confirm-btn="isEdit ? $t('workbench.project.dialog.save') : $t('workbench.project.dialog.ok')"
+      :cancel-btn="$t('workbench.project.dialog.cancel')">
+      <t-form :data="formState" label-align="top">
+        <t-form-item v-if="!isEdit" :label="$t('workbench.project.dialog.projectType')">
+          <t-select v-model="formState.projectType" :placeholder="$t('workbench.project.dialog.selectType')">
+            <t-option key="基于小说原文" :label="$t('workbench.project.dialog.basedOnNovel')" value="novel" />
             <!-- <t-option key="基于剧本" label="基于剧本" value="基于剧本" /> -->
           </t-select>
         </t-form-item>
-        <t-form-item label="项目名称">
-          <t-input v-model="formState.name" placeholder="请输入项目名称" />
+        <t-form-item :label="$t('workbench.project.dialog.projectName')">
+          <t-input v-model="formState.name" :placeholder="$t('workbench.project.dialog.projectNamePh')" />
         </t-form-item>
-        <t-form-item label="小说类型">
-          <t-input v-model="formState.type" placeholder="例如:玄幻、科幻、言情" />
+        <t-form-item :label="$t('workbench.project.dialog.novelType')">
+          <t-input v-model="formState.type" :placeholder="$t('workbench.project.dialog.novelTypePh')" />
         </t-form-item>
-        <t-form-item label="影片画风">
+        <t-form-item :label="$t('workbench.project.dialog.artStyle')">
           <div class="artStylePicker">
             <div class="artStyleHeader">
               <div class="headerLeft">
                 <span v-if="formState.artStyle" class="selectedLabel">
-                  已选：
+                  {{ $t("workbench.project.dialog.selected") }}
                   <t-tag theme="primary" size="small" closable @close="formState.artStyle = ''">{{ formState.artStyle }}</t-tag>
                 </span>
-                <span v-else class="selectedHint">请选择画风</span>
+                <span v-else class="selectedHint">{{ $t("workbench.project.dialog.selectArtStyle") }}</span>
               </div>
               <t-button size="small" variant="outline" @click="openArtStyleDialog()">
                 <template #icon><i-plus size="14" /></template>
-                新建画风
+                {{ $t("workbench.project.dialog.newArtStyle") }}
               </t-button>
             </div>
             <div class="artStyleContent">
-              <t-loading :loading="artStyleLoading" text="加载中...">
+              <t-loading :loading="artStyleLoading" :text="$t('workbench.project.dialog.loading')">
                 <div class="gridContainer">
                   <div
                     v-for="item in artStyleOptions"
@@ -60,11 +60,11 @@
             </div>
           </div>
         </t-form-item>
-        <t-form-item label="影片比例">
+        <t-form-item :label="$t('workbench.project.dialog.videoRatio')">
           <t-select v-model="formState.videoRatio" :options="RATIO_OPTIONS" />
         </t-form-item>
-        <t-form-item label="小说简介">
-          <t-textarea v-model="formState.intro" :autosize="{ minRows: 3, maxRows: 10 }" placeholder="请输入小说简介" />
+        <t-form-item :label="$t('workbench.project.dialog.novelIntro')">
+          <t-textarea v-model="formState.intro" :autosize="{ minRows: 3, maxRows: 10 }" :placeholder="$t('workbench.project.dialog.novelIntroPh')" />
         </t-form-item>
       </t-form>
     </t-dialog>
@@ -73,34 +73,36 @@
     <t-dialog
       class="artStyleDialog"
       v-model:visible="artStyleDialogVisible"
-      :header="editingArtStyle ? '编辑画风' : '新建画风'"
+      :header="editingArtStyle ? $t('workbench.project.dialog.editArtStyleTitle') : $t('workbench.project.dialog.newArtStyleTitle')"
       width="80vw"
       placement="center"
       @confirm="handleArtStyleSubmit"
       @close-btn-click="resetArtStyleDialog"
       @cancel="resetArtStyleDialog"
-      confirm-btn="确定"
-      cancel-btn="取消">
-      <t-form label-align="left">
-        <t-form-item label="画风名称">
-          <t-input v-model="artStyleForm.name" placeholder="请输入画风名称" />
+      :confirm-btn="$t('workbench.project.dialog.ok')"
+      :cancel-btn="$t('workbench.project.dialog.cancel')">
+      <t-form label-align="top">
+        <t-form-item :label="$t('workbench.project.dialog.artStyleName')">
+          <t-input v-model="artStyleForm.name" :placeholder="$t('workbench.project.dialog.artStyleNamePh')" />
         </t-form-item>
-        <t-form-item label="画风图片">
+        <t-form-item :label="$t('workbench.project.dialog.artStyleImage')">
           <div class="coverUploadArea">
             <div v-if="artStyleForm.coverUrl" class="coverPreview">
               <img :src="artStyleForm.coverUrl" class="coverImg" />
               <div class="coverActions">
-                <t-button size="small" variant="text" theme="danger" @click="artStyleForm.coverUrl = ''">移除</t-button>
+                <t-button size="small" variant="text" theme="danger" @click="artStyleForm.coverUrl = ''">
+                  {{ $t("workbench.project.dialog.remove") }}
+                </t-button>
               </div>
             </div>
             <div v-else class="coverUploadTrigger" @click="triggerCoverUpload">
               <input ref="coverInputRef" type="file" accept="image/*" style="display: none" @change="handleCoverFileChange" />
               <i-plus size="24" />
-              <span>上传封面</span>
+              <span>{{ $t("workbench.project.dialog.uploadCover") }}</span>
             </div>
           </div>
         </t-form-item>
-        <t-form-item label="画风提示词">
+        <t-form-item :label="$t('workbench.project.dialog.artStylePrompt')">
           <div class="promptEditorWrapper">
             <div class="promptEditorHeader">
               <div class="aiExtractInline">
@@ -118,7 +120,7 @@
                 </div>
                 <t-button size="small" theme="primary" :loading="extractLoading" :disabled="!aiImagePreviews.length" @click="extractStylePrompt">
                   <template #icon><i-magic size="14" /></template>
-                  AI提取提示词
+                  {{ $t("workbench.project.dialog.aiExtract") }}
                 </t-button>
               </div>
             </div>
@@ -127,8 +129,8 @@
               :theme="'light'"
               :toolbars="promptToolbars"
               :footers="[]"
-              :placeholder="'描述画风提示词，用于生成图片时指定风格'"
-              style="height: 47vh"
+              :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
+              style="height: 36vh"
               @onUploadImg="() => {}" />
           </div>
         </t-form-item>
@@ -189,7 +191,7 @@ const RATIO_OPTIONS = [
 
 const DEFAULT_FORM: () => ProjectFormData & { id: number; era: string; createTime: number; userId: number } = () => ({
   id: 0,
-  projectType: "基于小说原文",
+  projectType: "novel",
   name: "",
   intro: "",
   type: "",
@@ -224,11 +226,11 @@ function handleOk() {
     });
   } else {
     emit("add", {
-      projectType: formState.value.projectType || "基于小说原文",
-      name: formState.value.name || "名称",
-      intro: formState.value.intro || "这个是一条小说简介",
-      type: formState.value.type || "玄幻",
-      artStyle: formState.value.artStyle || "动漫",
+      projectType: formState.value.projectType || "novel",
+      name: formState.value.name,
+      intro: formState.value.intro,
+      type: formState.value.type,
+      artStyle: formState.value.artStyle,
       videoRatio: formState.value.videoRatio || "16:9",
     });
   }
@@ -331,9 +333,9 @@ async function extractStylePrompt() {
       images: aiImagePreviews.value,
     });
     artStyleForm.value.prompt = data.prompt || data;
-    MessagePlugin.success("提示词提取成功");
+    MessagePlugin.success($t("workbench.project.msg.extractSuccess"));
   } catch (e: any) {
-    MessagePlugin.error(e.message ?? "提取失败");
+    MessagePlugin.error(e.message ?? $t("workbench.project.msg.extractFailed"));
   } finally {
     extractLoading.value = false;
   }
@@ -341,7 +343,7 @@ async function extractStylePrompt() {
 
 async function handleArtStyleSubmit() {
   if (!artStyleForm.value.name.trim()) {
-    MessagePlugin.warning("请输入画风名称");
+    MessagePlugin.warning($t("workbench.project.msg.enterArtStyleName"));
     return;
   }
   try {
@@ -352,19 +354,19 @@ async function handleArtStyleSubmit() {
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
       });
-      MessagePlugin.success("画风已更新");
+      MessagePlugin.success($t("workbench.project.msg.artStyleUpdated"));
     } else {
       await axios.post("/artStyle/addArtStyle", {
         name: artStyleForm.value.name,
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
       });
-      MessagePlugin.success("画风已添加");
+      MessagePlugin.success($t("workbench.project.msg.artStyleAdded"));
     }
     resetArtStyleDialog();
     fetchArtStyles();
   } catch (e: any) {
-    MessagePlugin.error(e.message ?? "操作失败");
+    MessagePlugin.error(e.message ?? $t("workbench.project.msg.operationFailed"));
   }
 }
 
@@ -435,7 +437,7 @@ function fetchArtStyles() {
   }
 
   .artStyleContent {
-    height: 220px;
+    height: 150px;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 4px;
@@ -546,6 +548,7 @@ function fetchArtStyles() {
     gap: 4px;
     font-size: 12px;
     transition: border-color 0.2s;
+    white-space: nowrap;
 
     &:hover {
       border-color: var(--td-brand-color);

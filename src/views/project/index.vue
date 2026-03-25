@@ -2,8 +2,8 @@
   <div class="project">
     <div class="header">
       <div class="fc">
-        <span class="title">我的项目</span>
-        <span class="sub">管理您的所有短剧项目</span>
+        <span class="title">{{ $t('workbench.project.title') }}</span>
+        <span class="sub">{{ $t('workbench.project.subtitle') }}</span>
       </div>
       <t-button
         class="addBtn"
@@ -12,7 +12,7 @@
           dialogShow = true;
         ">
         <template #icon><i-plus class="addIcon" :size="20" /></template>
-        新建项目
+        {{ $t('workbench.project.newProject') }}
       </t-button>
     </div>
     <div class="list">
@@ -66,7 +66,7 @@ function getAllProject() {
       allProject.value = data;
     })
     .catch(() => {
-      window.$message.error("获取项目列表失败");
+      window.$message.error($t('workbench.project.msg.fetchFailed'));
     });
 }
 
@@ -80,7 +80,7 @@ const router = useRouter();
 function openProject(projectId: string | undefined) {
   const item = allProject.value.find((p) => p.id === projectId);
   if (item) project.value = item;
-  else return window.$message.error("未找到该项目!");
+  else return window.$message.error($t('workbench.project.msg.notFound'));
   router.push(`/novel`);
 }
 
@@ -90,15 +90,14 @@ function openEdit(item: { id: string; name: string; intro: string; type: string;
 }
 
 function editProjectFn(data: { id: string; name: string; intro: string; type: string; artStyle: string; videoRatio: string }) {
-  console.log("%c Line:93 🥒 data", "background:#b03734", data);
   axios
     .post("/project/editProject", data)
     .then(() => {
-      window.$message.success("编辑项目成功");
+      window.$message.success($t('workbench.project.msg.editSuccess'));
       getAllProject();
     })
     .catch((e) => {
-      window.$message.error(e.message ?? "编辑项目失败");
+      window.$message.error(e.message ?? $t('workbench.project.msg.editFailed'));
     });
 }
 
@@ -106,29 +105,29 @@ function addProjectFn(data: { projectType: string; name: string; intro: string; 
   axios
     .post("/project/addProject", data)
     .then(() => {
-      window.$message.success("新增项目成功");
+      window.$message.success($t('workbench.project.msg.addSuccess'));
       getAllProject();
     })
     .catch((e) => {
-      window.$message.error(e.message ?? "新增项目失败");
+      window.$message.error(e.message ?? $t('workbench.project.msg.addFailed'));
     });
 }
 
 function delProjcer(projectId: string | undefined) {
   const dialog = DialogPlugin.confirm({
-    header: "删除项目",
-    body: "确定要删除该项目吗？",
-    confirmBtn: "删除",
-    cancelBtn: "取消",
+    header: $t('workbench.project.msg.deleteHeader'),
+    body: $t('workbench.project.msg.deleteBody'),
+    confirmBtn: $t('workbench.project.msg.deleteConfirm'),
+    cancelBtn: $t('workbench.project.msg.deleteCancel'),
     onConfirm: () => {
       axios
         .post("/project/delProject", { id: projectId })
         .then(() => {
-          window.$message.success("删除项目成功");
+          window.$message.success($t('workbench.project.msg.deleteSuccess'));
           getAllProject();
         })
         .catch((e) => {
-          window.$message.error(e.message ?? "删除项目失败");
+          window.$message.error(e.message ?? $t('workbench.project.msg.deleteFailed'));
         })
         .finally(() => {
           dialog.destroy();
