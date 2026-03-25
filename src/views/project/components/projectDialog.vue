@@ -14,7 +14,7 @@
         <t-form-item v-if="!isEdit" :label="$t('workbench.project.dialog.projectType')">
           <t-select v-model="formState.projectType" :placeholder="$t('workbench.project.dialog.selectType')">
             <t-option key="基于小说原文" :label="$t('workbench.project.dialog.basedOnNovel')" value="novel" />
-            <!-- <t-option key="基于剧本" label="基于剧本" value="基于剧本" /> -->
+            <!-- <t-option key="basedOnScript" :label="$t('workbench.project.dialog.basedOnScript')" value="script" /> -->
           </t-select>
         </t-form-item>
         <t-form-item :label="$t('workbench.project.dialog.projectName')">

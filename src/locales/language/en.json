@@ -351,6 +351,7 @@
         "projectType": "Project Type",
         "selectType": "Select project type",
         "basedOnNovel": "Based on Novel",
+        "basedOnScript": "Based on Script",
         "projectName": "Project Name",
         "projectNamePh": "Enter project name",
         "novelType": "Novel Type",
@@ -507,6 +508,7 @@
     },
     "scriptAgent": {
       "inputPlaceholder": "Enter content",
+      "chapterEvents": "Chapter Events",
       "clearMessageMemory": "Clear Message Memory",
       "clearSummaryMemory": "Clear Summary Memory",
       "clearAllMemory": "Clear All Memory",
@@ -944,7 +946,8 @@
         "deleteFailed": "Delete failed",
         "selectVideoFirst": "Please select a video first",
         "confirmSuccess": "Selection confirmed",
-        "batchSubmitted": "Batch generation request submitted, processing..."
+        "batchSubmitted": "Batch generation request submitted, processing...",
+        "configNotFound": "Configuration not found"
       },
       "editVideo": {
         "reset": "Reset",
@@ -998,7 +1001,16 @@
         "transitionAdded": "Transition added: {name}",
         "splitClip": "Split clip",
         "deleteClip": "Delete clip",
-        "addClip": "Add {name}"
+        "addClip": "Add {name}",
+        "duplicateClip": "Duplicate Clip",
+        "addTransition": "Add Transition",
+        "updateClip": "Update Clip {key}",
+        "updatePlaybackRate": "Set playback speed to {rate}x",
+        "updateTransitionDuration": "Update transition duration",
+        "playbackRateRange": "Playback speed must be between 0.1 and 10",
+        "updatePlaybackRateFailed": "Failed to update playback speed:",
+        "importProject": "Import Project",
+        "import": "Import"
       },
       "clipType": {
         "video": "Video",
@@ -1113,6 +1125,13 @@
     "enterUsernameAndPassword": "Please enter username or password",
     "passwordRequired": "Please enter password",
     "usernameRequired": "Please enter username",
-    "loginSuccess": "Login successful"
+    "loginSuccess": "Login successful",
+    "settingsSaved": "Settings saved"
+  },
+  "common": {
+    "confirm": "Confirm selection",
+    "cancel": "Cancel",
+    "selectAssets": "Select assets",
+    "sessionExpired": "Login has expired, please log in again"
   }
 }

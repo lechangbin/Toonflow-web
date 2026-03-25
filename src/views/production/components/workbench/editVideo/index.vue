@@ -71,9 +71,9 @@
             </t-button>
           </template>
           <!-- <template #custom-operation-import>
-            <t-button variant="text" size="small" @click="handleImport" title="导入项目">
+            <t-button variant="text" size="small" @click="handleImport" :title="$t('workbench.production.editVideo.importProject')">
               <template #icon><i-folder-open size="16" /></template>
-              导入
+              {{ $t("workbench.production.editVideo.import") }}
             </t-button>
           </template> -->
           <template #scale-append>

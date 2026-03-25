@@ -250,7 +250,7 @@ function selectReference(index: number) {
       placement: "top",
     },
     {
-      default: () => [h("div", { class: "tag" }, [h("img", { src: imgSrc, alt: "" }), h("span", null, `图${index + 1}`)])],
+      default: () => [h("div", { class: "tag" }, [h("img", { src: imgSrc, alt: "" }), h("span", null, $t("workbench.production.editImage.imageRef", { index: index + 1 }))])],
     },
   );
 

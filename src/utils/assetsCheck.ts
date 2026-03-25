@@ -28,7 +28,7 @@ export interface AssetsSelectOptions {
 }
 
 export default function openAssetsSelector(options: AssetsSelectOptions = {}): Promise<Asset[]> {
-  const { types, multiple = true, title = "选择资产" } = options;
+  const { types, multiple = true, title = window.$t("common.selectAssets") } = options;
   return new Promise((resolve) => {
     const container = document.createElement("div");
     document.body.appendChild(container);
@@ -59,8 +59,8 @@ export default function openAssetsSelector(options: AssetsSelectOptions = {}): P
           width: "80%",
           top: "5vh",
           destroyOnClose: true,
-          confirmBtn: "确认选择",
-          cancelBtn: "取消",
+          confirmBtn: window.$t("common.confirm"),
+          cancelBtn: window.$t("common.cancel"),
           onConfirm: () => {
             const selectedKeys = assetsRef.value?.selectedRowKeys || [];
             const data = assetsRef.value?.tableData || [];

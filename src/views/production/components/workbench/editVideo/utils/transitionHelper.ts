@@ -102,7 +102,7 @@ export function addTransitionBetweenClips(
   };
 
   tracksStore.addClip(beforeClip.trackId, transitionClip);
-  historyStore.pushSnapshot("添加转场");
+  historyStore.pushSnapshot($t("workbench.production.editVideo.addTransition"));
   tracksStore.clearSelection();
 
   return { transitionClip, beforeClip, afterClip };

@@ -295,7 +295,7 @@ function handleUpdateClip(key: string, value: any) {
   if (!selectedClip.value) return;
 
   tracksStore.updateClip(selectedClip.value.id, { [key]: value });
-  historyStore.pushSnapshot(`更新 Clip ${key}`);
+  historyStore.pushSnapshot($t("workbench.production.editVideo.updateClip", { key }));
 }
 
 // 处理播放倍速更新
@@ -304,7 +304,7 @@ function handleUpdatePlaybackRate(newRate: number) {
 
   // 验证倍速范围
   if (newRate < 0.1 || newRate > 10) {
-    console.warn("播放倍速必须在 0.1 到 10 之间");
+    console.warn($t("workbench.production.editVideo.playbackRateRange"));
     return;
   }
 
@@ -317,9 +317,9 @@ function handleUpdatePlaybackRate(newRate: number) {
   });
 
   if (result.success) {
-    historyStore.pushSnapshot(`更新播放倍速为 ${newRate}x`);
+    historyStore.pushSnapshot($t("workbench.production.editVideo.updatePlaybackRate", { rate: newRate }));
   } else {
-    console.warn("更新播放倍速失败:", result.message);
+    console.warn($t("workbench.production.editVideo.updatePlaybackRateFailed"), result.message);
   }
 }
 
@@ -338,7 +338,7 @@ function handleUpdateTransitionDuration() {
     transitionDuration: newDuration,
   });
 
-  historyStore.pushSnapshot("更新转场时长");
+  historyStore.pushSnapshot($t("workbench.production.editVideo.updateTransitionDuration"));
 }
 
 function handleDeleteClip() {
@@ -349,7 +349,7 @@ function handleDeleteClip() {
     body: $t('workbench.production.editVideo.deleteClipConfirm'),
     onConfirm: () => {
       tracksStore.removeClips([selectedClip.value!.id]);
-      historyStore.pushSnapshot("删除 Clip");
+      historyStore.pushSnapshot($t("workbench.production.editVideo.deleteClip"));
       dialog.destroy();
     },
     onClose: () => dialog.destroy(),
@@ -373,7 +373,7 @@ function handleDuplicateClip() {
   };
 
   tracksStore.addClip(track.id, newClip);
-  historyStore.pushSnapshot("复制 Clip");
+  historyStore.pushSnapshot($t("workbench.production.editVideo.duplicateClip"));
 }
 </script>
 

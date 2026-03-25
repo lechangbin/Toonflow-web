@@ -359,6 +359,7 @@
         "projectType": "项目类型",
         "selectType": "选择项目类型",
         "basedOnNovel": "基于小说原文",
+        "basedOnScript": "基于剧本",
         "projectName": "项目名称",
         "projectNamePh": "请输入项目名称",
         "novelType": "小说类型",
@@ -515,6 +516,7 @@
     },
     "scriptAgent": {
       "inputPlaceholder": "请输入内容",
+      "chapterEvents": "章节事件",
       "clearMessageMemory": "清空消息记忆",
       "clearSummaryMemory": "清空摘要记忆",
       "clearAllMemory": "清空全部记忆",
@@ -952,7 +954,8 @@
         "deleteFailed": "删除失败",
         "selectVideoFirst": "请先选择一个视频",
         "confirmSuccess": "确认选中成功",
-        "batchSubmitted": "已提交批量生成请求，正在处理中..."
+        "batchSubmitted": "已提交批量生成请求，正在处理中...",
+        "configNotFound": "配置不存在"
       },
       "editVideo": {
         "reset": "重置",
@@ -1006,7 +1009,16 @@
         "transitionAdded": "已添加转场: {name}",
         "splitClip": "分割片段",
         "deleteClip": "删除片段",
-        "addClip": "添加 {name}"
+        "addClip": "添加 {name}",
+        "duplicateClip": "复制 Clip",
+        "addTransition": "添加转场",
+        "updateClip": "更新 Clip {key}",
+        "updatePlaybackRate": "更新播放倍速为 {rate}x",
+        "updateTransitionDuration": "更新转场时长",
+        "playbackRateRange": "播放倍速必须在 0.1 到 10 之间",
+        "updatePlaybackRateFailed": "更新播放倍速失败:",
+        "importProject": "导入项目",
+        "import": "导入"
       },
       "clipType": {
         "video": "视频",
@@ -1123,6 +1135,7 @@
     "usernameRequired": "请输入用户名",
     "passwordRequired": "请输入密码",
     "enterUsernameAndPassword": "请输入用户名或密码",
-    "loginSuccess": "登录成功"
+    "loginSuccess": "登录成功",
+    "settingsSaved": "设置已保存"
   }
 }
