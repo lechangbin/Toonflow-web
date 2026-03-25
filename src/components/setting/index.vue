@@ -23,6 +23,7 @@
           <logoutConfig v-if="activeMenu === 'logoutConfig'" />
           <memoryConfig v-if="activeMenu === 'memoryConfig'" />
           <fileManagement v-if="activeMenu === 'fileManagement'" />
+          <skillManagement v-if="activeMenu === 'skills'" />
         </div>
       </div>
     </div>
@@ -45,11 +46,13 @@ import logoutConfig from "./components/logoutConfig.vue";
 import vendorConfig from "./components/vendorConfig.vue";
 import memoryConfig from "./components/memoryConfig.vue";
 import fileManagement from "./components/fileManagement.vue";
+import skillManagement from './components/skillManagement.vue';
 
 const menuItems = [
   { key: "language", label: "settings.menu.language", icon: "i-translate" },
   { key: "vendorConfig", label: "settings.menu.vendorConfig", icon: "i-computer" },
   { key: "agentConfog", label: "settings.menu.agentConfig", icon: "i-color-filter" },
+  { key: "skills", label: "Skills技能管理", icon: "i-ring" },
   { key: "memoryConfig", label: "settings.menu.memoryConfig", icon: "i-memory-card-one" },
   { key: "loginConfig", label: "settings.menu.loginConfig", icon: "i-lock" },
   { key: "dbConfig", label: "settings.menu.dbConfig", icon: "i-data" },
