@@ -64,11 +64,6 @@
             </t-popup>
             <div class="ac modelSelCls">
               <modelSelect class="paramSelect" v-model="imageModelData.modelId" type="image" size="small" />
-              <t-select v-model="imageModelData.ratio" class="paramSelect ml-5" size="small" :placeholder="$t('workbench.production.editImage.ratio')">
-                <t-option value="16:9" label="16:9" />
-                <t-option value="9:16" label="9:16" />
-                <t-option value="1:1" label="1:1" />
-              </t-select>
               <t-select v-model="imageModelData.quality" class="paramSelect ml-5" size="small" :placeholder="$t('workbench.production.editImage.quality')">
                 <t-option value="1K" label="1K" />
                 <t-option value="2K" label="2K" />
