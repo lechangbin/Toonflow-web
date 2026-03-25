@@ -76,7 +76,6 @@ const visible = defineModel("visible", {
   type: Boolean,
   default: false,
 });
-
 const activeMenu = ref("preview");
 const tracksStore = useTracksStore();
 

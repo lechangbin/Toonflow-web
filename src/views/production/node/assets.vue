@@ -83,7 +83,7 @@ const props = defineProps<{
 const assets = defineModel<AssetItem[]>({ required: true });
 const currentRow = ref<{
   id: null | number;
-  resultImages: string[];
+  resultImages: { src: string; prompt: string }[];
   referanceImages: string[];
   type?: string;
 }>({
@@ -93,9 +93,7 @@ const currentRow = ref<{
 });
 const visible = ref(false);
 function generateAssetsImage(row: DeriveAsset, referanceImageUrl: string) {
-  console.log("%c Line:96 🍻 row", "background:#4fff4B", row);
-  console.log("%c Line:96 🌭 referanceImageUrl", "background:#4fff4B", referanceImageUrl);
-  currentRow.value = { id: row.id, resultImages: [row.src], referanceImages: [referanceImageUrl], type: row.type };
+  currentRow.value = { id: row.id, resultImages: [{ src: row.src, prompt: row.prompt }], referanceImages: [referanceImageUrl], type: row.type };
 
   visible.value = true;
 }

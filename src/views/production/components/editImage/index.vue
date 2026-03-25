@@ -50,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Ref } from "vue";
 import { VueFlow, useVueFlow, Panel, MarkerType, type Edge } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
@@ -62,11 +63,13 @@ import removeLine from "./removeLine.vue";
 import store from "@/stores";
 import axios from "@/utils/axios";
 import type { NodeType } from "../../utils/editImageType";
-import { flow } from "lodash";
+
+const episodesId = inject<Ref<number>>("episodesId");
+
 const { projectId } = storeToRefs(store());
 const props = defineProps<{
   editData: {
-    resultImages: string[];
+    resultImages: { src: string; prompt: string }[];
     referanceImages: string[];
     id?: number | null;
   };
@@ -137,15 +140,16 @@ function _doSyncReferences() {
 
 // 连接处理
 const onConnect = (params: any) => {
-  // 禁止重复连线：同一 source → target 已存在则忽略
-  const isDuplicate = getEdges.value.some((e) => e.source === params.source && e.target === params.target);
-  if (isDuplicate) return;
+  // 禁止自己连接自己
+  if (params.source === params.target) return;
 
-  // 禁止同类节点连接
-  const allNodes = getNodes.value;
-  const sourceNode = allNodes.find((n) => n.id === params.source);
-  const targetNode = allNodes.find((n) => n.id === params.target);
-  if (sourceNode && targetNode && sourceNode.type === targetNode.type) return;
+  // 禁止重复连线及反向连线：A→B 或 B→A 已存在则忽略
+  const isDuplicate = getEdges.value.some(
+    (e) =>
+      (e.source === params.source && e.target === params.target) ||
+      (e.source === params.target && e.target === params.source)
+  );
+  if (isDuplicate) return;
 
   addEdges([
     {
@@ -165,7 +169,7 @@ function clickHandler(value: any) {
   addUploadNode(type);
 }
 // 添加新的上传节点
-const addUploadNode = (type: string, image: string = "") => {
+const addUploadNode = (type: string, image: string = "", prompt: string = "") => {
   let newNodeId;
   if (type === "generated") {
     newNodeId = `generated-${nodeIdCounter++}`;
@@ -178,7 +182,7 @@ const addUploadNode = (type: string, image: string = "") => {
   const refeceImage = {
     generatedImage: image,
     references: [],
-    prompt: "",
+    prompt: prompt,
     model: "",
     ratio: "",
     quality: "",
@@ -209,6 +213,7 @@ async function sureNode(imageUrl: string = "") {
         edges: edges.value,
         imageUrl,
         type: props.type,
+        episodesId: episodesId!.value,
       });
     } else {
       const { data } = await axios.post("/production/editImage/saveImageFlow", {
@@ -217,6 +222,7 @@ async function sureNode(imageUrl: string = "") {
         edges: edges.value,
         imageUrl,
         type: props.type,
+        episodesId: episodesId!.value,
       });
       insertId = data?.id || null;
     }
@@ -250,7 +256,8 @@ function buildFlow() {
     uploadIds.push(addUploadNode("upload", i));
   });
   props.editData.resultImages.forEach((i) => {
-    generatedIds.push(addUploadNode("generated", i));
+    console.log("%c Line:258 🍞 i", "background:#ed9ec7", i);
+    generatedIds.push(addUploadNode("generated", i.src, i.prompt));
   });
   // 将每个 upload 节点连接到每个 generated 节点
   for (const sourceId of uploadIds) {

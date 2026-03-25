@@ -7,7 +7,7 @@
           <img v-if="currentShot?.filePath" :src="currentShot.filePath" :alt="currentShot.description" class="previewImage" />
           <div v-else class="placeholderImage">
             <i-pic theme="outline" size="48" fill="#999" />
-            <span>{{ $t('workbench.production.preview.noImage') }}</span>
+            <span>{{ $t("workbench.production.preview.noImage") }}</span>
           </div>
         </div>
 
@@ -54,38 +54,56 @@
         <div class="infoSection">
           <div class="sectionTitle">
             <span class="titleIndicator" />
-            {{ $t('workbench.production.preview.storyboardDesc') }}
+            {{ $t("workbench.production.preview.storyboardDesc") }}
           </div>
-          <div class="sectionContent">【{{ $t('workbench.production.preview.serialNumber') }} {{ currentShotIndex + 1 }}】{{ currentShot?.description || $t('workbench.production.preview.noDescription') }}</div>
+          <div class="sectionContent">
+            【{{ $t("workbench.production.preview.serialNumber") }} {{ currentShotIndex + 1 }}】{{
+              currentShot?.description || $t("workbench.production.preview.noDescription")
+            }}
+          </div>
         </div>
 
         <div class="infoSection">
           <div class="sectionTitle">
             <span class="titleIndicator" />
-            {{ $t('workbench.production.preview.duration') }}
+            {{ $t("workbench.production.preview.duration") }}
           </div>
-          <div class="sectionContent">{{ currentShot?.duration != null ? currentShot.duration + " " + $t('workbench.production.preview.seconds') : "3 " + $t('workbench.production.preview.seconds') }}</div>
+          <div class="sectionContent">
+            {{
+              currentShot?.duration != null
+                ? currentShot.duration + " " + $t("workbench.production.preview.seconds")
+                : "3 " + $t("workbench.production.preview.seconds")
+            }}
+          </div>
         </div>
 
         <div class="infoSection">
           <div class="sectionTitle">
             <span class="titleIndicator" />
-            {{ $t('workbench.production.preview.relatedAssets') }}
+            {{ $t("workbench.production.preview.relatedAssets") }}
           </div>
           <div class="characterList">
             <div v-for="(char, index) in currentCharacters" :key="index" class="characterItem">
               <t-image :src="char.avatar" fit="cover" class="characterAvatar" :style="{ width: '80px', height: '80px', borderRadius: '8px' }" />
-              <t-tag>{{ char.name }}（{{ char.type == "role" ? $t('workbench.production.preview.role') : char.type == "tool" ? $t('workbench.production.preview.prop') : $t('workbench.production.preview.scene') }}）</t-tag>
+              <t-tag>
+                {{ char.name }}（{{
+                  char.type == "role"
+                    ? $t("workbench.production.preview.role")
+                    : char.type == "tool"
+                      ? $t("workbench.production.preview.prop")
+                      : $t("workbench.production.preview.scene")
+                }}）
+              </t-tag>
             </div>
             <div v-if="!currentCharacters.length" class="noCharacter">
-              <t-tag theme="default" variant="light">{{ $t('workbench.production.preview.noCharacters') }}</t-tag>
+              <t-tag theme="default" variant="light">{{ $t("workbench.production.preview.noCharacters") }}</t-tag>
             </div>
           </div>
         </div>
         <div class="infoSection">
           <div class="sectionTitle">
             <span class="titleIndicator" />
-            {{ $t('workbench.production.preview.imagePrompt') }}
+            {{ $t("workbench.production.preview.imagePrompt") }}
           </div>
           <div class="shootingTips">
             <template v-for="item in promptTips" :key="item.label">
@@ -102,15 +120,15 @@
     <div class="shotListArea">
       <div class="shotListHeader">
         <div class="headerLeft">
-          <t-checkbox v-model="selectAll" @change="handleSelectAll">{{ $t('workbench.production.preview.selectAll') }}</t-checkbox>
+          <t-checkbox v-model="selectAll" @change="handleSelectAll">{{ $t("workbench.production.preview.selectAll") }}</t-checkbox>
           <t-button theme="default" variant="text" size="small" @click="confirmRestoreSort">
             <template #icon><i-undo theme="outline" size="16" /></template>
-            {{ $t('workbench.production.preview.restoreSort') }}
+            {{ $t("workbench.production.preview.restoreSort") }}
           </t-button>
         </div>
         <t-button theme="default" variant="text" size="small" class="exportBtn" @click="exportImage">
           <template #icon><i-download theme="outline" size="16" /></template>
-          {{ $t('workbench.production.preview.exportImage') }}
+          {{ $t("workbench.production.preview.exportImage") }}
         </t-button>
       </div>
       <div class="shotListWrapper" ref="shotListWrapperRef">
@@ -150,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onUnmounted } from "vue";
+import { ref, computed, watch, nextTick, onUnmounted, type Ref } from "vue";
 import { VueDraggable } from "vue-draggable-plus";
 import { DialogPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
@@ -179,6 +197,7 @@ interface Shot {
   selected?: boolean;
   characters?: ShotCharacter[];
 }
+const episodesId = inject<Ref<number>>("episodesId");
 
 // 模拟分镜数据
 const shotList = ref<Shot[]>([]);
@@ -188,7 +207,7 @@ onMounted(() => {
 //查询分镜数据
 async function getShotList() {
   const { data } = await axios.post("/production/getStoryboardData", {
-    scriptId: 1,
+    scriptId: episodesId!.value,
   });
   shotList.value = data;
 }
@@ -222,9 +241,9 @@ const totalProgress = computed(() => {
 });
 
 const promptTips = computed(() => [
-  { label: $t('workbench.production.preview.sceneDescription'), value: currentShot.value?.description },
+  { label: $t("workbench.production.preview.sceneDescription"), value: currentShot.value?.description },
   // { label: "运镜方式", value: currentShot.value?.camera != null ? String(currentShot.value.camera) : undefined },
-  { label: $t('workbench.production.preview.promptLabel'), value: currentShot.value?.prompt },
+  { label: $t("workbench.production.preview.promptLabel"), value: currentShot.value?.prompt },
 ]);
 
 // ===== 工具函数 =====
@@ -355,8 +374,8 @@ const handleSelectAll = (checked: boolean | string[]) => {
 
 const confirmRestoreSort = () => {
   const dialog = DialogPlugin.confirm({
-    header: $t('workbench.production.preview.restoreSort'),
-    body: $t('workbench.production.preview.restoreSortConfirm'),
+    header: $t("workbench.production.preview.restoreSort"),
+    body: $t("workbench.production.preview.restoreSortConfirm"),
     onConfirm: () => {
       shotList.value.sort((a, b) => initialOrder.indexOf(a.id) - initialOrder.indexOf(b.id));
       dialog.destroy();
@@ -380,8 +399,8 @@ function exportImage() {
   const selectedShots = shotList.value.filter((shot) => shot.selected).map((shot) => ({ id: shot.id }));
   if (selectedShots.length <= 0) {
     DialogPlugin.alert({
-      header: $t('workbench.production.preview.tip'),
-      body: $t('workbench.production.preview.selectAtLeastOne'),
+      header: $t("workbench.production.preview.tip"),
+      body: $t("workbench.production.preview.selectAtLeastOne"),
     });
     return;
   }
@@ -393,7 +412,7 @@ function exportImage() {
       const { data } = response;
       const link = document.createElement("a");
       link.href = data.url;
-      link.download = $t('workbench.production.preview.exportFilename');
+      link.download = $t("workbench.production.preview.exportFilename");
       link.click();
     })
     .catch((error) => {
