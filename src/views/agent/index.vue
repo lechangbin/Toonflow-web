@@ -124,6 +124,7 @@
       v-model:visible="scriptEditVisible"
       header="编辑剧本"
       width="680px"
+      top="1vh"
       :confirm-btn="{ content: '保存', theme: 'primary' }"
       @confirm="saveScript"
       @close="scriptEditVisible = false">
@@ -223,6 +224,7 @@ async function getPlanData() {
   planData.value.adaptationStrategy = data.adaptationStrategy;
 }
 async function setPlanData() {
+  console.log("%c Line:227 🥕", "background:#ffdd4d");
   await axios.post("/scriptAgent/setPlanData", { projectId: project.value?.id, agentType: "scriptAgent", data: planData.value });
 }
 onMounted(() => {
@@ -376,10 +378,6 @@ function editScript(index: number) {
 
 async function saveScript() {
   if (scriptEditIndex.value < 0) return;
-  planData.value.script[scriptEditIndex.value] = {
-    ...planData.value.script[scriptEditIndex.value],
-    ...scriptEditData.value,
-  };
 
   try {
     await axios.post("/script/updateScript", {
@@ -389,6 +387,10 @@ async function saveScript() {
       assets: scriptEditData.value.relatedAssets.map((a) => a.id),
     });
     MessagePlugin.success("剧本更新成功");
+    planData.value.script[scriptEditIndex.value] = {
+      ...planData.value.script[scriptEditIndex.value],
+      ...scriptEditData.value,
+    };
     scriptEditVisible.value = false;
   } catch (error) {
     console.error("更新剧本失败:", error);
@@ -594,6 +596,8 @@ function changeTab(value: TabValue) {
     color: var(--td-text-color-primary);
     padding: 0.625rem 0.75rem;
     flex: 1;
+    max-height: 300px;
+    overflow-y: auto;
     pre {
       margin: 0;
       white-space: pre-wrap;
@@ -645,6 +649,13 @@ function changeTab(value: TabValue) {
       font-size: 0.8125rem;
       font-weight: 500;
       color: var(--td-text-color-secondary);
+    }
+    .assets-list{
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 10px;
     }
   }
   .assetsEditor {

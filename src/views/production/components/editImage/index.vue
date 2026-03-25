@@ -9,7 +9,7 @@
     placement="center"
     class="fullscreenDialog">
     <div class="closure">
-      <i-close-small theme="outline" size="24" fill="#4a4a4a" @click="visible = false" />
+      <i-close-small theme="outline" size="24" fill="#4a4a4a" @click="closeFn" />
     </div>
     <VueFlow
       id="editStoryboard"
@@ -62,6 +62,7 @@ import removeLine from "./removeLine.vue";
 import store from "@/stores";
 import axios from "@/utils/axios";
 import type { NodeType } from "../../utils/editImageType";
+import { flow } from "lodash";
 const { projectId } = storeToRefs(store());
 const props = defineProps<{
   editData: {
@@ -69,8 +70,6 @@ const props = defineProps<{
     id?: number | null;
   };
   type?: string;
-  getFlowDataFn: () => Promise<{ nodes: NodeType[]; edges: Edge<any, any, string>[] }> | null;
-  saveFlowFn: (data: { nodes: NodeType[]; edges: Edge<any, any, string>[]; imageUrl: string }) => Promise<void>;
 }>();
 
 const emit = defineEmits(["save"]);
@@ -88,6 +87,8 @@ let edgeIdCounter = 3;
 
 const nodes = ref<NodeType[]>([]);
 const edges = ref<Edge<any, any, string>[]>([]);
+
+const flowId = ref<number | null>(null);
 
 // 防抖定时器
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
@@ -193,13 +194,28 @@ const addUploadNode = (type: string, image: string = "") => {
   nodes.value.push(newNodeObj as NodeType);
 };
 //保存节点
-async function sureNode(imageUrl: string) {
+async function sureNode(imageUrl: string = "") {
   try {
-    await props.saveFlowFn({
-      imageUrl,
-      nodes: nodes.value as NodeType[],
-      edges: edges.value as Edge<any, any, string>[],
-    });
+    const id = props.editData?.id;
+    if (flowId.value) {
+      await axios.post("/production/editImage/updateImageFlow", {
+        id: id,
+        flowId: flowId.value,
+        nodes: nodes.value,
+        edges: edges.value,
+        imageUrl,
+        type: props.type,
+      });
+    } else {
+      await axios.post("/production/editImage/saveImageFlow", {
+        id: id,
+        nodes: nodes.value,
+        edges: edges.value,
+        imageUrl,
+        type: props.type,
+      });
+    }
+    emit("save", imageUrl);
     visible.value = false;
   } catch (e) {
     window.$message.error((e as any).message || "保存失败");
@@ -208,10 +224,15 @@ async function sureNode(imageUrl: string) {
 }
 onMounted(async () => {
   try {
-    const data = await props.getFlowDataFn();
+    if (!props.editData?.id) return buildFlow();
+    const { data } = await axios.post("/production/editImage/getImageFlow", {
+      id: props.editData?.id,
+      type: props.type,
+    });
     if (!data) return buildFlow();
     edges.value = data.edges;
     nodes.value = data.nodes;
+    flowId.value = data.id;
   } catch (e) {
     window.$message.error((e as any).message || "获取数据失败");
   }
@@ -221,6 +242,14 @@ function buildFlow() {
   props.editData.images.forEach((i) => {
     addUploadNode("upload", i);
   });
+}
+
+function closeFn() {
+  try {
+    sureNode("");
+  } catch (e) {
+    visible.value = false;
+  }
 }
 </script>
 
