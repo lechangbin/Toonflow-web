@@ -14,7 +14,7 @@
           <img v-else-if="selectedData?.imageUrl" :src="selectedData.imageUrl" class="previewVideo" />
           <div v-else class="placeholderImage">
             <i-pic size="48" fill="#999" />
-            <span>{{ $t('workbench.production.generate.noVideo') }}</span>
+            <span>{{ $t("workbench.production.generate.noVideo") }}</span>
           </div>
         </div>
       </div>
@@ -22,9 +22,12 @@
         <div class="promptSection">
           <div class="sectionTitle">
             <span class="titleIndicator" />
-            {{ $t('workbench.production.generate.videoPrompt') }}
+            {{ $t("workbench.production.generate.videoPrompt") }}
           </div>
-          <t-textarea v-model="promptText" :placeholder="$t('workbench.production.generate.promptPlaceholder')" :autosize="{ minRows: 4, maxRows: 12 }" />
+          <t-textarea
+            v-model="promptText"
+            :placeholder="$t('workbench.production.generate.promptPlaceholder')"
+            :autosize="{ minRows: 4, maxRows: 12 }" />
           <div class="frameSection" v-if="currentModeKey !== 'text' && mode.length > 0 && (!isMixedRefMode || mixedRefTypes.length > 0)">
             <template v-if="currentMode === 'singleImage'">
               <div class="frameItem">
@@ -38,7 +41,7 @@
                     <i-close size="12" fill="#fff" />
                   </div>
                 </div>
-                <span class="frameLabel">{{ $t('workbench.production.generate.refImage') }}</span>
+                <span class="frameLabel">{{ $t("workbench.production.generate.refImage") }}</span>
               </div>
             </template>
             <template v-else-if="currentMode === 'multiImage' || currentMode === 'gridImage'">
@@ -54,7 +57,7 @@
                 <div class="frameThumbnail addFrame">
                   <i-plus size="24" fill="#999" />
                 </div>
-                <span class="frameLabel">{{ $t('workbench.production.generate.image') }}</span>
+                <span class="frameLabel">{{ $t("workbench.production.generate.image") }}</span>
               </div>
             </template>
             <template v-else-if="isMixedRefMode">
@@ -79,7 +82,7 @@
                         <i-close size="12" fill="#fff" />
                       </div>
                     </div>
-                    <span class="frameLabel">{{ $t('workbench.production.generate.refVideo') }}</span>
+                    <span class="frameLabel">{{ $t("workbench.production.generate.refVideo") }}</span>
                   </div>
                 </template>
                 <template v-else-if="refType === 'imageReference'">
@@ -100,7 +103,7 @@
                         <i-close size="12" fill="#fff" />
                       </div>
                     </div>
-                    <span class="frameLabel">{{ $t('workbench.production.generate.refImageLabel') }}</span>
+                    <span class="frameLabel">{{ $t("workbench.production.generate.refImageLabel") }}</span>
                   </div>
                 </template>
                 <template v-else-if="refType === 'audioReference'">
@@ -120,7 +123,7 @@
                         <i-close size="12" fill="#fff" />
                       </div>
                     </div>
-                    <span class="frameLabel">{{ $t('workbench.production.generate.refAudio') }}</span>
+                    <span class="frameLabel">{{ $t("workbench.production.generate.refAudio") }}</span>
                   </div>
                 </template>
                 <template v-else-if="refType === 'textReference'"></template>
@@ -160,6 +163,7 @@
             <div class="actionBarRow">
               <div class="actionBarRowLeft">
                 <modelSelect v-model="modelDd" :changeConfig="true" type="video" size="small" @change="handleModelChange" class="modelSelectItem" />
+                {{ currentModeKey }}
                 <t-select v-if="modelLoaded && mode.length > 0" v-model="currentModeKey" style="width: 180px" size="small">
                   <t-option v-for="m in mode" :key="m.value" :label="m.label" :value="m.value" />
                 </t-select>
@@ -194,7 +198,7 @@
                   <template #content>
                     <div class="resolutionDurationPicker">
                       <div v-if="resolutionOptions.length" class="pickerSection">
-                        <div class="pickerLabel">{{ $t('workbench.production.generate.resolution') }}</div>
+                        <div class="pickerLabel">{{ $t("workbench.production.generate.resolution") }}</div>
                         <div class="pickerOptions">
                           <div
                             v-for="res in resolutionOptions"
@@ -207,7 +211,7 @@
                         </div>
                       </div>
                       <div v-if="durationOptions.length" class="pickerSection">
-                        <div class="pickerLabel">{{ $t('workbench.production.generate.duration') }}</div>
+                        <div class="pickerLabel">{{ $t("workbench.production.generate.duration") }}</div>
                         <div class="pickerOptions">
                           <div
                             v-for="dur in durationOptions"
@@ -226,7 +230,7 @@
               <div class="actionBarRowRight">
                 <t-button theme="primary" size="small" class="generateBtn" @click="handleGenerate">
                   <template #icon><i-arrow-up size="16" /></template>
-                  {{ $t('workbench.production.generate.generate') }}
+                  {{ $t("workbench.production.generate.generate") }}
                 </t-button>
               </div>
             </div>
@@ -236,16 +240,18 @@
             <div class="historyHeader jb ac">
               <div>
                 <i-time size="16" />
-                <span>{{ $t('workbench.production.generate.historyVersions') }}</span>
+                <span>{{ $t("workbench.production.generate.historyVersions") }}</span>
                 <span class="historyCount">({{ currentHistoryList.length }})</span>
               </div>
               <div>
-                <t-button theme="primary" size="small" @click="refresh">{{ $t('workbench.production.generate.refresh') }}</t-button>
-                <t-button theme="primary" size="small" @click="handleConfirmSelection" style="margin-left: 10px">{{ $t('workbench.production.generate.confirmSelection') }}</t-button>
+                <t-button theme="primary" size="small" @click="refresh">{{ $t("workbench.production.generate.refresh") }}</t-button>
+                <t-button theme="primary" size="small" @click="handleConfirmSelection" style="margin-left: 10px">
+                  {{ $t("workbench.production.generate.confirmSelection") }}
+                </t-button>
               </div>
             </div>
             <div class="historyContent">
-              <div v-if="!currentHistoryList.length" class="historyEmpty">{{ $t('workbench.production.generate.noHistory') }}</div>
+              <div v-if="!currentHistoryList.length" class="historyEmpty">{{ $t("workbench.production.generate.noHistory") }}</div>
               <div v-else class="historyGrid">
                 <div
                   v-for="video in currentHistoryList"
@@ -269,14 +275,14 @@
                     <div class="historyCardThumb historyCardThumbEmpty" />
                     <div class="historyCardOverlay">
                       <t-loading size="24" theme="dots" />
-                      <span class="overlayText">{{ $t('workbench.production.generate.generating') }}</span>
+                      <span class="overlayText">{{ $t("workbench.production.generate.generating") }}</span>
                     </div>
                   </template>
                   <template v-else-if="video.state === '生成失败'">
                     <div class="historyCardThumb historyCardThumbEmpty" />
                     <div class="historyCardOverlay historyCardOverlayFailed">
                       <i-close size="20" fill="#f66" />
-                      <span class="overlayText">{{ $t('workbench.production.generate.generateFailed') }}</span>
+                      <span class="overlayText">{{ $t("workbench.production.generate.generateFailed") }}</span>
                     </div>
                   </template>
                   <template v-else>
@@ -298,17 +304,19 @@
     <div class="shotListArea">
       <div class="shotListHeader">
         <div class="headerLeft">
-          <t-checkbox v-model="selectAll" :indeterminate="isIndeterminate" @change="handleSelectAll">{{ $t('workbench.production.generate.selectAll') }}</t-checkbox>
-          <span class="trackTitle">{{ $t('workbench.production.generate.videoTrack') }}</span>
+          <t-checkbox v-model="selectAll" :indeterminate="isIndeterminate" @change="handleSelectAll">
+            {{ $t("workbench.production.generate.selectAll") }}
+          </t-checkbox>
+          <span class="trackTitle">{{ $t("workbench.production.generate.videoTrack") }}</span>
         </div>
         <div class="headerRight">
           <t-button theme="primary" size="small" :disabled="checkedIds.size === 0" @click="handleBatchGenerate">
             <template #icon><i-magic size="16" /></template>
-            {{ $t('workbench.production.generate.batchGenerate') }}
+            {{ $t("workbench.production.generate.batchGenerate") }}
           </t-button>
           <t-button theme="default" variant="outline" size="small" :disabled="checkedIds.size === 0" @click="handleBatchDownload">
             <template #icon><i-download size="16" /></template>
-            {{ $t('workbench.production.generate.importToEditor') }}
+            {{ $t("workbench.production.generate.importToEditor") }}
           </t-button>
         </div>
       </div>
@@ -643,17 +651,17 @@ function resetModelOptions() {
   currentModeKey.value = "";
 }
 const MODE_LABEL: Record<string, string> = {
-  singleImage: $t('workbench.production.generate.modeSingleImage'),
-  multiImage: $t('workbench.production.generate.modeMultiImage'),
-  gridImage: $t('workbench.production.generate.modeGridImage'),
-  startEndRequired: $t('workbench.production.generate.modeStartEnd'),
-  endFrameOptional: $t('workbench.production.generate.modeStartEnd'),
-  startFrameOptional: $t('workbench.production.generate.modeStartEnd'),
-  text: $t('workbench.production.generate.modeText'),
-  ["videoReference"]: $t('workbench.production.generate.modeVideoRef'),
-  ["imageReference"]: $t('workbench.production.generate.modeImageRef'),
-  ["audioReference"]: $t('workbench.production.generate.modeAudioRef'),
-  ["textReference"]: $t('workbench.production.generate.modeTextRef'),
+  singleImage: $t("workbench.production.generate.modeSingleImage"),
+  multiImage: $t("workbench.production.generate.modeMultiImage"),
+  gridImage: $t("workbench.production.generate.modeGridImage"),
+  startEndRequired: $t("workbench.production.generate.modeStartEnd"),
+  endFrameOptional: $t("workbench.production.generate.modeStartEnd"),
+  startFrameOptional: $t("workbench.production.generate.modeStartEnd"),
+  text: $t("workbench.production.generate.modeText"),
+  ["videoReference"]: $t("workbench.production.generate.modeVideoRef"),
+  ["imageReference"]: $t("workbench.production.generate.modeImageRef"),
+  ["audioReference"]: $t("workbench.production.generate.modeAudioRef"),
+  ["textReference"]: $t("workbench.production.generate.modeTextRef"),
 };
 // 模式转换为统一的 key 形式，方便后续处理
 function getModeLabel(mode?: VideoModelMode): string {
@@ -713,6 +721,7 @@ interface VideoModel {
 
 //模型切换时：更新选项列表，并按优先级（待回显值 > 当前已选值 > 默认第一个）确定选中值
 function handleModelChange(value: string, data: VideoModel) {
+  console.log("%c Line:724 🍪 data", "background:#ffdd4d", data);
   // 更新选项列表
   const newResolutions = [...new Set(data.durationResolutionMap.flatMap((m) => m.resolution))];
   const newDurations = [...new Set(data.durationResolutionMap.flatMap((m) => m.duration))].sort((a, b) => a - b);
@@ -726,6 +735,7 @@ function handleModelChange(value: string, data: VideoModel) {
   durationOptions.value = newDurations;
   audioOptions.value = newAudio;
   mode.value = newModes;
+  console.log("%c Line:737 🥃 newModes", "background:#7f2b82", newModes);
   modelLoaded.value = true;
 
   // 判断是否有待回显的 config 值（选中了有 config 的分镜）
@@ -780,15 +790,15 @@ const isDualFrameMode = computed(() => isDualFrame(currentMode.value ?? undefine
 
 /** 首帧标签 */
 const startFrameLabel = computed(() => {
-  if (currentMode.value === "startFrameOptional") return $t('workbench.production.generate.startFrameOptional');
-  return $t('workbench.production.generate.startFrame');
+  if (currentMode.value === "startFrameOptional") return $t("workbench.production.generate.startFrameOptional");
+  return $t("workbench.production.generate.startFrame");
 });
 
 /** 尾帧标签 */
 const endFrameLabel = computed(() => {
-  if (currentMode.value === "startEndRequired") return $t('workbench.production.generate.endFrame');
-  if (currentMode.value === "endFrameOptional") return $t('workbench.production.generate.endFrameOptional');
-  return $t('workbench.production.generate.endFrame');
+  if (currentMode.value === "startEndRequired") return $t("workbench.production.generate.endFrame");
+  if (currentMode.value === "endFrameOptional") return $t("workbench.production.generate.endFrameOptional");
+  return $t("workbench.production.generate.endFrame");
 });
 
 // ---- 图片操作函数 ----
@@ -815,7 +825,7 @@ function updateShotData(shot: StoryboardItem, newData: { id: string | number; ur
 /** 单图模式：替换参考图 */
 async function handleAddImage() {
   if (!currentShot.value) return;
-  const selected = await openAssetsSelector({ multiple: false, title: $t('workbench.production.generate.selectRefImage') });
+  const selected = await openAssetsSelector({ multiple: false, title: $t("workbench.production.generate.selectRefImage") });
   if (!selected.length) return;
   const asset = selected[0];
   const url = asset.src ?? "";
@@ -837,7 +847,7 @@ function handleRemoveImage() {
 /** 多图模式：添加图片 */
 async function handleAddImageMulti() {
   if (!currentShot.value) return;
-  const selected = await openAssetsSelector({ multiple: true, title: $t('workbench.production.generate.selectRefImages') });
+  const selected = await openAssetsSelector({ multiple: true, title: $t("workbench.production.generate.selectRefImages") });
   if (!selected.length) return;
   const shot = currentShot.value;
   const existingData = getShotData(shot);
@@ -861,7 +871,7 @@ function handleRemoveImageAt(idx: number) {
 /** 首尾帧：添加尾帧 */
 async function handleAddEndFrame() {
   if (!currentShot.value) return;
-  const selected = await openAssetsSelector({ multiple: false, title: $t('workbench.production.generate.selectEndFrame') });
+  const selected = await openAssetsSelector({ multiple: false, title: $t("workbench.production.generate.selectEndFrame") });
   if (!selected.length) return;
   const asset = selected[0];
   const url = asset.src ?? "";
@@ -905,7 +915,11 @@ async function handleAddMixedRef(refType: "videoReference" | "imageReference" | 
   const isAudio = refType === "audioReference";
   const selected = await openAssetsSelector({
     multiple: false,
-    title: isVideo ? $t('workbench.production.generate.selectRefVideoAsset') : isAudio ? $t('workbench.production.generate.selectRefAudioAsset') : $t('workbench.production.generate.selectRefImageAsset'),
+    title: isVideo
+      ? $t("workbench.production.generate.selectRefVideoAsset")
+      : isAudio
+        ? $t("workbench.production.generate.selectRefAudioAsset")
+        : $t("workbench.production.generate.selectRefImageAsset"),
   });
   if (!selected.length) return;
   const asset = selected[0];
@@ -963,19 +977,19 @@ function handleSelectHistoryVideo(video: VideoRecord) {
 // 删除历史视频
 function handleDeleteHistoryVideo(videoId: number | string) {
   const dialog = DialogPlugin.confirm({
-    header: $t('workbench.production.generate.confirmDelete'),
-    body: $t('workbench.production.generate.confirmDeleteBody'),
-    confirmBtn: $t('workbench.production.generate.delete'),
-    cancelBtn: $t('workbench.production.generate.cancel'),
+    header: $t("workbench.production.generate.confirmDelete"),
+    body: $t("workbench.production.generate.confirmDeleteBody"),
+    confirmBtn: $t("workbench.production.generate.delete"),
+    cancelBtn: $t("workbench.production.generate.cancel"),
     theme: "warning",
     onConfirm: async () => {
       try {
         await axios.post("/production/workbench/delVideo", { videoId });
         getProductionData();
-        window.$message.success($t('workbench.production.generate.deleteSuccess'));
+        window.$message.success($t("workbench.production.generate.deleteSuccess"));
         dialog.destroy();
       } catch (error) {
-        window.$message.error($t('workbench.production.generate.deleteFailed'));
+        window.$message.error($t("workbench.production.generate.deleteFailed"));
         dialog.destroy();
       }
     },
@@ -1150,21 +1164,22 @@ function stopPolling() {
 }
 function handleConfirmSelection() {
   if (!currentShot.value?.selectedVideoId) {
-    window.$message.warning($t('workbench.production.generate.selectVideoFirst'));
+    window.$message.warning($t("workbench.production.generate.selectVideoFirst"));
     return;
   }
   axios
     .post("/production/workbench/confirmSelection", { storyboardId: currentShot.value?.id, videoId: currentShot.value?.selectedVideoId })
     .then(() => {
-      window.$message.success($t('workbench.production.generate.confirmSuccess'));
+      window.$message.success($t("workbench.production.generate.confirmSuccess"));
       getProductionData();
     });
 }
 async function handleBatchGenerate() {
   // 批量生成逻辑：从每个分镜的 config.data 读取，只传 id 和 type
   const checkedShots = shotList.value.filter((item) => checkedIds.value.has(item.id));
-  window.$message.success($t('workbench.production.generate.batchSubmitted'));
+  window.$message.success($t("workbench.production.generate.batchSubmitted"));
   for (const shot of checkedShots) {
+    console.log("%c Line:1169 🌮 shot", "background:#ed9ec7", shot);
     const list = {
       scriptId: shot.scriptId,
       projectId: project.value?.id,

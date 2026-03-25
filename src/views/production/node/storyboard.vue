@@ -3,12 +3,16 @@
     <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
     <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
-      <div class="title">{{ $t('workbench.production.node.storyboard.title') }}</div>
+      <div class="title">{{ $t("workbench.production.node.storyboard.title") }}</div>
     </div>
     <div class="content">
       <div class="frameGrid">
         <template v-for="(item, index) in storyboard" :key="item.id">
-          <div class="frameItem" @mouseenter="setHoveredFrame(index)" @mouseleave="setHoveredFrame(null)">
+          <div
+            class="frameItem"
+            @mouseenter="setHoveredFrame(index)"
+            @mouseleave="setHoveredFrame(null)"
+            @click="editStoryboaryImage([item.src!], item.id)">
             <div
               class="addBetween addBetween--left"
               :class="{ expanded: hoveredIndex === index }"
@@ -56,10 +60,10 @@
         </template>
       </div>
       <div class="scaleControl">
-        <span>{{ $t('workbench.production.node.storyboard.scaleRatio') }}</span>
+        <span>{{ $t("workbench.production.node.storyboard.scaleRatio") }}</span>
         <t-input-number v-model="gridScale" :min="0.1" :max="3" :step="0.1" :decimal-places="1" size="small" style="width: 120px" />
       </div>
-      <t-button block @click="previewAll">{{ $t('workbench.production.node.storyboard.gridPreview') }}</t-button>
+      <t-button block @click="previewAll">{{ $t("workbench.production.node.storyboard.gridPreview") }}</t-button>
     </div>
     <editImage v-model:visible="visible" v-if="visible" :editData="currentRow" type="storyboard" @save="save" />
     <t-image-viewer v-model:visible="previewVisible" :images="previewImages" :imageScale="{ max: 10, min: 0.1 }" />
@@ -138,7 +142,7 @@ async function previewAll() {
             const img = new Image();
             img.crossOrigin = "anonymous";
             img.onload = () => resolve(img);
-            img.onerror = () => reject(new Error($t('workbench.production.node.storyboard.loadFailed', { src })));
+            img.onerror = () => reject(new Error($t("workbench.production.node.storyboard.loadFailed", { src })));
             img.src = src;
           }),
       ),
