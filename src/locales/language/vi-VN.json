@@ -382,7 +382,8 @@
         "uploadCover": "Tải lên ảnh bìa",
         "artStylePrompt": "Lời nhắc hướng dẫn sử dụng trực quan",
         "aiExtract": "AI trích xuất Prompt",
-        "promptPlaceholder": "Mô tả từ nhắc hướng dẫn sử dụng trực quan, được sử dụng để chỉ định hướng dẫn trực quan khi tạo hình ảnh."
+        "promptPlaceholder": "Mô tả từ nhắc hướng dẫn sử dụng trực quan, được sử dụng để chỉ định hướng dẫn trực quan khi tạo hình ảnh.",
+        "modelData": "Chọn mô hình"
       },
       "msg": {
         "fetchFailed": "Lấy danh sách dự án thất bại",

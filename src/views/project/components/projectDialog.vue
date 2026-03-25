@@ -23,6 +23,9 @@
         <t-form-item :label="$t('workbench.project.dialog.novelType')">
           <t-input v-model="formState.type" :placeholder="$t('workbench.project.dialog.novelTypePh')" />
         </t-form-item>
+        <t-form-item :label="$t('workbench.project.dialog.modelData')">
+          <modelSelect v-model="selectValue" type="image" />
+        </t-form-item>
         <t-form-item :label="$t('workbench.project.dialog.artStyle')">
           <div class="artStylePicker">
             <div class="artStyleHeader">
@@ -145,8 +148,10 @@ import axios from "@/utils/axios";
 import { MdEditor } from "md-editor-v3";
 import type { ToolbarNames } from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
+import modelSelect from "@/components/modelSelect.vue";
 
 const addProjectShow = defineModel<boolean>();
+const selectValue = ref("");
 const props = defineProps<{
   projectData?: ProjectData | null;
 }>();
@@ -353,6 +358,7 @@ async function handleArtStyleSubmit() {
         name: artStyleForm.value.name,
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
+        model: selectValue.value,
       });
       window.$message.success($t("workbench.project.msg.artStyleUpdated"));
     } else {
@@ -360,6 +366,7 @@ async function handleArtStyleSubmit() {
         name: artStyleForm.value.name,
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
+        model: selectValue.value,
       });
       window.$message.success($t("workbench.project.msg.artStyleAdded"));
     }
