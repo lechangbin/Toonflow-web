@@ -324,7 +324,7 @@ async function handleGenerate() {
   generating.value = true;
   try {
     const referenceMap = buildReferenceMap();
-    const { data } = await axios.post("/production/editImage/generateStoryboardImage", {
+    const { data } = await axios.post("/production/editImage/generateFlowImage", {
       model: props.data.model,
       references: referenceMap ?? {},
       quality: props.data.quality,

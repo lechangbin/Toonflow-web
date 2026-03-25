@@ -63,13 +63,7 @@
         </div>
       </div>
     </div>
-    <editImage
-      v-model:visible="visible"
-      v-if="visible"
-      :editData="currentRow"
-      :type="currentRow.type"
-      :getFlowDataFn="getAssetsFlowData"
-      :saveFlowFn="saveOrUpdateFlowData" />
+    <editImage v-model:visible="visible" v-if="visible" :editData="currentRow" :type="currentRow.type" @save="save" />
   </t-card>
 </template>
 
@@ -77,8 +71,6 @@
 import axios from "@/utils/axios";
 import { Handle, Position, type Edge } from "@vue-flow/core";
 import editImage from "../components/editImage/index.vue";
-import type { NodeType } from "../utils/editImageType";
-import { images } from "mammoth";
 import { type AssetItem, type DeriveAsset } from "../utils/flowBuilder";
 
 const props = defineProps<{
@@ -99,41 +91,19 @@ const currentRow = ref<{
 });
 const visible = ref(false);
 function generateAssetsImage(row: DeriveAsset) {
-  console.log("生成图片", row);
   currentRow.value = { id: row.id, images: [row.src], type: row.type };
   visible.value = true;
 }
 
-async function getAssetsFlowData() {
-  console.log("%c Line:103 🍩", "background:#2eafb0", "获取分镜工作流数据");
-  if (!currentRow.value.id) return null;
-  try {
-    const { data } = await axios.post("/production/editImage/getImageFlow", {
-      id: currentRow.value?.id,
-    });
-    return data;
-  } catch (e) {
-    throw e;
-  }
-}
-
-async function saveOrUpdateFlowData(data: { nodes: NodeType[]; edges: Edge<any, any, string>[]; imageUrl: string }) {
-  const { nodes, edges, imageUrl } = data;
-  if (currentRow.value?.id) {
-    await axios.post("/production/editImage/updateStoryboardFlow", {
-      id: currentRow.value?.id,
-      nodes: nodes,
-      edges: edges,
-      imageUrl,
-    });
-    console.log("%c Line:109 🍩", "background:#2eafb0", "更新分镜工作流数据");
-  } else {
-    await axios.post("/production/editImage/saveStoryboardFlow", {
-      nodes: nodes,
-      edges: edges,
-      imageUrl,
-    });
-    console.log("%c Line:112 🍩", "background:#2eafb0", "保存分镜工作流数据");
+async function save(imageUrl: string) {
+  // 更新对应分镜的 src
+  if (!imageUrl) return;
+  for (const i of assets.value) {
+    const target = i.derive.find((s) => s.id === currentRow.value.id);
+    if (target) {
+      target.src = imageUrl;
+      return;
+    }
   }
 }
 </script>
