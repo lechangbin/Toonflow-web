@@ -320,7 +320,9 @@
         "skills": "data/skills",
         "skillsDesc": "Skills and prompt configuration files.",
         "models": "data/models",
-        "modelsDesc": "Model files and configuration."
+        "modelsDesc": "Model files and configuration.",
+        "serve": "data/serve",
+        "serveDesc": "Backend service related files."
       },
       "openFailed": "Failed to open folder"
     }

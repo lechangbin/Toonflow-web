@@ -328,7 +328,8 @@
         "modelsDesc": "模型文件与配置。",
         "web": "data/web",
         "webDesc": "Web 相关资源，如前端构建产物等。",
-        "serve": "data/serve"
+        "serve": "data/serve",
+        "serveDesc": "后端服务相关文件。"
       },
       "openFailed": "打开文件夹失败"
     }
