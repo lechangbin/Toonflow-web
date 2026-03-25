@@ -26,13 +26,13 @@
         <t-form-item :label="$t('workbench.project.dialog.artStyle')">
           <div class="artStylePicker">
             <div class="artStyleHeader">
-              <div class="headerLeft">
+              <!-- <div class="headerLeft">
                 <span v-if="formState.artStyle" class="selectedLabel">
                   {{ $t("workbench.project.dialog.selected") }}
                   <t-tag theme="primary" size="small" closable @close="formState.artStyle = ''">{{ formState.artStyle }}</t-tag>
                 </span>
                 <span v-else class="selectedHint">{{ $t("workbench.project.dialog.selectArtStyle") }}</span>
-              </div>
+              </div> -->
               <t-button size="small" variant="outline" @click="openArtStyleDialog()">
                 <template #icon><i-plus size="14" /></template>
                 {{ $t("workbench.project.dialog.newArtStyle") }}
