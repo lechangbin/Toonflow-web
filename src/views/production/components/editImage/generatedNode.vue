@@ -4,12 +4,12 @@
     <div class="data" @click="selectedFn">
       <div class="title ac">
         <i-pic theme="outline" size="16" fill="#000000" />
-        <span class="title-text">{{ $t('workbench.production.editImage.imageGeneration') }}</span>
+        <span class="title-text">{{ $t("workbench.production.editImage.imageGeneration") }}</span>
       </div>
       <div class="image">
         <div v-if="generating" class="imageLoading">
           <div class="loadingSpinner"></div>
-          <span class="loadingText">{{ $t('workbench.production.editImage.generating') }}</span>
+          <span class="loadingText">{{ $t("workbench.production.editImage.generating") }}</span>
         </div>
         <div v-else class="imageWrapper">
           <t-image class="image" :src="data.generatedImage" fit="cover" :class="['nodeImage', { selected }]">
@@ -27,7 +27,7 @@
         </t-tooltip>
       </div>
     </div>
-    <div v-if="selected" class="parameter">
+    <div v-show="selected" class="parameter">
       <div class="image-refs f">
         <div v-for="(item, index) in data.references" :key="index" class="ref-thumb">
           <t-image :src="item.image" fit="cover" class="ref-img" />
@@ -53,10 +53,10 @@
                 :class="{ active: activeIndex === index }"
                 @mousedown.prevent="selectReference(index)">
                 <t-image :src="item.image" fit="cover" class="ref-popup-img" />
-                <span class="reference-label">{{ $t('workbench.production.editImage.imageRef', { index: index + 1 }) }}</span>
+                <span class="reference-label">{{ $t("workbench.production.editImage.imageRef", { index: index + 1 }) }}</span>
                 <span class="ref-index-badge">#{{ index + 1 }}</span>
               </div>
-              <div v-if="!data.references?.length" class="no-references">{{ $t('workbench.production.editImage.noReferences') }}</div>
+              <div v-if="!data.references?.length" class="no-references">{{ $t("workbench.production.editImage.noReferences") }}</div>
             </div>
           </div>
         </div>
@@ -250,7 +250,12 @@ function selectReference(index: number) {
       placement: "top",
     },
     {
-      default: () => [h("div", { class: "tag" }, [h("img", { src: imgSrc, alt: "" }), h("span", null, $t("workbench.production.editImage.imageRef", { index: index + 1 }))])],
+      default: () => [
+        h("div", { class: "tag" }, [
+          h("img", { src: imgSrc, alt: "" }),
+          h("span", null, $t("workbench.production.editImage.imageRef", { index: index + 1 })),
+        ]),
+      ],
     },
   );
 
@@ -279,6 +284,8 @@ function selectReference(index: number) {
 
 // 将编辑器内容同步回 data.prompt（纯文本，tag 转为 @图X）
 function syncPrompt() {
+  console.log("%c Line:288 🍪 editorRef.value", "background:#4fff4B", editorRef.value);
+
   if (!editorRef.value) return;
   let result = "";
   editorRef.value.childNodes.forEach((node) => {

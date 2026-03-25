@@ -50,6 +50,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Ref } from "vue";
 import { VueFlow, useVueFlow, Panel, MarkerType, type Edge } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
@@ -62,11 +63,13 @@ import removeLine from "./removeLine.vue";
 import store from "@/stores";
 import axios from "@/utils/axios";
 import type { NodeType } from "../../utils/editImageType";
-import { flow } from "lodash";
+
+const episodesId = inject<Ref<number>>("episodesId");
+
 const { projectId } = storeToRefs(store());
 const props = defineProps<{
   editData: {
-    resultImages: string[];
+    resultImages: { src: string; prompt: string }[];
     referanceImages: string[];
     id?: number | null;
   };
@@ -165,7 +168,7 @@ function clickHandler(value: any) {
   addUploadNode(type);
 }
 // 添加新的上传节点
-const addUploadNode = (type: string, image: string = "") => {
+const addUploadNode = (type: string, image: string = "", prompt: string = "") => {
   let newNodeId;
   if (type === "generated") {
     newNodeId = `generated-${nodeIdCounter++}`;
@@ -178,7 +181,7 @@ const addUploadNode = (type: string, image: string = "") => {
   const refeceImage = {
     generatedImage: image,
     references: [],
-    prompt: "",
+    prompt: prompt,
     model: "",
     ratio: "",
     quality: "",
@@ -209,6 +212,7 @@ async function sureNode(imageUrl: string = "") {
         edges: edges.value,
         imageUrl,
         type: props.type,
+        episodesId: episodesId!.value,
       });
     } else {
       const { data } = await axios.post("/production/editImage/saveImageFlow", {
@@ -217,6 +221,7 @@ async function sureNode(imageUrl: string = "") {
         edges: edges.value,
         imageUrl,
         type: props.type,
+        episodesId: episodesId!.value,
       });
       insertId = data?.id || null;
     }
@@ -250,7 +255,8 @@ function buildFlow() {
     uploadIds.push(addUploadNode("upload", i));
   });
   props.editData.resultImages.forEach((i) => {
-    generatedIds.push(addUploadNode("generated", i));
+    console.log("%c Line:258 🍞 i", "background:#ed9ec7", i);
+    generatedIds.push(addUploadNode("generated", i.src, i.prompt));
   });
   // 将每个 upload 节点连接到每个 generated 节点
   for (const sourceId of uploadIds) {

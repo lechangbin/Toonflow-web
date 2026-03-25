@@ -119,7 +119,7 @@ function setHoveredFrame(index: number | null) {
 
 const currentRow = ref<{
   id: number | null;
-  resultImages: string[];
+  resultImages: { src: string; prompt: string }[];
   referanceImages: string[];
   insertAfterIndex: number | null;
 }>({
@@ -209,7 +209,6 @@ async function previewAll() {
 }
 
 function editStoryboaryImage(item: Storyboard, images: string[], id: number | null = null, insertAfterIndex: number | null = null) {
-  console.log("%c Line:216 🥟 item", "background:#465975", item);
   currentRow.value = {
     id,
     insertAfterIndex,
@@ -217,7 +216,7 @@ function editStoryboaryImage(item: Storyboard, images: string[], id: number | nu
     referanceImages: [],
   };
   if (id) {
-    let imagesPush = [];
+    let imagesPush: string[] = [];
 
     if (item.associateAssetsIds && item.associateAssetsIds.length > 0) {
       const assetsImages: string[] = [];
@@ -241,7 +240,7 @@ function editStoryboaryImage(item: Storyboard, images: string[], id: number | nu
       imagesPush = imagesPush.concat(referenImages);
     }
     currentRow.value.referanceImages = imagesPush;
-    currentRow.value.resultImages = images.filter(Boolean);
+    currentRow.value.resultImages = [{ src: images.length ? images[0] : "", prompt: item.prompt ?? "" }];
   } else {
     currentRow.value.referanceImages = images.filter(Boolean);
   }

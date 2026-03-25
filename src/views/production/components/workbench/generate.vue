@@ -372,12 +372,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, onUnmounted, reactive } from "vue";
+import { ref, computed, onMounted, nextTick, onUnmounted, reactive, type Ref } from "vue";
 import { storeToRefs } from "pinia";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import modelSelect from "@/components/modelSelect.vue";
 import openAssetsSelector from "@/utils/assetsCheck";
+const episodesId = inject<Ref<number>>("episodesId");
 
 /** 视频最后一帧缓存：key 为视频 filePath，value 为 canvas 截帧的 dataURL */
 const videoFrameCache = reactive(new Map<string, string>());
@@ -513,7 +514,7 @@ function initShotFields(item: StoryboardItem) {
 function getProductionData() {
   return axios
     .post("/production/getProductionData", {
-      scriptId: 1,
+      scriptId: episodesId!.value,
     })
     .then(({ data }) => {
       const list: StoryboardItem[] = data || [];
