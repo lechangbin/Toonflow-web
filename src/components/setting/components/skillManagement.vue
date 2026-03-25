@@ -1,12 +1,12 @@
 <template>
   <div class="skillManagement">
-    <div class="toolbar">
+    <div class="toolbar f w">
       <div class="leftTools">
         <t-button theme="danger" @click="scanSkills">
           <template #icon><t-icon name="refresh" /></template>
           扫描Skills
         </t-button>
-        <t-button theme="primary" @click="addSkill()">
+        <t-button theme="primary" @click="openSkillEditor(null)">
           <template #icon><t-icon name="add" /></template>
           新增 Skill
         </t-button>
@@ -16,6 +16,18 @@
         </t-button>
       </div>
       <div class="rightTools">
+        <t-select v-model="filterType" placeholder="类型" clearable style="width: 120px" @change="getData">
+          <t-option value="main" label="核心" />
+          <t-option value="references" label="技法" />
+        </t-select>
+        <t-select
+          v-model="filterAttributions"
+          placeholder="归属"
+          multiple
+          clearable
+          :options="attributionOptions"
+          style="width: 200px"
+          @change="getData" />
         <t-input v-model="searchText" placeholder="按名称搜索 skill" clearable style="width: 220px" @enter="getData" />
         <t-button theme="default" @click="getData">
           <template #icon><t-icon name="search" /></template>
@@ -24,52 +36,82 @@
       </div>
     </div>
 
-    <div class="table">
-      <div class="info">共 {{ pagination.total }} 条 Skill</div>
-      <div class="item" v-for="(item, index) in tableData" :key="index">
-        <div class="topInfo f ac jb">
-          <div class="f ac">
-            <div class="name">{{ item.name }}</div>
-            <div class="type f">
-              <t-tag size="small" v-if="item.type == 'main'" theme="danger">核心</t-tag>
-              <t-tag size="small" v-if="item.type == 'references'" theme="success">技法</t-tag>
-              <t-tag size="small" v-for="(attr, index) in item.attributions" :key="index" style="margin-right: 4px">{{ attr }}</t-tag>
+    <t-loading :loading="loading" class="skillLoading">
+      <div class="table">
+        <div class="info">共 {{ pagination.total }} 条 Skill</div>
+        <div class="item" v-for="(item, index) in tableData" :key="index">
+          <div class="topInfo f ac jb">
+            <div class="f ac">
+              <div class="name">{{ item.type === "main" ? getAttributionLabel(item.path) : item.name }}</div>
+              <div class="type f">
+                <t-tag size="small" v-if="item.type == 'main'" theme="danger" variant="outline">核心</t-tag>
+                <t-tag size="small" v-if="item.type == 'references'" theme="success" variant="outline">技法</t-tag>
+                <t-tag
+                  size="small"
+                  v-if="item.attributions && item.attributions.length > 0"
+                  v-for="(attr, index) in item.attributions"
+                  :key="index"
+                  style="margin-right: 4px"
+                  variant="outline">
+                  {{ getAttributionLabel(attr) }}
+                </t-tag>
+                <template v-else-if="item.type !== 'main'">
+                  <t-tag size="small" theme="danger">无归属</t-tag>
+                  <span>⚠️无归属Skill无法启用</span>
+                </template>
+                <span v-if="!item.embedding && item.type !== 'main'">⚠️未向量化，无法启用Skill</span>
+              </div>
+            </div>
+            <div class="state">
+              <template v-if="!item.embedding && item.type !== 'main'">
+                <t-tag size="small" theme="danger">未向量化</t-tag>
+              </template>
+              <template v-else>
+                <t-tag size="small" v-if="item.state == 1 || item.type == 'main'" theme="success">正常</t-tag>
+                <t-tag size="small" v-else-if="item.state == 0" theme="warning">生成描述中</t-tag>
+                <t-tag size="small" v-else-if="item.state == -1" theme="danger">描述为空</t-tag>
+                <t-tag size="small" v-else-if="item.state == -2" theme="danger">归属异常</t-tag>
+                <t-tag size="small" v-else-if="item.state == -3" theme="danger">MD5变动，建议更新描述</t-tag>
+              </template>
             </div>
           </div>
-          <div class="state">
-            <t-tag size="small" v-if="item.state == 1" theme="success">正常</t-tag>
-            <t-tag size="small" v-else-if="item.state == 0" theme="warning">生成描述中</t-tag>
-            <t-tag size="small" v-else-if="item.state == -1" theme="danger">描述为空</t-tag>
-            <t-tag size="small" v-else-if="item.state == -2" theme="danger">归属异常</t-tag>
-            <t-tag size="small" v-else-if="item.state == -3" theme="danger">MD5变动，建议更新描述</t-tag>
-          </div>
-        </div>
-        <div class="md5">MD5：{{ item.md5 }}</div>
-        <div class="path">路径：{{ item.path }}</div>
-        <div class="description">{{ item.description || "⚠️描述为空将会影响技能调用" }}</div>
-        <div class="flootInfo f ac jb">
-          <div class="createTime">{{ dayjs(item.createTime).format("YYYY-MM-DD HH:mm:ss") }}</div>
-          <div class="btnList">
-            <t-button variant="text" size="small">
-              <template #icon><t-icon name="edit" /></template>
-              编辑
-            </t-button>
-            <t-button theme="danger" variant="text" size="small">
-              <template #icon><t-icon name="delete" /></template>
-              删除
-            </t-button>
+          <div class="md5">MD5：{{ item.md5 }}</div>
+          <div class="path">路径：{{ item.path }}</div>
+          <div class="description" v-if="item.type !== 'main'">{{ item.description || "⚠️描述为空将会影响技能调用" }}</div>
+          <div class="flootInfo f ac jb">
+            <div class="createTime">{{ dayjs(item.createTime).format("YYYY-MM-DD HH:mm:ss") }}</div>
+            <div class="btnList">
+              <t-button
+                theme="danger"
+                variant="outline"
+                size="small"
+                v-if="!item.embedding && item.type !== 'main'"
+                :loading="embeddingSkillIds.has(item.id)"
+                @click="embeddingSkill(item)">
+                <template #icon><i-coordinate-system /></template>
+                向量化
+              </t-button>
+              <t-button variant="text" size="small" @click="openSkillEditor(item)">
+                <template #icon><t-icon name="edit" /></template>
+                编辑
+              </t-button>
+              <t-button theme="danger" variant="text" size="small" @click="deleteSkill(item)" v-if="item.type !== 'main'">
+                <template #icon><t-icon name="delete" /></template>
+                删除
+              </t-button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <t-pagination
-      v-model:current="pagination.current"
-      v-model:pageSize="pagination.pageSize"
-      class="paginationWrap"
-      :total="pagination.total"
-      show-sizer
-      @current-change="getData"
-      @page-size-change="getData" />
+      <t-pagination
+        v-model:current="pagination.current"
+        v-model:pageSize="pagination.pageSize"
+        class="paginationWrap"
+        :total="pagination.total"
+        show-sizer
+        @current-change="getData"
+        @page-size-change="getData" />
+    </t-loading>
   </div>
   <t-dialog placement="top" header="从 Toonflow-Hub 导入" v-model:visible="showImportSkill">
     <div class="inputBox f ac">
@@ -81,17 +123,105 @@
       <i-share theme="outline" />
     </div>
   </t-dialog>
+  <!-- 新增 / 编辑 统一弹窗 -->
+  <t-dialog
+    v-model:visible="editorVisible"
+    :header="isEdit ? `编辑 Skill-${editorForm.name}` : '新增 Skill'"
+    :confirm-btn="null"
+    :cancel-btn="null"
+    placement="center"
+    width="90vw"
+    top="3vh"
+    :close-on-overlay-click="false">
+    <div class="editorDialogContent">
+      <div class="editorBody">
+        <div class="editorSidebar" v-if="editorForm.type !== 'main'">
+          <t-form labelAlign="top">
+            <t-form-item label="Skill 名称">
+              <t-input v-model="editorForm.name" placeholder="例如：writing-assistant" />
+            </t-form-item>
+            <t-form-item label="路径" v-if="editorForm.path">
+              <t-input v-model="editorForm.path" disabled />
+            </t-form-item>
+            <t-form-item label="归属 Agent">
+              <t-select v-model="editorForm.attributions" multiple :options="attributionOptions" placeholder="选择归属 Agent" />
+            </t-form-item>
+            <t-form-item class="descItem">
+              <template #label>
+                <div class="descLabel">
+                  <span>描述</span>
+                  <t-button
+                    theme="primary"
+                    size="small"
+                    :loading="generatingDescription"
+                    :disabled="!editorForm.content.trim()"
+                    @click="generateDescription">
+                    <template #icon><i-star /></template>
+                    AI生成
+                  </t-button>
+                </div>
+              </template>
+              <t-textarea
+                v-model="editorForm.description"
+                :autosize="false"
+                :disabled="generatingDescription"
+                placeholder="描述这个 skill 的用途"
+                class="descTextarea" />
+            </t-form-item>
+          </t-form>
+        </div>
+        <div class="editorMain">
+          <MdEditor
+            v-model="editorForm.content"
+            theme="light"
+            :toolbars="mdToolbars"
+            :footers="[]"
+            class="mdEditorFull"
+            @onUploadImg="() => {}"
+            @drop.prevent
+            @paste="onMdPaste" />
+        </div>
+      </div>
+    </div>
+    <template #footer>
+      <div class="editorFooter">
+        <t-button theme="default" @click="editorVisible = false">取消</t-button>
+        <t-button theme="primary" @click="saveSkill">
+          {{ isEdit ? "保存" : "创建 Skill" }}
+        </t-button>
+      </div>
+    </template>
+  </t-dialog>
 </template>
 
 <script setup lang="ts">
 import dayjs from "dayjs";
+import { MdEditor } from "md-editor-v3";
+import type { ToolbarNames } from "md-editor-v3";
+import "md-editor-v3/lib/style.css";
 import axios from "@/utils/axios";
 
 const searchText = ref(""); //搜索值
+const filterType = ref(""); //类型筛选
+const filterAttributions = ref([]); //归属筛选
 const shareUrl = ref(""); //分享链接
+const editorVisible = ref(false); //编辑弹窗显示
+const isEdit = ref(false); //是否编辑
+const generatingDescription = ref(false); //AI生成描述中
 
 const loading = ref(false);
 const showImportSkill = ref(false);
+const embeddingSkillIds = ref<Set<string>>(new Set());
+
+const editorForm = ref({
+  id: "",
+  name: "",
+  path: "",
+  type: "",
+  description: "",
+  content: "",
+  attributions: [],
+});
 
 const pagination = ref({
   current: 1,
@@ -106,7 +236,17 @@ type SkillAttribution =
   | "script_agent_decision.md"
   | "script_agent_execution.md"
   | "script_agent_supervision.md"
-  | "universal-agent.md";
+  | "universal_agent.md";
+
+const attributionOptions = [
+  { value: "production_agent_decision.md", label: "视频生产-执行导演" },
+  { value: "production_agent_execution.md", label: "视频生产-摄影指导" },
+  { value: "production_agent_supervision.md", label: "视频生产-监制" },
+  { value: "script_agent_decision.md", label: "剧本Agent-统筹" },
+  { value: "script_agent_execution.md", label: "剧本Agent-编剧" },
+  { value: "script_agent_supervision.md", label: "剧本Agent-编辑" },
+  { value: "universal-agent.md", label: "制片助理" },
+];
 
 interface SkillListItem {
   id: string;
@@ -118,13 +258,14 @@ interface SkillListItem {
   attributions: SkillAttribution[];
   state: number;
   createTime: number;
+  embedding: boolean;
 }
 
 const tableData = ref<SkillListItem[]>([]);
 
 async function scanSkills() {
-  await axios.post("/setting/skillManagement/scanSkills");
-  window.$message.success("生成描述成功");
+  const { data } = await axios.post("/setting/skillManagement/scanSkills");
+  window.$message.success(`扫描成功，共扫描到 ${data.totalFiles} 个 Skill 文件`);
   getData();
 }
 
@@ -135,6 +276,8 @@ async function getData() {
       page: pagination.value.current,
       limit: pagination.value.pageSize,
       search: searchText.value,
+      type: filterType.value || undefined,
+      attributions: filterAttributions.value.length ? filterAttributions.value : undefined,
     });
 
     tableData.value = data.list;
@@ -148,12 +291,159 @@ async function getData() {
   }
 }
 
-function addSkill() {
-  window.$message.info("敬请期待");
+function getAttributionLabel(value: string): string {
+  return attributionOptions.find((o) => o.value === value)?.label || value;
 }
 
 function jumpToonflowHub() {
   window.open("https://hub.toonflow.net/skills");
+}
+
+const mdToolbars: ToolbarNames[] = [
+  "bold",
+  "underline",
+  "italic",
+  "strikeThrough",
+  "-",
+  "title",
+  "sub",
+  "sup",
+  "quote",
+  "unorderedList",
+  "orderedList",
+  "task",
+  "-",
+  "codeRow",
+  "code",
+  "table",
+  "-",
+  "revoke",
+  "next",
+  "=",
+  "preview",
+];
+
+function onMdPaste(e: ClipboardEvent) {
+  const items = e.clipboardData?.items;
+  if (!items) return;
+  for (const item of items) {
+    if (item.type.startsWith("image/") || item.type.startsWith("video/")) {
+      e.preventDefault();
+      return;
+    }
+  }
+}
+
+async function generateDescription() {
+  const content = editorForm.value.content.trim();
+  if (!content) {
+    window.$message.warning("请先填写 Markdown 内容");
+    return;
+  }
+  generatingDescription.value = true;
+  try {
+    const { data } = await axios.post("/setting/skillManagement/generateDescription", {
+      content,
+    });
+    editorForm.value.description = data || "";
+    window.$message.success("描述生成成功");
+  } catch (error: any) {
+    window.$message.error(error?.message || "描述生成失败");
+  } finally {
+    generatingDescription.value = false;
+  }
+}
+
+async function saveSkill() {
+  if (!editorForm.value.name.trim()) {
+    window.$message.warning("请先填写 Skill 名称");
+    return;
+  }
+  if (!editorForm.value.content.trim()) {
+    window.$message.warning("请先填写 Markdown 内容");
+    return;
+  }
+  try {
+    if (isEdit.value) {
+      await axios.post("/setting/skillManagement/updateSkill", {
+        id: editorForm.value.id,
+        name: editorForm.value.name,
+        description: editorForm.value.description,
+        content: editorForm.value.content,
+        attributions: editorForm.value.attributions,
+      });
+      window.$message.success("Skill 更新成功");
+    } else {
+      await axios.post("/setting/skillManagement/addSkill", {
+        name: editorForm.value.name,
+        description: editorForm.value.description,
+        content: editorForm.value.content,
+        attributions: editorForm.value.attributions,
+      });
+      window.$message.success("Skill 创建成功");
+    }
+    editorVisible.value = false;
+    getData();
+  } catch (error: any) {
+    window.$message.error(error?.message || (isEdit.value ? "Skill 更新失败" : "Skill 创建失败"));
+  }
+}
+
+async function deleteSkill(row: SkillListItem) {
+  const dialog = DialogPlugin.confirm({
+    header: "确认删除",
+    body: `确定要删除 Skill「${row.name}」吗？此操作不可恢复。`,
+    onConfirm: async () => {
+      try {
+        await axios.post("/setting/skillManagement/deleteSkill", { id: row.id });
+        window.$message.success("删除成功");
+        getData();
+      } catch (error: any) {
+        window.$message.error(error?.message || "删除失败");
+      }
+      dialog.destroy();
+    },
+  });
+}
+
+async function openSkillEditor(row: any) {
+  if (row) {
+    isEdit.value = true;
+    editorForm.value = {
+      id: row.id,
+      name: row.name,
+      path: row.path,
+      type: row.type,
+      description: row.description,
+      content: row.content,
+      attributions: row.attributions,
+    };
+  } else {
+    isEdit.value = false;
+    editorForm.value = {
+      id: "",
+      name: "",
+      path: "",
+      type: "",
+      description: "",
+      content: "",
+      attributions: [],
+    };
+  }
+  editorVisible.value = true;
+}
+
+async function embeddingSkill(row: SkillListItem) {
+  embeddingSkillIds.value.add(row.id);
+  try {
+    await axios.post("/setting/skillManagement/embeddingSkill", { id: row.id });
+    window.$message.success("向量化成功");
+    getData();
+  } catch (error: any) {
+    window.$message.error(error?.message || "向量化失败");
+  } finally {
+    embeddingSkillIds.value.delete(row.id);
+  }
 }
 
 onMounted(() => {
@@ -179,7 +469,6 @@ onMounted(() => {
     }
   }
   .table {
-    margin-top: 1rem;
     border: 1px solid var(--td-component-border);
     border-radius: var(--td-radius-default);
     .info {
@@ -194,11 +483,16 @@ onMounted(() => {
       padding: 1rem;
       display: flex;
       flex-direction: column;
+      &:hover {
+        background: #f9f9f9;
+      }
       .topInfo {
         .name {
           font-weight: bold;
         }
         .type {
+          display: flex;
+          gap: 4px;
           margin-left: 0.5rem;
         }
       }
@@ -233,6 +527,10 @@ onMounted(() => {
   .paginationWrap {
     margin-top: 1rem;
   }
+  .skillLoading {
+    width: 100%;
+    margin-top: 1rem;
+  }
   .inputBox {
     .title {
       white-space: nowrap;
@@ -251,5 +549,89 @@ onMounted(() => {
       color: #4263eb;
     }
   }
+}
+.editorDialogContent {
+  min-height: 68vh;
+  .editorBody {
+    display: flex;
+    gap: 16px;
+    height: 68vh;
+    .editorSidebar {
+      width: 260px;
+      min-width: 220px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+
+      :deep(.t-form) {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      :deep(.descItem) {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+
+        .t-form__controls,
+        .t-form__controls-content,
+        .t-form__content {
+          flex: 1;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
+        }
+      }
+
+      .descTextarea {
+        flex: 1;
+        min-height: 0;
+
+        :deep(.t-textarea) {
+          height: 100%;
+        }
+
+        :deep(.t-textarea__inner) {
+          height: 100% !important;
+          min-height: 100% !important;
+          resize: none;
+        }
+      }
+
+      .descLabel {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        :deep(.t-button) {
+          padding: 0 4px;
+          height: 22px;
+          font-size: 12px;
+        }
+      }
+    }
+    .editorMain {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+
+      .mdEditorFull {
+        flex: 1;
+        height: 100%;
+      }
+    }
+  }
+}
+.editorFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
 }
 </style>
