@@ -12,6 +12,7 @@
     "i18n:check": "node scripts/findUnusedI18n.ts"
   },
   "dependencies": {
+    "@dagrejs/dagre": "^3.0.0",
     "@devui-design/icons": "^1.4.0",
     "@icon-park/vue-next": "^1.4.2",
     "@tdesign-vue-next/chat": "^0.5.1",

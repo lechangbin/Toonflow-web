@@ -37,7 +37,7 @@ export interface AssetItem {
   derive: DeriveAsset[];
 }
 
-interface Storyboard {
+export interface Storyboard {
   id: number;
   title: string;
   description: string;

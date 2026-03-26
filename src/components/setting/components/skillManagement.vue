@@ -245,7 +245,7 @@ const attributionOptions = [
   { value: "script_agent_decision.md", label: "剧本Agent-统筹" },
   { value: "script_agent_execution.md", label: "剧本Agent-编剧" },
   { value: "script_agent_supervision.md", label: "剧本Agent-编辑" },
-  { value: "universal-agent.md", label: "制片助理" },
+  { value: "universal_agent.md", label: "制片助理" },
 ];
 
 interface SkillListItem {

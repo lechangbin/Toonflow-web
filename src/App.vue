@@ -22,17 +22,6 @@ const isElectron = computed(() => {
   return window?.$electron;
 });
 
-watch(
-  () => isElectron.value,
-  (newVal) => {
-    if (newVal) {
-      document.body.style.borderRadius = "16px";
-    } else {
-      document.body.style.borderRadius = "0";
-    }
-  },
-);
-
 onBeforeMount(() => {
   document.addEventListener("keydown", function (event) {
     if (event.key === "F8") {

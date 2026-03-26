@@ -38,7 +38,21 @@
             <i-document-folder size="24" />
           </template>
         </t-select>
+<<<<<<< HEAD
         <i-loading-four class="spin" size="16" style="margin-left: 8px" v-show="loading"></i-loading-four>
+=======
+        <i-loading-four class="spin" size="16" style="margin-left: 0.5rem" v-show="loading"></i-loading-four>
+        <t-tooltip theme="primary" content="自动排版-左右布局">
+          <div class="item c" @click="layoutGraph('LR')">
+            <i-tree-diagram theme="outline" size="24" />
+          </div>
+        </t-tooltip>
+        <t-tooltip theme="primary" content="自动排版-上下布局">
+          <div class="item c" @click="layoutGraph('TB')">
+            <i-branch-one theme="outline" size="24" />
+          </div>
+        </t-tooltip>
+>>>>>>> 86279dc4b809932030b64e41be327e2ab499f180
       </div>
       <div class="openRightChatBoxBtn c" v-show="!openShowVisible" @click.stop="openShowVisible = true">
         <i-menu-unfold-one theme="outline" size="24" fill="#000000" />
@@ -69,6 +83,7 @@ import workbench from "./node/workbench.vue";
 import poster from "./node/poster.vue";
 //悬浮窗组件
 import rightChatBox from "./components/rightChatBox/index.vue";
+import { useLayout } from "./utils/dagre";
 
 import { useFlowBuilder, type FlowData } from "./utils/flowBuilder";
 import axios from "@/utils/axios";
@@ -76,6 +91,8 @@ import projectStore from "@/stores/project";
 
 const { project } = storeToRefs(projectStore());
 const openShowVisible = ref(true);
+const { toObject, fromObject, fitView } = useVueFlow();
+const { layout } = useLayout();
 
 const episodesId = ref();
 provide("episodesId", episodesId);
@@ -107,12 +124,7 @@ const flowData = ref<FlowData>({
   },
   // 封面（单个 node）
   poster: {
-    items: [
-      { id: 1, image: "https://picsum.photos/seed/1/600/360" },
-      { id: 2, image: "https://picsum.photos/seed/2/600/360" },
-      { id: 3, image: "https://picsum.photos/seed/3/600/360" },
-      { id: 4, image: "https://picsum.photos/seed/4/600/360" },
-    ],
+    items: [],
   },
 });
 // ==================== AI 操作数据区结束 ====================
@@ -130,7 +142,6 @@ const nodePositions = ref<Record<string, { x: number; y: number }>>({
 
 // 自动构建 nodes 和 edges
 const { nodes, edges } = useFlowBuilder(flowData, nodePositions);
-
 const current = useLocalStorage("productionGuideCurrent", 0);
 const steps = [
   {
@@ -198,6 +209,15 @@ onMounted(() => {
     loading.value = false;
   });
 });
+const spacing = ref(200);
+
+async function layoutGraph(direction: "LR" | "TB") {
+  const oldData = toObject();
+  oldData.nodes = layout(oldData.nodes, oldData.edges, direction, spacing.value);
+  await fromObject(oldData);
+  await nextTick();
+  fitView({ duration: 300 });
+}
 </script>
 <style lang="scss" scoped>
 .flowMain {
@@ -213,7 +233,17 @@ onMounted(() => {
       left: 0px;
       z-index: 9999;
       cursor: pointer;
-      cursor: pointer;
+
+      .item {
+        width: 50px;
+        padding: 5px;
+        color: var(--mainColor);
+        &:hover {
+          background-color: #f4f4f4;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+      }
     }
     .openRightChatBoxBtn {
       position: absolute;

@@ -347,7 +347,7 @@ const METADATA_BUILDERS: Array<[string, MetadataBuilder]> = [
   ["doubao", buildDoubaoMetadata],
   ["wan", buildWanMetadata],
   ["vidu", buildViduMetadata],
-  ["seedance", buildViduMetadata],
+  ["seedance", buildDoubaoMetadata],
 ];
 const buildModelMetadata = (modelName: string, videoConfig: VideoConfig) => {
   const lowerName = modelName.toLowerCase();

@@ -120,7 +120,7 @@ function getMediaType(src?: string): MediaType {
 //切换菜单
 function changeMenu(type: string) {
   activeMenu.value = type;
-  editFootage();
+  if (type == "editVideo") editFootage();
 }
 //查询剪辑素材
 function editFootage() {
@@ -358,7 +358,7 @@ function handleBatchDownload(value: any) {
     flex: 1;
     overflow: hidden;
   }
-  .editStoryboard {
+  .editImage {
     width: 100%;
     height: 75vh;
   }

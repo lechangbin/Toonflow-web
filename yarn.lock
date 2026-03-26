@@ -375,6 +375,18 @@
     style-mod "^4.1.0"
     w3c-keyname "^2.2.4"
 
+"@dagrejs/dagre@^3.0.0":
+  version "3.0.0"
+  resolved "https://registry.npmmirror.com/@dagrejs/dagre/-/dagre-3.0.0.tgz#543f20188f7494db0f45d634f7b3760747f87f23"
+  integrity sha512-ZzhnTy1rfuoew9Ez3EIw4L2znPGnYYhfn8vc9c4oB8iw6QAsszbiU0vRhlxWPFnmmNSFAkrYeF1PhM5m4lAN0Q==
+  dependencies:
+    "@dagrejs/graphlib" "4.0.1"
+
+"@dagrejs/graphlib@4.0.1":
+  version "4.0.1"
+  resolved "https://registry.npmmirror.com/@dagrejs/graphlib/-/graphlib-4.0.1.tgz#a9cf907cc5ddf9140a64360ad487766f17d1ee36"
+  integrity sha512-IvcV6FduIIAmLwnH+yun+QtV36SC7mERqa86aClNqmMN09WhmPPYU8ckHrZBozErf+UvHPWOTJYaGYiIcs0DgA==
+
 "@devui-design/icons@^1.4.0":
   version "1.4.0"
   resolved "https://registry.npmmirror.com/@devui-design/icons/-/icons-1.4.0.tgz#41fe1ce82e1aa6b111ca30c6a553cfc4a073fd47"
