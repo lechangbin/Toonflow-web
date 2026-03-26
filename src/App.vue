@@ -22,6 +22,18 @@ const isElectron = computed(() => {
   return window?.$electron;
 });
 
+watch(
+  () => isElectron.value,
+  (newVal) => {
+    if (newVal) {
+      document.body.classList.add('is-electron');
+    } else {
+      document.body.classList.remove('is-electron');
+    }
+  },
+  { immediate: true }
+);
+
 onBeforeMount(() => {
   document.addEventListener("keydown", function (event) {
     if (event.key === "F8") {
