@@ -24,6 +24,10 @@
           <template #icon><i-export /></template>
           {{ $t("workbench.script.extractAssets") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
         </t-button>
+        <t-button theme="primary" @click="handleBatchDelete" :loading="scriptLoad" :disabled="selectedIds.length === 0">
+          <template #icon><i-delete /></template>
+          {{ $t("workbench.script.deleteScript") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
+        </t-button>
       </div>
     </div>
     <div class="contentArea">
@@ -155,7 +159,6 @@ const detailsShow = ref(false);
 // 点击剧本卡片
 function handleScriptClick(item: Script) {
   selectedScript.value = { ...item };
-  console.log("%c Line:154 🍊 selectedScript.value", "background:#ed9ec7", selectedScript.value);
   detailsShow.value = true;
 }
 // 删除剧本
@@ -168,7 +171,7 @@ async function handleDeleteScript(scriptId: number) {
     theme: "warning",
     onConfirm: async () => {
       try {
-        await axios.post("/script/delScript", { id: scriptId });
+        await axios.post("/script/delScript", { id: [scriptId] });
         window.$message.success($t("workbench.script.msg.deleteSuccess"));
         searchScripts();
         dialog.destroy();
@@ -198,6 +201,37 @@ async function handleExtractAssets() {
   } finally {
     scriptLoad.value = false;
   }
+}
+//批量删除剧本
+async function handleBatchDelete() {
+  if (!selectedIds.value.length) {
+    window.$message.warning($t("workbench.script.msg.selectDelScript"));
+    return;
+  }
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.script.msg.batchDeleteHeader"),
+    body: $t("workbench.script.msg.batchDeleteBody", { count: selectedIds.value.length }),
+    confirmBtn: $t("workbench.script.msg.deleteConfirm"),
+    cancelBtn: $t("workbench.script.msg.cancel"),
+    theme: "warning",
+    onConfirm: async () => {
+      try {
+        await axios.post("/script/delScript", { id: selectedIds.value });
+        window.$message.success($t("workbench.script.msg.batchDeleteSuccess"));
+        searchScripts();
+        dialog.destroy();
+      } catch (error) {
+        console.error("删除剧本失败:", error);
+        window.$message.error($t("workbench.script.msg.deleteFailed"));
+        dialog.destroy();
+      } finally {
+        selectedIds.value = [];
+      }
+    },
+    onClose: () => {
+      dialog.destroy();
+    },
+  });
 }
 </script>
 
