@@ -1140,5 +1140,13 @@
     "enterUsernameAndPassword": "请输入用户名或密码",
     "loginSuccess": "登录成功",
     "settingsSaved": "设置已保存"
-  }
+  },
+  "components.storyboardImageCheck.camera": "镜头",
+  "components.storyboardImageCheck.dialogTitle": "选择分镜图",
+  "components.storyboardImageCheck.preview": "预览",
+  "components.storyboardImageCheck.src": "预览图",
+  "components.storyboardImageCheck.title": "标题",
+  "components.storyboardImageCheck.duration": "时长",
+  "components.storyboardImageCheck.lines": "台词",
+  "components.storyboardImageCheck.createTime": "创建时间"
 }

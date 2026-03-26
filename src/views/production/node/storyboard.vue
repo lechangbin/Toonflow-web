@@ -67,7 +67,12 @@
       <t-button block @click="previewAll">{{ $t("workbench.production.node.storyboard.gridPreview") }}</t-button>
     </div>
     <editImage v-model:visible="visible" v-if="visible" :editData="currentRow" type="storyboard" @save="save" />
-    <t-image-viewer v-model:visible="previewVisible" :images="previewImages" :imageScale="{ max: 10, min: 0.1 }" />
+    <t-image-viewer
+      v-model:visible="previewVisible"
+      :images="previewImages"
+      :onClose="closePreview"
+      :onDownload="downLoadImage"
+      :imageScale="{ max: 10, min: 0.1 }" />
   </t-card>
 </template>
 
@@ -131,6 +136,41 @@ const currentRow = ref<{
 
 const tagColors = ["#5bccb3", "#9c7cfc", "#fbbf24", "#5b9afc", "#e86b6b", "#7cb8fc", "#e8a855", "#34d399"];
 
+function closePreview() {
+  previewImages.value = [];
+}
+async function downLoadImage() {
+  LoadingPlugin(true);
+  const allIds = (storyboard.value ?? []).filter((s) => s.src).map((s) => s.id!);
+  if (!allIds.length) {
+    window.$message.warning($t("workbench.production.node.storyboard.noPreviewImages"));
+    LoadingPlugin(false);
+    return;
+  }
+  try {
+    const res = await axios.post(
+      "/production/storyboard/downPreviewImage",
+      {
+        storyboardIds: allIds,
+      },
+      { responseType: "blob" },
+    );
+    console.log("%c Line:152 🍺 res", "background:#ea7e5c", res);
+
+    // 创建下载链接
+    const url = URL.createObjectURL(res as unknown as Blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `storyboardImagePreview-${Date.now()}.png`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch {
+    window.$message.error($t("workbench.production.node.storyboard.imageLoadFailed"));
+  } finally {
+    LoadingPlugin(false);
+  }
+  console.log("%c Line:148 🍔", "background:#ed9ec7");
+}
 async function previewAll() {
   LoadingPlugin(true);
   const allIds = (storyboard.value ?? []).filter((s) => s.src).map((s) => s.id!);
@@ -139,79 +179,17 @@ async function previewAll() {
     LoadingPlugin(false);
     return;
   }
-  const { data } = await axios.post("/production/storyboard/previewImage", {
-    storyboardIds: allIds,
-  });
-  previewImages.value = [data];
-  previewVisible.value = true;
-  LoadingPlugin(false);
-
-  // try {
-  //   const loaded = await Promise.all(
-  //     allImages.map(
-  //       (src) =>
-  //         new Promise<HTMLImageElement>((resolve, reject) => {
-  //           const img = new Image();
-  //           img.crossOrigin = "anonymous";
-  //           img.onload = () => resolve(img);
-  //           img.onerror = () => reject(new Error($t("workbench.production.node.storyboard.loadFailed", { src })));
-  //           img.src = src;
-  //         }),
-  //     ),
-  //   );
-
-  //   const cols = Math.min(5, loaded.length);
-  //   const rows = Math.ceil(loaded.length / cols);
-
-  //   const colWidths: number[] = Array(cols).fill(0);
-  //   const rowHeights: number[] = Array(rows).fill(0);
-  //   loaded.forEach((img, idx) => {
-  //     const c = idx % cols;
-  //     const r = Math.floor(idx / cols);
-  //     colWidths[c] = Math.max(colWidths[c], img.width);
-  //     rowHeights[r] = Math.max(rowHeights[r], img.height);
-  //   });
-
-  //   const canvas = document.createElement("canvas");
-  //   canvas.width = colWidths.reduce((a, b) => a + b, 0);
-  //   canvas.height = rowHeights.reduce((a, b) => a + b, 0);
-  //   const ctx = canvas.getContext("2d")!;
-
-  //   let globalIndex = 0;
-  //   for (let r = 0; r < rows; r++) {
-  //     let x = 0;
-  //     for (let c = 0; c < cols; c++) {
-  //       const idx = r * cols + c;
-  //       if (idx >= loaded.length) break;
-  //       const y = rowHeights.slice(0, r).reduce((a, b) => a + b, 0);
-  //       ctx.drawImage(loaded[idx], x, y);
-  //       // 左上角绘制分镜标号
-  //       const label = `S${String(globalIndex + 1).padStart(2, "0")}`;
-  //       const fontSize = Math.max(14, Math.min(loaded[idx].width, loaded[idx].height) * 0.06);
-  //       ctx.font = `bold ${fontSize}px Arial`;
-  //       const textMetrics = ctx.measureText(label);
-  //       const padding = fontSize * 0.4;
-  //       const bgW = textMetrics.width + padding * 2;
-  //       const bgH = fontSize + padding * 2;
-  //       ctx.beginPath();
-  //       ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
-  //       ctx.roundRect(x + 4, y + 4, bgW, bgH, 4);
-  //       ctx.fill();
-  //       ctx.fillStyle = "#fff";
-  //       ctx.textBaseline = "top";
-  //       ctx.fillText(label, x + 4 + padding, y + 4 + padding);
-  //       globalIndex++;
-  //       x += colWidths[c];
-  //     }
-  //   }
-
-  //   previewImages.value = [canvas.toDataURL("image/png")];
-  //   previewVisible.value = true;
-  // } catch {
-  //   window.$message.error($t("workbench.production.node.storyboard.imageLoadFailed"));
-  // } finally {
-  //   LoadingPlugin(false);
-  // }
+  try {
+    const { data } = await axios.post("/production/storyboard/previewImage", {
+      storyboardIds: allIds,
+    });
+    previewImages.value = [data];
+    previewVisible.value = true;
+  } catch {
+    window.$message.error($t("workbench.production.node.storyboard.imageLoadFailed"));
+  } finally {
+    LoadingPlugin(false);
+  }
 }
 
 function editStoryboaryImage(item: Storyboard, images: string[], id: number | null = null, insertAfterIndex: number | null = null) {
