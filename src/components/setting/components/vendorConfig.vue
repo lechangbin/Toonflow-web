@@ -17,7 +17,7 @@
             {{ item.name }}
           </t-menu-item>
         </t-menu>
-        <t-empty v-else :title="$t('settings.vendor.noVendor')" style="margin-top: 1rem"></t-empty>
+        <t-empty v-else :title="$t('settings.vendor.noVendor')" style="margin-top: 16px"></t-empty>
       </div>
     </div>
 
@@ -193,7 +193,7 @@
                   </t-button>
                 </div>
                 <t-button
-                  style="margin-top: 1rem"
+                  style="margin-top: 16px"
                   variant="dashed"
                   block
                   @click="modelFormData.durationResolutionMap.push({ duration: [], resolution: [] })">
@@ -925,7 +925,7 @@ function handleDeleteVendor() {
         margin-right: 4px;
       }
       .tags {
-        margin-top: 1rem;
+        margin-top: 16px;
         & > * {
           margin-left: 4px;
           margin-right: 4px;
@@ -1028,8 +1028,8 @@ function handleDeleteVendor() {
   }
 }
 .addBox {
-  padding-left: 1rem;
-  padding-right: 1rem;
+  padding-left: 16px;
+  padding-right: 16px;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;

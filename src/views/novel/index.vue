@@ -302,7 +302,7 @@ watch(notCompultedData, (val) => {
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  padding-bottom: 1rem;
+  padding-bottom: 16px;
   .headBtn {
     margin-top: 20px;
   }

@@ -270,8 +270,8 @@ function oneClickToFillIn() {
   flex-direction: column;
   .banner {
     background-color: var(--td-success-color-focus);
-    padding: 1rem;
-    margin-bottom: 1rem;
+    padding: 16px;
+    margin-bottom: 16px;
     border-radius: 4px;
     .content {
       width: 100%;

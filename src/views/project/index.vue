@@ -176,13 +176,13 @@ function delProjcer(projectId: string | undefined) {
 <style lang="scss" scoped>
 .project {
   .header {
-    padding-top: 2rem;
-    margin-bottom: 2rem;
+    padding-top: 32px;
+    margin-bottom: 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     .title {
-      font-size: 2rem;
+      font-size: 32px;
       font-weight: 600;
     }
     .sub {
@@ -193,16 +193,16 @@ function delProjcer(projectId: string | undefined) {
     .card {
       cursor: pointer;
       .title {
-        font-size: 1.25rem;
+        font-size: 20px;
         font-weight: bold;
-        margin-bottom: 0.5rem;
+        margin-bottom: 8px;
       }
       .intro {
         margin-top: 8px;
         margin-bottom: 8px;
       }
       .bottomMenu {
-        margin-top: 2rem;
+        margin-top: 32px;
         .time {
           opacity: 0.5;
         }

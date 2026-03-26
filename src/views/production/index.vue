@@ -38,7 +38,7 @@
             <i-document-folder size="24" />
           </template>
         </t-select>
-        <i-loading-four class="spin" size="16" style="margin-left: 0.5rem" v-show="loading"></i-loading-four>
+        <i-loading-four class="spin" size="16" style="margin-left: 8px" v-show="loading"></i-loading-four>
       </div>
       <div class="openRightChatBoxBtn c" v-show="!openShowVisible" @click.stop="openShowVisible = true">
         <i-menu-unfold-one theme="outline" size="24" fill="#000000" />

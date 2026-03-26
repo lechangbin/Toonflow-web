@@ -473,14 +473,14 @@ onMounted(() => {
     border-radius: var(--td-radius-default);
     .info {
       background: #f6f6f6;
-      padding: 1rem;
+      padding: 16px;
       border-bottom: 1px solid var(--td-component-border);
     }
     .item {
       border-bottom: 1px solid var(--td-component-border);
       height: 100%;
       max-height: 200px;
-      padding: 1rem;
+      padding: 16px;
       display: flex;
       flex-direction: column;
       &:hover {
@@ -493,7 +493,7 @@ onMounted(() => {
         .type {
           display: flex;
           gap: 4px;
-          margin-left: 0.5rem;
+          margin-left: 8px;
         }
       }
       .md5 {
@@ -504,8 +504,8 @@ onMounted(() => {
         font-size: 12px;
       }
       .description {
-        margin-top: 0.5rem;
-        margin-bottom: 0.5rem;
+        margin-top: 8px;
+        margin-bottom: 8px;
         flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -525,16 +525,16 @@ onMounted(() => {
     }
   }
   .paginationWrap {
-    margin-top: 1rem;
+    margin-top: 16px;
   }
   .skillLoading {
     width: 100%;
-    margin-top: 1rem;
+    margin-top: 16px;
   }
   .inputBox {
     .title {
       white-space: nowrap;
-      margin-right: 1rem;
+      margin-right: 16px;
       font-size: 16px;
       font-weight: 500;
       color: #000;
@@ -542,7 +542,7 @@ onMounted(() => {
   }
   .tips {
     cursor: pointer;
-    margin-top: 1rem;
+    margin-top: 16px;
     color: #339af0;
     &:hover {
       text-decoration: underline;

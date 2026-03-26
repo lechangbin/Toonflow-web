@@ -185,7 +185,7 @@ async function save({ imageUrl, insertId }: { imageUrl: string; insertId: number
           }
 
           .cardInfo {
-            margin-top: 0.5rem;
+            margin-top: 8px;
 
             .cardName {
               display: flex;

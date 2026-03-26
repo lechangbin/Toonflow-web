@@ -1,5 +1,5 @@
 <template>
-  <div class="app">
+  <div class="app" :style="ultrawideStyle">
     <t-config-provider :global-config="globalConfig">
       <router-view></router-view>
     </t-config-provider>

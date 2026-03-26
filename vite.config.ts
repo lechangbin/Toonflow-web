@@ -61,9 +61,9 @@ export default defineConfig({
           // 要转化的单位
           unitToConvert: "px",
           // UI设计稿的大小
-          viewportWidth: 1920,
+          viewportWidth: 1600,
           // 转换后的精度
-          unitPrecision: 6,
+          unitPrecision: 4,
           // 转换后的单位
           viewportUnit: "rem",
           // 字体转换后的单位

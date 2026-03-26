@@ -124,13 +124,13 @@ async function getTaskList() {
 <style lang="scss" scoped>
 .task {
   .header {
-    padding-top: 2rem;
-    margin-bottom: 2rem;
+    padding-top: 32px;
+    margin-bottom: 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     .title {
-      font-size: 2rem;
+      font-size: 32px;
       font-weight: 600;
     }
     .sub {
