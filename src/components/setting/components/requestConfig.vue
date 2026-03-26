@@ -1,6 +1,6 @@
 <template>
   <div class="requestConfig">
-    <t-alert style="margin-bottom: 1rem" theme="warning" :message="$t('settings.request.warning')"></t-alert>
+    <t-alert style="margin-bottom: 16px" theme="warning" :message="$t('settings.request.warning')"></t-alert>
     <t-form :data="formData" labelAlign="top" :rules="formRules">
       <t-form-item :label="$t('settings.request.apiAddress')" name="baseUrl">
         <t-input v-model="formData.baseUrl" :placeholder="$t('settings.request.apiPlaceholder')" clearable>

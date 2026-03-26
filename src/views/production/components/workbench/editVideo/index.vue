@@ -472,7 +472,7 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .editVideo {
   .content {
-    height: calc(100vh - var(--td-comp-paddingTB-xl) * 2 - 50px - 1rem);
+    height: calc(100vh - var(--td-comp-paddingTB-xl) * 2 - 50px - 16px);
   }
 
   .previewWrapper {

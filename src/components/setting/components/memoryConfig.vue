@@ -180,7 +180,7 @@ onMounted(() => {
 
   .actionRow {
     & > * {
-      margin-left: 1rem;
+      margin-left: 16px;
     }
   }
 }

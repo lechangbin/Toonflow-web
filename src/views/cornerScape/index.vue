@@ -433,8 +433,8 @@ async function batchGeneration() {
     height: fit-content;
     min-height: 0;
     flex-shrink: 0;
-    margin-right: 1rem;
-    margin-bottom: 1rem;
+    margin-right: 16px;
+    margin-bottom: 16px;
     display: flex;
     flex-direction: column;
     .card {
@@ -451,7 +451,7 @@ async function batchGeneration() {
     :deep(.t-form) {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 12px;
     }
     :deep(.t-form__item) {
       margin-bottom: 0;
@@ -459,7 +459,7 @@ async function batchGeneration() {
     .quickActions {
       display: flex;
       flex-direction: column;
-      gap: 0.625rem;
+      gap: 10px;
       width: 100%;
       :deep(.t-button) {
         width: 100%;
@@ -468,7 +468,7 @@ async function batchGeneration() {
     .filterGroup {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 8px;
     }
   }
   .content {
@@ -479,7 +479,7 @@ async function batchGeneration() {
     grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
     align-items: start;
     align-content: start;
-    gap: 1rem;
+    gap: 16px;
     .card {
       cursor: pointer;
       width: 100%;
@@ -503,8 +503,8 @@ async function batchGeneration() {
         justify-content: center;
         .selectBox {
           position: absolute;
-          top: 0.5rem;
-          left: 0.5rem;
+          top: 8px;
+          left: 8px;
           z-index: 10;
         }
         .generatingBox {
@@ -512,12 +512,12 @@ async function batchGeneration() {
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 0.75rem;
+          gap: 12px;
           width: 100%;
           height: 100%;
           background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
           .generatingText {
-            font-size: 0.8125rem;
+            font-size: 13px;
             color: var(--td-brand-color);
             letter-spacing: 0.05em;
           }
@@ -548,11 +548,11 @@ async function batchGeneration() {
       }
       .infoBox {
         flex: 1;
-        padding: 0.5rem 0;
+        padding: 8px 0;
         overflow: hidden;
         cursor: pointer;
         .title {
-          font-size: 0.875rem;
+          font-size: 14px;
           font-weight: 600;
           line-height: 1.5;
           overflow: hidden;
@@ -562,8 +562,8 @@ async function batchGeneration() {
         .meta {
           display: flex;
           flex-wrap: wrap;
-          gap: 0.375rem;
-          margin-top: 0.25rem;
+          gap: 6px;
+          margin-top: 4px;
           .typeTag {
             flex-shrink: 0;
           }
@@ -582,8 +582,8 @@ async function batchGeneration() {
           }
         }
         .prompt {
-          margin-top: 0.25rem;
-          font-size: 0.75rem;
+          margin-top: 4px;
+          font-size: 12px;
           color: var(--td-text-color-secondary);
           line-height: 1.5;
           overflow: hidden;
@@ -600,7 +600,7 @@ async function batchGeneration() {
 .drawerHeader {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 8px;
 }
 
 .drawerImageBox {
@@ -609,7 +609,7 @@ async function batchGeneration() {
   max-height: 400px;
   background-color: #f5f7fa;
   border-radius: 6px;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -627,9 +627,9 @@ async function batchGeneration() {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
+    gap: 12px;
     .generatingText {
-      font-size: 0.8125rem;
+      font-size: 13px;
       color: var(--td-brand-color);
     }
   }
@@ -641,7 +641,7 @@ async function batchGeneration() {
 
 .drawerActions {
   display: flex;
-  gap: 0.5rem;
+  gap: 8px;
   width: 100%;
   :deep(.t-button) {
     flex: 1;
