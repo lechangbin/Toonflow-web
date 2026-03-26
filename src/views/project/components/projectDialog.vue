@@ -10,69 +10,73 @@
       @cancel="handleCancel"
       :confirm-btn="isEdit ? $t('workbench.project.dialog.save') : $t('workbench.project.dialog.ok')"
       :cancel-btn="$t('workbench.project.dialog.cancel')">
-      <t-form :data="formState" label-align="top">
-        <t-form-item v-if="!isEdit" :label="$t('workbench.project.dialog.projectType')">
-          <t-select v-model="formState.projectType" :placeholder="$t('workbench.project.dialog.selectType')">
-            <t-option key="基于小说原文" :label="$t('workbench.project.dialog.basedOnNovel')" value="novel" />
-            <!-- <t-option key="basedOnScript" :label="$t('workbench.project.dialog.basedOnScript')" value="script" /> -->
-          </t-select>
-        </t-form-item>
-        <t-form-item :label="$t('workbench.project.dialog.projectName')">
-          <t-input v-model="formState.name" :placeholder="$t('workbench.project.dialog.projectNamePh')" />
-        </t-form-item>
-        <t-form-item :label="$t('workbench.project.dialog.novelType')">
-          <t-input v-model="formState.type" :placeholder="$t('workbench.project.dialog.novelTypePh')" />
-        </t-form-item>
-        <t-form-item :label="$t('workbench.project.dialog.modelData')">
-          <modelSelect v-model="imageModel" type="image" />
-        </t-form-item>
-        <t-form-item :label="$t('workbench.project.dialog.videoModelData')">
-          <modelSelect v-model="videoModel" type="video" />
-        </t-form-item>
-        <t-form-item :label="$t('workbench.project.dialog.artStyle')">
-          <div class="artStylePicker">
-            <div class="artStyleHeader">
-              <!-- <div class="headerLeft">
-                <span v-if="formState.artStyle" class="selectedLabel">
-                  {{ $t("workbench.project.dialog.selected") }}
-                  <t-tag theme="primary" size="small" closable @close="formState.artStyle = ''">{{ formState.artStyle }}</t-tag>
-                </span>
-                <span v-else class="selectedHint">{{ $t("workbench.project.dialog.selectArtStyle") }}</span>
-              </div> -->
-              <t-button size="small" variant="outline" @click="openArtStyleDialog()">
-                <template #icon><i-plus size="14" /></template>
-                {{ $t("workbench.project.dialog.newArtStyle") }}
-              </t-button>
-            </div>
-            <div class="artStyleContent">
-              <t-loading :loading="artStyleLoading" :text="$t('workbench.project.dialog.loading')">
-                <div class="gridContainer">
-                  <div
-                    v-for="item in artStyleOptions"
-                    :key="item.label"
-                    class="gridItem"
-                    :class="{ active: formState.artStyle === item.label }"
-                    @click="formState.artStyle = item.label">
-                    <div class="imageWrapper">
-                      <img :src="item.fileUrl" :alt="item.label" class="artImage" loading="lazy" />
-                      <div class="text">{{ item.label }}</div>
-                    </div>
-                    <div class="editBtn" @click.stop="openArtStyleDialog(item)">
-                      <i-edit theme="outline" size="14" />
-                    </div>
+      <div class="formColumns">
+        <div class="formLeft">
+          <t-form :data="formState" label-align="top">
+            <t-form-item v-if="!isEdit" :label="$t('workbench.project.dialog.projectType')">
+              <t-select v-model="formState.projectType" :placeholder="$t('workbench.project.dialog.selectType')">
+                <t-option key="基于小说原文" :label="$t('workbench.project.dialog.basedOnNovel')" value="novel" />
+              </t-select>
+            </t-form-item>
+            <t-form-item :label="$t('workbench.project.dialog.projectName')">
+              <t-input v-model="formState.name" :placeholder="$t('workbench.project.dialog.projectNamePh')" />
+            </t-form-item>
+            <t-form-item :label="$t('workbench.project.dialog.novelType')">
+              <t-input v-model="formState.type" :placeholder="$t('workbench.project.dialog.novelTypePh')" />
+            </t-form-item>
+            <t-form-item :label="$t('workbench.project.dialog.modelData')">
+              <modelSelect v-model="selectValue" type="image" />
+            </t-form-item>
+            <t-form-item :label="$t('workbench.project.dialog.videoRatio')">
+              <t-select v-model="formState.videoRatio" :options="RATIO_OPTIONS" />
+            </t-form-item>
+            <t-form-item :label="$t('workbench.project.dialog.novelIntro')">
+              <t-textarea v-model="formState.intro" :autosize="{ minRows: 3, maxRows: 6 }" :placeholder="$t('workbench.project.dialog.novelIntroPh')" />
+            </t-form-item>
+          </t-form>
+        </div>
+        <div class="formRight">
+          <t-form label-align="top">
+            <t-form-item :label="$t('workbench.project.dialog.artStyle')">
+              <div class="artStylePicker">
+                <div class="artStyleHeader">
+                  <div class="headerLeft">
+                    <span v-if="formState.artStyle" class="selectedLabel">
+                      {{ $t("workbench.project.dialog.selected") }}
+                      <t-tag theme="primary" size="small" closable @close="formState.artStyle = ''">{{ formState.artStyle }}</t-tag>
+                    </span>
+                    <span v-else class="selectedHint">{{ $t("workbench.project.dialog.selectArtStyle") }}</span>
                   </div>
+                  <t-button size="small" variant="outline" @click="openArtStyleDialog()">
+                    <template #icon><i-plus size="14" /></template>
+                    {{ $t("workbench.project.dialog.newArtStyle") }}
+                  </t-button>
                 </div>
-              </t-loading>
-            </div>
-          </div>
-        </t-form-item>
-        <t-form-item :label="$t('workbench.project.dialog.videoRatio')">
-          <t-select v-model="formState.videoRatio" :options="RATIO_OPTIONS" />
-        </t-form-item>
-        <t-form-item :label="$t('workbench.project.dialog.novelIntro')">
-          <t-textarea v-model="formState.intro" :autosize="{ minRows: 3, maxRows: 10 }" :placeholder="$t('workbench.project.dialog.novelIntroPh')" />
-        </t-form-item>
-      </t-form>
+                <div class="artStyleContent">
+                  <t-loading :loading="artStyleLoading" :text="$t('workbench.project.dialog.loading')">
+                    <div class="gridContainer">
+                      <div
+                        v-for="item in artStyleOptions"
+                        :key="item.label"
+                        class="gridItem"
+                        :class="{ active: formState.artStyle === item.label }"
+                        @click="formState.artStyle = item.label">
+                        <div class="imageWrapper">
+                          <img :src="item.fileUrl" :alt="item.label" class="artImage" loading="lazy" />
+                          <div class="text">{{ item.label }}</div>
+                        </div>
+                        <div class="editBtn" @click.stop="openArtStyleDialog(item)">
+                          <i-edit theme="outline" size="14" />
+                        </div>
+                      </div>
+                    </div>
+                  </t-loading>
+                </div>
+              </div>
+            </t-form-item>
+          </t-form>
+        </div>
+      </div>
     </t-dialog>
 
     <!-- 新建/编辑画风弹窗 -->
@@ -154,17 +158,13 @@ import "md-editor-v3/lib/style.css";
 import modelSelect from "@/components/modelSelect.vue";
 
 const addProjectShow = defineModel<boolean>();
-const imageModel = ref(""); // 保存图片模型选择的数据
-const videoModel = ref(""); // 保存视频模型选择的数据
+const selectValue = ref("");
 const props = defineProps<{
   projectData?: ProjectData | null;
 }>();
 const emit = defineEmits<{
   (e: "add", data: ProjectFormData): void;
-  (
-    e: "edit",
-    data: { id: string; name: string; intro: string; type: string; artStyle: string; videoRatio: string; imageModel: string; videoModel: string },
-  ): void;
+  (e: "edit", data: { id: string; name: string; intro: string; type: string; artStyle: string; videoRatio: string }): void;
 }>();
 
 // ===== 类型定义 =====
@@ -184,8 +184,6 @@ interface ProjectFormData {
   type: string;
   artStyle: string;
   videoRatio: string;
-  imageModel: string;
-  videoModel: string;
 }
 
 interface ArtStyleItem {
@@ -214,8 +212,6 @@ const DEFAULT_FORM: () => ProjectFormData & { id: number; era: string; createTim
   videoRatio: "16:9",
   createTime: 0,
   userId: 0,
-  imageModel: "",
-  videoModel: "",
 });
 
 // ===== 表单 =====
@@ -239,8 +235,6 @@ function handleOk() {
       type: formState.value.type,
       artStyle: formState.value.artStyle,
       videoRatio: formState.value.videoRatio,
-      imageModel: imageModel.value,
-      videoModel: videoModel.value,
     });
   } else {
     emit("add", {
@@ -250,8 +244,6 @@ function handleOk() {
       type: formState.value.type,
       artStyle: formState.value.artStyle,
       videoRatio: formState.value.videoRatio || "16:9",
-      imageModel: imageModel.value,
-      videoModel: videoModel.value,
     });
   }
   resetForm();
@@ -373,6 +365,7 @@ async function handleArtStyleSubmit() {
         name: artStyleForm.value.name,
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
+        model: selectValue.value,
       });
       window.$message.success($t("workbench.project.msg.artStyleUpdated"));
     } else {
@@ -380,6 +373,7 @@ async function handleArtStyleSubmit() {
         name: artStyleForm.value.name,
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
+        model: selectValue.value,
       });
       window.$message.success($t("workbench.project.msg.artStyleAdded"));
     }
@@ -428,6 +422,21 @@ function fetchArtStyles() {
 </script>
 
 <style lang="scss" scoped>
+.formColumns {
+  display: flex;
+  gap: 24px;
+
+  .formLeft {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .formRight {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 .artStylePicker {
   width: 100%;
 
@@ -457,7 +466,7 @@ function fetchArtStyles() {
   }
 
   .artStyleContent {
-    height: 150px;
+    height: 300px;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 4px;

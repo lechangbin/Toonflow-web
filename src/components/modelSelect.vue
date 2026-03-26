@@ -1,5 +1,5 @@
 <template>
-  <t-select :size="props.size" v-model="selectValue" :placeholder="props.placeholder" @change="onChange">
+  <t-select :size="props.size" v-model="selectValue" :placeholder="props.placeholder ?? $t('components.modelSelect.placeholder')" @change="onChange">
     <t-option-group v-for="(list, index) in optionsData" :key="index" :label="list.group">
       <t-option v-for="item in list.children" :key="item.id" :value="`${item.id}:${item.value}`" :label="item.label">
         <div class="optionItem">
@@ -52,7 +52,6 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: $t("components.modelSelect.placeholder"),
   },
   changeConfig: {
     type: Boolean,
