@@ -4,8 +4,7 @@ interface TextModel {
   name: string; // 显示名称
   modelName: string;
   type: "text";
-  multimodal: boolean; // 前端显示用
-  tool: boolean; // 前端显示用
+  think: boolean; // 前端显示用
 }
 
 // 图像模型
@@ -48,7 +47,7 @@ interface VendorConfig {
   version: number;
   icon?: string; //仅支持base64格式
   author: string;
-  description?: string;//md5格式
+  description?: string; //md5格式
   name: string;
   inputs: {
     key: string;
@@ -65,7 +64,8 @@ interface VendorConfig {
 const vendor: VendorConfig = {
   version: 1,
   author: "Toonflow",
-  description:"Toonflow官方中转平台，提供文本、图像、视频、音频等多模态生成能力的中转服务，支持接入多个大模型供应商，方便用户统一管理和调用不同供应商的生成能力。",
+  description:
+    "Toonflow官方中转平台，提供文本、图像、视频、音频等多模态生成能力的中转服务，支持接入多个大模型供应商，方便用户统一管理和调用不同供应商的生成能力。",
   name: "Toonflow官方中转平台",
   inputs: [{ key: "apiKey", label: "API密钥", type: "password", required: true }],
   inputValues: {

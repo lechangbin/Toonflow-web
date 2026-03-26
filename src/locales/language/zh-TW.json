@@ -38,7 +38,8 @@
       },
       "msg": {
         "fetchModelFailed": "取得模型資料失敗:"
-      }
+      },
+      "goSetting": "去設定中加入模型"
     },
     "update": {
       "title": "發現新版本",
@@ -283,8 +284,11 @@
         "enterApi": "請輸入 API 網址",
         "validUrl": "請輸入有效的 HTTP/HTTPS 網址",
         "saved": "請求網址儲存成功",
-        "reset": "已重設為預設網址"
-      }
+        "reset": "已重設為預設網址",
+        "refreshFailed": "刷新失敗",
+        "refreshSuccess": "刷新成功"
+      },
+      "refresh": "重新整理"
     },
     "about": {
       "slogan": "開源的 AI 驅動漫畫 / 分鏡創作工具",

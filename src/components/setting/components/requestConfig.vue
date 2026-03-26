@@ -13,6 +13,7 @@
         <t-space size="small">
           <t-button theme="primary" type="submit" @click="handleSubmit">{{ $t("settings.request.save") }}</t-button>
           <t-button theme="default" @click="handleReset">{{ $t("settings.request.reset") }}</t-button>
+          <t-button v-if="isElectron" theme="warning" @click="refreshAPI">{{ $t("settings.request.refresh") }}</t-button>
         </t-space>
       </t-form-item>
     </t-form>
@@ -22,13 +23,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
 import { type FormRules } from "tdesign-vue-next";
-import useSettingStore from "@/stores/setting";
+import settingStore from "@/stores/setting";
+const { baseUrl, isElectron } = storeToRefs(settingStore());
 
 interface RequestForm {
   baseUrl: string;
 }
-
-const settingStore = useSettingStore();
 
 const formData = ref<RequestForm>({
   baseUrl: "",
@@ -46,18 +46,33 @@ const formRules: FormRules<RequestForm> = {
 };
 
 function loadSettings() {
-  formData.value.baseUrl = settingStore.baseUrl;
+  formData.value.baseUrl = baseUrl.value;
 }
 
 function handleSubmit() {
-  settingStore.baseUrl = formData.value.baseUrl;
+  baseUrl.value = formData.value.baseUrl;
   window.$message.success($t("settings.request.msg.saved"));
 }
 
 function handleReset() {
-  formData.value.baseUrl = "http://localhost:60000";
-  settingStore.baseUrl = formData.value.baseUrl;
+  formData.value.baseUrl = "http://localhost:10588";
+  baseUrl.value = formData.value.baseUrl;
   window.$message.success($t("settings.request.msg.reset"));
+}
+
+async function refreshAPI() {
+  try {
+    const res = await fetch("toonflow://getPort");
+    const data = await res.json();
+    if (data?.port) {
+      baseUrl.value = `http://localhost:${data.port}/api`;
+      isElectron.value = true;
+      window.$message.success($t("settings.request.msg.refreshSuccess"));
+    }
+    window.$message.error($t("settings.request.msg.refreshFailed"));
+  } catch (error) {
+    window.$message.error($t("settings.request.msg.refreshFailed"));
+  }
 }
 
 onMounted(() => {

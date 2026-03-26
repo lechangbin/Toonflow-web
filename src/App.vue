@@ -13,7 +13,6 @@ import enConfig from "tdesign-vue-next/es/locale/en_US";
 import { cachedLocale } from "@/locales";
 import { initTheme } from "@/utils/theme";
 import { type GlobalConfigProvider } from "tdesign-vue-next";
-import checkUpdate from "@/utils/checkUpdate";
 const { baseUrl, isElectron } = storeToRefs(settingStore());
 
 watch(
@@ -52,7 +51,6 @@ async function getPort() {
 // 初始化主题
 onMounted(() => {
   initTheme();
-  checkUpdate();
 });
 
 const tdesignLocaleMap: Record<string, object> = {

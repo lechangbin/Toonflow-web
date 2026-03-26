@@ -48,6 +48,7 @@ export default async () => {
     NotifyPlugin.success({
       title: "✨ Skill 扫描完成",
       content: `📁 扫描 ${data.totalFiles} 个文件 | ${changes.join(" | ")}`,
+      closeBtn: true,
     });
     // 警告通知
     if (data.noDescriptionSkillCount > 0 || data.noAttributionSkillCount > 0) {

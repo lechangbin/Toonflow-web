@@ -38,7 +38,8 @@
       },
       "msg": {
         "fetchModelFailed": "モデルデータの取得に失敗しました:"
-      }
+      },
+      "goSetting": "設定に移動してモデルを追加します"
     }
   },
   "settings": {
@@ -263,7 +264,9 @@
       "inputCount": "個数を入力してください",
       "chapterRegex": "章分割の正規表現",
       "restoreDefault": "デフォルトに戻す",
-      "regexPlaceholder": "正規表現を入力してください"
+      "regexPlaceholder": "正規表現を入力してください",
+      "showTitleBar": "タイトルバーを表示する",
+      "isElectron": "デスクトップモードに切り替える"
     },
     "request": {
       "warning": "特別な理由がない限り、変更や設定は不要です",
@@ -275,8 +278,10 @@
         "enterApi": "API アドレスを入力してください",
         "validUrl": "有効な HTTP/HTTPS アドレスを入力してください",
         "saved": "リクエストアドレスを保存しました",
-        "reset": "デフォルトアドレスにリセットしました"
-      }
+        "reset": "デフォルトアドレスにリセットしました",
+        "refreshFailed": "更新に失敗しました"
+      },
+      "refresh": "リフレッシュする"
     },
     "about": {
       "slogan": "オープンソースのAI主導コミック/絵コンテ制作ツール",

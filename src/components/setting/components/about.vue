@@ -5,23 +5,23 @@
         <img src="@/assets/logo.png" alt="ToonFlow Logo" class="logo" />
         <div class="appName">
           <div class="name">ToonFlow</div>
-          <div class="data">{{ $t('settings.about.slogan') }}</div>
+          <div class="data">{{ $t("settings.about.slogan") }}</div>
           <div class="version">
-            <t-tag theme="primary" shape="round" size="small" style="padding: 10px">{{ version }} · {{ $t('settings.about.latestVersion') }}</t-tag>
+            <t-tag theme="primary" shape="round" size="small" style="padding: 10px">v{{ version }}</t-tag>
           </div>
         </div>
         <div class="renew ac">
-          <t-button theme="primary" @click="$emit('renew')">
+          <t-button theme="primary" @click="checkUpdate">
             <template #icon>
               <i-refresh theme="outline" size="18" />
             </template>
-            <span style="margin-left: 5px">{{ $t('settings.about.checkUpdate') }}</span>
+            <span style="margin-left: 5px">{{ $t("settings.about.checkUpdate") }}</span>
           </t-button>
         </div>
       </div>
     </t-card>
     <div class="codeRepository">
-      <span>{{ $t('settings.about.codeRepository') }}</span>
+      <span>{{ $t("settings.about.codeRepository") }}</span>
       <t-card bordered :style="{ width: '100%' }" class="logoCard">
         <div class="ac jb" style="cursor: pointer" @click="openLink('https://github.com/HBAI-Ltd/Toonflow-app')">
           <div class="f">
@@ -30,7 +30,7 @@
             </div>
             <div style="margin-left: 15px">
               <div>
-                <span style="font-size: 15px; font-weight: 900">{{ $t('settings.about.githubRepo') }}</span>
+                <span style="font-size: 15px; font-weight: 900">{{ $t("settings.about.githubRepo") }}</span>
               </div>
               <div>
                 <span style="font-size: 12px; color: #666">https://github.com/HBAI-Ltd/Toonflow-app</span>
@@ -47,7 +47,7 @@
             </div>
             <div style="margin-left: 15px">
               <div>
-                <span style="font-size: 15px; font-weight: 900">{{ $t('settings.about.giteeRepo') }}</span>
+                <span style="font-size: 15px; font-weight: 900">{{ $t("settings.about.giteeRepo") }}</span>
               </div>
               <div>
                 <span style="font-size: 12px; color: #666">https://gitee.com/HBAI-Ltd/Toonflow-app</span>
@@ -58,58 +58,20 @@
         </div>
       </t-card>
     </div>
-    <div class="versionUpdate">
-      <span>{{ $t('settings.about.versionUpdate') }}</span>
-      <t-card bordered :style="{ width: '100%' }" class="logoCard">
-        <div class="ac jb" style="cursor: pointer" @click="openLink('https://github.com/HBAI-Ltd/Toonflow-app/releases')">
-          <div class="f">
-            <div class="checkForUpdates">
-              <i-refresh theme="outline" size="20" class="c" style="width: 100%; height: 100%" />
-            </div>
-            <div style="margin-left: 15px">
-              <div>
-                <span style="font-size: 15px; font-weight: 900">{{ $t('settings.about.checkUpdateGithub') }}</span>
-              </div>
-              <div>
-                <span style="font-size: 12px; color: #666">{{ $t('settings.about.getFromGithub') }}</span>
-              </div>
-            </div>
-          </div>
-          <i-right theme="outline" size="18" />
-        </div>
-        <t-divider></t-divider>
-        <div class="ac jb" style="cursor: pointer" @click="openLink('https://gitee.com/HBAI-Ltd/Toonflow-app/releases')">
-          <div class="f">
-            <div class="checkForUpdates">
-              <i-refresh theme="outline" size="20" class="c" style="width: 100%; height: 100%" />
-            </div>
-            <div style="margin-left: 15px">
-              <div>
-                <span style="font-size: 15px; font-weight: 900">{{ $t('settings.about.checkUpdateGitee') }}</span>
-              </div>
-              <div>
-                <span style="font-size: 12px; color: #666">{{ $t('settings.about.getFromGitee') }}</span>
-              </div>
-            </div>
-          </div>
-          <i-right theme="outline" size="18" />
-        </div>
-      </t-card>
-    </div>
     <div class="license">
-      <span>{{ $t('settings.about.license') }}</span>
+      <span>{{ $t("settings.about.license") }}</span>
       <t-card bordered :style="{ width: '100%' }" class="logoCard">
-        <div class="ac jb" style="cursor: pointer" @click="licenseFn">
+        <div class="ac jb" style="cursor: pointer">
           <div class="f">
             <div class="data">
               <i-notes theme="outline" size="20" class="c" style="width: 100%; height: 100%" />
             </div>
             <div style="margin-left: 15px">
               <div>
-                <span style="font-size: 15px; font-weight: 900">AGPL-3.0 License</span>
+                <span style="font-size: 15px; font-weight: 900">Apache-2.0 License</span>
               </div>
               <div>
-                <span style="font-size: 12px; color: #666">{{ $t('settings.about.licenseDesc') }}</span>
+                <span style="font-size: 12px; color: #666">{{ $t("settings.about.licenseDesc") }}</span>
               </div>
             </div>
           </div>
@@ -121,14 +83,22 @@
 </template>
 
 <script setup lang="ts">
-//版本号
+import axios from "@/utils/axios";
 import store from "@/stores/index";
 const { version } = storeToRefs(store());
 function openLink(url: string) {
   window.open(url, "_blank");
 }
-//许可证详情
-function licenseFn() {}
+
+onMounted(async () => {
+  const { data } = await axios.get("/other/getVersion");
+  version.value = data;
+});
+
+async function checkUpdate() {
+  const { data } = await axios.post("/setting/about/checkUpdate");
+  console.log("%c Line:100 🍧 data", "background:#6ec1c2", data);
+}
 </script>
 
 <style lang="scss" scoped>

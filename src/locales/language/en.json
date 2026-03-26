@@ -38,7 +38,8 @@
       },
       "msg": {
         "fetchModelFailed": "Failed to fetch model data:"
-      }
+      },
+      "goSetting": "Go to settings and add a model"
     }
   },
   "settings": {
@@ -330,7 +331,9 @@
       "inputCount": "Please enter number of tasks",
       "chapterRegex": "Chapter Split Regex",
       "restoreDefault": "Restore Defaults",
-      "regexPlaceholder": "Please enter a regular expression"
+      "regexPlaceholder": "Please enter a regular expression",
+      "showTitleBar": "show title bar",
+      "isElectron": "Switch to desktop mode"
     },
     "request": {
       "warning": "Do not modify unless absolutely necessary",
@@ -342,7 +345,9 @@
         "enterApi": "Please enter API URL",
         "validUrl": "Please enter a valid HTTP/HTTPS URL",
         "saved": "Request URL saved successfully",
-        "reset": "Reset to default URL"
+        "reset": "Reset to default URL",
+        "refreshFailed": "Refresh failed",
+        "refreshSuccess": "Refresh successful"
       }
     },
     "about": {

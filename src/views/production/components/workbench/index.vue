@@ -66,12 +66,15 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from "vue-i18n";
 import axios from "@/utils/axios";
 import preview from "./preview.vue";
 import generate from "./generate.vue";
 import editVideo from "./editVideo/index.vue";
 import { generateId, useTracksStore, type MediaClip, type SubtitleClip, type Clip } from "vue-clip-track";
 import type { MediaItem, AudioItem } from "./editVideo/utils/mediaData";
+
+const { t: $t } = useI18n();
 
 const visible = defineModel("visible", {
   type: Boolean,
@@ -132,7 +135,7 @@ function editFootage() {
     initialVideoItems.value = data.video.map((item: any) => ({
       id: `video-${item.id}`,
       type: "video",
-      name: `分镜视频-${item.storyboard}.mp4`,
+      name: $t("workbench.production.wb.storyboardVideoName", { storyboard: item.storyboard }),
       duration: item.duration || 0,
       icon: "🎬",
       color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",

@@ -16,11 +16,18 @@
         </div>
       </t-option>
     </t-option-group>
+    <!-- 无可用模型时，显示跳转设置的按钮 -->
+    <template #empty>
+      <t-button size="small" variant="text" theme="primary" @click.stop="goVendorConfig">
+        {{ $t('components.modelSelect.goSetting') }}
+      </t-button>
+    </template>
   </t-select>
 </template>
 
 <script setup lang="ts">
 import providersLogo from "@/utils/ai/providersLogo";
+import settingStore from "@/stores/setting";
 
 import axios from "@/utils/axios";
 interface VendorChild {
@@ -143,6 +150,12 @@ function getProviderLogoByModel(label?: string, value?: string) {
 
 function getFallbackText(label: string) {
   return label?.slice(0, 1)?.toUpperCase() || "M";
+}
+
+function goVendorConfig() {
+  const store = settingStore();
+  store.activeMenu = "vendorConfig";
+  store.showSetting = true;
 }
 </script>
 

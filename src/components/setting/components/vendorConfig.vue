@@ -541,12 +541,12 @@ function handleConfirmVendor() {
               .post("/setting/vendorConfig/updateVendor", {
                 id: id.value,
                 tsCode: vendorCode.value,
-                name: currentVendor.value.name,
-                version: String(currentVendor.value.version),
-                icon: currentVendor.value.icon,
-                inputs: currentVendor.value.inputs,
-                inputValues: currentVendor.value.inputValues,
-                models: currentVendor.value.models,
+                name: currentVendor.value!.name,
+                version: String(currentVendor.value!.version),
+                icon: currentVendor.value!.icon,
+                inputs: currentVendor.value!.inputs,
+                inputValues: currentVendor.value!.inputValues,
+                models: currentVendor.value!.models,
               })
               .then((res) => {
                 window.$message.success($t("settings.vendor.msg.updateSuccess"));
@@ -829,7 +829,7 @@ async function handleTestModel(item: (typeof vendorModels.value)[number]) {
     });
 
     if (item.type === "text") {
-      window.$message.success(`${item.modelName} ${$t("settings.vendor.msg.testSuccess")}`);
+      window.$message.success(`${item.modelName} ${$t("settings.vendor.msg.testSuccess")}: ${typeof data === "string" ? data : JSON.stringify(data)}`);
     } else if (item.type === "image" || item.type === "video") {
       testModelName.value = item.modelName;
       testResultType.value = item.type;
@@ -837,8 +837,9 @@ async function handleTestModel(item: (typeof vendorModels.value)[number]) {
       testResultVisible.value = true;
       window.$message.success(`${item.type === "image" ? $t("settings.vendor.msg.imageGenSuccess") : $t("settings.vendor.msg.videoGenSuccess")}`);
     }
-  } catch (e) {
-    window.$message.error(`${$t("settings.vendor.msg.requestFailed")}${(e as any).message}`);
+  } catch (e: any) {
+    const errMsg = e?.response?.data?.message || e?.response?.data || e?.message || String(e);
+    window.$message.error(`${$t("settings.vendor.msg.requestFailed")}${typeof errMsg === "string" ? errMsg : JSON.stringify(errMsg)}`);
   } finally {
     delete testingModels[item.modelName];
   }

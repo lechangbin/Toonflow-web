@@ -17,6 +17,9 @@
           v-model="otherSetting.assetsBatchGenereateSize"
           :placeholder="$t('settings.other.inputCount')" />
       </t-form-item>
+      <t-form-item :label="$t('settings.other.isElectron')" name="showTitleBar">
+        <t-switch v-model="isElectron" />
+      </t-form-item>
       <t-form-item name="chapterReg">
         <template #label>
           <span>{{ $t("settings.other.chapterRegex") }}</span>
@@ -30,7 +33,7 @@
 
 <script setup lang="ts">
 import settingStore from "@/stores/setting";
-const { otherSetting } = storeToRefs(settingStore());
+const { otherSetting, isElectron } = storeToRefs(settingStore());
 
 import { computed } from "vue";
 // 将毫秒转换为秒显示，输入时转换回毫秒存储

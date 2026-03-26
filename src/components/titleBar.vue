@@ -75,6 +75,7 @@ onUnmounted(() => {
   -webkit-app-region: drag;
   position: relative;
   z-index: 9999;
+  width: 100%;
 }
 
 .titleBar-title {
