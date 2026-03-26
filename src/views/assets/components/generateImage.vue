@@ -307,9 +307,9 @@ watch(
 // 获取图片列表
 async function fetchGeneratedImages() {
   const { data } = await axios.post("/assets/getImage", { assetsId: props.formData.id });
-  const images = data.tempAssets.map((item: { id: string; src: string; state: string; selected?: boolean }) => ({
+  const images = data.tempAssets.map((item: { id: string; filePath: string; state: string; selected?: boolean }) => ({
     id: item.id,
-    src: item.src,
+    src: item.filePath,
     state: item.state,
     selected: item.selected ?? false,
   }));
