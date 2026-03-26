@@ -75,7 +75,7 @@ export default async () => {
                   NotifyPlugin.close(warningNotifyInstance);
                 },
               },
-              window.$t("common.openSettings"),
+              "打开设置",
             ),
           ),
         duration: 6000,

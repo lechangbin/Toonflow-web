@@ -91,7 +91,7 @@ export default function parseNovel(text: string): Reel[] {
     chapters.sort((a, b) => a.index - b.index);
     reels.push({
       index: 1,
-      reel: window.$t("common.defaultReel"),
+      reel: "正文卷",
       chapters,
     });
     return reels;
