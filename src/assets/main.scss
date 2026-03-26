@@ -8,12 +8,12 @@ body,
 // Electron titleBar 偏移：防止 TDesign 消息提示和通知被 titleBar 遮挡
 body.is-electron {
   .t-message__list {
-    top: 64px !important;
+    top: 48px !important;
   }
 
   .t-notification__show--top-left,
   .t-notification__show--top-right {
-    top: 64px !important;
+    top: 48px !important;
   }
   .t-notification-list__show {
     top: 48px !important;
