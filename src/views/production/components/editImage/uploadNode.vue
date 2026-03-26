@@ -10,7 +10,7 @@
         <t-image
           class="image"
           :src="currentImageUrl"
-          fit="cover"
+          fit="contain"
           :style="{
             width: '100%',
             height: '100%',
@@ -22,10 +22,19 @@
             </div>
           </template>
         </t-image>
-        <div class="upload ac" @click="uploadFn">
-          <i-upload theme="outline" size="18" fill="#fff" />
-          <span style="margin-left: 5px; color: #fff">{{ $t('workbench.production.editImage.upload') }}</span>
-        </div>
+        <t-dropdown :options="options" @click="clickHandler">
+          <div class="upload ac">
+            <i-upload theme="outline" size="18" fill="#fff" />
+            <span style="margin-left: 5px; color: #fff">{{ $t("workbench.production.editImage.upload") }}</span>
+          </div>
+          <template #content>
+            <div class="fc ac" style="gap: 6px">
+              <t-button variant="outline" @click="uploadFn">资产图片</t-button>
+              <t-button variant="outline" @click="getStoryboardImage">分镜图片</t-button>
+            </div>
+          </template>
+        </t-dropdown>
+
         <t-tooltip theme="primary" :content="$t('workbench.production.editImage.deleteNode')">
           <div class="remove ac" @click="removeFn">
             <i-delete theme="outline" size="18" fill="#fff" />
@@ -34,23 +43,35 @@
       </div>
     </div>
   </div>
+  <Teleport to="body">
+    <storyboardImageCheck v-model="storyboardVisable" telp v-if="storyboardVisable" :scriptId="episodesId!" @confirm="updateImage" />
+  </Teleport>
 </template>
 
 <script setup lang="ts">
 import { Handle, Position, useVueFlow } from "@vue-flow/core";
-import { onBeforeUnmount, ref, watch } from "vue";
+import { onBeforeUnmount, ref, watch, type Ref } from "vue";
 import openAssetsSelector from "@/utils/assetsCheck";
+import storyboardImageCheck from "@/components/storyboardImageCheck.vue";
+import type { Storyboard } from "../../utils/flowBuilder";
+import type { DropdownOption } from "tdesign-vue-next/es/dropdown";
 const props = defineProps<{
   id: string;
   data: {
     image?: string;
   };
 }>();
+const episodesId = inject<Ref<number>>("episodesId");
 
-const { updateNodeData, removeNodes } = useVueFlow({ id: "editStoryboard" });
-
+const { updateNodeData, removeNodes } = useVueFlow({ id: "editImage" });
+const storyboardVisable = ref(false);
 const currentImageUrl = ref(props.data?.image || "");
 const currentObjectUrl = ref<string | null>(null);
+
+const options = [
+  { content: "资产图片上传", value: 1 },
+  { content: "分镜图片上传", value: 2 },
+];
 
 watch(
   () => props.data?.image,
@@ -69,6 +90,14 @@ function removeFn() {
   removeNodes(props.id);
 }
 const emit = defineEmits(["upload"]);
+
+function clickHandler(data: DropdownOption) {
+  if (data.value == 1) {
+    uploadFn();
+  } else if (data.value == 2) {
+    getStoryboardImage();
+  }
+}
 async function uploadFn() {
   const selectedAssets = await openAssetsSelector({
     multiple: false,
@@ -76,6 +105,17 @@ async function uploadFn() {
   });
   if (selectedAssets.length > 0) {
     const filePath = selectedAssets[0].src!;
+    currentImageUrl.value = filePath;
+    updateNodeData(props.id, { image: filePath });
+    emit("upload");
+  }
+}
+function getStoryboardImage() {
+  storyboardVisable.value = true;
+}
+function updateImage(rows: Storyboard[]) {
+  if (rows.length > 0) {
+    const filePath = rows[0].src!;
     currentImageUrl.value = filePath;
     updateNodeData(props.id, { image: filePath });
     emit("upload");

@@ -1166,5 +1166,6 @@
   "components.storyboardImageCheck.title": "标题",
   "components.storyboardImageCheck.duration": "时长",
   "components.storyboardImageCheck.lines": "台词",
-  "components.storyboardImageCheck.createTime": "创建时间"
+  "components.storyboardImageCheck.createTime": "创建时间",
+  "workbench.script.extractAssets": "提取资产"
 }

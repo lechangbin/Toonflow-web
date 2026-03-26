@@ -20,6 +20,10 @@
           <template #icon><i-export /></template>
           {{ $t("workbench.script.exportScript") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
         </t-button>
+        <t-button theme="primary" @click="handleExtractAssets" :disabled="selectedIds.length === 0">
+          <template #icon><i-export /></template>
+          {{ $t("workbench.script.extractAssets") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
+        </t-button>
       </div>
     </div>
     <div class="contentArea">
@@ -32,7 +36,6 @@
             <template #header>
               <div class="cardHeader">
                 <span class="cardTitle">{{ item.name }}</span>
-                <i-delete theme="outline" @click.stop="handleDeleteScript(item.id)" style="cursor: pointer" />
                 <t-checkbox :checked="selectedIds.includes(item.id)" @click.stop @change="toggleSelect(item.id)" class="cardCheckbox" />
               </div>
             </template>
@@ -42,6 +45,9 @@
                 {{ asset.name }}
               </t-tag>
             </div>
+            <template #actions>
+              <i-delete theme="outline" @click.stop="handleDeleteScript(item.id)" style="cursor: pointer" />
+            </template>
           </t-card>
         </div>
       </div>
@@ -175,6 +181,12 @@ async function handleDeleteScript(scriptId: number) {
     onClose: () => {
       dialog.destroy();
     },
+  });
+}
+//提取资产
+async function handleExtractAssets() {
+  await axios.post("/script/extractAssets", {
+    scriptIds: selectedIds.value,
   });
 }
 </script>
