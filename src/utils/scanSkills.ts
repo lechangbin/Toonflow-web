@@ -1,104 +1,89 @@
-<template>
-  <div class="test">
-    <t-button theme="primary" @click="showProgressNotify">测试按钮</t-button>
-    <t-card>
-      {{ log }}
-    </t-card>
-  </div>
-</template>
-
-<script setup lang="ts">
 import axios from "@/utils/axios";
 import { NotifyPlugin, Progress } from "tdesign-vue-next";
 import { h, ref } from "vue";
-
-const log = ref<any>("");
-
-// 创建响应式进度值
-const progressValue = ref(0);
+import { storeToRefs } from "pinia";
+import settingStore from "@/stores/setting";
 
 // 延迟函数
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// 显示带进度条的通知
-async function showProgressNotify() {
-  // 重置状态
-  progressValue.value = 0;
+export default async () => {
+  const { showSetting, activeMenu } = storeToRefs(settingStore());
 
+  const progressValue = ref(0);
+  // 显示进度通知
   const notifyInstance = NotifyPlugin.info({
-    title: "正在解析加载Skill",
-    content: () => {
-      return h("div", { style: "width: 100%; padding-top: 10px;" }, [
+    title: "🔍 正在解析加载Skill",
+    content: () =>
+      h("div", { style: "width: 100%; padding-top: 10px;" }, [
         h(Progress, {
           percentage: progressValue.value,
           status: progressValue.value >= 100 ? "success" : "active",
         }),
-      ]);
-    },
+      ]),
     duration: 0,
     closeBtn: true,
   });
-
   try {
-    // 同时执行请求和进度动画，确保至少1秒
     const [{ data }] = await Promise.all([
       axios.post("/setting/skillManagement/scanSkills"),
       (async () => {
-        // 进度动画：100ms 更新一次，共10次，耗时1秒
         for (let i = 1; i <= 10; i++) {
           await delay(100);
-          progressValue.value = i * 9; // 最多到90%
+          progressValue.value = i * 9;
         }
       })(),
     ]);
-
-    // 完成进度
     progressValue.value = 100;
-    await delay(300); // 短暂显示100%状态
-
-    // 关闭原通知
+    await delay(300);
     NotifyPlugin.close(notifyInstance);
-
-    // 显示成功通知
+    // 成功通知
+    const changes = [
+      data.insertedCount && `✅ 新增${data.insertedCount}个Skill`,
+      data.updatedCount && `🔄 更新${data.updatedCount}个Skill`,
+      data.removedCount && `🗑️ 移除${data.removedCount}个Skill`,
+    ].filter(Boolean);
     NotifyPlugin.success({
       title: "✨ Skill 扫描完成",
-      content: `📁 扫描 ${data.totalFiles} 个文件 | ✅ +${data.insertedCount} | 🔄 ↻${data.updatedCount} | 🗑️ -${data.removedCount}`,
-      footer: () =>
-        h("div", { style: "text-align: right; padding-top: 4px;" }, h("span", { style: "color: #00a870; font-size: 12px;" }, `🎉 ${data.message}`)),
-      duration: 5000,
-      closeBtn: true,
+      content: `📁 扫描 ${data.totalFiles} 个文件 | ${changes.join(" | ")}`,
     });
-
-    // 如果有警告信息，单独提示
+    // 警告通知
     if (data.noDescriptionSkillCount > 0 || data.noAttributionSkillCount > 0) {
       const warnings = [];
       if (data.noDescriptionSkillCount > 0) {
-        warnings.push(`📝 缺少描述: ${data.noDescriptionSkillCount}`);
+        warnings.push(`📝 ${data.noDescriptionSkillCount}个Skill缺少描述`);
       }
       if (data.noAttributionSkillCount > 0) {
-        warnings.push(`👤 缺少归属: ${data.noAttributionSkillCount}`);
+        warnings.push(`👤 ${data.noAttributionSkillCount}个Skill缺少归属`);
       }
-
-      NotifyPlugin.warning({
+      const warningNotifyInstance = NotifyPlugin.warning({
         title: "⚠️ Skill 配置警告",
         content: warnings.join(" | "),
         footer: () =>
           h(
             "div",
             { style: "text-align: right; padding-top: 4px;" },
-            h("span", { style: "color: #ed7b2f; font-size: 12px;" }, "💡 建议补充完整信息"),
+            h(
+              "span",
+              {
+                style: "color: #ed7b2f; font-size: 12px; cursor: pointer;",
+                onClick: () => {
+                  activeMenu.value = "skillManagement";
+                  showSetting.value = true;
+                  NotifyPlugin.close(warningNotifyInstance);
+                },
+              },
+              "打开设置",
+            ),
           ),
         duration: 6000,
         closeBtn: true,
       });
     }
   } catch (error) {
-    // 关闭原通知
     NotifyPlugin.close(notifyInstance);
-
-    // 显示错误通知
     NotifyPlugin.error({
       title: "❌ 扫描失败",
       content: "🔌 请检查网络连接或稍后重试",
@@ -108,7 +93,4 @@ async function showProgressNotify() {
       closeBtn: true,
     });
   }
-}
-</script>
-
-<style lang="scss" scoped></style>
+};

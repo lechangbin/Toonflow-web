@@ -2,21 +2,24 @@
   <div class="app">
     <t-config-provider :global-config="globalConfig">
       <router-view></router-view>
-      <UpdateDialog />
+      <init />
     </t-config-provider>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRoute } from "vue-router";
-import UpdateDialog from "@/components/update.vue";
-import { initTheme } from "@/utils/theme";
 import settingStore from "@/stores/setting";
-import { storeToRefs } from "pinia";
 
-const route = useRoute();
+import { merge } from "lodash-es";
+import zhConfig from "tdesign-vue-next/es/locale/zh_CN";
+import enConfig from "tdesign-vue-next/es/locale/en_US";
+import { cachedLocale } from "@/locales";
+
+import { type GlobalConfigProvider } from "tdesign-vue-next";
+import scanSkills from "@/utils/scanSkills";
+import checkUpdate from "@/utils/checkUpdate";
 const store = settingStore();
-const { baseUrl, wsBaseUrl } = storeToRefs(store);
+const { baseUrl } = storeToRefs(store);
 
 onBeforeMount(() => {
   document.addEventListener("keydown", function (event) {
@@ -29,7 +32,8 @@ onBeforeMount(() => {
 
 // 初始化主题
 onMounted(() => {
-  initTheme();
+  scanSkills();
+  checkUpdate();
   setTimeout(() => {
     if (window.$electron) {
       const port = window.$port;
@@ -37,19 +41,6 @@ onMounted(() => {
     }
   }, 1000);
 });
-
-const theme = {
-  token: {
-    colorPrimary: "#000",
-  },
-};
-
-import { merge, set } from "lodash-es";
-import zhConfig from "tdesign-vue-next/es/locale/zh_CN";
-import enConfig from "tdesign-vue-next/es/locale/en_US";
-import { cachedLocale } from "@/locales";
-
-import { type GlobalConfigProvider } from "tdesign-vue-next";
 
 const tdesignLocaleMap: Record<string, object> = {
   "zh-CN": zhConfig,
