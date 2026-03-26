@@ -46,6 +46,7 @@ interface TTSModel {
 interface VendorConfig {
   version: number;
   icon?: string; //仅支持base64格式
+  author: string;
   name: string;
   inputs: {
     key: string;
@@ -61,6 +62,7 @@ interface VendorConfig {
 // ==================== 供应商数据 ====================
 const vendor: VendorConfig = {
   version: 1,
+  author: "Toonflow",
   name: "Toonflow官方中转平台",
   inputs: [{ key: "apiKey", label: "API密钥", type: "password", required: true }],
   inputValues: {
@@ -130,8 +132,8 @@ exports.imageRequest = imageRequest;
 interface VideoConfig {
   duration: number; //视频时长，单位秒
   resolution: string; //视频分辨率，如"720p"、"1080p"
-  aspectRatio: "16:9" | "9:16";//视频长宽比
-  prompt: string;//视频提示词
+  aspectRatio: "16:9" | "9:16"; //视频长宽比
+  prompt: string; //视频提示词
   imageBase64?: string[];
   audio?: boolean;
   mode: "startEnd" | "multi" | "single" | "text";
