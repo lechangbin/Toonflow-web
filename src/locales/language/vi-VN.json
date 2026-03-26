@@ -404,7 +404,15 @@
         "enterArtStyleName": "Vui lòng nhập tên hướng dẫn trực quan",
         "artStyleUpdated": "Hướng dẫn trực quan được cập nhật",
         "artStyleAdded": "Đã thêm hướng dẫn trực quan",
-        "operationFailed": "Thao tác thất bại"
+        "operationFailed": "Thao tác thất bại",
+        "emptyFields": "Thiếu tham số",
+        "enterProjectName": "Vui lòng nhập tên dự án",
+        "enterProjectIntro": "Vui lòng nhập phần giới thiệu tiểu thuyết",
+        "enterProjectType": "Vui lòng nhập loại dự án",
+        "enterArtStyle": "Vui lòng chọn một tài liệu trực quan của dự án",
+        "enterVideoRatio": "Vui lòng chọn tỷ lệ video",
+        "enterImageModel": "Vui lòng chọn mẫu hình ảnh",
+        "enterVideoModel": "Vui lòng chọn một mẫu video"
       }
     },
     "novel": {
@@ -949,6 +957,11 @@
         "selectRefVideoAsset": "Chọn video tham khảo",
         "selectRefAudioAsset": "Chọn âm thanh tham khảo",
         "selectRefImageAsset": "Chọn ảnh tham khảo",
+        "selectImageSource": "Chọn nguồn hình ảnh",
+        "fromStoryboard": "Hình storyboard",
+        "fromStoryboardDesc": "Chọn hình từ danh sách storyboard",
+        "fromAssets": "Hình tài nguyên",
+        "fromAssetsDesc": "Chọn hình từ thư viện tài nguyên",
         "confirmDelete": "Xác nhận xóa",
         "confirmDeleteBody": "Bạn có chắc chắn muốn xóa video này không? Không thể hoàn tác thao tác này.",
         "delete": "Xóa",
@@ -1076,7 +1089,8 @@
         "effect": "Hiệu ứng",
         "filter": "Bộ lọc",
         "loading": "Đang tải...",
-        "subtitlePreview": "Chữ"
+        "subtitlePreview": "Chữ",
+        "video": "băng hình"
       },
       "effect": {
         "fadeIn": "Rõ dần",

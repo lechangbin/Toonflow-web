@@ -10,7 +10,7 @@
         <t-image
           class="image"
           :src="currentImageUrl"
-          fit="cover"
+          fit="contain"
           :style="{
             width: '100%',
             height: '100%',

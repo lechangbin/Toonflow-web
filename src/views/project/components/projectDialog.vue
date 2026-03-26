@@ -25,28 +25,35 @@
               <t-input v-model="formState.type" :placeholder="$t('workbench.project.dialog.novelTypePh')" />
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.modelData')">
-              <modelSelect v-model="selectValue" type="image" />
+              <modelSelect v-model="formState.imageModel" type="image" />
+            </t-form-item>
+            <t-form-item :label="$t('workbench.project.dialog.videoModelData')">
+              <modelSelect v-model="formState.videoModel" type="video" />
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.videoRatio')">
               <t-select v-model="formState.videoRatio" :options="RATIO_OPTIONS" />
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.novelIntro')">
-              <t-textarea v-model="formState.intro" :autosize="{ minRows: 3, maxRows: 6 }" :placeholder="$t('workbench.project.dialog.novelIntroPh')" />
+              <t-textarea
+                v-model="formState.intro"
+                :autosize="{ minRows: 3, maxRows: 6 }"
+                :placeholder="$t('workbench.project.dialog.novelIntroPh')" />
             </t-form-item>
           </t-form>
         </div>
         <div class="formRight">
           <t-form label-align="top">
-            <t-form-item :label="$t('workbench.project.dialog.artStyle')">
+            <t-form-item>
               <div class="artStylePicker">
                 <div class="artStyleHeader">
-                  <div class="headerLeft">
+                  <span>{{$t('workbench.project.dialog.artStyle')}}</span>
+                  <!-- <div class="headerLeft">
                     <span v-if="formState.artStyle" class="selectedLabel">
                       {{ $t("workbench.project.dialog.selected") }}
                       <t-tag theme="primary" size="small" closable @close="formState.artStyle = ''">{{ formState.artStyle }}</t-tag>
                     </span>
                     <span v-else class="selectedHint">{{ $t("workbench.project.dialog.selectArtStyle") }}</span>
-                  </div>
+                  </div> -->
                   <t-button size="small" variant="outline" @click="openArtStyleDialog()">
                     <template #icon><i-plus size="14" /></template>
                     {{ $t("workbench.project.dialog.newArtStyle") }}
@@ -158,13 +165,15 @@ import "md-editor-v3/lib/style.css";
 import modelSelect from "@/components/modelSelect.vue";
 
 const addProjectShow = defineModel<boolean>();
-const selectValue = ref("");
 const props = defineProps<{
   projectData?: ProjectData | null;
 }>();
 const emit = defineEmits<{
   (e: "add", data: ProjectFormData): void;
-  (e: "edit", data: { id: string; name: string; intro: string; type: string; artStyle: string; videoRatio: string }): void;
+  (
+    e: "edit",
+    data: { id: string; name: string; intro: string; type: string; artStyle: string; videoRatio: string; imageModel: string; videoModel: string },
+  ): void;
 }>();
 
 // ===== 类型定义 =====
@@ -175,6 +184,8 @@ interface ProjectData {
   type: string;
   artStyle: string | null;
   videoRatio: string | null;
+  imageModel: string;
+  videoModel: string;
 }
 
 interface ProjectFormData {
@@ -184,6 +195,8 @@ interface ProjectFormData {
   type: string;
   artStyle: string;
   videoRatio: string;
+  imageModel: string;
+  videoModel: string;
 }
 
 interface ArtStyleItem {
@@ -212,6 +225,8 @@ const DEFAULT_FORM: () => ProjectFormData & { id: number; era: string; createTim
   videoRatio: "16:9",
   createTime: 0,
   userId: 0,
+  imageModel: "",
+  videoModel: "",
 });
 
 // ===== 表单 =====
@@ -227,6 +242,13 @@ function handleCancel() {
 }
 
 function handleOk() {
+  if (!formState.value.name) return window.$message.warning($t("workbench.project.msg.enterProjectName"));
+  if (!formState.value.type) return window.$message.warning($t("workbench.project.msg.enterProjectType"));
+  if (!formState.value.imageModel) return window.$message.warning($t("workbench.project.msg.enterImageModel"));
+  if (!formState.value.videoModel) return window.$message.warning($t("workbench.project.msg.enterVideoModel"));
+  if (!formState.value.artStyle) return window.$message.warning($t("workbench.project.msg.enterArtStyle"));
+  if (!formState.value.videoRatio) return window.$message.warning($t("workbench.project.msg.enterVideoRatio"));
+  if (!formState.value.intro) return window.$message.warning($t("workbench.project.msg.enterProjectIntro"));
   if (isEdit.value) {
     emit("edit", {
       id: formState.value.id as unknown as string,
@@ -235,6 +257,8 @@ function handleOk() {
       type: formState.value.type,
       artStyle: formState.value.artStyle,
       videoRatio: formState.value.videoRatio,
+      imageModel: formState.value.imageModel,
+      videoModel: formState.value.videoModel,
     });
   } else {
     emit("add", {
@@ -244,6 +268,8 @@ function handleOk() {
       type: formState.value.type,
       artStyle: formState.value.artStyle,
       videoRatio: formState.value.videoRatio || "16:9",
+      imageModel: formState.value.imageModel,
+      videoModel: formState.value.videoModel,
     });
   }
   resetForm();
@@ -365,7 +391,6 @@ async function handleArtStyleSubmit() {
         name: artStyleForm.value.name,
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
-        model: selectValue.value,
       });
       window.$message.success($t("workbench.project.msg.artStyleUpdated"));
     } else {
@@ -373,7 +398,6 @@ async function handleArtStyleSubmit() {
         name: artStyleForm.value.name,
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
-        model: selectValue.value,
       });
       window.$message.success($t("workbench.project.msg.artStyleAdded"));
     }
@@ -395,6 +419,8 @@ watch(addProjectShow, (visible) => {
         type: props.projectData.type || "",
         artStyle: props.projectData.artStyle || "",
         videoRatio: props.projectData.videoRatio || "16:9",
+        imageModel: props.projectData.imageModel || "",
+        videoModel: props.projectData.videoModel || "",
       };
     } else {
       resetForm();

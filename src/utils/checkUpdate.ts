@@ -1,93 +1,89 @@
-/**
- * 检查 GitHub 最新版本并与本地版本对比
- */
+// interface VersionInfo {
+//   version: string;
+//   minCompatibleVersion?: string;
+//   forceReinstall?: boolean;
+//   patchUrl?: string;
+//   fullPackageUrl?: string;
+//   changelog?: string;
+// }
 
-const GITHUB_API_URL = 'https://api.github.com/repos/HBAI-Ltd/Toonflow-app/tags';
-const RELEASE_URL = 'https://github.com/HBAI-Ltd/Toonflow-app/releases';
+// class UpdateChecker {
+//   private currentVersion: string;
 
-export interface UpdateInfo {
-  hasUpdate: boolean;
-  currentVersion: string;
-  latestVersion: string;
-  releaseUrl: string;
-}
+//   constructor(currentVersion: string) {
+//     this.currentVersion = currentVersion;
+//   }
 
-/**
- * 比较版本号
- * @param current 当前版本 (如 v1.0.7)
- * @param latest 最新版本 (如 v1.0.8)
- * @returns true 如果需要更新
- */
-function compareVersions(current: string, latest: string): boolean {
-  // 移除 'v' 前缀
-  const currentParts = current.replace(/^v/, '').split('.').map(Number);
-  const latestParts = latest.replace(/^v/, '').split('.').map(Number);
+//   /**
+//    * 解析版本号
+//    */
+//   private parseVersion(version: string): { major: number; minor: number; patch: number } {
+//     const parts = version.replace(/^v/, '').split('.');
+//     return {
+//       major: parseInt(parts[0] || '0', 10),
+//       minor: parseInt(parts[1] || '0', 10),
+//       patch: parseInt(parts[2] || '0', 10),
+//     };
+//   }
 
-  for (let i = 0; i < Math.max(currentParts.length, latestParts.length); i++) {
-    const currentPart = currentParts[i] || 0;
-    const latestPart = latestParts[i] || 0;
+//   /**
+//    * 比较版本号
+//    */
+//   private compareVersion(v1: string, v2: string): number {
+//     const ver1 = this.parseVersion(v1);
+//     const ver2 = this.parseVersion(v2);
 
-    if (latestPart > currentPart) {
-      return true;
-    }
-    if (latestPart < currentPart) {
-      return false;
-    }
-  }
+//     if (ver1.major !== ver2.major) return ver1.major > ver2.major ? 1 : -1;
+//     if (ver1.minor !== ver2.minor) return ver1.minor > ver2.minor ? 1 : -1;
+//     if (ver1.patch !== ver2.patch) return ver1.patch > ver2.patch ? 1 : -1;
+//     return 0;
+//   }
 
-  return false;
-}
+//   /**
+//    * 判断更新类型
+//    * - Major 或 Minor 变更 → 重新安装
+//    * - 仅 Patch 变更 → 热更新
+//    */
+//   determineUpdateType(remoteInfo: VersionInfo): 'none' | 'patch' | 'reinstall' {
+//     const comparison = this.compareVersion(remoteInfo.version, this.currentVersion);
 
-/**
- * 从 GitHub API 获取最新 tag
- */
-async function fetchLatestTag(): Promise<string | null> {
-  try {
-    const response = await fetch(GITHUB_API_URL);
-    if (!response.ok) {
-      console.error('Failed to fetch tags:', response.statusText);
-      return null;
-    }
+//     // 当前版本已是最新
+//     if (comparison <= 0) {
+//       return 'none';
+//     }
 
-    const tags = await response.json();
-    if (tags && tags.length > 0) {
-      // 过滤出符合 vX.X.X 格式的 tag，并取第一个（最新的）
-      const versionTags = tags.filter((tag: { name: string }) => /^v\d+\.\d+\.\d+$/.test(tag.name));
-      if (versionTags.length > 0) {
-        return versionTags[0].name;
-      }
-    }
-    return null;
-  } catch (error) {
-    console.error('Error fetching latest tag:', error);
-    return null;
-  }
-}
+//     // 服务器强制要求重新安装
+//     if (remoteInfo.forceReinstall) {
+//       return 'reinstall';
+//     }
 
-/**
- * 检查是否需要更新
- * @param currentVersion 当前版本
- */
-export async function checkForUpdate(currentVersion: string): Promise<UpdateInfo> {
-  const latestVersion = await fetchLatestTag();
+//     const current = this.parseVersion(this.currentVersion);
+//     const remote = this.parseVersion(remoteInfo.version);
 
-  if (!latestVersion) {
-    return {
-      hasUpdate: false,
-      currentVersion,
-      latestVersion: currentVersion,
-      releaseUrl: RELEASE_URL,
-    };
-  }
+//     // Major 或 Minor 变更 → 重新安装
+//     if (remote.major !== current.major || remote.minor !== current.minor) {
+//       return 'reinstall';
+//     }
 
-  const hasUpdate = compareVersions(currentVersion, latestVersion);
+//     // 仅 Patch 变更 → 热更新
+//     return 'patch';
+//   }
+// }
 
-  return {
-    hasUpdate,
-    currentVersion,
-    latestVersion,
-    releaseUrl: RELEASE_URL,
-  };
-}
+// // 使用示例
+// const checker = new UpdateChecker('1.2.3');
 
-export { RELEASE_URL };
+// // 测试不同场景
+// const testCases = [
+//   { version: '1.2.3' },  // 相同版本 → none
+//   { version: '1.2.5' },  // Patch 变更 → patch
+//   { version: '1.3.0' },  // Minor 变更 → reinstall
+//   { version: '2.0.0' },  // Major 变更 → reinstall
+// ];
+
+// testCases.forEach((info) => {
+//   const result = checker.determineUpdateType(info);
+//   console.log(`${checker['currentVersion']} → ${info.version}: ${result}`);
+// });
+
+export default () => {};

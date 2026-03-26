@@ -404,7 +404,15 @@
         "enterArtStyleName": "โปรดป้อนชื่อคู่มือแบบภาพ",
         "artStyleUpdated": "อัปเดตคู่มือภาพแล้ว",
         "artStyleAdded": "เพิ่มคู่มือภาพแล้ว",
-        "operationFailed": "การดำเนินการล้มเหลว"
+        "operationFailed": "การดำเนินการล้มเหลว",
+        "emptyFields": "พารามิเตอร์หายไป",
+        "enterProjectName": "กรุณากรอกชื่อโครงการ",
+        "enterProjectIntro": "กรุณากรอกคำนำนวนิยาย",
+        "enterProjectType": "กรุณากรอกประเภทโครงการ",
+        "enterArtStyle": "โปรดเลือกโบรชัวร์ภาพโครงการ",
+        "enterVideoRatio": "โปรดเลือกอัตราส่วนวิดีโอ",
+        "enterImageModel": "กรุณาเลือกรุ่นรูปภาพ",
+        "enterVideoModel": "โปรดเลือกรุ่นวิดีโอ"
       }
     },
     "novel": {
@@ -949,6 +957,11 @@
         "selectRefVideoAsset": "เลือกวิดีโออ้างอิง",
         "selectRefAudioAsset": "เลือกเสียงอ้างอิง",
         "selectRefImageAsset": "เลือกรูปภาพอ้างอิง",
+        "selectImageSource": "เลือกแหล่งที่มาของภาพ",
+        "fromStoryboard": "ภาพสตอรี่บอร์ด",
+        "fromStoryboardDesc": "เลือกภาพจากรายการสตอรี่บอร์ด",
+        "fromAssets": "ภาพแอสเซท",
+        "fromAssetsDesc": "เลือกภาพจากคลังแอสเซท",
         "confirmDelete": "ยืนยันการลบ",
         "confirmDeleteBody": "แน่ใจหรือไม่ว่าต้องการลบวิดีโอนี้? การดำเนินการนี้ไม่สามารถยกเลิกได้",
         "delete": "ลบ",
@@ -1076,7 +1089,8 @@
         "effect": "เอฟเฟกต์",
         "filter": "ฟิลเตอร์",
         "loading": "กำลังโหลด...",
-        "subtitlePreview": "ข้อความ"
+        "subtitlePreview": "ข้อความ",
+        "video": "วิดีโอ"
       },
       "effect": {
         "fadeIn": "เฟดอิน",

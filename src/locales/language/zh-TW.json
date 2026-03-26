@@ -404,7 +404,15 @@
         "enterArtStyleName": "請輸入視覺手冊名稱",
         "artStyleUpdated": "視覺手冊已更新",
         "artStyleAdded": "視覺手冊已添加",
-        "operationFailed": "操作失敗"
+        "operationFailed": "操作失敗",
+        "emptyFields": "參數缺失",
+        "enterProjectName": "請輸入項目名稱",
+        "enterProjectIntro": "請輸入小說簡介",
+        "enterProjectType": "請輸入項目類型",
+        "enterArtStyle": "請選擇項目視覺手冊",
+        "enterVideoRatio": "請選擇影片比例",
+        "enterImageModel": "請選擇圖片模型",
+        "enterVideoModel": "請選擇視訊模型"
       }
     },
     "novel": {
@@ -949,6 +957,11 @@
         "selectRefVideoAsset": "選擇參考影片",
         "selectRefAudioAsset": "選擇參考音訊",
         "selectRefImageAsset": "選擇參考圖片",
+        "selectImageSource": "選擇圖片來源",
+        "fromStoryboard": "分鏡圖",
+        "fromStoryboardDesc": "從分鏡列表中選擇圖片",
+        "fromAssets": "資產圖",
+        "fromAssetsDesc": "從資產庫中選擇圖片",
         "confirmDelete": "確認刪除",
         "confirmDeleteBody": "確定要刪除這個影片嗎？此操作無法復原。",
         "delete": "刪除",
@@ -1076,7 +1089,8 @@
         "effect": "特效",
         "filter": "濾鏡",
         "loading": "載入中...",
-        "subtitlePreview": "字"
+        "subtitlePreview": "字",
+        "video": "影片"
       },
       "effect": {
         "fadeIn": "淡入",

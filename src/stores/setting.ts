@@ -2,9 +2,9 @@ export default defineStore(
   "setting",
   () => {
     const showSetting = ref(false);
+    const activeMenu = ref("language");
 
     const baseUrl = ref<string>("http://localhost:10588/api");
-    const wsBaseUrl = ref<string>("ws://localhost:10588/api");
 
     const otherSetting = ref({
       axiosTimeOut: 60 * 10 * 1000,
@@ -19,7 +19,7 @@ export default defineStore(
 
     const language = ref<string>("zh-CN");
 
-    return { showSetting, baseUrl, wsBaseUrl, otherSetting, themeSetting, language };
+    return { showSetting, baseUrl, otherSetting, themeSetting, language, activeMenu };
   },
   { persist: true },
 );

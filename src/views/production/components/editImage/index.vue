@@ -78,7 +78,7 @@ import axios from "@/utils/axios";
 import type { NodeType, UploadNodeData, GeneratedNodeData } from "../../utils/editImageType";
 import { DEFAULT_EDGE_OPTIONS, createGeneratedData, cleanNodes, cleanEdges } from "../../utils/editImageType";
 import { useLayout } from "../../utils/dagre";
-
+import { v4 as uuid } from "uuid";
 
 const episodesId = inject<Ref<number>>("episodesId");
 
@@ -102,11 +102,6 @@ const visible = defineModel("visible", {
   default: false,
 });
 const { addEdges, getNodes, getEdges, updateNodeData } = useVueFlow({ id: "editImage" });
-
-// 节点ID计数器
-let nodeIdCounter = 3;
-// 边ID计数器
-let edgeIdCounter = 3;
 
 const nodes = ref<NodeType[]>([]);
 const edges = ref<Edge<any, any, string>[]>([]);
@@ -177,7 +172,7 @@ const onConnect = (params: any) => {
 
   addEdges([
     {
-      id: `e-${edgeIdCounter++}`,
+      id: uuid(),
       source: params.source,
       target: params.target,
       ...DEFAULT_EDGE_OPTIONS,
@@ -192,7 +187,7 @@ function clickHandler(value: any) {
 }
 // 添加新的上传节点
 const addUploadNode = (type: string, image: string = "", prompt: string = "") => {
-  const newNodeId = type === "generated" ? `generated-${nodeIdCounter++}` : `upload-${nodeIdCounter++}`;
+  const newNodeId = uuid();
   const lastNode = nodes.value.filter((n) => n.type === type).pop();
   const newY = lastNode ? lastNode.position.y + 350 : 100;
   const newX = type === "generated" ? 600 : 100;
@@ -261,7 +256,7 @@ function buildFlow() {
   for (const sourceId of uploadIds) {
     for (const targetId of generatedIds) {
       edges.value.push({
-        id: `e-${edgeIdCounter++}`,
+        id: uuid(),
         source: sourceId,
         target: targetId,
         ...DEFAULT_EDGE_OPTIONS,
