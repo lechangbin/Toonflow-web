@@ -237,7 +237,7 @@
                 <span class="historyCount">({{ currentHistoryList.length }})</span>
               </div>
               <div>
-                <t-button theme="primary" size="small" @click="refresh">{{ $t("workbench.production.generate.refresh") }}</t-button>
+                <!-- <t-button theme="primary" size="small" @click="refresh">{{ $t("workbench.production.generate.refresh") }}</t-button> -->
                 <t-button theme="primary" size="small" @click="handleConfirmSelection" style="margin-left: 10px">
                   {{ $t("workbench.production.generate.confirmSelection") }}
                 </t-button>
