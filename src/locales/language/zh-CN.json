@@ -383,7 +383,8 @@
         "artStylePrompt": "视觉手册提示词",
         "aiExtract": "AI提取提示词",
         "promptPlaceholder": "描述视觉手册提示词，用于生成图片时指定视觉手册",
-        "modelData": "选择模型"
+        "modelData": "选择图片模型",
+        "videoModelData": "选择视频模型"
       },
       "msg": {
         "fetchFailed": "获取项目列表失败",
@@ -1141,5 +1142,13 @@
     "enterUsernameAndPassword": "请输入用户名或密码",
     "loginSuccess": "登录成功",
     "settingsSaved": "设置已保存"
-  }
+  },
+  "components.storyboardImageCheck.camera": "镜头",
+  "components.storyboardImageCheck.dialogTitle": "选择分镜图",
+  "components.storyboardImageCheck.preview": "预览",
+  "components.storyboardImageCheck.src": "预览图",
+  "components.storyboardImageCheck.title": "标题",
+  "components.storyboardImageCheck.duration": "时长",
+  "components.storyboardImageCheck.lines": "台词",
+  "components.storyboardImageCheck.createTime": "创建时间"
 }

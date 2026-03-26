@@ -73,12 +73,12 @@ import rightChatBox from "./components/rightChatBox/index.vue";
 import { useFlowBuilder, type FlowData } from "./utils/flowBuilder";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
+
 const { project } = storeToRefs(projectStore());
 const openShowVisible = ref(true);
 
 const episodesId = ref();
 provide("episodesId", episodesId);
-
 const rightChatTitle = computed(() => {
   const episode = episodesOptions.value.find((option) => option.value === episodesId.value);
   return episode ? episode.label : "";
