@@ -1139,7 +1139,8 @@
         "describe": "Mô tả",
         "state": "Trạng thái",
         "startTime": "Thời gian"
-      }
+      },
+      "project": "Tên dự án:"
     }
   },
   "login": {

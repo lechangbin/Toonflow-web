@@ -1139,7 +1139,8 @@
         "describe": "描述",
         "state": "狀態",
         "startTime": "時間"
-      }
+      },
+      "project": "項目名稱:"
     }
   },
   "login": {

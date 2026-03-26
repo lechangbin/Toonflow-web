@@ -1139,7 +1139,8 @@
         "describe": "Description",
         "state": "Status",
         "startTime": "Time"
-      }
+      },
+      "project": "Project name:"
     }
   },
   "login": {

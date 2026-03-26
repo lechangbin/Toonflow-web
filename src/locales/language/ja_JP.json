@@ -1139,7 +1139,8 @@
         "describe": "説明",
         "state": "ステータス",
         "startTime": "時間"
-      }
+      },
+      "project": "プロジェクト名:"
     }
   },
   "login": {
