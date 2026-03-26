@@ -1,9 +1,8 @@
 <template>
-  <div class="app" :style="ultrawideStyle">
-    <t-config-provider :global-config="globalConfig">
-      <router-view></router-view>
-    </t-config-provider>
-  </div>
+  <titleBar v-if="isElectron" />
+  <t-config-provider :global-config="globalConfig">
+    <router-view></router-view>
+  </t-config-provider>
 </template>
 
 <script setup lang="ts">
@@ -15,10 +14,24 @@ import enConfig from "tdesign-vue-next/es/locale/en_US";
 import { cachedLocale } from "@/locales";
 import { initTheme } from "@/utils/theme";
 import { type GlobalConfigProvider } from "tdesign-vue-next";
-import scanSkills from "@/utils/scanSkills";
 import checkUpdate from "@/utils/checkUpdate";
 const store = settingStore();
 const { baseUrl } = storeToRefs(store);
+
+const isElectron = computed(() => {
+  return window?.$electron;
+});
+
+watch(
+  () => isElectron.value,
+  (newVal) => {
+    if (newVal) {
+      document.body.style.borderRadius = "16px";
+    } else {
+      document.body.style.borderRadius = "0";
+    }
+  },
+);
 
 onBeforeMount(() => {
   document.addEventListener("keydown", function (event) {
@@ -27,19 +40,24 @@ onBeforeMount(() => {
       debugger;
     }
   });
+  getPort();
 });
+
+async function getPort() {
+  try {
+    const res = await fetch("toonflow://getPort");
+    const data = await res.json();
+    if (data?.port) {
+      baseUrl.value = `http://localhost:${data.port}/api`;
+      window.$electron = true;
+    }
+  } catch (error) {}
+}
 
 // 初始化主题
 onMounted(() => {
   initTheme();
-  scanSkills();
   checkUpdate();
-  setTimeout(() => {
-    if (window.$electron) {
-      const port = window.$port;
-      if (port) baseUrl.value = `http://localhost:${window.$port}/api`;
-    }
-  }, 1000);
 });
 
 const tdesignLocaleMap: Record<string, object> = {
@@ -60,21 +78,4 @@ onBeforeMount(() => {
 });
 </script>
 
-<style lang="scss">
-.app {
-  transform-origin: 50% 45%;
-  animation: app-intro 1000ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes app-intro {
-  0% {
-    opacity: 0;
-    transform: scale(0.5);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-</style>
+<style lang="scss"></style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div class="main" :style="{ height: isElectron ? 'calc(100vh - 32px)' : '100vh' }">
     <div class="menu fc jb">
       <div class="logoBox c">
         <img class="logo" src="@/assets/logo.png" />
@@ -64,6 +64,7 @@
 <script setup lang="ts">
 import setting from "@/components/setting/index.vue";
 import migrateShow from "@/components/migrateShow.vue";
+import scanSkills from "@/utils/scanSkills";
 
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -102,11 +103,18 @@ function handleClick(menu: any) {
   router.push(menu.path);
   activeMenu.value = menu.path;
 }
+
+onMounted(() => {
+  scanSkills();
+});
+
+const isElectron = computed(() => {
+  return window?.$electron;
+});
 </script>
 
 <style lang="scss" scoped>
 .main {
-  height: 100vh;
   width: 100vw;
   padding: 16px;
   display: flex;
@@ -179,7 +187,6 @@ function handleClick(menu: any) {
     background-color: #fff;
     border-radius: 16px;
     width: 100%;
-    height: calc(100vh - 32px);
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-gutter: stable;

@@ -1,5 +1,5 @@
 <template>
-  <div class="loginPage">
+  <div class="loginPage" :style="{ height: isElectron ? 'calc(100vh - 32px)' : '100vh' }">
     <div class="formBox">
       <!-- 设置弹窗 -->
       <t-dialog v-model:visible="showSettingModal" :header="$t('login.settings')" @confirm="handleSaveSetting" :width="400">
@@ -107,16 +107,18 @@ const handleLogin = () => {
       window.$message.error(e.message);
     });
 };
+
+const isElectron = computed(() => {
+  return window?.$electron;
+});
 </script>
 
 <style lang="scss" scoped>
 .loginPage {
-  width: 100vw;
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ebebeb;
 
   .formBox {
     width: 380px;
