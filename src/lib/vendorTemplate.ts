@@ -227,7 +227,6 @@ exports.textRequest = textRequest;
 
 //图片请求函数
 interface ImageConfig {
-  systemPrompt?: string; // 系统提示词
   prompt: string; //图片提示词
   imageBase64: string[]; //输入的图片提示词
   size: "1K" | "2K" | "4K"; // 图片尺寸
@@ -248,11 +247,10 @@ const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) =>
       "4K": "2304x4096",
     },
   };
-  const fullPrompt = imageConfig?.systemPrompt ? `${imageConfig.systemPrompt}\n\n${imageConfig.prompt}` : imageConfig.prompt;
-
+  
   const body: Record<string, any> = {
     model: imageModel.modelName,
-    prompt: fullPrompt,
+    prompt: imageConfig.prompt,
     size: sizeMap[imageConfig.aspectRatio][size],
     response_format: "url",
     sequential_image_generation: "disabled",
