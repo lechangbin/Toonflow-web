@@ -1,6 +1,6 @@
 <template>
   <div class="fileManagement">
-    <t-card v-if="isDesktop" :title="$t('settings.file.quickOpen')" bordered>
+    <t-card v-if="isElectron" :title="$t('settings.file.quickOpen')" bordered>
       <div class="folderList">
         <div v-for="item in folderList" :key="item.path" class="folderItem">
           <div class="folderInfo">
@@ -21,6 +21,9 @@
 </template>
 
 <script setup lang="ts">
+import settingStore from "@/stores/setting";
+const { isElectron } = storeToRefs(settingStore());
+
 import axios from "@/utils/axios";
 type QuickPathItem = {
   label: string;
@@ -37,8 +40,6 @@ const folderList: QuickPathItem[] = [
   { label: "settings.file.folders.web", path: "web", desc: "settings.file.folders.webDesc" },
   { label: "settings.file.folders.serve", path: "serve", desc: "settings.file.folders.serveDesc" },
 ];
-
-const isDesktop = window.$electron === true;
 
 const handleOpenFolder = (path: string) => {
   axios

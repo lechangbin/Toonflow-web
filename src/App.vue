@@ -7,7 +7,6 @@
 
 <script setup lang="ts">
 import settingStore from "@/stores/setting";
-
 import { merge } from "lodash-es";
 import zhConfig from "tdesign-vue-next/es/locale/zh_CN";
 import enConfig from "tdesign-vue-next/es/locale/en_US";
@@ -15,12 +14,19 @@ import { cachedLocale } from "@/locales";
 import { initTheme } from "@/utils/theme";
 import { type GlobalConfigProvider } from "tdesign-vue-next";
 import checkUpdate from "@/utils/checkUpdate";
-const store = settingStore();
-const { baseUrl } = storeToRefs(store);
+const { baseUrl, isElectron } = storeToRefs(settingStore());
 
-const isElectron = computed(() => {
-  return window?.$electron;
-});
+watch(
+  () => isElectron.value,
+  (newVal) => {
+    if (newVal) {
+      document.body.classList.add("is-electron");
+    } else {
+      document.body.classList.remove("is-electron");
+    }
+  },
+  { immediate: true },
+);
 
 onBeforeMount(() => {
   document.addEventListener("keydown", function (event) {
@@ -38,7 +44,7 @@ async function getPort() {
     const data = await res.json();
     if (data?.port) {
       baseUrl.value = `http://localhost:${data.port}/api`;
-      window.$electron = true;
+      isElectron.value = true;
     }
   } catch (error) {}
 }
