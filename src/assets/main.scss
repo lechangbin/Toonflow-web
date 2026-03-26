@@ -3,6 +3,7 @@ body,
 #app {
   margin: 0;
   background-color: #ebebeb;
+  // font-size: 24px;
 }
 * {
   box-sizing: border-box;
@@ -493,6 +494,6 @@ body,
 .t-dialog__mask {
   backdrop-filter: blur(4px);
 }
-.t-image-viewer__modal-image{
+.t-image-viewer__modal-image {
   user-select: none;
 }

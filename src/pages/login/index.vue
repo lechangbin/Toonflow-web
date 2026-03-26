@@ -62,16 +62,14 @@ const handleChangeLang = (data) => {
 };
 
 const store = settingStore();
-const { baseUrl, wsBaseUrl } = storeToRefs(store);
+const { baseUrl } = storeToRefs(store);
 
 const showSettingModal = ref(false);
 const tempBaseUrl = ref(baseUrl.value);
-const tempWsBaseUrl = ref(wsBaseUrl.value);
 
 // 保存设置
 const handleSaveSetting = () => {
   baseUrl.value = tempBaseUrl.value;
-  wsBaseUrl.value = tempWsBaseUrl.value;
   showSettingModal.value = false;
   window.$message.success($t("login.settingsSaved"));
 };
