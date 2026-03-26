@@ -633,7 +633,11 @@
         "deleteConfirm": "ลบ",
         "cancel": "ยกเลิก",
         "deleteSuccess": "ลบสำเร็จ",
-        "deleteFailed": "ลบล้มเหลว"
+        "deleteFailed": "ลบล้มเหลว",
+        "selectDelScript": "โปรดเลือกที่จะลบสคริปต์",
+        "batchDeleteHeader": "ลบเป็นกลุ่ม",
+        "batchDeleteBody": "แน่ใจหรือไม่ว่าต้องการลบบทภาพยนตร์ที่เลือก {count} รายการ? การดำเนินการนี้ไม่สามารถยกเลิกได้",
+        "batchDeleteSuccess": "ลบเป็นกลุ่มสำเร็จ"
       },
       "add": {
         "title": "เพิ่มบทภาพยนตร์",
@@ -677,7 +681,8 @@
           "updateSuccess": "อัปเดตบทภาพยนตร์สำเร็จ",
           "updateFailed": "อัปเดตบทภาพยนตร์ล้มเหลว โปรดลองอีกครั้งในภายหลัง"
         }
-      }
+      },
+      "deleteScript": "ลบสคริปต์เป็นชุด"
     },
     "assets": {
       "addPrefix": "เพิ่ม",
@@ -1139,7 +1144,8 @@
         "describe": "คำอธิบาย",
         "state": "สถานะ",
         "startTime": "เวลา"
-      }
+      },
+      "project": "ชื่อโครงการ:"
     }
   },
   "login": {

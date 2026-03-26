@@ -175,8 +175,6 @@ watch(
       projectId: project.value?.id,
       episodesId: episodesId.value,
     });
-    console.log("%c Line:222 🍇 data", "background:#ea7e5c", data);
-
     flowData.value = data;
   },
 );

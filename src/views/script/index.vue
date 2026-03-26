@@ -20,9 +20,13 @@
           <template #icon><i-export /></template>
           {{ $t("workbench.script.exportScript") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
         </t-button>
-        <t-button theme="primary" @click="handleExtractAssets" :disabled="selectedIds.length === 0">
+        <t-button theme="primary" @click="handleExtractAssets" :loading="scriptLoad" :disabled="selectedIds.length === 0">
           <template #icon><i-export /></template>
           {{ $t("workbench.script.extractAssets") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
+        </t-button>
+        <t-button theme="primary" @click="handleBatchDelete" :loading="scriptLoad" :disabled="selectedIds.length === 0">
+          <template #icon><i-delete /></template>
+          {{ $t("workbench.script.deleteScript") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
         </t-button>
       </div>
     </div>
@@ -82,7 +86,7 @@ const scripts = ref<Script[]>([]);
 const searchQuery = ref("");
 const addScriptShow = ref(false);
 const selectedIds = ref<number[]>([]);
-
+const scriptLoad = ref(false);
 const isAllSelected = computed(() => scripts.value.length > 0 && selectedIds.value.length === scripts.value.length);
 
 function toggleSelect(id: number) {
@@ -155,7 +159,6 @@ const detailsShow = ref(false);
 // 点击剧本卡片
 function handleScriptClick(item: Script) {
   selectedScript.value = { ...item };
-  console.log("%c Line:154 🍊 selectedScript.value", "background:#ed9ec7", selectedScript.value);
   detailsShow.value = true;
 }
 // 删除剧本
@@ -168,7 +171,7 @@ async function handleDeleteScript(scriptId: number) {
     theme: "warning",
     onConfirm: async () => {
       try {
-        await axios.post("/script/delScript", { id: scriptId });
+        await axios.post("/script/delScript", { id: [scriptId] });
         window.$message.success($t("workbench.script.msg.deleteSuccess"));
         searchScripts();
         dialog.destroy();
@@ -185,8 +188,49 @@ async function handleDeleteScript(scriptId: number) {
 }
 //提取资产
 async function handleExtractAssets() {
-  await axios.post("/script/extractAssets", {
-    scriptIds: selectedIds.value,
+  if (!project.value) return window.$message.error("未找到项目");
+  scriptLoad.value = true;
+  try {
+    await axios.post("/script/extractAssets", {
+      scriptIds: selectedIds.value,
+      projectId: project.value!.id,
+    });
+    searchScripts();
+  } catch (e) {
+    window.$message.error((e as any)?.message || "提取资产失败");
+  } finally {
+    scriptLoad.value = false;
+  }
+}
+//批量删除剧本
+async function handleBatchDelete() {
+  if (!selectedIds.value.length) {
+    window.$message.warning($t("workbench.script.msg.selectDelScript"));
+    return;
+  }
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.script.msg.batchDeleteHeader"),
+    body: $t("workbench.script.msg.batchDeleteBody", { count: selectedIds.value.length }),
+    confirmBtn: $t("workbench.script.msg.deleteConfirm"),
+    cancelBtn: $t("workbench.script.msg.cancel"),
+    theme: "warning",
+    onConfirm: async () => {
+      try {
+        await axios.post("/script/delScript", { id: selectedIds.value });
+        window.$message.success($t("workbench.script.msg.batchDeleteSuccess"));
+        searchScripts();
+        dialog.destroy();
+      } catch (error) {
+        console.error("删除剧本失败:", error);
+        window.$message.error($t("workbench.script.msg.deleteFailed"));
+        dialog.destroy();
+      } finally {
+        selectedIds.value = [];
+      }
+    },
+    onClose: () => {
+      dialog.destroy();
+    },
   });
 }
 </script>

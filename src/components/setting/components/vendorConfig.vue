@@ -9,8 +9,8 @@
         </t-button>
       </div>
       <div class="listContent" v-loading="loading">
-        <t-menu v-model="activeVendorName" theme="light" v-if="vendorList.length > 0">
-          <t-menu-item v-for="(item, index) in vendorList" :key="index" :value="item.name" @click="activeVendorName = item.name">
+        <t-menu v-model="activeVendorId" theme="light" v-if="vendorList.length > 0">
+          <t-menu-item v-for="(item, index) in vendorList" :key="index" :value="item.id" @click="activeVendorId = item.id">
             <template #icon v-if="isValidBase64(item.icon)">
               <t-avatar size="24px" shape="round" :image="item.icon" />
             </template>
@@ -400,8 +400,8 @@ async function getVendorList() {
     .then((res) => {
       vendorList.value = res.data;
 
-      if (vendorList.value.length && !vendorList.value.some((v) => v.name === activeVendorName.value)) {
-        activeVendorName.value = vendorList.value[0].name;
+      if (vendorList.value.length && !vendorList.value.some((v) => v.id === activeVendorId.value)) {
+        activeVendorId.value = vendorList.value[0].id;
       }
     })
     .catch((err) => {
@@ -416,8 +416,8 @@ onMounted(() => {
   getVendorList();
 });
 
-const activeVendorName = ref("OpenAI");
-const currentVendor = computed(() => vendorList.value.find((v) => v.name === activeVendorName.value));
+const activeVendorId = ref<number>();
+const currentVendor = computed(() => vendorList.value.find((v) => v.id === activeVendorId.value));
 const vendorModels = computed(() => currentVendor.value?.models || currentVendor.value?.model || []);
 const requiredInputs = computed(() => currentVendor.value?.inputs?.filter((input) => input.required) || []);
 const optionalInputs = computed(() => currentVendor.value?.inputs?.filter((input) => !input.required) || []);
@@ -541,12 +541,12 @@ function handleConfirmVendor() {
               .post("/setting/vendorConfig/updateVendor", {
                 id: id.value,
                 tsCode: vendorCode.value,
-                name: currentVendor.value!.name,
-                version: String(currentVendor.value!.version),
-                icon: currentVendor.value!.icon,
-                inputs: currentVendor.value!.inputs,
-                inputValues: currentVendor.value!.inputValues,
-                models: currentVendor.value!.models,
+                name: currentVendor.value?.name,
+                version: String(currentVendor.value?.version),
+                icon: currentVendor.value?.icon,
+                inputs: currentVendor.value?.inputs,
+                inputValues: currentVendor.value?.inputValues,
+                models: currentVendor.value?.models,
               })
               .then((res) => {
                 window.$message.success($t("settings.vendor.msg.updateSuccess"));
@@ -882,8 +882,8 @@ function handleDeleteVendor() {
         .post("/setting/vendorConfig/deleteVendor", { id: currentVendor.value?.id })
         .then(() => {
           window.$message.success($t("settings.vendor.msg.vendorDeleted"));
-          if (activeVendorName.value === currentVendor.value?.name) {
-            activeVendorName.value = "";
+          if (activeVendorId.value === currentVendor.value?.id) {
+            activeVendorId.value = undefined;
           }
           getVendorList();
           confirmDialog.destroy();

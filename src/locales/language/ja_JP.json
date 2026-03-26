@@ -632,7 +632,11 @@
         "deleteConfirm": "削除",
         "cancel": "キャンセル",
         "deleteSuccess": "削除に成功しました",
-        "deleteFailed": "削除に失敗しました"
+        "deleteFailed": "削除に失敗しました",
+        "selectDelScript": "スクリプトを削除することを選択してください",
+        "batchDeleteHeader": "一括削除",
+        "batchDeleteBody": "選択した {count} 件のシナリオを削除してもよろしいですか？この操作は取り消せません。",
+        "batchDeleteSuccess": "一括削除に成功しました"
       },
       "add": {
         "title": "シナリオの追加",
@@ -676,7 +680,8 @@
           "updateSuccess": "シナリオの更新に成功しました",
           "updateFailed": "シナリオの更新に失敗しました。後で再試行してください"
         }
-      }
+      },
+      "deleteScript": "スクリプトを一括で削除する"
     },
     "assets": {
       "addPrefix": "追加",
@@ -1138,7 +1143,8 @@
         "describe": "説明",
         "state": "ステータス",
         "startTime": "時間"
-      }
+      },
+      "project": "プロジェクト名:"
     }
   },
   "login": {

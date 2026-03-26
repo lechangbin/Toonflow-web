@@ -696,7 +696,11 @@
         "deleteConfirm": "删除",
         "cancel": "取消",
         "deleteSuccess": "删除成功",
-        "deleteFailed": "删除失败"
+        "deleteFailed": "删除失败",
+        "selectDelScript": "请选择删除剧本",
+        "batchDeleteHeader": "批量删除",
+        "batchDeleteBody": "确定要删除选中的 {count} 个剧本吗？此操作无法撤销。",
+        "batchDeleteSuccess": "批量删除成功"
       },
       "add": {
         "title": "新增剧本",
@@ -740,7 +744,8 @@
           "updateSuccess": "剧本更新成功",
           "updateFailed": "更新剧本失败，请稍后再试"
         }
-      }
+      },
+      "deleteScript": "批量删除剧本"
     },
     "assets": {
       "addPrefix": "新增",
@@ -1204,7 +1209,8 @@
         "describe": "描述",
         "state": "状态",
         "startTime": "时间"
-      }
+      },
+      "project": "项目名称:"
     }
   },
   "login": {

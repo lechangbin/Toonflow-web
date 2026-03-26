@@ -623,7 +623,11 @@
         "deleteConfirm": "Xóa",
         "cancel": "Hủy",
         "deleteSuccess": "Xóa thành công",
-        "deleteFailed": "Xóa thất bại"
+        "deleteFailed": "Xóa thất bại",
+        "selectDelScript": "Vui lòng chọn xóa tập lệnh",
+        "batchDeleteHeader": "Xóa hàng loạt",
+        "batchDeleteBody": "Bạn có chắc chắn muốn xóa {count} kịch bản đã chọn không? Không thể hoàn tác thao tác này.",
+        "batchDeleteSuccess": "Xóa hàng loạt thành công"
       },
       "add": {
         "title": "Thêm kịch bản mới",
@@ -667,7 +671,8 @@
           "updateSuccess": "Cập nhật kịch bản thành công",
           "updateFailed": "Cập nhật kịch bản thất bại, vui lòng thử lại sau"
         }
-      }
+      },
+      "deleteScript": "Xóa tập lệnh theo đợt"
     },
     "assets": {
       "addPrefix": "Thêm mới",
@@ -1129,7 +1134,8 @@
         "describe": "Mô tả",
         "state": "Trạng thái",
         "startTime": "Thời gian"
-      }
+      },
+      "project": "Tên dự án:"
     }
   },
   "login": {

@@ -14,8 +14,19 @@
     </div>
     <div class="list">
       <div class="search f">
-        <t-select :label="$t('workbench.task.categoryLabel')" v-model="taskClass" :options="categoryOptions" @change="onFilterChange" />
-        <t-select :label="$t('workbench.task.stateLabel')" v-model="taskState" :options="stateOptions" @change="onFilterChange" style="margin-left: 20px" />
+        <t-select :label="$t('workbench.task.project')" v-model="projectId" :options="projectData" @change="onFilterChange" />
+        <t-select
+          :label="$t('workbench.task.categoryLabel')"
+          v-model="taskClass"
+          :options="categoryOptions"
+          @change="onFilterChange"
+          style="margin-left: 20px" />
+        <t-select
+          :label="$t('workbench.task.stateLabel')"
+          v-model="taskState"
+          :options="stateOptions"
+          @change="onFilterChange"
+          style="margin-left: 20px" />
       </div>
       <div class="content">
         <t-table :data="taskList" :columns="columns" row-key="id" :loading="pagination.loading" hover stripe>
@@ -82,13 +93,16 @@ const stateOptions = [
 
 const pagination = ref({ page: 1, limit: 10, total: 0, loading: false });
 const categoryOptions = ref<{ label: string; value: string }[]>([]);
+const projectData = ref<{ label: string; value: string }[]>([]);
 const taskClass = ref("");
 const taskState = ref("");
+const projectId = ref("");
 const taskList = ref<TaskItem[]>([]);
 
 onMounted(() => {
   getTaskList();
   getCategories();
+  getProject();
 });
 
 function onFilterChange() {
@@ -97,8 +111,16 @@ function onFilterChange() {
 }
 
 async function getCategories() {
-  const { data } = await axios.post("/task/getTaskCategories", { projectId: project.value?.id }).catch(() => ({ data: [] }));
-  categoryOptions.value = [{ label: $t("workbench.task.stateAll"), value: "" }, ...data.map((i: any) => ({ label: i.taskClass, value: i.taskClass }))];
+  const { data } = await axios.post("/task/getTaskCategories").catch(() => ({ data: [] }));
+  categoryOptions.value = [
+    { label: $t("workbench.task.stateAll"), value: "" },
+    ...data.map((i: any) => ({ label: i.taskClass, value: i.taskClass })),
+  ];
+}
+
+async function getProject() {
+  const { data } = await axios.post("/task/getProject").catch(() => ({ data: [] }));
+  projectData.value = [{ label: $t("workbench.task.stateAll"), value: "" }, ...data.map((i: any) => ({ label: i.name, value: i.id }))];
 }
 
 async function getTaskList() {
@@ -109,7 +131,7 @@ async function getTaskList() {
       limit: pagination.value.limit,
       taskClass: taskClass.value,
       state: taskState.value,
-      projectId: project.value?.id,
+      projectId: projectId.value || project.value?.id,
     });
     taskList.value = data.data;
     pagination.value.total = data.total;
