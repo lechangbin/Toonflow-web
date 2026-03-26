@@ -20,7 +20,7 @@
           <template #icon><i-export /></template>
           {{ $t("workbench.script.exportScript") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
         </t-button>
-        <t-button theme="primary" @click="handleExtractAssets" :disabled="selectedIds.length === 0">
+        <t-button theme="primary" @click="handleExtractAssets" :loading="scriptLoad" :disabled="selectedIds.length === 0">
           <template #icon><i-export /></template>
           {{ $t("workbench.script.extractAssets") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
         </t-button>
@@ -82,7 +82,7 @@ const scripts = ref<Script[]>([]);
 const searchQuery = ref("");
 const addScriptShow = ref(false);
 const selectedIds = ref<number[]>([]);
-
+const scriptLoad = ref(false);
 const isAllSelected = computed(() => scripts.value.length > 0 && selectedIds.value.length === scripts.value.length);
 
 function toggleSelect(id: number) {
@@ -185,9 +185,19 @@ async function handleDeleteScript(scriptId: number) {
 }
 //提取资产
 async function handleExtractAssets() {
-  await axios.post("/script/extractAssets", {
-    scriptIds: selectedIds.value,
-  });
+  if (!project.value) return window.$message.error("未找到项目");
+  scriptLoad.value = true;
+  try {
+    await axios.post("/script/extractAssets", {
+      scriptIds: selectedIds.value,
+      projectId: project.value!.id,
+    });
+    searchScripts();
+  } catch (e) {
+    window.$message.error((e as any)?.message || "提取资产失败");
+  } finally {
+    scriptLoad.value = false;
+  }
 }
 </script>
 
