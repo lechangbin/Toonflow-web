@@ -39,14 +39,6 @@
       "msg": {
         "fetchModelFailed": "Не удалось получить данные модели:"
       }
-    },
-    "update": {
-      "title": "Доступна новая версия",
-      "currentVersion": "Текущая версия:",
-      "latestVersion": "Последняя версия:",
-      "tip": "Доступна новая версия. Рекомендуем обновить для лучшей работы",
-      "later": "Напомнить позже",
-      "updateNow": "Обновить сейчас"
     }
   },
   "settings": {
@@ -332,6 +324,10 @@
         "serveDesc": "Файлы бэкенд-сервисов."
       },
       "openFailed": "Не удалось открыть папку"
+    },
+    "skill": {
+      "scanSkills": "ScanSkills",
+      "fileLost": "Файл отсутствует"
     }
   },
   "workbench": {
@@ -360,7 +356,6 @@
         "projectType": "Тип проекта",
         "selectType": "Выберите тип",
         "basedOnNovel": "На основе текста романа",
-        "basedOnScript": "На основе сценария",
         "projectName": "Название проекта",
         "projectNamePh": "Введите название проекта",
         "novelType": "Жанр романа",
@@ -405,7 +400,6 @@
         "artStyleUpdated": "Обновлено визуальное руководство",
         "artStyleAdded": "Добавлен визуальный мануал",
         "operationFailed": "Ошибка операции",
-        "emptyFields": "Параметр отсутствует",
         "enterProjectName": "Пожалуйста, введите название проекта",
         "enterProjectIntro": "Пожалуйста, введите вступление к роману",
         "enterProjectType": "Пожалуйста, введите тип проекта",
@@ -809,7 +803,6 @@
           "scaleRatio": "Масштаб",
           "gridPreview": "Просмотр сеткой",
           "noPreviewImages": "Нет изображений для предпросмотра",
-          "loadFailed": "Ошибка загрузки: {src}",
           "imageLoadFailed": "Не удалось загрузить изображение"
         },
         "storyboardTable": {
@@ -853,7 +846,11 @@
         "generateFailed": "Ошибка генерации",
         "generateFirst": "Сначала сгенерируйте изображение",
         "generatedResult": "Результаты",
-        "waitingGenerate": "В очереди"
+        "waitingGenerate": "В очереди",
+        "layoutLR": "Авторазметка - горизонтально",
+        "layoutTB": "Авторазметка - вертикально",
+        "uploadAssetImage": "Загрузить изображение ресурса",
+        "uploadStoryboardImage": "Загрузить изображение раскадровки"
       },
       "save": "Выбирать",
       "cancel": "Отмена",
@@ -887,9 +884,7 @@
         "importingLoading": "Импорт, пожалуйста, подождите...",
         "mainTrackVideo": "Основная дорожка (Видео)",
         "subtitle1": "Субтитры 1",
-        "stereo441": "44.1kHz Стерео",
-        "mono16": "16kHz Моно",
-        "sampleImage1": "Пример изображения 1"
+        "storyboardVideoName": "Видео раскадровки-{storyboard}.mp4"
       },
       "preview": {
         "noImage": "Нет изображения",
@@ -929,7 +924,6 @@
         "duration": "Длит.",
         "generate": "Сгенерировать",
         "historyVersions": "История версий",
-        "refresh": "Обновить",
         "confirmSelection": "Подтвердить выбор",
         "noHistory": "Нет истории",
         "generating": "Генерация",
@@ -971,7 +965,8 @@
         "selectVideoFirst": "Пожалуйста, сначала выберите видео",
         "confirmSuccess": "Выбор подтвержден",
         "batchSubmitted": "Запрос на пакетную генерацию отправлен. В обработке...",
-        "configNotFound": "Конфигурация не найдена"
+        "configNotFound": "Конфигурация не найдена",
+        "pollingFailed": "Не удалось выполнить запрос статуса видео. Обновите вручную."
       },
       "editVideo": {
         "reset": "Сброс",
@@ -1138,7 +1133,8 @@
         "describe": "Описание",
         "state": "Статус",
         "startTime": "Время"
-      }
+      },
+      "project": "Название проекта:"
     }
   },
   "login": {
@@ -1154,5 +1150,23 @@
     "enterUsernameAndPassword": "Пожалуйста, введите имя пользователя или пароль",
     "loginSuccess": "Успешный вход",
     "settingsSaved": "Настройки сохранены"
-  }
+  },
+  "common": {
+    "cancel": "Отмена",
+    "confirm": "Подтвердить",
+    "selectAssets": "Выбрать ресурсы",
+    "sessionExpired": "Сессия истекла, пожалуйста, войдите снова",
+    "openSettings": "Открыть настройки",
+    "cancelled": "Генерация отменена",
+    "defaultReel": "Основной том"
+  },
+  "components.storyboardImageCheck.camera": "Камера",
+  "components.storyboardImageCheck.dialogTitle": "Выбрать изображение раскадровки",
+  "components.storyboardImageCheck.preview": "Предпросмотр",
+  "components.storyboardImageCheck.src": "Предпросмотр изображения",
+  "components.storyboardImageCheck.title": "Заголовок",
+  "components.storyboardImageCheck.duration": "Длительность",
+  "components.storyboardImageCheck.lines": "Реплики",
+  "components.storyboardImageCheck.createTime": "Дата создания",
+  "workbench.script.extractAssets": "Извлечь ресурсы"
 }

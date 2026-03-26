@@ -45,9 +45,9 @@
                 {{ asset.name }}
               </t-tag>
             </div>
-            <template #actions>
-              <i-delete theme="outline" @click.stop="handleDeleteScript(item.id)" style="cursor: pointer" />
-            </template>
+            <div class="del">
+              <i-delete theme="outline" size="18" @click.stop="handleDeleteScript(item.id)" style="cursor: pointer" />
+            </div>
           </t-card>
         </div>
       </div>
@@ -251,6 +251,14 @@ async function handleExtractAssets() {
         flex-wrap: wrap;
         gap: 6px;
         margin-top: 8px;
+      }
+      .del {
+        text-align: right;
+        opacity: 0.6;
+        transition: opacity 0.2s;
+      }
+      .del:hover {
+        opacity: 1;
       }
     }
     .emptyState {

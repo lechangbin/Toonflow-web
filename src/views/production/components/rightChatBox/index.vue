@@ -373,13 +373,13 @@ watch(
     height: calc(100% - 50px);
     display: flex;
     flex-direction: column;
-    padding-left: 0.5rem;
+    padding-left: 8px;
     .inputBox {
-      padding-right: 0.5rem;
+      padding-right: 8px;
     }
   }
   :deep(.t-chat__list) {
-    padding-right: 0.5rem;
+    padding-right: 8px;
   }
   .header {
     height: 40px;

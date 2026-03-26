@@ -1,6 +1,6 @@
 <template>
   <div class="test">
-    <t-button theme="primary" @click="showProgressNotify">测试按钮</t-button>
+    <t-button theme="primary" @click="test">测试按钮</t-button>
     <t-card>
       {{ log }}
     </t-card>
@@ -9,105 +9,11 @@
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
-import { NotifyPlugin, Progress } from "tdesign-vue-next";
-import { h, ref } from "vue";
-
 const log = ref<any>("");
-
-// 创建响应式进度值
-const progressValue = ref(0);
-
-// 延迟函数
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// 显示带进度条的通知
-async function showProgressNotify() {
-  // 重置状态
-  progressValue.value = 0;
-
-  const notifyInstance = NotifyPlugin.info({
-    title: "正在解析加载Skill",
-    content: () => {
-      return h("div", { style: "width: 100%; padding-top: 10px;" }, [
-        h(Progress, {
-          percentage: progressValue.value,
-          status: progressValue.value >= 100 ? "success" : "active",
-        }),
-      ]);
-    },
-    duration: 0,
-    closeBtn: true,
+function test() {
+  axios.get("/test/test").then((res) => {
+    log.value = res;
   });
-
-  try {
-    // 同时执行请求和进度动画，确保至少1秒
-    const [{ data }] = await Promise.all([
-      axios.post("/setting/skillManagement/scanSkills"),
-      (async () => {
-        // 进度动画：100ms 更新一次，共10次，耗时1秒
-        for (let i = 1; i <= 10; i++) {
-          await delay(100);
-          progressValue.value = i * 9; // 最多到90%
-        }
-      })(),
-    ]);
-
-    // 完成进度
-    progressValue.value = 100;
-    await delay(300); // 短暂显示100%状态
-
-    // 关闭原通知
-    NotifyPlugin.close(notifyInstance);
-
-    // 显示成功通知
-    NotifyPlugin.success({
-      title: "✨ Skill 扫描完成",
-      content: `📁 扫描 ${data.totalFiles} 个文件 | ✅ +${data.insertedCount} | 🔄 ↻${data.updatedCount} | 🗑️ -${data.removedCount}`,
-      footer: () =>
-        h("div", { style: "text-align: right; padding-top: 4px;" }, h("span", { style: "color: #00a870; font-size: 12px;" }, `🎉 ${data.message}`)),
-      duration: 5000,
-      closeBtn: true,
-    });
-
-    // 如果有警告信息，单独提示
-    if (data.noDescriptionSkillCount > 0 || data.noAttributionSkillCount > 0) {
-      const warnings = [];
-      if (data.noDescriptionSkillCount > 0) {
-        warnings.push(`📝 缺少描述: ${data.noDescriptionSkillCount}`);
-      }
-      if (data.noAttributionSkillCount > 0) {
-        warnings.push(`👤 缺少归属: ${data.noAttributionSkillCount}`);
-      }
-
-      NotifyPlugin.warning({
-        title: "⚠️ Skill 配置警告",
-        content: warnings.join(" | "),
-        footer: () =>
-          h(
-            "div",
-            { style: "text-align: right; padding-top: 4px;" },
-            h("span", { style: "color: #ed7b2f; font-size: 12px;" }, "💡 建议补充完整信息"),
-          ),
-        duration: 6000,
-        closeBtn: true,
-      });
-    }
-  } catch (error) {
-    // 关闭原通知
-    NotifyPlugin.close(notifyInstance);
-
-    // 显示错误通知
-    NotifyPlugin.error({
-      title: "❌ 扫描失败",
-      content: "🔌 请检查网络连接或稍后重试",
-      footer: () =>
-        h("div", { style: "text-align: right; padding-top: 4px;" }, h("span", { style: "color: #e34d59; font-size: 12px;" }, "🔁 请稍后重试")),
-      duration: 3000,
-      closeBtn: true,
-    });
-  }
 }
 </script>
 

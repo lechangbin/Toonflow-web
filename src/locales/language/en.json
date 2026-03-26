@@ -39,14 +39,6 @@
       "msg": {
         "fetchModelFailed": "Failed to fetch model data:"
       }
-    },
-    "update": {
-      "title": "New Version Available",
-      "currentVersion": "Current Version:",
-      "latestVersion": "Latest Version:",
-      "tip": "A new version is available. We recommend updating for a better experience.",
-      "later": "Remind Me Later",
-      "updateNow": "Update Now"
     }
   },
   "settings": {
@@ -262,6 +254,73 @@
         "cancelled": "Operation cancelled"
       }
     },
+    "skill": {
+      "scanSkills": "Scan Skills",
+      "addSkill": "Add Skill",
+      "importFromHub": "Import from Toonflow-Hub",
+      "filterType": "Type",
+      "filterAttribution": "Attribution",
+      "searchPlaceholder": "Search skill by name",
+      "search": "Search",
+      "totalCount": "{count} Skills in total",
+      "typeMain": "Core",
+      "typeReferences": "Technique",
+      "noAttribution": "No Attribution",
+      "noAttributionTip": "⚠️ No attribution, Skill cannot be enabled",
+      "noEmbeddingTip": "⚠️ Not embedded, Skill cannot be enabled",
+      "notEmbedded": "Not Embedded",
+      "stateNormal": "Normal",
+      "stateGenerating": "Generating description",
+      "stateEmptyDesc": "Empty description",
+      "stateAttrError": "Attribution error",
+      "stateMd5Changed": "MD5 changed, update description recommended",
+      "embedding": "Embed",
+      "edit": "Edit",
+      "delete": "Delete",
+      "importFromHubDialog": "Import from Toonflow-Hub",
+      "shareLink": "Share Link",
+      "editSkillTitle": "Edit Skill - ",
+      "addSkillTitle": "Add Skill",
+      "skillName": "Skill Name",
+      "skillNamePlaceholder": "e.g. writing-assistant",
+      "path": "Path",
+      "attributionAgent": "Attribution Agent",
+      "selectAttribution": "Select Attribution Agent",
+      "description": "Description",
+      "aiGenerate": "AI Generate",
+      "descriptionPlaceholder": "Describe the purpose of this skill",
+      "cancel": "Cancel",
+      "save": "Save",
+      "createSkill": "Create Skill",
+      "attr": {
+        "productionDecision": "Production - Director",
+        "productionExecution": "Production - Cinematographer",
+        "productionSupervision": "Production - Supervisor",
+        "scriptDecision": "Script Agent - Coordinator",
+        "scriptExecution": "Script Agent - Writer",
+        "scriptSupervision": "Script Agent - Editor",
+        "universalAgent": "Production Assistant"
+      },
+      "msg": {
+        "scanSuccess": "Scan completed, found {count} Skill files",
+        "fetchListFailed": "Failed to fetch skill list",
+        "fillContentFirst": "Please fill in Markdown content first",
+        "descGenSuccess": "Description generated successfully",
+        "descGenFailed": "Failed to generate description",
+        "fillNameFirst": "Please fill in Skill name first",
+        "updateSuccess": "Skill updated successfully",
+        "createSuccess": "Skill created successfully",
+        "updateFailed": "Failed to update Skill",
+        "createFailed": "Failed to create Skill",
+        "deleteConfirmTitle": "Confirm Deletion",
+        "deleteConfirmBody": "Are you sure you want to delete Skill \"{name}\"? This cannot be undone.",
+        "deleteSuccess": "Deleted successfully",
+        "deleteFailed": "Delete failed",
+        "embeddingSuccess": "Embedding completed",
+        "embeddingFailed": "Embedding failed"
+      },
+      "fileLost": "File missing"
+    },
     "other": {
       "requestTimeout": "Request Timeout",
       "seconds": "Seconds",
@@ -360,7 +419,6 @@
         "projectType": "Project Type",
         "selectType": "Select Project Type",
         "basedOnNovel": "Based on Novel Text",
-        "basedOnScript": "Based on Script",
         "projectName": "Project Name",
         "projectNamePh": "Please enter project name",
         "novelType": "Novel Genre",
@@ -405,7 +463,6 @@
         "artStyleUpdated": "Visual manual updated",
         "artStyleAdded": "Visual manual added",
         "operationFailed": "Operation failed",
-        "emptyFields": "Parameter missing",
         "enterProjectName": "Please enter project name",
         "enterProjectIntro": "Please enter the novel introduction",
         "enterProjectType": "Please enter project type",
@@ -809,7 +866,6 @@
           "scaleRatio": "Zoom Ratio",
           "gridPreview": "Grid Preview",
           "noPreviewImages": "No images available to preview",
-          "loadFailed": "Load failed: {src}",
           "imageLoadFailed": "Failed to load image"
         },
         "storyboardTable": {
@@ -853,7 +909,11 @@
         "generateFailed": "Generation failed",
         "generateFirst": "Please generate an image first",
         "generatedResult": "Results",
-        "waitingGenerate": "Waiting..."
+        "waitingGenerate": "Waiting...",
+        "layoutLR": "Auto Layout - Horizontal",
+        "layoutTB": "Auto Layout - Vertical",
+        "uploadAssetImage": "Upload Asset Image",
+        "uploadStoryboardImage": "Upload Storyboard Image"
       },
       "save": "Select",
       "cancel": "Cancel",
@@ -887,9 +947,7 @@
         "importingLoading": "Importing, please wait...",
         "mainTrackVideo": "Main Track (Video)",
         "subtitle1": "Subtitle 1",
-        "stereo441": "44.1kHz Stereo",
-        "mono16": "16kHz Mono",
-        "sampleImage1": "Sample Image 1"
+        "storyboardVideoName": "Storyboard Video-{storyboard}.mp4"
       },
       "preview": {
         "noImage": "No Image",
@@ -929,7 +987,6 @@
         "duration": "Duration",
         "generate": "Generate",
         "historyVersions": "History Versions",
-        "refresh": "Refresh",
         "confirmSelection": "Confirm Selection",
         "noHistory": "No history available",
         "generating": "Generating",
@@ -971,7 +1028,8 @@
         "selectVideoFirst": "Please select a video first",
         "confirmSuccess": "Selection confirmed",
         "batchSubmitted": "Batch generation request submitted. Processing...",
-        "configNotFound": "Configuration not found"
+        "configNotFound": "Configuration not found",
+        "pollingFailed": "Video status query failed, please refresh manually"
       },
       "editVideo": {
         "reset": "Reset",
@@ -1138,7 +1196,8 @@
         "describe": "Description",
         "state": "Status",
         "startTime": "Time"
-      }
+      },
+      "project": "Project name:"
     }
   },
   "login": {
@@ -1154,5 +1213,23 @@
     "enterUsernameAndPassword": "Please enter username or password",
     "loginSuccess": "Login successful",
     "settingsSaved": "Settings saved"
-  }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "selectAssets": "Select Assets",
+    "sessionExpired": "Session expired, please log in again",
+    "openSettings": "Open Settings",
+    "cancelled": "Generation cancelled",
+    "defaultReel": "Main Volume"
+  },
+  "components.storyboardImageCheck.camera": "Camera",
+  "components.storyboardImageCheck.dialogTitle": "Select Storyboard Image",
+  "components.storyboardImageCheck.preview": "Preview",
+  "components.storyboardImageCheck.src": "Preview Image",
+  "components.storyboardImageCheck.title": "Title",
+  "components.storyboardImageCheck.duration": "Duration",
+  "components.storyboardImageCheck.lines": "Lines",
+  "components.storyboardImageCheck.createTime": "Created Time",
+  "workbench.script.extractAssets": "Extract Assets"
 }

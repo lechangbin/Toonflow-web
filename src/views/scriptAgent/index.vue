@@ -464,7 +464,7 @@ function changeTab(value: TabValue) {
 
 <style lang="scss" scoped>
 .scriptAgent {
-  height: calc(100% - 1rem);
+  height: calc(100% - 16px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -485,7 +485,7 @@ function changeTab(value: TabValue) {
       min-width: 250px;
       height: 100%;
       .box {
-        padding-top: 0.5rem;
+        padding-top: 8px;
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -496,10 +496,10 @@ function changeTab(value: TabValue) {
         position: relative;
         width: 100%;
         height: 100%;
-        padding-left: 0.5rem;
+        padding-left: 8px;
         .inputBox {
-          padding-right: 0.5rem;
-          padding-bottom: 0.5rem;
+          padding-right: 8px;
+          padding-bottom: 8px;
         }
         .dot {
           position: absolute;
@@ -508,7 +508,7 @@ function changeTab(value: TabValue) {
         }
       }
       .t-chat__list {
-        padding-right: 0.5rem;
+        padding-right: 8px;
       }
     }
     :deep(.data) {
@@ -545,14 +545,14 @@ function changeTab(value: TabValue) {
 .panelContent {
   height: 100%;
   overflow-y: auto;
-  padding: 0.75rem 1rem;
+  padding: 12px 16px;
   box-sizing: border-box;
 }
 
 .scriptList {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 .scriptCard {
@@ -567,21 +567,21 @@ function changeTab(value: TabValue) {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    gap: 8px;
+    padding: 8px 12px;
     background-color: #f5f7fa;
     border-bottom: 1px solid var(--td-border-level-2-color);
     .scriptCardHeaderLeft {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 8px;
       min-width: 0;
     }
     .scriptCardActions {
       flex-shrink: 0;
     }
     .scriptIndex {
-      font-size: 0.75rem;
+      font-size: 12px;
       font-weight: 600;
       color: var(--td-brand-color);
       flex-shrink: 0;
@@ -590,7 +590,7 @@ function changeTab(value: TabValue) {
       border-radius: 4px;
     }
     .scriptTitle {
-      font-size: 0.875rem;
+      font-size: 14px;
       font-weight: 600;
       color: var(--td-text-color-primary);
       overflow: hidden;
@@ -599,10 +599,10 @@ function changeTab(value: TabValue) {
     }
   }
   .scriptCardBody {
-    font-size: 0.8125rem;
+    font-size: 13px;
     line-height: 1.7;
     color: var(--td-text-color-primary);
-    padding: 0.625rem 0.75rem;
+    padding: 10px 12px;
     flex: 1;
     max-height: 300px;
     overflow-y: auto;
@@ -615,22 +615,22 @@ function changeTab(value: TabValue) {
     .emptyContent {
       display: block;
       color: var(--td-text-color-placeholder);
-      font-size: 0.8125rem;
+      font-size: 13px;
     }
     :deep(.md-editor-preview-wrapper) {
       padding: 0;
     }
   }
   .scriptCardFooter {
-    gap: 0.5rem;
-    padding: 0.5rem 0.75rem;
+    gap: 8px;
+    padding: 8px 12px;
     border-top: 1px solid var(--td-border-level-2-color);
     background-color: #fafafa;
     .assetsLabel {
       display: flex;
       align-items: center;
       gap: 3px;
-      font-size: 0.75rem;
+      font-size: 12px;
       color: var(--td-text-color-secondary);
       white-space: nowrap;
       margin-top: 2px;
@@ -639,7 +639,7 @@ function changeTab(value: TabValue) {
     .assetsTags {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.35rem;
+      gap: 5.6px;
     }
   }
 }
@@ -647,14 +647,14 @@ function changeTab(value: TabValue) {
 .scriptEditForm {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  padding: 0.25rem 0;
+  gap: 16px;
+  padding: 4px 0;
   .scriptEditField {
     display: flex;
     flex-direction: column;
-    gap: 0.375rem;
+    gap: 6px;
     label {
-      font-size: 0.8125rem;
+      font-size: 13px;
       font-weight: 500;
       color: var(--td-text-color-secondary);
     }
@@ -669,20 +669,20 @@ function changeTab(value: TabValue) {
   .assetsEditor {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 8px;
     border: 1px solid var(--td-border-level-2-color);
     border-radius: 6px;
-    padding: 0.5rem 0.75rem;
+    padding: 8px 12px;
     background: #fafafa;
     .assetsTagList {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.35rem;
-      min-height: 1.5rem;
+      gap: 5.6px;
+      min-height: 24px;
     }
     .assetsInputRow {
       display: flex;
-      gap: 0.5rem;
+      gap: 8px;
       align-items: center;
     }
   }

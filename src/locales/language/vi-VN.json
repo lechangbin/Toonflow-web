@@ -39,14 +39,6 @@
       "msg": {
         "fetchModelFailed": "Lấy dữ liệu mô hình thất bại:"
       }
-    },
-    "update": {
-      "title": "Phát hiện phiên bản mới",
-      "currentVersion": "Phiên bản hiện tại:",
-      "latestVersion": "Phiên bản mới nhất:",
-      "tip": "Đã có phiên bản mới, khuyên bạn nên cập nhật để có trải nghiệm tốt hơn",
-      "later": "Nhắc tôi sau",
-      "updateNow": "Cập nhật ngay"
     }
   },
   "settings": {
@@ -360,7 +352,6 @@
         "projectType": "Loại dự án",
         "selectType": "Chọn loại dự án",
         "basedOnNovel": "Dựa trên bản gốc tiểu thuyết",
-        "basedOnScript": "Dựa trên kịch bản",
         "projectName": "Tên dự án",
         "projectNamePh": "Vui lòng nhập tên dự án",
         "novelType": "Thể loại tiểu thuyết",
@@ -405,7 +396,6 @@
         "artStyleUpdated": "Hướng dẫn trực quan được cập nhật",
         "artStyleAdded": "Đã thêm hướng dẫn trực quan",
         "operationFailed": "Thao tác thất bại",
-        "emptyFields": "Thiếu tham số",
         "enterProjectName": "Vui lòng nhập tên dự án",
         "enterProjectIntro": "Vui lòng nhập phần giới thiệu tiểu thuyết",
         "enterProjectType": "Vui lòng nhập loại dự án",
@@ -809,7 +799,6 @@
           "scaleRatio": "Tỷ lệ thu phóng",
           "gridPreview": "Xem trước dạng lưới",
           "noPreviewImages": "Không có ảnh để xem trước",
-          "loadFailed": "Tải thất bại: {src}",
           "imageLoadFailed": "Tải hình ảnh thất bại"
         },
         "storyboardTable": {
@@ -853,7 +842,11 @@
         "generateFailed": "Tạo thất bại",
         "generateFirst": "Vui lòng tạo hình ảnh trước",
         "generatedResult": "Kết quả tạo",
-        "waitingGenerate": "Đang chờ tạo"
+        "waitingGenerate": "Đang chờ tạo",
+        "layoutLR": "Bố cục tự động - Ngang",
+        "layoutTB": "Bố cục tự động - Dọc",
+        "uploadAssetImage": "Tải lên hình ảnh tài sản",
+        "uploadStoryboardImage": "Tải lên hình ảnh storyboard"
       },
       "save": "Lựa chọn",
       "cancel": "Hủy",
@@ -887,9 +880,7 @@
         "importingLoading": "Đang nhập, vui lòng chờ...",
         "mainTrackVideo": "Track chính (Video)",
         "subtitle1": "Phụ đề 1",
-        "stereo441": "44.1kHz Stereo",
-        "mono16": "16kHz Mono",
-        "sampleImage1": "Ảnh mẫu 1"
+        "storyboardVideoName": "Video storyboard-{storyboard}.mp4"
       },
       "preview": {
         "noImage": "Chưa có hình ảnh",
@@ -929,7 +920,6 @@
         "duration": "Thời lượng",
         "generate": "Tạo",
         "historyVersions": "Phiên bản lịch sử",
-        "refresh": "Làm mới",
         "confirmSelection": "Xác nhận đã chọn",
         "noHistory": "Chưa có lịch sử",
         "generating": "Đang tạo",
@@ -971,7 +961,8 @@
         "selectVideoFirst": "Vui lòng chọn một video trước",
         "confirmSuccess": "Xác nhận chọn thành công",
         "batchSubmitted": "Đã gửi yêu cầu tạo hàng loạt, đang xử lý...",
-        "configNotFound": "Cấu hình không tồn tại"
+        "configNotFound": "Cấu hình không tồn tại",
+        "pollingFailed": "Truy vấn trạng thái video không thành công, vui lòng làm mới theo cách thủ công"
       },
       "editVideo": {
         "reset": "Đặt lại",
@@ -1138,7 +1129,8 @@
         "describe": "Mô tả",
         "state": "Trạng thái",
         "startTime": "Thời gian"
-      }
+      },
+      "project": "Tên dự án:"
     }
   },
   "login": {
@@ -1154,5 +1146,23 @@
     "enterUsernameAndPassword": "Vui lòng nhập tên người dùng hoặc mật khẩu",
     "loginSuccess": "Đăng nhập thành công",
     "settingsSaved": "Đã lưu cài đặt"
-  }
+  },
+  "common": {
+    "cancel": "Hủy",
+    "confirm": "Xác nhận",
+    "selectAssets": "Chọn tài sản",
+    "sessionExpired": "Phiên đã hết hạn, vui lòng đăng nhập lại",
+    "openSettings": "Mở cài đặt",
+    "cancelled": "Đã hủy tạo",
+    "defaultReel": "Tập chính"
+  },
+  "components.storyboardImageCheck.camera": "Máy quay",
+  "components.storyboardImageCheck.dialogTitle": "Chọn hình storyboard",
+  "components.storyboardImageCheck.preview": "Xem trước",
+  "components.storyboardImageCheck.src": "Ảnh xem trước",
+  "components.storyboardImageCheck.title": "Tiêu đề",
+  "components.storyboardImageCheck.duration": "Thời lượng",
+  "components.storyboardImageCheck.lines": "Lời thoại",
+  "components.storyboardImageCheck.createTime": "Thời gian tạo",
+  "workbench.script.extractAssets": "Trích xuất tài sản"
 }

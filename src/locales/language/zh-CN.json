@@ -39,14 +39,6 @@
       "msg": {
         "fetchModelFailed": "获取模型数据失败:"
       }
-    },
-    "update": {
-      "title": "发现新版本",
-      "currentVersion": "当前版本：",
-      "latestVersion": "最新版本：",
-      "tip": "发现新版本，建议您更新以获得更好的体验",
-      "later": "稍后提醒",
-      "updateNow": "立即更新"
     }
   },
   "settings": {
@@ -262,6 +254,73 @@
         "cancelled": "操作已取消"
       }
     },
+    "skill": {
+      "scanSkills": "扫描Skills",
+      "addSkill": "新增 Skill",
+      "importFromHub": "Toonflow-Hub 导入",
+      "filterType": "类型",
+      "filterAttribution": "归属",
+      "searchPlaceholder": "按名称搜索 skill",
+      "search": "查询",
+      "totalCount": "共 {count} 条 Skill",
+      "typeMain": "核心",
+      "typeReferences": "技法",
+      "noAttribution": "无归属",
+      "noAttributionTip": "⚠️无归属，无法启用Skill",
+      "noEmbeddingTip": "⚠️未向量化，无法启用Skill",
+      "notEmbedded": "未向量化",
+      "stateNormal": "正常",
+      "stateGenerating": "生成描述中",
+      "stateEmptyDesc": "描述为空",
+      "stateAttrError": "归属异常",
+      "stateMd5Changed": "MD5变动，建议更新描述",
+      "embedding": "向量化",
+      "edit": "编辑",
+      "delete": "删除",
+      "importFromHubDialog": "从 Toonflow-Hub 导入",
+      "shareLink": "分享链接",
+      "editSkillTitle": "编辑 Skill-",
+      "addSkillTitle": "新增 Skill",
+      "skillName": "Skill 名称",
+      "skillNamePlaceholder": "例如：writing-assistant",
+      "path": "路径",
+      "attributionAgent": "归属 Agent",
+      "selectAttribution": "选择归属 Agent",
+      "description": "描述",
+      "aiGenerate": "AI生成",
+      "descriptionPlaceholder": "描述这个 skill 的用途",
+      "cancel": "取消",
+      "save": "保存",
+      "createSkill": "创建 Skill",
+      "attr": {
+        "productionDecision": "视频生产-执行导演",
+        "productionExecution": "视频生产-摄影指导",
+        "productionSupervision": "视频生产-监制",
+        "scriptDecision": "剧本Agent-统筹",
+        "scriptExecution": "剧本Agent-编剧",
+        "scriptSupervision": "剧本Agent-编辑",
+        "universalAgent": "制片助理"
+      },
+      "msg": {
+        "scanSuccess": "扫描成功，共扫描到 {count} 个 Skill 文件",
+        "fetchListFailed": "获取 skill 列表失败",
+        "fillContentFirst": "请先填写 Markdown 内容",
+        "descGenSuccess": "描述生成成功",
+        "descGenFailed": "描述生成失败",
+        "fillNameFirst": "请先填写 Skill 名称",
+        "updateSuccess": "Skill 更新成功",
+        "createSuccess": "Skill 创建成功",
+        "updateFailed": "Skill 更新失败",
+        "createFailed": "Skill 创建失败",
+        "deleteConfirmTitle": "确认删除",
+        "deleteConfirmBody": "确定要删除 Skill「{name}」吗？此操作不可恢复。",
+        "deleteSuccess": "删除成功",
+        "deleteFailed": "删除失败",
+        "embeddingSuccess": "向量化成功",
+        "embeddingFailed": "向量化失败"
+      },
+      "fileLost": "文件丢失"
+    },
     "other": {
       "requestTimeout": "请求超时时间",
       "seconds": "秒",
@@ -360,7 +419,6 @@
         "projectType": "项目类型",
         "selectType": "选择项目类型",
         "basedOnNovel": "基于小说原文",
-        "basedOnScript": "基于剧本",
         "projectName": "项目名称",
         "projectNamePh": "请输入项目名称",
         "novelType": "小说类型",
@@ -405,7 +463,6 @@
         "artStyleUpdated": "视觉手册已更新",
         "artStyleAdded": "视觉手册已添加",
         "operationFailed": "操作失败",
-        "emptyFields": "参数缺失",
         "enterProjectName": "请输入项目名称",
         "enterProjectIntro": "请输入小说简介",
         "enterProjectType": "请输入小说类型",
@@ -633,8 +690,7 @@
         "deleteConfirm": "删除",
         "cancel": "取消",
         "deleteSuccess": "删除成功",
-        "deleteFailed": "删除失败",
-        "selectDelete": "请选择要删除的剧本"
+        "deleteFailed": "删除失败"
       },
       "add": {
         "title": "新增剧本",
@@ -678,8 +734,7 @@
           "updateSuccess": "剧本更新成功",
           "updateFailed": "更新剧本失败，请稍后再试"
         }
-      },
-      "delScript": "删除剧本"
+      }
     },
     "assets": {
       "addPrefix": "新增",
@@ -811,7 +866,6 @@
           "scaleRatio": "缩放比例",
           "gridPreview": "宫格预览",
           "noPreviewImages": "暂无可预览的图片",
-          "loadFailed": "加载失败: {src}",
           "imageLoadFailed": "图片加载失败"
         },
         "storyboardTable": {
@@ -855,7 +909,11 @@
         "generateFailed": "生成失败",
         "generateFirst": "请先生成图片",
         "generatedResult": "生成结果",
-        "waitingGenerate": "等待生成"
+        "waitingGenerate": "等待生成",
+        "layoutLR": "自动排版-左右布局",
+        "layoutTB": "自动排版-上下布局",
+        "uploadAssetImage": "资产图片上传",
+        "uploadStoryboardImage": "分镜图片上传"
       },
       "save": "选取",
       "cancel": "取消",
@@ -889,9 +947,7 @@
         "importingLoading": "正在导入中，请稍候...",
         "mainTrackVideo": "主轨道（视频）",
         "subtitle1": "字幕1",
-        "stereo441": "44.1kHz 立体声",
-        "mono16": "16kHz 单声道",
-        "sampleImage1": "示例图片 1"
+        "storyboardVideoName": "分镜视频-{storyboard}.mp4"
       },
       "preview": {
         "noImage": "暂无图片",
@@ -931,7 +987,6 @@
         "duration": "时长",
         "generate": "生成",
         "historyVersions": "历史版本",
-        "refresh": "刷新",
         "confirmSelection": "确认选中",
         "noHistory": "暂无历史记录",
         "generating": "生成中",
@@ -975,7 +1030,8 @@
         "batchSubmitted": "已提交批量生成请求，正在处理中...",
         "configNotFound": "配置不存在",
         "stateSuccess": "生成成功",
-        "statePending": "待生产"
+        "statePending": "待生产",
+        "pollingFailed": "视频状态查询失败，请手动刷新"
       },
       "editVideo": {
         "reset": "重置",
@@ -1142,7 +1198,8 @@
         "describe": "描述",
         "state": "状态",
         "startTime": "时间"
-      }
+      },
+      "project": "项目名称:"
     }
   },
   "login": {
@@ -1167,5 +1224,14 @@
   "components.storyboardImageCheck.duration": "时长",
   "components.storyboardImageCheck.lines": "台词",
   "components.storyboardImageCheck.createTime": "创建时间",
-  "workbench.script.extractAssets": "提取资产"
+  "workbench.script.extractAssets": "提取资产",
+  "common": {
+    "cancel": "取消",
+    "confirm": "确定",
+    "selectAssets": "选择资产",
+    "sessionExpired": "登录已过期，请重新登录",
+    "openSettings": "打开设置",
+    "cancelled": "已取消生成",
+    "defaultReel": "正文卷"
+  }
 }

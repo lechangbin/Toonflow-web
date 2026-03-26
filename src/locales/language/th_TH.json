@@ -39,14 +39,6 @@
       "msg": {
         "fetchModelFailed": "ดึงข้อมูลโมเดลล้มเหลว:"
       }
-    },
-    "update": {
-      "title": "พบเวอร์ชันใหม่",
-      "currentVersion": "เวอร์ชันปัจจุบัน：",
-      "latestVersion": "เวอร์ชันล่าสุด：",
-      "tip": "พบเวอร์ชันใหม่ แนะนำให้คุณอัปเดตเพื่อประสบการณ์การใช้งานที่ดีขึ้น",
-      "later": "เตือนฉันทีหลัง",
-      "updateNow": "อัปเดตทันที"
     }
   },
   "settings": {
@@ -332,6 +324,10 @@
         "serveDesc": "ไฟล์ที่เกี่ยวข้องกับบริการส่วนหลัง"
       },
       "openFailed": "เปิดโฟลเดอร์ล้มเหลว"
+    },
+    "skill": {
+      "scanSkills": "สแกนทักษะ",
+      "fileLost": "ไฟล์หายไป"
     }
   },
   "workbench": {
@@ -360,7 +356,6 @@
         "projectType": "ประเภทโปรเจกต์",
         "selectType": "เลือกประเภทโปรเจกต์",
         "basedOnNovel": "สร้างจากต้นฉบับนิยาย",
-        "basedOnScript": "สร้างจากบทภาพยนตร์",
         "projectName": "ชื่อโปรเจกต์",
         "projectNamePh": "โปรดกรอกชื่อโปรเจกต์",
         "novelType": "ประเภทนิยาย",
@@ -405,7 +400,6 @@
         "artStyleUpdated": "อัปเดตคู่มือภาพแล้ว",
         "artStyleAdded": "เพิ่มคู่มือภาพแล้ว",
         "operationFailed": "การดำเนินการล้มเหลว",
-        "emptyFields": "พารามิเตอร์หายไป",
         "enterProjectName": "กรุณากรอกชื่อโครงการ",
         "enterProjectIntro": "กรุณากรอกคำนำนวนิยาย",
         "enterProjectType": "กรุณากรอกประเภทโครงการ",
@@ -809,7 +803,6 @@
           "scaleRatio": "อัตราส่วนการย่อ/ขยาย",
           "gridPreview": "ดูตัวอย่างแบบกริด",
           "noPreviewImages": "ไม่มีรูปภาพให้ดูตัวอย่าง",
-          "loadFailed": "โหลดล้มเหลว: {src}",
           "imageLoadFailed": "โหลดรูปภาพล้มเหลว"
         },
         "storyboardTable": {
@@ -853,7 +846,11 @@
         "generateFailed": "สร้างล้มเหลว",
         "generateFirst": "โปรดสร้างรูปภาพก่อน",
         "generatedResult": "ผลลัพธ์การสร้าง",
-        "waitingGenerate": "รอการสร้าง"
+        "waitingGenerate": "รอการสร้าง",
+        "layoutLR": "จัดวางอัตโนมัติ-ซ้ายขวา",
+        "layoutTB": "จัดวางอัตโนมัติ-บนล่าง",
+        "uploadAssetImage": "อัปโหลดรูปทรัพยากร",
+        "uploadStoryboardImage": "อัปโหลดรูปสตอรี่บอร์ด"
       },
       "save": "เลือก",
       "cancel": "ยกเลิก",
@@ -887,9 +884,7 @@
         "importingLoading": "กำลังนำเข้า โปรดรอสักครู่...",
         "mainTrackVideo": "แทร็กหลัก (วิดีโอ)",
         "subtitle1": "ซับไตเติล 1",
-        "stereo441": "สเตอริโอ 44.1kHz",
-        "mono16": "โมโน 16kHz",
-        "sampleImage1": "รูปภาพตัวอย่าง 1"
+        "storyboardVideoName": "วิดีโอสตอรี่บอร์ด-{storyboard}.mp4"
       },
       "preview": {
         "noImage": "ยังไม่มีรูปภาพ",
@@ -929,7 +924,6 @@
         "duration": "ความยาว",
         "generate": "สร้าง",
         "historyVersions": "ประวัติเวอร์ชัน",
-        "refresh": "รีเฟรช",
         "confirmSelection": "ยืนยันการเลือก",
         "noHistory": "ยังไม่มีประวัติ",
         "generating": "กำลังสร้าง",
@@ -971,7 +965,8 @@
         "selectVideoFirst": "โปรดเลือกวิดีโอก่อน",
         "confirmSuccess": "ยืนยันการเลือกสำเร็จ",
         "batchSubmitted": "ส่งคำขอสร้างเป็นชุดแล้ว กำลังดำเนินการ...",
-        "configNotFound": "ไม่พบการตั้งค่า"
+        "configNotFound": "ไม่พบการตั้งค่า",
+        "pollingFailed": "การค้นหาสถานะวิดีโอล้มเหลว โปรดรีเฟรชด้วยตนเอง"
       },
       "editVideo": {
         "reset": "รีเซ็ต",
@@ -1138,7 +1133,8 @@
         "describe": "คำอธิบาย",
         "state": "สถานะ",
         "startTime": "เวลา"
-      }
+      },
+      "project": "ชื่อโครงการ:"
     }
   },
   "login": {
@@ -1154,5 +1150,23 @@
     "enterUsernameAndPassword": "โปรดกรอกชื่อผู้ใช้หรือรหัสผ่าน",
     "loginSuccess": "เข้าสู่ระบบสำเร็จ",
     "settingsSaved": "บันทึกการตั้งค่าแล้ว"
-  }
+  },
+  "common": {
+    "cancel": "ยกเลิก",
+    "confirm": "ยืนยัน",
+    "selectAssets": "เลือกทรัพยากร",
+    "sessionExpired": "เซสชันหมดอายุ กรุณาเข้าสู่ระบบอีกครั้ง",
+    "openSettings": "เปิดการตั้งค่า",
+    "cancelled": "ยกเลิกการสร้าง",
+    "defaultReel": "เล่มหลัก"
+  },
+  "components.storyboardImageCheck.camera": "กล้อง",
+  "components.storyboardImageCheck.dialogTitle": "เลือกรูปสตอรี่บอร์ด",
+  "components.storyboardImageCheck.preview": "ดูตัวอย่าง",
+  "components.storyboardImageCheck.src": "รูปตัวอย่าง",
+  "components.storyboardImageCheck.title": "หัวข้อ",
+  "components.storyboardImageCheck.duration": "ระยะเวลา",
+  "components.storyboardImageCheck.lines": "บทพูด",
+  "components.storyboardImageCheck.createTime": "เวลาสร้าง",
+  "workbench.script.extractAssets": "ดึงทรัพยากร"
 }

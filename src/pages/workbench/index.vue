@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div class="main" :style="{ height: isElectron ? 'calc(100vh - 32px)' : '100vh' }">
     <div class="menu fc jb">
       <div class="logoBox c">
         <img class="logo" src="@/assets/logo.png" />
@@ -64,6 +64,7 @@
 <script setup lang="ts">
 import setting from "@/components/setting/index.vue";
 import migrateShow from "@/components/migrateShow.vue";
+import scanSkills from "@/utils/scanSkills";
 
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -102,13 +103,20 @@ function handleClick(menu: any) {
   router.push(menu.path);
   activeMenu.value = menu.path;
 }
+
+onMounted(() => {
+  scanSkills();
+});
+
+const isElectron = computed(() => {
+  return window?.$electron;
+});
 </script>
 
 <style lang="scss" scoped>
 .main {
-  height: 100vh;
   width: 100vw;
-  padding: 1rem;
+  padding: 16px;
   display: flex;
 
   .menu {
@@ -118,8 +126,8 @@ function handleClick(menu: any) {
     overflow-y: auto;
     background-color: #fff;
     border-radius: 16px;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 16px;
+    padding-bottom: 16px;
     .logoBox {
       width: 100%;
       height: fit-content;
@@ -130,10 +138,10 @@ function handleClick(menu: any) {
     }
     .itemBox {
       flex: 1;
-      margin-top: 1rem;
-      margin-bottom: 1rem;
-      padding-top: 1rem;
-      padding-bottom: 1rem;
+      margin-top: 16px;
+      margin-bottom: 16px;
+      padding-top: 16px;
+      padding-bottom: 16px;
       width: 100%;
       height: 100%;
     }
@@ -175,16 +183,15 @@ function handleClick(menu: any) {
   }
   .view {
     flex: 1;
-    margin-left: 1rem;
+    margin-left: 16px;
     background-color: #fff;
     border-radius: 16px;
     width: 100%;
-    height: calc(100vh - 2rem);
     overflow-x: hidden;
     overflow-y: auto;
     scrollbar-gutter: stable;
-    padding-left: 2rem;
-    padding-right: 2rem;
+    padding-left: 32px;
+    padding-right: 32px;
     .topMenu {
       height: 6vh;
       .rightBtnList {

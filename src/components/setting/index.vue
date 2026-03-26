@@ -1,5 +1,5 @@
 <template>
-  <t-dialog :header="$t('settings.title')" :footer="false" placement="center" width="60%" v-model:visible="showSetting">
+  <t-dialog :header="$t('settings.title')" :footer="false" placement="center" width="60vw" v-model:visible="showSetting">
     <div class="settingPanel">
       <t-menu class="settingMenu" v-model:value="activeMenu" :style="{ height: '70vh' }">
         <t-menu-item v-for="item in menuItems" :key="item.key" :value="item.key">
@@ -79,14 +79,14 @@ const currentMenuItem = computed(() => menuItems.find((item) => item.key === act
     flex-shrink: 0;
     .icon {
       font-size: 20px;
-      margin-right: 0.5rem;
+      margin-right: 8px;
     }
   }
 
   .settingRight {
     flex: 1;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: 16px;
+    padding-right: 16px;
     height: 70vh;
     overflow-y: auto;
 

@@ -332,6 +332,9 @@
         "serveDesc": "後端服務相關檔案。"
       },
       "openFailed": "開啟資料夾失敗"
+    },
+    "skill": {
+      "scanSkills": "掃描Skills"
     }
   },
   "workbench": {
@@ -971,7 +974,8 @@
         "selectVideoFirst": "請先選擇一個影片",
         "confirmSuccess": "確認選取成功",
         "batchSubmitted": "已送出批次生成請求，正在處理中...",
-        "configNotFound": "設定不存在"
+        "configNotFound": "設定不存在",
+        "pollingFailed": "視訊狀態查詢失敗，請手動刷新"
       },
       "editVideo": {
         "reset": "重設",
@@ -1138,7 +1142,8 @@
         "describe": "描述",
         "state": "狀態",
         "startTime": "時間"
-      }
+      },
+      "project": "項目名稱:"
     }
   },
   "login": {
