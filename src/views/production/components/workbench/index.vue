@@ -338,7 +338,7 @@ function handleBatchDownload(value: any) {
     flex: 1;
     overflow: hidden;
   }
-  .editStoryboard {
+  .editImage {
     width: 100%;
     height: 75vh;
   }

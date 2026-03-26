@@ -12,8 +12,8 @@
       <i-close-small theme="outline" size="24" fill="#4a4a4a" @click="closeFn" />
     </div>
     <VueFlow
-      id="editStoryboard"
-      class="editStoryboard"
+      id="editImage"
+      class="editImage"
       v-model:nodes="nodes"
       v-model:edges="edges"
       :min-zoom="0.01"
@@ -34,16 +34,28 @@
       <Controls />
 
       <Panel position="top-right">
-        <t-dropdown
-          :options="[
-            { content: $t('workbench.production.editImage.upload'), value: 1 },
-            { content: $t('workbench.production.editImage.generate'), value: 2 },
-          ]"
-          @click="clickHandler">
-          <t-button theme="primary" shape="circle">
-            <template #icon><i-plus /></template>
-          </t-button>
-        </t-dropdown>
+        <div class="ac" style="gap: 8px">
+          <t-tooltip theme="primary" content="自动排版-左右布局">
+            <div class="item c" @click="layoutGraph('LR')">
+              <i-tree-diagram theme="outline" size="24" />
+            </div>
+          </t-tooltip>
+          <t-tooltip theme="primary" content="自动排版-上下布局">
+            <div class="item c" @click="layoutGraph('TB')">
+              <i-branch-one theme="outline" size="24" />
+            </div>
+          </t-tooltip>
+          <t-dropdown
+            :options="[
+              { content: $t('workbench.production.editImage.upload'), value: 1 },
+              { content: $t('workbench.production.editImage.generate'), value: 2 },
+            ]"
+            @click="clickHandler">
+            <t-button theme="primary" shape="circle">
+              <template #icon><i-plus /></template>
+            </t-button>
+          </t-dropdown>
+        </div>
       </Panel>
     </VueFlow>
   </t-dialog>
@@ -51,20 +63,27 @@
 
 <script setup lang="ts">
 import type { Ref } from "vue";
-import { VueFlow, useVueFlow, Panel, MarkerType, type Edge } from "@vue-flow/core";
+import { VueFlow, useVueFlow, Panel, type Edge } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
 import uploadNode from "./uploadNode.vue";
 import generatedNode from "./generatedNode.vue";
+
 import "@vue-flow/core/dist/style.css";
 import "@vue-flow/core/dist/theme-default.css";
 import "@vue-flow/controls/dist/style.css";
 import removeLine from "./removeLine.vue";
 import store from "@/stores";
 import axios from "@/utils/axios";
-import type { NodeType } from "../../utils/editImageType";
+import type { NodeType, UploadNodeData, GeneratedNodeData } from "../../utils/editImageType";
+import { DEFAULT_EDGE_OPTIONS, createGeneratedData, cleanNodes, cleanEdges } from "../../utils/editImageType";
+import { useLayout } from "../../utils/dagre";
+
 
 const episodesId = inject<Ref<number>>("episodesId");
+
+const { toObject, fromObject, fitView } = useVueFlow({ id: "editImage" });
+const { layout } = useLayout("editImage");
 
 const { projectId } = storeToRefs(store());
 const props = defineProps<{
@@ -82,7 +101,7 @@ const visible = defineModel("visible", {
   type: Boolean,
   default: false,
 });
-const { addEdges, getNodes, getEdges, updateNodeData } = useVueFlow({ id: "editStoryboard" });
+const { addEdges, getNodes, getEdges, updateNodeData } = useVueFlow({ id: "editImage" });
 
 // 节点ID计数器
 let nodeIdCounter = 3;
@@ -125,12 +144,19 @@ function _doSyncReferences() {
     const sourceIds = edgesByTarget.get(genNode.id) ?? [];
     const connectedImages = sourceIds
       .map((id) => nodeMap.get(id))
-      .filter((n) => n?.type === "upload")
-      .map((n) => ({ image: (n!.data as { image?: string }).image || "" }))
+      .filter((n): n is NonNullable<typeof n> => !!n)
+      .map((n) => {
+        if (n.type === "upload") {
+          return { image: (n.data as UploadNodeData).image || "" };
+        } else if (n.type === "generated") {
+          return { image: (n.data as GeneratedNodeData).generatedImage || "" };
+        }
+        return { image: "" };
+      })
       .filter((i) => i.image);
 
     // 仅在数据变化时才更新，避免无效的响应式触发
-    const currentRefs: { image: string }[] = (genNode.data as any).references ?? [];
+    const currentRefs: { image: string }[] = (genNode.data as GeneratedNodeData).references ?? [];
     const isSame = currentRefs.length === connectedImages.length && connectedImages.every((img, idx) => currentRefs[idx]?.image === img.image);
     if (!isSame) {
       updateNodeData(genNode.id, { references: connectedImages });
@@ -145,9 +171,7 @@ const onConnect = (params: any) => {
 
   // 禁止重复连线及反向连线：A→B 或 B→A 已存在则忽略
   const isDuplicate = getEdges.value.some(
-    (e) =>
-      (e.source === params.source && e.target === params.target) ||
-      (e.source === params.target && e.target === params.source)
+    (e) => (e.source === params.source && e.target === params.target) || (e.source === params.target && e.target === params.source),
   );
   if (isDuplicate) return;
 
@@ -156,9 +180,7 @@ const onConnect = (params: any) => {
       id: `e-${edgeIdCounter++}`,
       source: params.source,
       target: params.target,
-      type: "removeLine",
-      animated: true,
-      style: { stroke: "#a3e635" },
+      ...DEFAULT_EDGE_OPTIONS,
     },
   ]);
   // 连线建立后立即同步
@@ -170,67 +192,44 @@ function clickHandler(value: any) {
 }
 // 添加新的上传节点
 const addUploadNode = (type: string, image: string = "", prompt: string = "") => {
-  let newNodeId;
-  if (type === "generated") {
-    newNodeId = `generated-${nodeIdCounter++}`;
-  } else {
-    newNodeId = `upload-${nodeIdCounter++}`;
-  }
-  const lastUploadNode = nodes.value.filter((n) => n.type === type).pop();
-  const newY = lastUploadNode ? lastUploadNode.position.y + 350 : 100;
+  const newNodeId = type === "generated" ? `generated-${nodeIdCounter++}` : `upload-${nodeIdCounter++}`;
+  const lastNode = nodes.value.filter((n) => n.type === type).pop();
+  const newY = lastNode ? lastNode.position.y + 350 : 100;
   const newX = type === "generated" ? 600 : 100;
-  const refeceImage = {
-    generatedImage: image,
-    references: [],
-    prompt: prompt,
-    model: "",
-    ratio: "",
-    quality: "",
-    steps: 49,
-  };
-  const newNodeObj = {
-    id: newNodeId,
-    type: type,
-    position: { x: newX, y: newY },
-    data: {
-      ...(type == "generated" ? { ...refeceImage } : { image: image }),
-    },
-  };
 
-  nodes.value.push(newNodeObj as NodeType);
+  nodes.value.push({
+    id: newNodeId,
+    type,
+    position: { x: newX, y: newY },
+    data: type === "generated" ? createGeneratedData(image, prompt) : { image },
+  } as NodeType);
+
   return newNodeId;
 };
 //保存节点
 async function sureNode(imageUrl: string = "") {
   try {
     const id = props.editData?.id;
+    const payload = {
+      id,
+      nodes: cleanNodes(getNodes.value as NodeType[]),
+      edges: cleanEdges(getEdges.value),
+      imageUrl,
+      type: props.type,
+      episodesId: episodesId!.value,
+    };
+
     let insertId = "";
     if (flowId.value) {
-      await axios.post("/production/editImage/updateImageFlow", {
-        id: id,
-        flowId: flowId.value,
-        nodes: nodes.value,
-        edges: edges.value,
-        imageUrl,
-        type: props.type,
-        episodesId: episodesId!.value,
-      });
+      await axios.post("/production/editImage/updateImageFlow", { ...payload, flowId: flowId.value });
     } else {
-      const { data } = await axios.post("/production/editImage/saveImageFlow", {
-        id: id,
-        nodes: nodes.value,
-        edges: edges.value,
-        imageUrl,
-        type: props.type,
-        episodesId: episodesId!.value,
-      });
+      const { data } = await axios.post("/production/editImage/saveImageFlow", payload);
       insertId = data?.id || null;
     }
     emit("save", { imageUrl, insertId });
     visible.value = false;
   } catch (e) {
     window.$message.error((e as any).message || $t("workbench.production.editImage.saveFailed"));
-  } finally {
   }
 }
 onMounted(async () => {
@@ -256,7 +255,6 @@ function buildFlow() {
     uploadIds.push(addUploadNode("upload", i));
   });
   props.editData.resultImages.forEach((i) => {
-    console.log("%c Line:258 🍞 i", "background:#ed9ec7", i);
     generatedIds.push(addUploadNode("generated", i.src, i.prompt));
   });
   // 将每个 upload 节点连接到每个 generated 节点
@@ -266,9 +264,7 @@ function buildFlow() {
         id: `e-${edgeIdCounter++}`,
         source: sourceId,
         target: targetId,
-        type: "removeLine",
-        animated: true,
-        style: { stroke: "#a3e635" },
+        ...DEFAULT_EDGE_OPTIONS,
       });
     }
   }
@@ -276,11 +272,16 @@ function buildFlow() {
 }
 
 function closeFn() {
-  try {
-    sureNode("");
-  } catch (e) {
+  sureNode("").finally(() => {
     visible.value = false;
-  }
+  });
+}
+async function layoutGraph(direction: "LR" | "TB") {
+  const oldData = toObject();
+  oldData.nodes = layout(oldData.nodes, oldData.edges, direction);
+  await fromObject(oldData);
+  await nextTick();
+  fitView({ duration: 300 });
 }
 </script>
 
@@ -293,7 +294,7 @@ function closeFn() {
     z-index: 9999;
     cursor: pointer;
   }
-  .editStoryboard {
+  .editImage {
     width: 100%;
     height: 75vh;
   }
@@ -308,6 +309,16 @@ function closeFn() {
   }
   .t-dialog__wrap {
     padding: 0 !important;
+  }
+}
+.item {
+  width: 45px;
+  padding: 5px;
+  color: var(--mainColor);
+  &:hover {
+    background-color: #f4f4f4;
+    border-radius: 4px;
+    cursor: pointer;
   }
 }
 </style>

@@ -67,23 +67,9 @@
 
 <script setup lang="ts">
 import dayjs from "dayjs";
-import { useFileDialog } from "@vueuse/core";
 import axios from "@/utils/axios";
-import type { TabValue, TableProps } from "tdesign-vue-next";
-import projectStore from "@/stores/project";
-//表格数据类型定义
-interface Storyboard {
-  id: number;
-  title: string;
-  description: string;
-  camera: string;
-  duration: number;
-  prompt: string;
-  lines: string | null;
-  sound: string | null;
-  src: string | null;
-  state: "未生成" | "生成中" | "已完成" | "生成失败";
-}
+import type { TableProps } from "tdesign-vue-next";
+import type { Storyboard } from "@/views/production/utils/flowBuilder";
 const props = withDefaults(
   defineProps<{
     /** 限制显示的资产类型 */
@@ -93,13 +79,11 @@ const props = withDefaults(
     scriptId: number;
   }>(),
   {
-    multiple: true,
+    multiple: false,
   },
 );
 
 const emit = defineEmits<{
-  /** 更新弹窗可见性 */
-  (e: "update:visible", value: boolean): void;
   /** 点击确认，返回选中的行数据 */
   (e: "confirm", rows: Storyboard[]): void;
   /** 关闭弹窗 */
@@ -126,7 +110,6 @@ watch(
 onMounted(() => {
   getFilteredData();
 });
-const { project } = storeToRefs(projectStore());
 
 const searchText = ref("");
 
@@ -148,37 +131,8 @@ const pagination = ref({
   total: 0,
   showJumper: true,
 });
-function handleSearch() {
-  pagination.value.page = 1;
-  getFilteredData();
-}
-async function getFilteredData() {
-  try {
-    loading.value = true;
-    const { data } = await axios.post("/production/storyboard/getStoryboardData", {
-      scriptId: 1,
-      name: searchText.value || undefined,
-      page: pagination.value.page,
-      limit: pagination.value.pageSize,
-    }); 
-
-    tableData.value = data.data || [];
-    pagination.value.total = data.total || 0;
-    return tableData.value;
-  } catch (error) {
-    console.error("加载资产数据失败:", error);
-    tableData.value = [];
-    pagination.value.total = 0;
-  } finally {
-    loading.value = false;
-  }
-}
-// 新增
-// 文件选择
-const { open, onChange, onCancel } = useFileDialog({ multiple: false, reset: true, accept: ".png,.jpg,.jpeg,.mp3,.mp4" });
 const selectType = props.multiple ? "multiple" : "single";
 
-//剪辑表格列配置
 const clipColumns: TableProps["columns"] = [
   {
     colKey: "row-select",
@@ -232,6 +186,32 @@ const clipColumns: TableProps["columns"] = [
   },
 ];
 
+function handleSearch() {
+  pagination.value.page = 1;
+  getFilteredData();
+}
+async function getFilteredData() {
+  try {
+    loading.value = true;
+    const { data } = await axios.post("/production/storyboard/getStoryboardData", {
+      scriptId: props.scriptId,
+      name: searchText.value || undefined,
+      page: pagination.value.page,
+      limit: pagination.value.pageSize,
+    });
+
+    tableData.value = data.data || [];
+    pagination.value.total = data.total || 0;
+    return tableData.value;
+  } catch (error) {
+    console.error("加载资产数据失败:", error);
+    tableData.value = [];
+    pagination.value.total = 0;
+  } finally {
+    loading.value = false;
+  }
+}
+
 // 选择行（正在生成中的行不允许勾选）
 function handleSelectChange(value: Array<string | number>) {
   const filtered = value.filter((key) => !isGenerating(key as number));
@@ -259,19 +239,13 @@ function handlePageChange(pageInfo: { current: number; pageSize: number }) {
 function handleConfirm() {
   const rows = tableData.value.filter((row) => selectedRowKeys.value.includes(row.id));
   emit("confirm", rows);
-  emit("update:visible", false);
+  dialogVisible.value = false;
 }
 
 // 关闭弹窗
 function handleClose() {
   emit("cancel");
-  emit("update:visible", false);
 }
-
-defineExpose({
-  selectedRowKeys,
-  tableData,
-});
 </script>
 
 <style lang="scss" scoped>
