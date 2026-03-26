@@ -5,6 +5,7 @@ interface TextModel {
   modelName: string;
   type: "text";
   multimodal: boolean; // 前端显示用
+  tool: boolean; // 前端显示用
 }
 
 // 图像模型
@@ -134,9 +135,17 @@ interface VideoConfig {
   resolution: string; //视频分辨率，如"720p"、"1080p"
   aspectRatio: "16:9" | "9:16"; //视频长宽比
   prompt: string; //视频提示词
-  imageBase64?: string[];
+  fileBase64?: string[]; // 文件base64 包含图片base64、视频base64、音频base64
   audio?: boolean;
-  mode: "startEnd" | "multi" | "single" | "text";
+  mode:
+    | "singleImage" // 单图
+    | "multiImage" // 多图模式
+    | "gridImage" // 网格单图（传入一张图片，但该图片是网格图）
+    | "startEndRequired" // 首尾帧（两张都得有）
+    | "endFrameOptional" // 首尾帧（尾帧可选）
+    | "startFrameOptional" // 首尾帧（首帧可选）
+    | "text" // 文本生视频
+    | ("video" | "image" | "audio" | "text")[]; // 混合参考
 }
 
 const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) => {

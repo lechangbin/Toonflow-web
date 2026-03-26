@@ -47,6 +47,7 @@ interface TTSModel {
 interface VendorConfig {
   version: number;
   icon?: string; //仅支持base64格式
+  author: string;
   name: string;
   inputs: {
     key: string;
@@ -62,6 +63,7 @@ interface VendorConfig {
 // ==================== 供应商数据 ====================
 const vendor: VendorConfig = {
   version: 1,
+  author: "Toonflow",
   name: "Toonflow官方中转平台",
   inputs: [
     { key: "apiKey", label: "API密钥", type: "password", required: true },
@@ -247,7 +249,7 @@ const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) =>
       "4K": "2304x4096",
     },
   };
-  
+
   const body: Record<string, any> = {
     model: imageModel.modelName,
     prompt: imageConfig.prompt,
@@ -283,10 +285,15 @@ interface VideoConfig {
   prompt: string;
   imageBase64?: string[];
   audio?: boolean;
-  mode: "startEnd" | "multi" | "single" | "text";
-  taskClass: string;
-  name: string;
-  projectId: number;
+  mode:
+    | "singleImage" // 单图
+    | "multiImage" // 多图模式
+    | "gridImage" // 网格单图（传入一张图片，但该图片是网格图）
+    | "startEndRequired" // 首尾帧（两张都得有）
+    | "endFrameOptional" // 首尾帧（尾帧可选）
+    | "startFrameOptional" // 首尾帧（首帧可选）
+    | "text" // 文本生视频
+    | ("video" | "image" | "audio" | "text")[]; // 混合参考
 }
 
 // 构建 各个平台的metadata参数
@@ -298,10 +305,10 @@ const buildDoubaoMetadata = (videoConfig: VideoConfig) => {
   };
   if (videoConfig.imageBase64 && videoConfig.imageBase64.length) {
     videoConfig.imageBase64.forEach((i, index) => {
-      if (videoConfig.mode == "startEnd") {
+      if (videoConfig.mode == "startEndRequired" || videoConfig.mode == "endFrameOptional" || videoConfig.mode == "startFrameOptional") {
         (metaData.image_roles as string[]).push(index == 0 ? "first_frame" : "last_frame");
       }
-      if (videoConfig.mode == "single" || videoConfig.mode == "multi") {
+      if (videoConfig.mode == "singleImage" || videoConfig.mode == "multiImage") {
         (metaData.image_roles as string[]).push("reference_image");
       }
     });
@@ -313,7 +320,10 @@ const buildDoubaoMetadata = (videoConfig: VideoConfig) => {
 const buildWanMetadata = (videoConfig: VideoConfig) => {
   const images = videoConfig.imageBase64 ?? [];
   const metaData: Record<string, string | boolean> = {};
-  if (videoConfig.mode === "startEnd" && images.length) {
+  if (
+    (videoConfig.mode === "startEndRequired" || videoConfig.mode == "endFrameOptional" || videoConfig.mode == "startFrameOptional") &&
+    images.length
+  ) {
     if (images[0]) metaData.first_frame_url = images[0];
     if (images[1]) metaData.last_frame_url = images[1];
   } else if (images.length === 1) {
