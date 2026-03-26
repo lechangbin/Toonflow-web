@@ -404,7 +404,8 @@
         "enterArtStyleName": "請輸入視覺手冊名稱",
         "artStyleUpdated": "視覺手冊已更新",
         "artStyleAdded": "視覺手冊已添加",
-        "operationFailed": "操作失敗"
+        "operationFailed": "操作失敗",
+        "emptyFields": "參數缺失"
       }
     },
     "novel": {

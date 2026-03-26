@@ -404,7 +404,8 @@
         "enterArtStyleName": "Vui lòng nhập tên hướng dẫn trực quan",
         "artStyleUpdated": "Hướng dẫn trực quan được cập nhật",
         "artStyleAdded": "Đã thêm hướng dẫn trực quan",
-        "operationFailed": "Thao tác thất bại"
+        "operationFailed": "Thao tác thất bại",
+        "emptyFields": "Thiếu tham số"
       }
     },
     "novel": {

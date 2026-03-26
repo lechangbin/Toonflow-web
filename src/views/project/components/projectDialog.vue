@@ -25,13 +25,19 @@
               <t-input v-model="formState.type" :placeholder="$t('workbench.project.dialog.novelTypePh')" />
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.modelData')">
-              <modelSelect v-model="selectValue" type="image" />
+              <modelSelect v-model="formState.imageModel" type="image" />
+            </t-form-item>
+            <t-form-item :label="$t('workbench.project.dialog.videoModelData')">
+              <modelSelect v-model="formState.videoModel" type="video" />
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.videoRatio')">
               <t-select v-model="formState.videoRatio" :options="RATIO_OPTIONS" />
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.novelIntro')">
-              <t-textarea v-model="formState.intro" :autosize="{ minRows: 3, maxRows: 6 }" :placeholder="$t('workbench.project.dialog.novelIntroPh')" />
+              <t-textarea
+                v-model="formState.intro"
+                :autosize="{ minRows: 3, maxRows: 6 }"
+                :placeholder="$t('workbench.project.dialog.novelIntroPh')" />
             </t-form-item>
           </t-form>
         </div>
@@ -158,13 +164,15 @@ import "md-editor-v3/lib/style.css";
 import modelSelect from "@/components/modelSelect.vue";
 
 const addProjectShow = defineModel<boolean>();
-const selectValue = ref("");
 const props = defineProps<{
   projectData?: ProjectData | null;
 }>();
 const emit = defineEmits<{
   (e: "add", data: ProjectFormData): void;
-  (e: "edit", data: { id: string; name: string; intro: string; type: string; artStyle: string; videoRatio: string }): void;
+  (
+    e: "edit",
+    data: { id: string; name: string; intro: string; type: string; artStyle: string; videoRatio: string; imageModel: string; videoModel: string },
+  ): void;
 }>();
 
 // ===== 类型定义 =====
@@ -175,6 +183,8 @@ interface ProjectData {
   type: string;
   artStyle: string | null;
   videoRatio: string | null;
+  imageModel: string;
+  videoModel: string;
 }
 
 interface ProjectFormData {
@@ -184,6 +194,8 @@ interface ProjectFormData {
   type: string;
   artStyle: string;
   videoRatio: string;
+  imageModel: string;
+  videoModel: string;
 }
 
 interface ArtStyleItem {
@@ -212,6 +224,8 @@ const DEFAULT_FORM: () => ProjectFormData & { id: number; era: string; createTim
   videoRatio: "16:9",
   createTime: 0,
   userId: 0,
+  imageModel: "",
+  videoModel: "",
 });
 
 // ===== 表单 =====
@@ -227,6 +241,18 @@ function handleCancel() {
 }
 
 function handleOk() {
+  if (
+    !formState.value.name ||
+    !formState.value.intro ||
+    !formState.value.type ||
+    !formState.value.artStyle ||
+    !formState.value.videoRatio ||
+    !formState.value.imageModel ||
+    !formState.value.videoModel
+  ) {
+    window.$message.warning($t("workbench.project.msg.emptyFields"));
+    return;
+  }
   if (isEdit.value) {
     emit("edit", {
       id: formState.value.id as unknown as string,
@@ -235,6 +261,8 @@ function handleOk() {
       type: formState.value.type,
       artStyle: formState.value.artStyle,
       videoRatio: formState.value.videoRatio,
+      imageModel: formState.value.imageModel,
+      videoModel: formState.value.videoModel,
     });
   } else {
     emit("add", {
@@ -244,6 +272,8 @@ function handleOk() {
       type: formState.value.type,
       artStyle: formState.value.artStyle,
       videoRatio: formState.value.videoRatio || "16:9",
+      imageModel: formState.value.imageModel,
+      videoModel: formState.value.videoModel,
     });
   }
   resetForm();
@@ -365,7 +395,6 @@ async function handleArtStyleSubmit() {
         name: artStyleForm.value.name,
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
-        model: selectValue.value,
       });
       window.$message.success($t("workbench.project.msg.artStyleUpdated"));
     } else {
@@ -373,7 +402,6 @@ async function handleArtStyleSubmit() {
         name: artStyleForm.value.name,
         fileUrl: artStyleForm.value.coverUrl,
         prompt: artStyleForm.value.prompt,
-        model: selectValue.value,
       });
       window.$message.success($t("workbench.project.msg.artStyleAdded"));
     }
@@ -395,6 +423,8 @@ watch(addProjectShow, (visible) => {
         type: props.projectData.type || "",
         artStyle: props.projectData.artStyle || "",
         videoRatio: props.projectData.videoRatio || "16:9",
+        imageModel: props.projectData.imageModel || "",
+        videoModel: props.projectData.videoModel || "",
       };
     } else {
       resetForm();

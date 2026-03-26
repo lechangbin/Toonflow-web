@@ -404,7 +404,8 @@
         "enterArtStyleName": "ビジュアルマニュアル名を入力してください",
         "artStyleUpdated": "ビジュアルマニュアルを更新しました",
         "artStyleAdded": "ビジュアルマニュアルを追加しました",
-        "operationFailed": "操作に失敗しました"
+        "operationFailed": "操作に失敗しました",
+        "emptyFields": "パラメータがありません"
       }
     },
     "novel": {

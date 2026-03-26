@@ -404,7 +404,8 @@
         "enterArtStyleName": "Пожалуйста, введите название визуального руководства",
         "artStyleUpdated": "Обновлено визуальное руководство",
         "artStyleAdded": "Добавлен визуальный мануал",
-        "operationFailed": "Ошибка операции"
+        "operationFailed": "Ошибка операции",
+        "emptyFields": "Параметр отсутствует"
       }
     },
     "novel": {
