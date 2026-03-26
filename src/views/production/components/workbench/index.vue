@@ -120,7 +120,7 @@ function getMediaType(src?: string): MediaType {
 //切换菜单
 function changeMenu(type: string) {
   activeMenu.value = type;
-  editFootage();
+  if (type == "editVideo") editFootage();
 }
 //查询剪辑素材
 function editFootage() {
