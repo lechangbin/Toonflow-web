@@ -5,20 +5,20 @@
         <t-input :placeholder="$t('workbench.script.searchPlaceholder')" v-model="searchQuery" class="searchInput" clearable style="width: 300px" />
         <t-button theme="primary" @click="onChange">
           <template #icon><i-search /></template>
-          {{ $t('workbench.script.search') }}
+          {{ $t("workbench.script.search") }}
         </t-button>
         <t-button theme="primary" @click="handleAddScript">
           <template #icon><i-plus /></template>
-          {{ $t('workbench.script.addScript') }}
+          {{ $t("workbench.script.addScript") }}
         </t-button>
       </div>
       <div class="actionBar-right f ac" v-if="scripts.length">
         <t-button :theme="isAllSelected ? 'default' : 'primary'" variant="outline" @click="toggleSelectAll(!isAllSelected)">
-          {{ isAllSelected ? $t('workbench.script.cancelSelectAll') : $t('workbench.script.selectAll') }}
+          {{ isAllSelected ? $t("workbench.script.cancelSelectAll") : $t("workbench.script.selectAll") }}
         </t-button>
         <t-button theme="primary" @click="handleExportScript" :disabled="selectedIds.length === 0">
           <template #icon><i-export /></template>
-          {{ $t('workbench.script.exportScript') }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
+          {{ $t("workbench.script.exportScript") }}{{ selectedIds.length ? `(${selectedIds.length})` : "" }}
         </t-button>
       </div>
     </div>
@@ -32,6 +32,7 @@
             <template #header>
               <div class="cardHeader">
                 <span class="cardTitle">{{ item.name }}</span>
+                <i-delete theme="outline" @click.stop="handleDeleteScript(item.id)" style="cursor: pointer" />
                 <t-checkbox :checked="selectedIds.includes(item.id)" @click.stop @change="toggleSelect(item.id)" class="cardCheckbox" />
               </div>
             </template>
@@ -41,9 +42,6 @@
                 {{ asset.name }}
               </t-tag>
             </div>
-            <template #actions>
-              <i-delete theme="outline" @click.stop="handleDeleteScript(item.id)" style="cursor: pointer" />
-            </template>
           </t-card>
         </div>
       </div>
@@ -107,7 +105,7 @@ async function searchScripts() {
     scripts.value = res.data;
   } catch (error) {
     console.error("搜索剧本失败:", error);
-    window.$message.error($t('workbench.script.msg.searchFailed'));
+    window.$message.error($t("workbench.script.msg.searchFailed"));
   }
 }
 onMounted(searchScripts);
@@ -122,7 +120,7 @@ function handleAddScript() {
 //导出剧本
 async function handleExportScript() {
   if (!selectedIds.value.length) {
-    window.$message.warning($t('workbench.script.msg.selectExport'));
+    window.$message.warning($t("workbench.script.msg.selectExport"));
     return;
   }
   try {
@@ -136,10 +134,10 @@ async function handleExportScript() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    window.$message.success($t('workbench.script.msg.exportSuccess'));
+    window.$message.success($t("workbench.script.msg.exportSuccess"));
   } catch (error) {
     console.error("导出剧本失败:", error);
-    window.$message.error($t('workbench.script.msg.exportFailed'));
+    window.$message.error($t("workbench.script.msg.exportFailed"));
   }
 }
 const selectedScript = ref<Script>({
@@ -157,20 +155,20 @@ function handleScriptClick(item: Script) {
 // 删除剧本
 async function handleDeleteScript(scriptId: number) {
   const dialog = DialogPlugin.confirm({
-    header: $t('workbench.script.msg.deleteHeader'),
-    body: $t('workbench.script.msg.deleteBody'),
-    confirmBtn: $t('workbench.script.msg.deleteConfirm'),
-    cancelBtn: $t('workbench.script.msg.cancel'),
+    header: $t("workbench.script.msg.deleteHeader"),
+    body: $t("workbench.script.msg.deleteBody"),
+    confirmBtn: $t("workbench.script.msg.deleteConfirm"),
+    cancelBtn: $t("workbench.script.msg.cancel"),
     theme: "warning",
     onConfirm: async () => {
       try {
         await axios.post("/script/delScript", { id: scriptId });
-        window.$message.success($t('workbench.script.msg.deleteSuccess'));
+        window.$message.success($t("workbench.script.msg.deleteSuccess"));
         searchScripts();
         dialog.destroy();
       } catch (error) {
         console.error("删除剧本失败:", error);
-        window.$message.error($t('workbench.script.msg.deleteFailed'));
+        window.$message.error($t("workbench.script.msg.deleteFailed"));
         dialog.destroy();
       }
     },

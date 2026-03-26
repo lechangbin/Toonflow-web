@@ -633,7 +633,8 @@
         "deleteConfirm": "删除",
         "cancel": "取消",
         "deleteSuccess": "删除成功",
-        "deleteFailed": "删除失败"
+        "deleteFailed": "删除失败",
+        "selectDelete": "请选择要删除的剧本"
       },
       "add": {
         "title": "新增剧本",
@@ -677,7 +678,8 @@
           "updateSuccess": "剧本更新成功",
           "updateFailed": "更新剧本失败，请稍后再试"
         }
-      }
+      },
+      "delScript": "删除剧本"
     },
     "assets": {
       "addPrefix": "新增",
