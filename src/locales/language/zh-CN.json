@@ -404,7 +404,8 @@
         "enterArtStyleName": "请输入视觉手册名称",
         "artStyleUpdated": "视觉手册已更新",
         "artStyleAdded": "视觉手册已添加",
-        "operationFailed": "操作失败"
+        "operationFailed": "操作失败",
+        "emptyFields": "参数缺失"
       }
     },
     "novel": {

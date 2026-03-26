@@ -55,9 +55,16 @@ import projectStore from "@/stores/project";
 const { allProject, project } = storeToRefs(projectStore());
 
 const dialogShow = ref(false);
-const editProjectData = ref<{ id: string; name: string; intro: string; type: string; artStyle: string | null; videoRatio: string | null } | null>(
-  null,
-);
+const editProjectData = ref<{
+  id: string;
+  name: string;
+  intro: string;
+  type: string;
+  artStyle: string | null;
+  videoRatio: string | null;
+  imageModel: string;
+  videoModel: string;
+} | null>(null);
 
 function getAllProject() {
   axios
@@ -94,7 +101,9 @@ function openEdit(item: {
   imageModel: string;
   videoModel: string;
 }) {
-  editProjectData.value = item;
+  editProjectData.value = {
+    ...item,
+  };
   dialogShow.value = true;
 }
 

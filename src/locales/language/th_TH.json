@@ -404,7 +404,8 @@
         "enterArtStyleName": "โปรดป้อนชื่อคู่มือแบบภาพ",
         "artStyleUpdated": "อัปเดตคู่มือภาพแล้ว",
         "artStyleAdded": "เพิ่มคู่มือภาพแล้ว",
-        "operationFailed": "การดำเนินการล้มเหลว"
+        "operationFailed": "การดำเนินการล้มเหลว",
+        "emptyFields": "พารามิเตอร์หายไป"
       }
     },
     "novel": {

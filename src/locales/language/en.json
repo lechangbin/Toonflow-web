@@ -404,7 +404,8 @@
         "enterArtStyleName": "Please enter a visual manual name",
         "artStyleUpdated": "Visual manual updated",
         "artStyleAdded": "Visual manual added",
-        "operationFailed": "Operation failed"
+        "operationFailed": "Operation failed",
+        "emptyFields": "Parameter missing"
       }
     },
     "novel": {
