@@ -541,6 +541,12 @@ function handleConfirmVendor() {
               .post("/setting/vendorConfig/updateVendor", {
                 id: id.value,
                 tsCode: vendorCode.value,
+                name: currentVendor.value.name,
+                version: String(currentVendor.value.version),
+                icon: currentVendor.value.icon,
+                inputs: currentVendor.value.inputs,
+                inputValues: currentVendor.value.inputValues,
+                models: currentVendor.value.models,
               })
               .then((res) => {
                 window.$message.success($t("settings.vendor.msg.updateSuccess"));
