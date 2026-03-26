@@ -39,14 +39,6 @@
       "msg": {
         "fetchModelFailed": "モデルデータの取得に失敗しました:"
       }
-    },
-    "update": {
-      "title": "新しいバージョンを発見",
-      "currentVersion": "現在のバージョン：",
-      "latestVersion": "最新バージョン：",
-      "tip": "新しいバージョンがあります。より良い体験のためにアップデートをお勧めします",
-      "later": "後で通知",
-      "updateNow": "今すぐアップデート"
     }
   },
   "settings": {
@@ -334,7 +326,8 @@
       "openFailed": "フォルダを開けませんでした"
     },
     "skill": {
-      "scanSkills": "スキャンスキル"
+      "scanSkills": "スキャンスキル",
+      "fileLost": "ファイルがありません"
     }
   },
   "workbench": {
@@ -363,7 +356,6 @@
         "projectType": "プロジェクトタイプ",
         "selectType": "プロジェクトタイプを選択",
         "basedOnNovel": "小説の原文に基づく",
-        "basedOnScript": "シナリオに基づく",
         "projectName": "プロジェクト名",
         "projectNamePh": "プロジェクト名を入力してください",
         "novelType": "小説のジャンル",
@@ -408,7 +400,6 @@
         "artStyleUpdated": "ビジュアルマニュアルを更新しました",
         "artStyleAdded": "ビジュアルマニュアルを追加しました",
         "operationFailed": "操作に失敗しました",
-        "emptyFields": "パラメータがありません",
         "enterProjectName": "プロジェクト名を入力してください",
         "enterProjectIntro": "小説の紹介文を入力してください",
         "enterProjectType": "プロジェクトのタイプを入力してください",
@@ -812,7 +803,6 @@
           "scaleRatio": "ズーム倍率",
           "gridPreview": "グリッドプレビュー",
           "noPreviewImages": "プレビュー可能な画像がありません",
-          "loadFailed": "読み込み失敗: {src}",
           "imageLoadFailed": "画像の読み込みに失敗しました"
         },
         "storyboardTable": {
@@ -856,7 +846,11 @@
         "generateFailed": "生成に失敗しました",
         "generateFirst": "先に画像を生成してください",
         "generatedResult": "生成結果",
-        "waitingGenerate": "生成待ち"
+        "waitingGenerate": "生成待ち",
+        "layoutLR": "自動レイアウト-左右",
+        "layoutTB": "自動レイアウト-上下",
+        "uploadAssetImage": "アセット画像アップロード",
+        "uploadStoryboardImage": "絵コンテ画像アップロード"
       },
       "save": "選択",
       "cancel": "キャンセル",
@@ -890,9 +884,7 @@
         "importingLoading": "インポート中です。しばらくお待ちください...",
         "mainTrackVideo": "メイントラック（動画）",
         "subtitle1": "字幕1",
-        "stereo441": "44.1kHz ステレオ",
-        "mono16": "16kHz モノラル",
-        "sampleImage1": "サンプル画像 1"
+        "storyboardVideoName": "絵コンテ動画-{storyboard}.mp4"
       },
       "preview": {
         "noImage": "画像なし",
@@ -932,7 +924,6 @@
         "duration": "デュレーション",
         "generate": "生成",
         "historyVersions": "履歴バージョン",
-        "refresh": "更新",
         "confirmSelection": "選択を確定",
         "noHistory": "履歴がありません",
         "generating": "生成中",
@@ -1158,5 +1149,23 @@
     "enterUsernameAndPassword": "ユーザー名またはパスワードを入力してください",
     "loginSuccess": "ログインに成功しました",
     "settingsSaved": "設定を保存しました"
-  }
+  },
+  "common": {
+    "cancel": "キャンセル",
+    "confirm": "確認",
+    "selectAssets": "アセットを選択",
+    "sessionExpired": "セッションが期限切れです。再度ログインしてください",
+    "openSettings": "設定を開く",
+    "cancelled": "生成がキャンセルされました",
+    "defaultReel": "本文巻"
+  },
+  "components.storyboardImageCheck.camera": "カメラ",
+  "components.storyboardImageCheck.dialogTitle": "絵コンテ画像を選択",
+  "components.storyboardImageCheck.preview": "プレビュー",
+  "components.storyboardImageCheck.src": "プレビュー画像",
+  "components.storyboardImageCheck.title": "タイトル",
+  "components.storyboardImageCheck.duration": "時間",
+  "components.storyboardImageCheck.lines": "セリフ",
+  "components.storyboardImageCheck.createTime": "作成日時",
+  "workbench.script.extractAssets": "アセットを抽出"
 }

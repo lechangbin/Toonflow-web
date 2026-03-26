@@ -1,7 +1,7 @@
 <template>
   <div class="titleBar">
     <div class="titleBar-title">
-      <span class="titleBar-text">ToonFlow</span>
+      <span class="titleBar-text">ToonFlow (v1.0.8 未发布测试版)</span>
     </div>
     <div class="titleBar-controls">
       <div class="titleBar-btn" @click="handleMinimize">
@@ -86,6 +86,7 @@ onUnmounted(() => {
 .titleBar-text {
   font-size: 13px;
   color: #333;
+  color: red;
   font-weight: 500;
   white-space: nowrap;
 }

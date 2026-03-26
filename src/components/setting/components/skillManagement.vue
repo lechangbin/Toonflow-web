@@ -72,6 +72,7 @@
                 <t-tag size="small" v-else-if="item.state == -1" theme="danger">{{ $t("settings.skill.stateEmptyDesc") }}</t-tag>
                 <t-tag size="small" v-else-if="item.state == -2" theme="danger">{{ $t("settings.skill.stateAttrError") }}</t-tag>
                 <t-tag size="small" v-else-if="item.state == -3" theme="danger" variant="outline">{{ $t("settings.skill.stateMd5Changed") }}</t-tag>
+                <t-tag size="small" v-else-if="item.state == -4" theme="danger" variant="outline">{{ $t("settings.skill.fileLost") }}</t-tag>
               </template>
             </div>
           </div>

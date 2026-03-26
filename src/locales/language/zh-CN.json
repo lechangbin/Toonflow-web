@@ -39,14 +39,6 @@
       "msg": {
         "fetchModelFailed": "获取模型数据失败:"
       }
-    },
-    "update": {
-      "title": "发现新版本",
-      "currentVersion": "当前版本：",
-      "latestVersion": "最新版本：",
-      "tip": "发现新版本，建议您更新以获得更好的体验",
-      "later": "稍后提醒",
-      "updateNow": "立即更新"
     }
   },
   "settings": {
@@ -326,7 +318,8 @@
         "deleteFailed": "删除失败",
         "embeddingSuccess": "向量化成功",
         "embeddingFailed": "向量化失败"
-      }
+      },
+      "fileLost": "文件丢失"
     },
     "other": {
       "requestTimeout": "请求超时时间",
@@ -426,7 +419,6 @@
         "projectType": "项目类型",
         "selectType": "选择项目类型",
         "basedOnNovel": "基于小说原文",
-        "basedOnScript": "基于剧本",
         "projectName": "项目名称",
         "projectNamePh": "请输入项目名称",
         "novelType": "小说类型",
@@ -471,7 +463,6 @@
         "artStyleUpdated": "视觉手册已更新",
         "artStyleAdded": "视觉手册已添加",
         "operationFailed": "操作失败",
-        "emptyFields": "参数缺失",
         "enterProjectName": "请输入项目名称",
         "enterProjectIntro": "请输入小说简介",
         "enterProjectType": "请输入小说类型",
@@ -699,8 +690,7 @@
         "deleteConfirm": "删除",
         "cancel": "取消",
         "deleteSuccess": "删除成功",
-        "deleteFailed": "删除失败",
-        "selectDelete": "请选择要删除的剧本"
+        "deleteFailed": "删除失败"
       },
       "add": {
         "title": "新增剧本",
@@ -744,8 +734,7 @@
           "updateSuccess": "剧本更新成功",
           "updateFailed": "更新剧本失败，请稍后再试"
         }
-      },
-      "delScript": "删除剧本"
+      }
     },
     "assets": {
       "addPrefix": "新增",
@@ -877,7 +866,6 @@
           "scaleRatio": "缩放比例",
           "gridPreview": "宫格预览",
           "noPreviewImages": "暂无可预览的图片",
-          "loadFailed": "加载失败: {src}",
           "imageLoadFailed": "图片加载失败"
         },
         "storyboardTable": {
@@ -921,7 +909,11 @@
         "generateFailed": "生成失败",
         "generateFirst": "请先生成图片",
         "generatedResult": "生成结果",
-        "waitingGenerate": "等待生成"
+        "waitingGenerate": "等待生成",
+        "layoutLR": "自动排版-左右布局",
+        "layoutTB": "自动排版-上下布局",
+        "uploadAssetImage": "资产图片上传",
+        "uploadStoryboardImage": "分镜图片上传"
       },
       "save": "选取",
       "cancel": "取消",
@@ -955,9 +947,7 @@
         "importingLoading": "正在导入中，请稍候...",
         "mainTrackVideo": "主轨道（视频）",
         "subtitle1": "字幕1",
-        "stereo441": "44.1kHz 立体声",
-        "mono16": "16kHz 单声道",
-        "sampleImage1": "示例图片 1"
+        "storyboardVideoName": "分镜视频-{storyboard}.mp4"
       },
       "preview": {
         "noImage": "暂无图片",
@@ -997,7 +987,6 @@
         "duration": "时长",
         "generate": "生成",
         "historyVersions": "历史版本",
-        "refresh": "刷新",
         "confirmSelection": "确认选中",
         "noHistory": "暂无历史记录",
         "generating": "生成中",
@@ -1234,5 +1223,14 @@
   "components.storyboardImageCheck.duration": "时长",
   "components.storyboardImageCheck.lines": "台词",
   "components.storyboardImageCheck.createTime": "创建时间",
-  "workbench.script.extractAssets": "提取资产"
+  "workbench.script.extractAssets": "提取资产",
+  "common": {
+    "cancel": "取消",
+    "confirm": "确定",
+    "selectAssets": "选择资产",
+    "sessionExpired": "登录已过期，请重新登录",
+    "openSettings": "打开设置",
+    "cancelled": "已取消生成",
+    "defaultReel": "正文卷"
+  }
 }
