@@ -59,15 +59,12 @@
       </Panel>
     </VueFlow>
   </t-dialog>
-  <Teleport to="body">
-    <storyboardImageCheck
-      v-model="storyboardVisible"
-      v-if="storyboardVisible"
-      :scriptId="episodesId!"
-      @confirm="onStoryboardConfirm"
-      @cancel="onStoryboardCancel"
-    />
-  </Teleport>
+  <storyboardImageCheck
+    v-model="storyboardVisible"
+    v-if="storyboardVisible"
+    :scriptId="episodesId!"
+    @confirm="onStoryboardConfirm"
+    @cancel="onStoryboardCancel" />
 </template>
 
 <script setup lang="ts">
