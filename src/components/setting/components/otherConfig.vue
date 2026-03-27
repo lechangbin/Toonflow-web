@@ -1,6 +1,13 @@
 <template>
   <div class="otherConfig">
     <t-form label-align="top">
+      <t-form-item name="chapterReg">
+        <template #label>
+          <span>{{ $t("settings.other.chapterRegex") }}</span>
+          <t-button style="margin-left: 15px" @click="setDefaultReg" size="small">{{ $t("settings.other.restoreDefault") }}</t-button>
+        </template>
+        <t-textarea v-model="otherSetting.chapterReg" :placeholder="$t('settings.other.regexPlaceholder')" style="width: 400px" />
+      </t-form-item>
       <t-form-item :label="$t('settings.other.requestTimeout')" name="axiosTimeOut">
         <t-input-number
           auto-width
@@ -16,16 +23,6 @@
           :min="1"
           v-model="otherSetting.assetsBatchGenereateSize"
           :placeholder="$t('settings.other.inputCount')" />
-      </t-form-item>
-      <t-form-item :label="$t('settings.other.isElectron')" name="showTitleBar">
-        <t-switch v-model="isElectron" />
-      </t-form-item>
-      <t-form-item name="chapterReg">
-        <template #label>
-          <span>{{ $t("settings.other.chapterRegex") }}</span>
-          <t-button style="margin-left: 15px" @click="setDefaultReg" size="small">{{ $t("settings.other.restoreDefault") }}</t-button>
-        </template>
-        <t-textarea v-model="otherSetting.chapterReg" :placeholder="$t('settings.other.regexPlaceholder')" style="width: 400px" />
       </t-form-item>
     </t-form>
   </div>
