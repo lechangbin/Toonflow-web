@@ -498,7 +498,6 @@ function startPolling() {
   pollingTimer = setInterval(async () => {
     if (notCompultedData.value.length === 0) {
       stopPolling();
-      getFilteredData();
       return;
     }
     await pollingPromptAssets();
@@ -517,7 +516,6 @@ function startImagePolling() {
   imagePollingTimer = setInterval(async () => {
     if (generatingData.value.length === 0) {
       stopImagePolling();
-      getFilteredData();
       return;
     }
     await pollingImageAssets();
@@ -536,7 +534,6 @@ watch(notCompultedData, (val) => {
     startPolling();
   } else {
     stopPolling();
-    getFilteredData();
   }
 });
 
@@ -545,7 +542,6 @@ watch(generatingData, (val) => {
     startImagePolling();
   } else {
     stopImagePolling();
-    getFilteredData();
   }
 });
 </script>
