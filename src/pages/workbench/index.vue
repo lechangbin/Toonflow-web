@@ -69,7 +69,7 @@ import scanSkills from "@/utils/scanSkills";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import settingStore from "@/stores/setting";
-const { showSetting } = storeToRefs(settingStore());
+const { showSetting, isElectron } = storeToRefs(settingStore());
 
 const menuList = ref([
   { type: "btn", path: "/project", labelKey: "workbench.menu.myProject", icon: "i-folder-close" },
@@ -105,11 +105,9 @@ function handleClick(menu: any) {
 }
 
 onMounted(() => {
-  scanSkills();
-});
-
-const isElectron = computed(() => {
-  return window?.$electron;
+  setTimeout(() => {
+    scanSkills();
+  }, 3000);
 });
 </script>
 

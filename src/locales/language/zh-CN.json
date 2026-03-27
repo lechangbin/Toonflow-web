@@ -54,6 +54,7 @@
       "fileManagement": "文件管理",
       "otherConfig": "其他配置",
       "requestConfig": "请求地址",
+      "devConfig": "开发者选项",
       "about": "检查更新",
       "logoutConfig": "退出登录"
     },
@@ -154,7 +155,7 @@
         "testSuccess": "测试成功",
         "imageGenSuccess": "图像生成成功",
         "videoGenSuccess": "视频生成成功",
-        "requestFailed": "请求失败",
+        "requestFailed": "请求失败:",
         "deleteModelConfirm": "确认删除模型",
         "deleteModelBody": "删除后不可恢复，是否继续？",
         "confirmDelete": "确认删除",
@@ -331,9 +332,7 @@
       "inputCount": "请输入个数",
       "chapterRegex": "章节拆分正则",
       "restoreDefault": "恢复默认",
-      "regexPlaceholder": "请输入正则表达式",
-      "showTitleBar": "显示标题栏",
-      "isElectron": "切换桌面端模式"
+      "regexPlaceholder": "请输入正则表达式"
     },
     "request": {
       "warning": "如非特殊情况，不需要修改或者配置",
@@ -409,6 +408,11 @@
         "serveDesc": "后端服务相关文件。"
       },
       "openFailed": "打开文件夹失败"
+    },
+    "dev": {
+      "aiDevtool": "切换桌面端模式",
+      "devtool": "打开控制台",
+      "switchAiDevTool": "关闭/开启 {'@'}ai-sdk/devtools"
     }
   },
   "workbench": {

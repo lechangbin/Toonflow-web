@@ -34,10 +34,19 @@ onBeforeMount(() => {
       debugger;
     }
   });
+});
+
+// 初始化主题
+onMounted(() => {
+  initTheme();
   getPort();
 });
 
 async function getPort() {
+  await nextTick();
+  await nextTick();
+  await nextTick();
+  await nextTick();
   try {
     const res = await fetch("toonflow://getPort");
     const data = await res.json();
@@ -47,11 +56,6 @@ async function getPort() {
     }
   } catch (error) {}
 }
-
-// 初始化主题
-onMounted(() => {
-  initTheme();
-});
 
 const tdesignLocaleMap: Record<string, object> = {
   "zh-CN": zhConfig,

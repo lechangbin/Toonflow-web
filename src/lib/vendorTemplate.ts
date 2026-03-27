@@ -1,3 +1,4 @@
+//如需遥测AI请使用在toonflow安装目录运行npx @ai-sdk/devtools （要求在其他设置中打开遥测功能，且toonflow有权限在安装目录创建.devtools文件夹）
 // ==================== 类型定义 ====================
 // 文本模型
 interface TextModel {
@@ -44,11 +45,11 @@ interface TTSModel {
 }
 // 供应商配置
 interface VendorConfig {
-  version: number;
-  icon?: string; //仅支持base64格式
+  id: string; //供应商唯一标识，必须全局唯一
   author: string;
   description?: string; //md5格式
   name: string;
+  icon?: string; //仅支持base64格式
   inputs: {
     key: string;
     label: string;
@@ -62,11 +63,12 @@ interface VendorConfig {
 
 // ==================== 供应商数据 ====================
 const vendor: VendorConfig = {
-  version: 1,
+  id: "toonflow",
   author: "Toonflow",
   description:
     "Toonflow官方中转平台，提供文本、图像、视频、音频等多模态生成能力的中转服务，支持接入多个大模型供应商，方便用户统一管理和调用不同供应商的生成能力。",
   name: "Toonflow官方中转平台",
+  icon: "",
   inputs: [{ key: "apiKey", label: "API密钥", type: "password", required: true }],
   inputValues: {
     apiKey: "",
@@ -77,6 +79,9 @@ exports.vendor = vendor;
 
 // ==================== 全局工具函数 ====================
 //Axios实例
+declare const axios: any;
+
+declare const logger: (message: any) => void;
 //压缩图片大小(1MB = 1 * 1024 * 1024)
 declare const zipImage: (completeBase64: string, size: number) => Promise<string>;
 //压缩图片分辨率
@@ -102,9 +107,6 @@ declare const createOpenAICompatible: any;
 declare const createXai: any;
 declare const createGoogleGenerativeAI: any;
 declare const exports: any;
-
-//请求方法
-declare const axios: any;
 
 // ==================== 适配器函数 ====================
 

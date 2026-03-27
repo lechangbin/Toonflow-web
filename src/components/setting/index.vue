@@ -24,6 +24,7 @@
           <memoryConfig v-if="activeMenu === 'memoryConfig'" />
           <fileManagement v-if="activeMenu === 'fileManagement'" />
           <skillManagement v-if="activeMenu === 'skillManagement'" />
+          <devConfig v-if="activeMenu === 'devConfig'" />
         </div>
       </div>
     </div>
@@ -47,6 +48,7 @@ import vendorConfig from "./components/vendorConfig.vue";
 import memoryConfig from "./components/memoryConfig.vue";
 import fileManagement from "./components/fileManagement.vue";
 import skillManagement from "./components/skillManagement.vue";
+import devConfig from "./components/devConfig.vue";
 
 const menuItems = [
   { key: "language", label: "settings.menu.language", icon: "i-translate" },
@@ -59,6 +61,7 @@ const menuItems = [
   { key: "fileManagement", label: "settings.menu.fileManagement", icon: "i-hard-disk" },
   { key: "otherConfig", label: "settings.menu.otherConfig", icon: "i-application-menu" },
   { key: "requestConfig", label: "settings.menu.requestConfig", icon: "i-api" },
+  { key: "devConfig", label: "settings.menu.devConfig", icon: "i-flask" },
   { key: "about", label: "settings.menu.about", icon: "i-info" },
   { key: "logoutConfig", label: "settings.menu.logoutConfig", icon: "i-logout" },
 ];

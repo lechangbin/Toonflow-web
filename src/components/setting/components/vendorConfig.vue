@@ -23,7 +23,14 @@
 
     <!-- 右侧配置面板 -->
     <div v-if="currentVendor" class="modelParameter">
+      <div class="infoBox ac jb">
+        <span class="idBox">#{{ currentVendor.id }}</span>
+        <span class="author">@{{ currentVendor.author }}</span>
+      </div>
       <t-form :data="currentVendor" labelAlign="top">
+        <t-form-item>
+          <MdPreview v-model="currentVendor.description" :theme="'light'" />
+        </t-form-item>
         <t-form-item v-for="input in requiredInputs" :key="input.key" :name="input.key">
           <template #label>
             <span class="requiredLabel">
@@ -69,7 +76,7 @@
 
         <t-card v-for="(item, index) in vendorModels" :key="index" class="modelCard">
           <div class="topInfo jb ac">
-            <span class="modelCardName">{{ item.modelName }}</span>
+            <span class="modelCardName">{{ item.name }}</span>
             <div class="actionBtns">
               <t-button size="small" variant="text" :loading="!!testingModels[item.modelName]" @click="handleTestModel(item)">
                 <template #icon><i-lightning theme="outline" /></template>
@@ -99,7 +106,7 @@
         <div class="updateAction">
           <t-button theme="danger" :loading="updating" @click="handleDeleteVendor">{{ $t("settings.vendor.deleteVendor") }}</t-button>
           <t-button theme="default" :loading="updating" @click="handleEditVendorCode">{{ $t("settings.vendor.editCode") }}</t-button>
-          <t-button theme="primary" :loading="updating" @click="handleUpdateVendor">{{ $t("settings.vendor.updateConfig") }}</t-button>
+          <!-- <t-button theme="primary" :loading="updating" @click="handleUpdateVendor">{{ $t("settings.vendor.updateConfig") }}</t-button> -->
         </div>
       </t-form>
     </div>
@@ -260,10 +267,11 @@
 </template>
 
 <script setup lang="ts">
+import { MdPreview } from "md-editor-v3";
 import { CodeEditor } from "monaco-editor-vue3";
 import { DialogPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
-import VENDOR_CODE_TEMPLATE from "@/lib/vendorTemplate_toonflow.ts?raw";
+import VENDOR_CODE_TEMPLATE from "@/lib/vendorTemplate.ts?raw";
 
 // ── 类型 ──
 interface TextModel {
@@ -301,10 +309,11 @@ interface VendorInput {
 }
 
 interface VendorItem {
-  id: number;
+  id: string; //供应商唯一标识，必须全局唯一
+  author: string;
+  description?: string; //md5格式
   name: string;
-  version?: string;
-  icon?: string;
+  icon?: string; //仅支持base64格式
   code: string;
   inputs: VendorInput[];
   inputValues: Record<string, string>;
@@ -395,28 +404,29 @@ const vendorList = ref<VendorItem[]>([]);
 const loading = ref(false);
 async function getVendorList() {
   loading.value = true;
-  axios
-    .post("/setting/vendorConfig/getVendorList")
-    .then((res) => {
-      vendorList.value = res.data;
+  try {
+    const res = await axios.post("/setting/vendorConfig/getVendorList");
+    vendorList.value = res.data;
 
-      if (vendorList.value.length && !vendorList.value.some((v) => v.id === activeVendorId.value)) {
-        activeVendorId.value = vendorList.value[0].id;
-      }
-    })
-    .catch((err) => {
-      window.$message.error(`${$t("settings.vendor.msg.getVendorListFailed")}${err.message}`);
-    })
-    .finally(() => {
-      loading.value = false;
+    if (vendorList.value.length && !vendorList.value.some((v) => v.id === activeVendorId.value)) {
+      activeVendorId.value = vendorList.value[0].id;
+    }
+  } catch (err: any) {
+    window.$message.error(`${$t("settings.vendor.msg.getVendorListFailed")}${err.message}`);
+  } finally {
+    loading.value = false;
+    nextTick(() => {
+      lastSavedSnapshot.value = currentVendorSnapshot.value;
+      autoSaveReady.value = true;
     });
+  }
 }
 
 onMounted(() => {
   getVendorList();
 });
 
-const activeVendorId = ref<number>();
+const activeVendorId = ref<string>();
 const currentVendor = computed(() => vendorList.value.find((v) => v.id === activeVendorId.value));
 const vendorModels = computed(() => currentVendor.value?.models || currentVendor.value?.model || []);
 const requiredInputs = computed(() => currentVendor.value?.inputs?.filter((input) => input.required) || []);
@@ -427,6 +437,12 @@ const vendorDialogVisible = ref(false);
 const vendorCode = ref(VENDOR_CODE_TEMPLATE);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const updating = ref(false);
+const autoUpdating = ref(false);
+const autoSaveReady = ref(false);
+const lastSavedSnapshot = ref("");
+const AUTO_SAVE_DELAY = 700;
+let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingAutoSave = false;
 
 // ── 测试结果弹窗 ──
 const testResultVisible = ref(false);
@@ -454,32 +470,99 @@ function isValidBase64(str?: string): boolean {
   const base64Regex = /^(?:data:[^;]+;base64,)?[A-Za-z0-9+/]*={0,2}$/;
   return base64Regex.test(str) && str.length > 0;
 }
+
+function buildVendorUpdatePayload(vendor: VendorItem) {
+  return {
+    id: vendor.id,
+    tsCode: vendor.code,
+    name: vendor.name,
+    icon: vendor.icon,
+    inputs: vendor.inputs,
+    inputValues: vendor.inputValues,
+    models: vendor.models ?? vendor.model ?? [],
+  };
+}
+
+const currentVendorSnapshot = computed(() => {
+  if (!currentVendor.value) return "";
+  return JSON.stringify(buildVendorUpdatePayload(currentVendor.value));
+});
+
+function scheduleAutoSave() {
+  if (autoSaveTimer) {
+    clearTimeout(autoSaveTimer);
+  }
+  autoSaveTimer = setTimeout(() => {
+    void handleAutoUpdateVendor();
+  }, AUTO_SAVE_DELAY);
+}
+
+async function handleAutoUpdateVendor() {
+  if (!currentVendor.value || !autoSaveReady.value || loading.value) return;
+
+  const snapshot = currentVendorSnapshot.value;
+  if (!snapshot || snapshot === lastSavedSnapshot.value) return;
+
+  if (autoUpdating.value) {
+    pendingAutoSave = true;
+    return;
+  }
+
+  autoUpdating.value = true;
+  try {
+    await axios.post("/setting/vendorConfig/updateVendor", buildVendorUpdatePayload(currentVendor.value));
+    lastSavedSnapshot.value = snapshot;
+  } catch (err: any) {
+    window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
+  } finally {
+    autoUpdating.value = false;
+    if (pendingAutoSave) {
+      pendingAutoSave = false;
+      scheduleAutoSave();
+    }
+  }
+}
+
+watch(
+  currentVendorSnapshot,
+  (snapshot) => {
+    if (!snapshot || !autoSaveReady.value || loading.value) return;
+    if (snapshot === lastSavedSnapshot.value) return;
+    scheduleAutoSave();
+  },
+  { flush: "post" },
+);
+
+watch(
+  activeVendorId,
+  () => {
+    if (autoSaveTimer) {
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = null;
+    }
+    pendingAutoSave = false;
+    nextTick(() => {
+      lastSavedSnapshot.value = currentVendorSnapshot.value;
+    });
+  },
+  { flush: "post" },
+);
+
 async function handleUpdateVendor() {
   if (!currentVendor.value) return;
   updating.value = true;
-  axios
-    .post("/setting/vendorConfig/updateVendor", {
-      id: currentVendor.value.id,
-      tsCode: currentVendor.value.code,
-      name: currentVendor.value.name,
-      version: String(currentVendor.value.version),
-      icon: currentVendor.value.icon,
-      inputs: currentVendor.value.inputs,
-      inputValues: currentVendor.value.inputValues,
-      models: currentVendor.value.models,
-    })
-    .then(() => {
-      window.$message.success($t("settings.vendor.msg.vendorConfigUpdated"));
-      getVendorList();
-    })
-    .catch((err) => {
-      window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
-    })
-    .finally(() => {
-      updating.value = false;
-    });
+  try {
+    await axios.post("/setting/vendorConfig/updateVendor", buildVendorUpdatePayload(currentVendor.value));
+    lastSavedSnapshot.value = currentVendorSnapshot.value;
+    window.$message.success($t("settings.vendor.msg.vendorConfigUpdated"));
+    getVendorList();
+  } catch (err: any) {
+    window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
+  } finally {
+    updating.value = false;
+  }
 }
-const id = ref<number>();
+const id = ref<string>();
 function handleAddVendor() {
   id.value = undefined;
   vendorCode.value = VENDOR_CODE_TEMPLATE;
@@ -542,7 +625,6 @@ function handleConfirmVendor() {
                 id: id.value,
                 tsCode: vendorCode.value,
                 name: currentVendor.value?.name,
-                version: String(currentVendor.value?.version),
                 icon: currentVendor.value?.icon,
                 inputs: currentVendor.value?.inputs,
                 inputValues: currentVendor.value?.inputValues,
@@ -824,12 +906,13 @@ async function handleTestModel(item: (typeof vendorModels.value)[number]) {
     const { data } = await axios.post(`/setting/vendorConfig/modelTest`, {
       type: item.type,
       modelName: item.modelName,
-      apiKey: currentVendor.value.inputValues.apiKey,
       id: currentVendor.value.id,
     });
 
     if (item.type === "text") {
-      window.$message.success(`${item.modelName} ${$t("settings.vendor.msg.testSuccess")}: ${typeof data === "string" ? data : JSON.stringify(data)}`);
+      window.$message.success(
+        `${item.modelName} ${$t("settings.vendor.msg.testSuccess")}: ${typeof data === "string" ? data : JSON.stringify(data)}`,
+      );
     } else if (item.type === "image" || item.type === "video") {
       testModelName.value = item.modelName;
       testResultType.value = item.type;
@@ -924,6 +1007,10 @@ function handleDeleteVendor() {
     height: 100%;
     min-height: 0;
     overflow-y: auto;
+    .infoBox {
+      font-size: 12px;
+      opacity: 0.6;
+    }
     .modelCard {
       width: 100%;
       margin-top: 10px;
