@@ -924,7 +924,7 @@ async function pollingPromptAssets() {
   const ids = notCompultedData.value.map((item) => item.id);
   try {
     const { data } = await axios.post("/assets/pollingPromptAssets", { ids });
-    if (Array.isArray(data)) {
+    if (Array.isArray(data) && data.length) {
       data.forEach((item: { id: number; promptState: string; prompt: string }) => {
         const target = tableData.value.find((row) => row.id === item.id);
         if (target) {
@@ -932,6 +932,7 @@ async function pollingPromptAssets() {
           if (item.prompt !== undefined) target.prompt = item.prompt;
         }
       });
+      getFilteredData(assetOptions.value);
     }
   } catch (e) {
     console.error("轮询提示词状态失败:", e);
@@ -943,7 +944,7 @@ async function pollingImageAssets() {
   const ids = generatingData.value.map((item) => item.id);
   try {
     const { data } = await axios.post("/assets/pollingImageAssets", { ids });
-    if (Array.isArray(data)) {
+    if (Array.isArray(data) && data.length) {
       data.forEach((item: { id: number; state: string; filePath: string }) => {
         const target = tableData.value.find((row) => row.id === item.id);
         if (target) {
@@ -951,6 +952,7 @@ async function pollingImageAssets() {
           if (item.filePath !== undefined) target.filePath = item.filePath;
         }
       });
+      getFilteredData(assetOptions.value);
     }
   } catch (e) {
     console.error("轮询图片生成状态失败:", e);
@@ -961,7 +963,6 @@ function startPolling() {
   pollingTimer = setInterval(async () => {
     if (notCompultedData.value.length === 0) {
       stopPolling();
-      loadCurrentTabData();
       return;
     }
     await pollingPromptAssets();
@@ -980,7 +981,6 @@ function startImagePolling() {
   imagePollingTimer = setInterval(async () => {
     if (generatingData.value.length === 0) {
       stopImagePolling();
-      loadCurrentTabData();
       return;
     }
     await pollingImageAssets();
@@ -999,7 +999,6 @@ watch(notCompultedData, (val) => {
     startPolling();
   } else {
     stopPolling();
-    loadCurrentTabData();
   }
 });
 
@@ -1008,7 +1007,6 @@ watch(generatingData, (val) => {
     startImagePolling();
   } else {
     stopImagePolling();
-    loadCurrentTabData();
   }
 });
 </script>
