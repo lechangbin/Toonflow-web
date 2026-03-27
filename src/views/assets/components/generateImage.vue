@@ -75,8 +75,8 @@
                 v-for="(img, index) in resultImages"
                 :key="index"
                 class="resultImage"
-                :class="{ 'is-selected': selectedImageIndex === index, 'is-disabled': img.state !== '生成成功' }"
-                @click="img.state === '生成成功' ? selectImage(index) : null"
+                :class="{ 'is-selected': selectedImageIndex === index, 'is-disabled': img.state !== '已完成' }"
+                @click="img.state === '已完成' ? selectImage(index) : null"
                 @mouseenter="hoveredImageIndex = index"
                 @mouseleave="hoveredImageIndex = null">
                 <div v-if="img.state === '生成中'" class="generating-overlay f ac jc">
@@ -93,10 +93,10 @@
                     <t-loading />
                   </template>
                 </t-image>
-                <div class="preview" v-show="hoveredImageIndex === index && img.state === '生成成功'">
+                <div class="preview" v-show="hoveredImageIndex === index && img.state === '已完成'">
                   <i-preview-open theme="outline" size="25" fill="#ffffff" @click.stop="handlePreview(img.src)" />
                 </div>
-                <div class="selected" v-show="selectedImageIndex === index && img.state === '生成成功'">
+                <div class="selected" v-show="selectedImageIndex === index && img.state === '已完成'">
                   <i-check-one theme="filled" size="25" fill="#000" />
                 </div>
                 <div class="delImage" v-show="hoveredImageIndex === index">
@@ -269,7 +269,7 @@ function handleCustomUpload(files: any[]): void {
         resultImages.value.push({
           id: "",
           src: base64,
-          state: "生成成功",
+          state: "已完成",
         });
         window.$message.success($t('workbench.assets.gen.uploadOk'));
         customFileList.value = [];
@@ -323,7 +323,7 @@ async function fetchGeneratedImages() {
 //选择图片
 function selectImage(index: number) {
   const img = resultImages.value[index];
-  if (img.state === "生成成功") {
+  if (img.state === "已完成") {
     selectedImageIndex.value = index;
     window.$message.success($t('workbench.assets.gen.imageSelected'));
   }
