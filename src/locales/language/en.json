@@ -48,6 +48,7 @@
       "language": "Language",
       "vendorConfig": "Model Providers",
       "agentConfig": "Agent Config",
+      "promptManage": "Prompt Management",
       "memoryConfig": "Agent Memory",
       "loginConfig": "Login Config",
       "dbConfig": "Database",
@@ -459,7 +460,11 @@
         "aiExtract": "AI Extract Prompt",
         "promptPlaceholder": "Describes the visual manual prompt word, used to specify the visual manual when generating images",
         "modelData": "Select image model",
-        "videoModelData": "Select video model"
+        "videoModelData": "Select video model",
+        "prompt": {
+          "placeholder": "Enter prompt word",
+          "saveSuccess": "Update successful"
+        }
       },
       "msg": {
         "fetchFailed": "Failed to fetch project list",

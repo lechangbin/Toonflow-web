@@ -56,6 +56,7 @@
       "language": "語言設定",
       "vendorConfig": "模型服務",
       "agentConfig": "Agent 設定",
+      "promptManage": "提示詞管理",
       "memoryConfig": "Agent 記憶設定",
       "loginConfig": "登入設定",
       "dbConfig": "資料庫操作",
@@ -391,7 +392,11 @@
         "aiExtract": "AI 萃取提示詞",
         "promptPlaceholder": "描述視覺手冊提示詞，用於產生圖片時指定視覺手冊",
         "modelData": "選擇圖片模型",
-        "videoModelData": "選擇視訊模型"
+        "videoModelData": "選擇視訊模型",
+        "prompt": {
+          "placeholder": "輸入提示詞",
+          "saveSuccess": "更新成功"
+        }
       },
       "msg": {
         "fetchFailed": "取得專案列表失敗",

@@ -48,6 +48,7 @@
       "language": "ตั้งค่าภาษา",
       "vendorConfig": "บริการโมเดล",
       "agentConfig": "การตั้งค่า Agent",
+      "promptManage": "การจัดการพรอมต์",
       "memoryConfig": "หน่วยความจำ Agent",
       "loginConfig": "การตั้งค่าเข้าสู่ระบบ",
       "dbConfig": "จัดการฐานข้อมูล",
@@ -385,7 +386,11 @@
         "aiExtract": "AI สกัดพรอมต์",
         "promptPlaceholder": "อธิบายคำพร้อมท์คู่มือแบบภาพ ซึ่งใช้เพื่อระบุคู่มือแบบภาพเมื่อสร้างภาพ",
         "modelData": "เลือกรุ่นรูปภาพ",
-        "videoModelData": "เลือกรุ่นวิดีโอ"
+        "videoModelData": "เลือกรุ่นวิดีโอ",
+        "prompt": {
+          "placeholder": "ป้อนคำที่พร้อมท์",
+          "saveSuccess": "อัปเดตสำเร็จ"
+        }
       },
       "msg": {
         "fetchFailed": "ดึงรายการโปรเจกต์ล้มเหลว",
