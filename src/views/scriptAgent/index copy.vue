@@ -1,22 +1,21 @@
 <template>
   <div class="scriptAgent">
     <Splitpanes class="default-theme data f">
-      <Pane :size="30" :min-size="15" class="operate">
+      <Pane :size="25" :min-size="15" class="operate">
         <div class="box pr">
           <t-chat-list :clear-history="false">
             <t-chat-message
               v-for="message in messages"
               :key="message.id"
               :message="message"
-              :name="(message as any).name"
               :placement="message.role === 'user' ? 'right' : 'left'"
-              :variant="message.role === 'user' ? 'base' : 'outline'"
+              :variant="message.role === 'user' ? 'base' : 'text'"
               :handleActions="message.role === 'user' ? {} : handleActions"
               :status="message.status"
               allowContentSegmentCustom>
-              <template #actionbar>
-                <!-- <t-chat-actionbar :action-bar="['replay', 'copy']" /> -->
-              </template>
+              <!-- <template #actionbar>
+            <t-chat-actionbar :action-bar="['replay', 'copy']" />
+          </template> -->
             </t-chat-message>
           </t-chat-list>
           <t-chat-sender
@@ -55,7 +54,7 @@
           <i-dot class="dot" theme="outline" :fill="connected ? 'green' : 'red'" />
         </div>
       </Pane>
-      <Pane :size="70" :min-size="30" class="data">
+      <Pane :size="75" :min-size="30" class="data">
         <div class="tabsWrapper">
           <t-tabs v-model="currentTable" @change="changeTab">
             <template #action>
@@ -171,18 +170,17 @@ import projectStore from "@/stores/project";
 import { MdPreview } from "md-editor-v3";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import settingStore from "@/stores/setting";
+import { useChat } from "@/utils/useChat";
 import { Splitpanes, Pane } from "splitpanes";
 import "splitpanes/dist/splitpanes.css";
 import editMdPreivew from "@/components/editMdPreivew.vue";
 import openAssetsSelector from "@/utils/assetsCheck";
 import type { TabValue } from "tdesign-vue-next/es/tabs/type";
-import { useChat } from "@/utils/useChat";
 const { baseUrl } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
 
 const inputValue = ref("");
 const loadingHistory = ref(false);
-const status = ref<"idle" | "pending" | "streaming">("idle");
 
 const dialogVisible = ref(false);
 const editContent = ref("");
@@ -251,39 +249,72 @@ const defMsg: ChatMessagesData[] = [
       },
     ],
   },
+  {
+    id: "system-1",
+    role: "assistant",
+    content: [
+      {
+        type: "text",
+        status: "complete",
+        data: "123123123",
+      },
+      {
+        type: "thinking",
+        status: "complete",
+        data: {
+          title: "已完成思考（耗时3秒）",
+          text: "好的，我现在需要回答用户关于对比近3年当代偶像爱情剧并总结创作经验的问题\n查询网络信息中...\n根据网络搜索结果，成功案例包括《春色寄情人》《要久久爱》《你也有今天》等，但缺乏具体播放数据，需要结合行业报告总结共同特征。2022-2024年偶像爱情剧的创作经验主要集中在题材创新、现实元素融入、快节奏叙事等方面。结合行业报告和成功案例，总结出以下创作经验。",
+        },
+      },
+      
+    ],
+  },
 ];
 
-const { connected, messages, chat, stopGenerate } = useChat({
+// ============== Socket ==============
+
+const { connected, messages, isGenerating, socket, chat: sendChat, stopGenerate } = useChat({
   url: `${baseUrl.value}/socket/scriptAgent`,
   auth: {
     isolationKey: `${project.value?.id}:scriptAgent`,
     projectId: project.value?.id,
   },
-  autoConnect: true,
+});
+
+// 初始化欢迎消息
+messages.value = [...defMsg];
+
+const status = computed(() => {
+  if (isGenerating.value) {
+    const lastMsg = messages.value[messages.value.length - 1];
+    return lastMsg?.status === "pending" ? "pending" : "streaming";
+  }
+  return "idle";
 });
 
 onMounted(() => {
-  if (messages.value.length) {
-    messages.value = [...defMsg, ...messages.value];
-  }
+  socket.value?.on("getPlanData", (_, callback) => {
+    callback(planData.value);
+  });
+
+  socket.value?.on("setPlanData", ({ key, value }: any) => {
+    if (key == "script") {
+      getScriptApi();
+    } else _.set(planData.value, key, value);
+  });
+
   getHistory();
 });
 
-onUnmounted(() => {});
-
 // ============== Actions ==============
 
-const currentMsgId = ref("");
-
 function handleSend(text: string) {
-  chat(text);
+  sendChat(text);
   inputValue.value = "";
 }
 
 function handleStop() {
-  if (currentMsgId.value) {
-    stopGenerate(currentMsgId.value);
-  }
+  stopGenerate();
 }
 
 const handleActions = {
@@ -313,6 +344,7 @@ async function getHistory() {
     agentType: "scriptAgent",
   });
   messages.value = [...defMsg, ...data];
+  sortMessages();
   loadingHistory.value = false;
 }
 
