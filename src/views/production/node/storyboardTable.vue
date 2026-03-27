@@ -3,11 +3,12 @@
     <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
     <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
     <div class="titleBar dragHandle">
-      <div class="title c">{{ $t('workbench.production.node.storyboardTable.title') }}</div>
-      <t-button size="small" variant="text" @click="openEdit">{{ $t('workbench.production.edit') }}</t-button>
+      <div class="title c">{{ $t("workbench.production.node.storyboardTable.title") }}</div>
+      <t-button size="small" variant="text" @click="openEdit">{{ $t("workbench.production.edit") }}</t-button>
     </div>
     <div class="storyboardList">
-      <MdPreview v-model="storyboardTable" :theme="'light'" />
+      <t-empty v-if="!storyboardTable" style="margin-top: 16px"></t-empty>
+      <MdPreview v-else v-model="storyboardTable" :theme="'light'" />
     </div>
   </t-card>
 

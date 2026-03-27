@@ -161,7 +161,7 @@ import { useI18n } from "vue-i18n";
 const { t } = useI18n();
 const { version } = storeToRefs(store());
 
-const updateDialogVisible = ref(true);
+const updateDialogVisible = ref(false);
 const updateSource = ref<"github" | "gitee">("github");
 const updateLoading = ref(false);
 const updateInfo = ref({
@@ -181,7 +181,6 @@ onMounted(async () => {
 
 async function checkUpdate() {
   const { data } = await axios.post("/setting/about/checkUpdate");
-  console.log("%c Line:100 🍧 data", "background:#6ec1c2", data);
 
   if (data.needUpdate) {
     window.$message.success("检测到新版本");
@@ -208,7 +207,7 @@ async function confirmUpdate() {
       reinstall: updateInfo.value.reinstall,
       latestVersion: updateInfo.value.latestVersion,
     });
-    console.log("%c Line:198 🥓 data", "background:#6ec1c2", data);
+
     electronAction("apprestart");
     MessagePlugin.success(t("settings.about.updateSuccess"));
     updateDialogVisible.value = false;

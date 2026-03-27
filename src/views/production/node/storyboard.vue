@@ -6,6 +6,7 @@
       <div class="title">{{ $t("workbench.production.node.storyboard.title") }}</div>
     </div>
     <div class="content">
+      <t-empty v-if="!storyboard.length" style="margin-top: 16px"></t-empty>
       <div class="frameGrid">
         <template v-for="(item, index) in storyboard" :key="item.id">
           <div class="frameItem" @mouseenter="setHoveredFrame(index)" @mouseleave="setHoveredFrame(null)">
