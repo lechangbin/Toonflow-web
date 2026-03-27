@@ -8,12 +8,11 @@
       <t-form-item :label="$t('settings.dev.aiDevtool')" name="showTitleBar">
         <t-switch v-model="isElectron" />
       </t-form-item>
-
       <t-form-item v-if="isElectron" :label="$t('settings.dev.switchAiDevTool')" name="showTitleBar">
-        <t-switch :customValue="['0', '1']" v-model="switchAiDevTool" @change="updateSwitchAiDevTool" />
+        <t-switch :customValue="['1', '0']" v-model="switchAiDevTool" @change="updateSwitchAiDevTool" />
         <template #tips>
           <p>文档地址：https://ai-sdk.dev/docs/ai-sdk-core/devtools</p>
-          <p>开启后会在Toonflow安装目录创建.devtools文件夹，请确保Toonflow有写入权限。</p>
+          <p>开启后会在Toonflow安装目录创建.devtools文件夹，请确保Toonflow有写入权限（管理员身份运行）。</p>
           <p>在该目录运行 npx @ai-sdk/devtools 开启遥测调试</p>
         </template>
       </t-form-item>
