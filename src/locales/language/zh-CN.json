@@ -364,7 +364,19 @@
       "checkUpdateGitee": "检查更新(Gitee)",
       "getFromGitee": "从Gitee Release获取最新版本",
       "license": "许可证",
-      "licenseDesc": "开源许可协议·点击查看详情"
+      "licenseDesc": "开源许可协议·点击查看详情",
+      "updateAvailable": "发现新版本",
+      "currentVersion": "当前版本",
+      "latestVersionLabel": "最新版本",
+      "selectUpdateSource": "选择更新源",
+      "github": "GitHub",
+      "gitee": "Gitee",
+      "confirmUpdate": "确认更新",
+      "cancel": "取消",
+      "updating": "正在更新...",
+      "updateSuccess": "更新成功，请重启应用",
+      "updateFailed": "更新失败，请重试",
+      "noUpdate": "当前已是最新版本"
     },
     "logout": {
       "warning": "退出登录后，您需要重新登录才能继续使用系统。",
