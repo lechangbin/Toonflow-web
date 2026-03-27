@@ -363,7 +363,19 @@
       "checkUpdateGitee": "Check Update (Gitee)",
       "getFromGitee": "Get the latest release from Gitee",
       "license": "License",
-      "licenseDesc": "Open-source license agreement · Click for details"
+      "licenseDesc": "Open-source license agreement · Click for details",
+      "updateAvailable": "Update Available",
+      "currentVersion": "Current Version",
+      "latestVersionLabel": "Latest Version",
+      "selectUpdateSource": "Select Update Source",
+      "github": "GitHub",
+      "gitee": "Gitee",
+      "confirmUpdate": "Confirm Update",
+      "cancel": "Cancel",
+      "updating": "Updating...",
+      "updateSuccess": "Update successful, please restart the app",
+      "updateFailed": "Update failed, please try again",
+      "noUpdate": "You are already on the latest version"
     },
     "logout": {
       "warning": "After logging out, you will need to log in again to access the system.",

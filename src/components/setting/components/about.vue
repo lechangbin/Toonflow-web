@@ -79,13 +79,97 @@
         </div>
       </t-card>
     </div>
+
+    <!-- 更新弹窗 -->
+    <t-dialog
+      v-model:visible="updateDialogVisible"
+      :header="false"
+      :confirm-btn="null"
+      :cancel-btn="null"
+      :close-on-overlay-click="false"
+      width="460px">
+      <div class="updateDialog">
+        <!-- 顶部图标 + 标题 -->
+        <div class="updateHeader">
+          <div class="updateIcon">
+            <i-refresh theme="outline" size="28" style="color: var(--td-brand-color)" />
+          </div>
+          <div class="updateTitle">{{ $t("settings.about.updateAvailable") }}</div>
+        </div>
+
+        <!-- 版本对比 -->
+        <div class="versionCompare">
+          <div class="versionCard current">
+            <span class="versionLabel">{{ $t("settings.about.currentVersion") }}</span>
+            <t-tag theme="default" shape="round" size="medium">v{{ version }}</t-tag>
+          </div>
+          <div class="arrow">
+            <i-right theme="outline" size="20" style="color: var(--td-brand-color)" />
+          </div>
+          <div class="versionCard latest">
+            <span class="versionLabel">{{ $t("settings.about.latestVersionLabel") }}</span>
+            <t-tag theme="success" shape="round" size="medium">v{{ updateInfo.latestVersion }}</t-tag>
+          </div>
+        </div>
+
+        <!-- 更新源选择 -->
+        <div class="sourceSelect">
+          <span class="sourceTitle">{{ $t("settings.about.selectUpdateSource") }}</span>
+          <div class="sourceCards">
+            <div class="sourceCard" :class="{ active: updateSource === 'github' }" @click="updateSource = 'github'">
+              <div class="sourceIcon github">
+                <i-github theme="outline" size="22" />
+              </div>
+              <span class="sourceName">{{ $t("settings.about.github") }}</span>
+              <div class="checkMark" v-if="updateSource === 'github'">
+                <i-check-one theme="filled" size="18" style="color: var(--td-brand-color)" />
+              </div>
+            </div>
+            <div class="sourceCard" :class="{ active: updateSource === 'gitee' }" @click="updateSource = 'gitee'">
+              <div class="sourceIcon gitee">
+                <i-code theme="outline" size="22" />
+              </div>
+              <span class="sourceName">{{ $t("settings.about.gitee") }}</span>
+              <div class="checkMark" v-if="updateSource === 'gitee'">
+                <i-check-one theme="filled" size="18" style="color: var(--td-brand-color)" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px">
+          <t-button variant="outline" @click="updateDialogVisible = false" :disabled="updateLoading">
+            {{ $t("settings.about.cancel") }}
+          </t-button>
+          <t-button theme="primary" @click="confirmUpdate" :loading="updateLoading">
+            <template #icon><i-refresh theme="outline" size="16" /></template>
+            {{ $t("settings.about.confirmUpdate") }}
+          </t-button>
+        </div>
+      </template>
+    </t-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
 import store from "@/stores/index";
+import { MessagePlugin } from "tdesign-vue-next";
+import { useI18n } from "vue-i18n";
+
+const { t } = useI18n();
 const { version } = storeToRefs(store());
+
+const updateDialogVisible = ref(true);
+const updateSource = ref<"github" | "gitee">("github");
+const updateLoading = ref(false);
+const updateInfo = ref({
+  needUpdate: false,
+  latestVersion: "",
+  reinstall: false,
+});
+
 function openLink(url: string) {
   window.open(url, "_blank");
 }
@@ -98,6 +182,41 @@ onMounted(async () => {
 async function checkUpdate() {
   const { data } = await axios.post("/setting/about/checkUpdate");
   console.log("%c Line:100 🍧 data", "background:#6ec1c2", data);
+
+  if (data.needUpdate) {
+    window.$message.success("检测到新版本");
+    updateInfo.value = data;
+    updateSource.value = "github";
+    updateDialogVisible.value = true;
+  } else {
+    MessagePlugin.success(t("settings.about.noUpdate"));
+  }
+}
+async function electronAction(action: string) {
+  try {
+    const res = await fetch(`toonflow://${action}`);
+    return await res.json();
+  } catch {
+    // 非 Electron 环境或请求失败
+  }
+}
+async function confirmUpdate() {
+  updateLoading.value = true;
+  try {
+    const { data } = await axios.post("/setting/about/downloadApp", {
+      source: updateSource.value,
+      reinstall: updateInfo.value.reinstall,
+      latestVersion: updateInfo.value.latestVersion,
+    });
+    console.log("%c Line:198 🥓 data", "background:#6ec1c2", data);
+    electronAction("apprestart");
+    MessagePlugin.success(t("settings.about.updateSuccess"));
+    updateDialogVisible.value = false;
+  } catch (e) {
+    MessagePlugin.error((e as Error).message ?? t("settings.about.updateFailed"));
+  } finally {
+    updateLoading.value = false;
+  }
 }
 </script>
 
@@ -168,6 +287,131 @@ async function checkUpdate() {
       height: 50px;
       border-radius: 8px;
       background-color: #ececec;
+    }
+  }
+  .updateDialog {
+    .updateHeader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 20px;
+      .updateIcon {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: var(--td-brand-color-light, rgba(0, 82, 217, 0.08));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 12px;
+      }
+      .updateTitle {
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--td-text-color-primary);
+      }
+    }
+
+    .versionCompare {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding: 16px;
+      background: var(--td-bg-color-container-hover, #f5f5f5);
+      border-radius: 12px;
+
+      .versionCard {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+
+        .versionLabel {
+          font-size: 12px;
+          color: var(--td-text-color-secondary, #999);
+          font-weight: 500;
+        }
+      }
+
+      .arrow {
+        display: flex;
+        align-items: center;
+        padding: 0 4px;
+      }
+    }
+
+    .sourceSelect {
+      .sourceTitle {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--td-text-color-primary);
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      .sourceCards {
+        display: flex;
+        gap: 12px;
+
+        .sourceCard {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          padding: 16px 12px;
+          border-radius: 10px;
+          border: 2px solid var(--td-border-level-2-color, #e7e7e7);
+          cursor: pointer;
+          transition: all 0.2s ease;
+          position: relative;
+          background: var(--td-bg-color-container);
+
+          &:hover {
+            border-color: var(--td-brand-color-hover, #4787f0);
+            background: var(--td-brand-color-light, rgba(0, 82, 217, 0.04));
+          }
+
+          &.active {
+            border-color: var(--td-brand-color);
+            background: var(--td-brand-color-light, rgba(0, 82, 217, 0.06));
+          }
+
+          .sourceIcon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &.github {
+              background: #24292e;
+              color: #fff;
+            }
+
+            &.gitee {
+              background: #c71d23;
+              color: #fff;
+            }
+          }
+
+          .sourceName {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--td-text-color-primary);
+          }
+
+          .checkMark {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+          }
+        }
+      }
     }
   }
 }
