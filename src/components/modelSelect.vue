@@ -1,5 +1,10 @@
 <template>
-  <t-select :size="props.size" v-model="selectValue" :placeholder="props.placeholder ?? $t('components.modelSelect.placeholder')" @change="onChange">
+  <t-select
+    :size="props.size"
+    v-model="selectValue"
+    :placeholder="props.placeholder ?? $t('components.modelSelect.placeholder')"
+    @change="onChange"
+    @popup-visible-change="onPopupVisibleChange">
     <t-option-group v-for="(list, index) in optionsData" :key="index" :label="list.group">
       <t-option v-for="item in list.children" :key="item.id" :value="`${item.id}:${item.value}`" :label="item.label">
         <div class="optionItem">
@@ -19,7 +24,7 @@
     <!-- 无可用模型时，显示跳转设置的按钮 -->
     <template #empty>
       <t-button size="small" variant="text" theme="primary" @click.stop="goVendorConfig">
-        {{ $t('components.modelSelect.goSetting') }}
+        {{ $t("components.modelSelect.goSetting") }}
       </t-button>
     </template>
   </t-select>
@@ -83,6 +88,12 @@ const optionsData = ref<VendorOption[]>([]);
 onMounted(() => {
   handleModelChange();
 });
+
+function onPopupVisibleChange(visible: boolean) {
+  if (visible) {
+    handleModelChange();
+  }
+}
 const titleMap = {
   image: $t("components.modelSelect.type.image"),
   text: $t("components.modelSelect.type.text"),
@@ -90,6 +101,7 @@ const titleMap = {
 };
 //获取模型选择API数据
 function handleModelChange() {
+  console.log("%c Line:102 🌰", "background:#4fff4B");
   axios
     .post("/modelSelect/getModelList", { type: props.type })
     .then((response) => {
