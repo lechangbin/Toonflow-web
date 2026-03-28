@@ -72,6 +72,7 @@ const editProjectData = ref<{
   imageModel: string;
   videoModel: string;
   projectType: string;
+  imageQuality: "1K" | "2K" | "4K" | "";
 } | null>(null);
 
 function getAllProject() {
@@ -109,11 +110,9 @@ function openEdit(item: {
   videoRatio: string | null;
   imageModel: string;
   videoModel: string;
-  imageQuality: string;
+  imageQuality: "1K" | "2K" | "4K" | "";
   projectType: string;
 }) {
-    console.log("%c Line:107 🥚 item", "background:#465975", item);
-
   editProjectData.value = {
     ...item,
   };
@@ -129,7 +128,7 @@ function editProjectFn(data: {
   videoRatio: string;
   imageModel: string;
   videoModel: string;
-  imageQuality: string;
+  imageQuality: "1K" | "2K" | "4K" | "";
 }) {
   axios
     .post("/project/editProject", data)

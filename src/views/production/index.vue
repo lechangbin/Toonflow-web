@@ -212,15 +212,28 @@ async function layoutGraph(direction: "LR" | "TB") {
   const oldData = toObject();
   oldData.nodes = layout(oldData.nodes, oldData.edges, direction, spacing.value);
 
-  // LR 布局时，将 assets 节点放在 script 节点正下方（左对齐，顶部紧接底部）
+  // LR 布局时，强制调整各节点位置
   if (direction === "LR") {
     const scriptNode = oldData.nodes.find((n) => n.id === "script");
     const assetsNode = oldData.nodes.find((n) => n.id === "assets");
+    const scriptVNode = findNode("script");
+    const scriptHeight = scriptVNode?.dimensions?.height ?? 50;
+
+    // assets 放在 script 正下方，左对齐，顶部紧接 script 底部
     if (scriptNode && assetsNode) {
-      const scriptVNode = findNode("script");
-      const scriptHeight = scriptVNode?.dimensions?.height ?? 50;
       assetsNode.position.x = scriptNode.position.x;
       assetsNode.position.y = scriptNode.position.y + scriptHeight + spacing.value;
+    }
+
+    // 主链节点（scriptPlan 及之后）全部与 script 顶部对齐
+    if (scriptNode) {
+      const mainChain = ["scriptPlan", "storyboardTable", "storyboard", "workbench", "poster"];
+      for (const id of mainChain) {
+        const node = oldData.nodes.find((n) => n.id === id);
+        if (node) {
+          node.position.y = scriptNode.position.y;
+        }
+      }
     }
   }
 
