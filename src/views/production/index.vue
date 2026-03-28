@@ -87,11 +87,14 @@ import projectStore from "@/stores/project";
 
 const { project } = storeToRefs(projectStore());
 const openShowVisible = ref(true);
-const { toObject, fromObject, fitView } = useVueFlow();
+const { toObject, fromObject, fitView, findNode } = useVueFlow();
 const { layout } = useLayout();
 
 const episodesId = ref();
 provide("episodesId", episodesId);
+
+const layoutDirection = ref<"LR" | "TB">("LR");
+provide("layoutDirection", layoutDirection);
 const rightChatTitle = computed(() => {
   const episode = episodesOptions.value.find((option) => option.value === episodesId.value);
   return episode ? episode.label : "";
@@ -208,7 +211,21 @@ const spacing = ref(200);
 async function layoutGraph(direction: "LR" | "TB") {
   const oldData = toObject();
   oldData.nodes = layout(oldData.nodes, oldData.edges, direction, spacing.value);
+
+  // LR 布局时，将 assets 节点放在 script 节点正下方（左对齐，顶部紧接底部）
+  if (direction === "LR") {
+    const scriptNode = oldData.nodes.find((n) => n.id === "script");
+    const assetsNode = oldData.nodes.find((n) => n.id === "assets");
+    if (scriptNode && assetsNode) {
+      const scriptVNode = findNode("script");
+      const scriptHeight = scriptVNode?.dimensions?.height ?? 50;
+      assetsNode.position.x = scriptNode.position.x;
+      assetsNode.position.y = scriptNode.position.y + scriptHeight + spacing.value;
+    }
+  }
+
   await fromObject(oldData);
+  layoutDirection.value = direction;
   await nextTick();
   fitView({ duration: 300 });
 }
