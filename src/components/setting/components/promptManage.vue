@@ -56,7 +56,7 @@ function getPrompt() {
         id: item.id,
         name: item.name,
         type: item.type,
-        data: JSON.parse(item.data),
+        data: item.data,
       };
     });
   });
