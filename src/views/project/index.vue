@@ -100,7 +100,10 @@ function openEdit(item: {
   videoRatio: string | null;
   imageModel: string;
   videoModel: string;
+  imageQuality: string;
 }) {
+    console.log("%c Line:107 🥚 item", "background:#465975", item);
+
   editProjectData.value = {
     ...item,
   };
@@ -116,6 +119,7 @@ function editProjectFn(data: {
   videoRatio: string;
   imageModel: string;
   videoModel: string;
+  imageQuality: string;
 }) {
   axios
     .post("/project/editProject", data)
@@ -137,6 +141,7 @@ function addProjectFn(data: {
   videoRatio: string;
   imageModel: string;
   videoModel: string;
+  imageQuality: string;
 }) {
   axios
     .post("/project/addProject", data)

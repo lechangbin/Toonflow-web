@@ -1251,5 +1251,6 @@
     "openSettings": "打开设置",
     "cancelled": "已取消生成",
     "defaultReel": "正文卷"
-  }
+  },
+  "workbench.project.msg.enterProjectQuality": "请选择图片质量"
 }

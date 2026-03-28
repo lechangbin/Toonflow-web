@@ -10,7 +10,6 @@ export interface SocketEventMap {
   setFlowData: (data: any) => void;
   //公共
   message: string;
-  setModelData: any;
   setKeyScript: { scriptId: number; key: string };
   stop: string;
   textMessage: { type: "start" | "content" | "end"; messageId: string; delta: string | null; role: "assistant"; name: string };

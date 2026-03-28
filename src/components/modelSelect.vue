@@ -107,10 +107,10 @@ function handleModelChange() {
     .then((response) => {
       const groupMap = new Map<string, VendorOption>();
       response.data.forEach((item: any) => {
-        const groupKey = item.name;
+        const groupKey = item.id;
         if (!groupMap.has(groupKey)) {
           groupMap.set(groupKey, {
-            group: groupKey,
+            group: item.name,
             id: item.id,
             children: [],
           });
