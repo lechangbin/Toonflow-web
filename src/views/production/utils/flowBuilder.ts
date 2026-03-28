@@ -74,9 +74,9 @@ export interface FlowData {
   storyboardTable: string;
   storyboard: Storyboard[];
   workbench: WorkbenchData;
-  poster: {
-    items: PosterItem[];
-  };
+  // poster: {
+  //   items: PosterItem[];
+  // };
 }
 
 export type NodePositions = Record<string, { x: number; y: number }>;
@@ -179,18 +179,18 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         },
       },
       // 6. Poster 节点
-      {
-        id: ids.poster,
-        type: "poster",
-        dragHandle: ".dragHandle",
-        position: positions[ids.poster] || { x: 0, y: 0 },
-        data: {
-          items: data.poster?.items ?? [],
-          handleIds: {
-            target: `${ids.poster}-target`,
-          },
-        },
-      },
+      // {
+      //   id: ids.poster,
+      //   type: "poster",
+      //   dragHandle: ".dragHandle",
+      //   position: positions[ids.poster] || { x: 0, y: 0 },
+      //   data: {
+      //     items: data.poster?.items ?? [],
+      //     handleIds: {
+      //       target: `${ids.poster}-target`,
+      //     },
+      //   },
+      // },
     ];
 
     return allNodes;

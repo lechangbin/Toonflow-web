@@ -26,9 +26,9 @@
     <template #node-workbench="props">
       <workbench :id="props.id" v-model="flowData.workbench" :handleIds="props.data.handleIds" />
     </template>
-    <template #node-poster="props">
+    <!-- <template #node-poster="props">
       <poster :id="props.id" v-model="flowData.poster" :handleIds="props.data.handleIds" />
-    </template>
+    </template> -->
     <Background></Background>
     <Controls />
     <div class="floatingWindow">
@@ -119,9 +119,9 @@ const flowData = ref<FlowData>({
     fps: "",
   },
   // 封面（单个 node）
-  poster: {
-    items: [],
-  },
+  // poster: {
+  //   items: [],
+  // },
 });
 // ==================== AI 操作数据区结束 ====================
 
@@ -133,7 +133,7 @@ const nodePositions = ref<Record<string, { x: number; y: number }>>({
   storyboardTable: { x: 1800, y: 0 },
   storyboard: { x: 2700, y: 0 },
   workbench: { x: 3600, y: 0 },
-  poster: { x: 4500, y: 0 },
+  // poster: { x: 4500, y: 0 },
 });
 
 // 自动构建 nodes 和 edges

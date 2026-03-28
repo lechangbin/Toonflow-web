@@ -1,7 +1,7 @@
 <template>
   <t-card class="workbench" @click="visible = !visible">
     <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
-    <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
+    <!-- <Handle :id="props.handleIds.source" type="source" :position="Position.Right" /> -->
     <div class="titleBar dragHandle">
       <div class="title">{{ $t("workbench.production.node.workbench.title") }}</div>
     </div>

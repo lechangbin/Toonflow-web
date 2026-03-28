@@ -6,7 +6,7 @@
         <t-button theme="primary" @click="openDevTool">打开</t-button>
       </t-form-item>
       <t-form-item :label="$t('settings.dev.aiDevtool')" name="showTitleBar">
-        <t-switch v-model="isElectron" />
+        <t-switch v-model="isElectron" @change="getSwitchAiDevTool"/>
       </t-form-item>
       <t-form-item v-if="isElectron" :label="$t('settings.dev.switchAiDevTool')" name="showTitleBar">
         <t-switch :customValue="['1', '0']" v-model="switchAiDevTool" @change="updateSwitchAiDevTool" />
