@@ -54,34 +54,30 @@
             <t-form-item>
               <div class="artStylePicker">
                 <div class="artStyleHeader">
-                  <span>{{ $t("workbench.project.dialog.artStyle") }}</span>
-                  <!-- <div class="headerLeft">
-                    <span v-if="formState.artStyle" class="selectedLabel">
-                      {{ $t("workbench.project.dialog.selected") }}
-                      <t-tag theme="primary" size="small" closable @close="formState.artStyle = ''">{{ formState.artStyle }}</t-tag>
-                    </span>
-                    <span v-else class="selectedHint">{{ $t("workbench.project.dialog.selectArtStyle") }}</span>
-                  </div> -->
-                  <t-button size="small" variant="outline" @click="openArtStyleDialog()">
+                  <span>{{ $t("workbench.project.dialog.visualManual") }}</span>
+                  <t-button size="small" variant="outline" @click="openVisualManualDialog()">
                     <template #icon><i-plus size="14" /></template>
-                    {{ $t("workbench.project.dialog.newArtStyle") }}
+                    {{ $t("workbench.project.dialog.newVisualManual") }}
                   </t-button>
                 </div>
                 <div class="artStyleContent">
-                  <t-loading :loading="artStyleLoading" :text="$t('workbench.project.dialog.loading')">
+                  <t-loading :loading="visualManualLoading" :text="$t('workbench.project.dialog.loading')">
                     <div class="gridContainer">
                       <div
-                        v-for="item in artStyleOptions"
-                        :key="item.label"
+                        v-for="(item, index) in visualManualOptions"
+                        :key="index"
                         class="gridItem"
-                        :class="{ active: formState.artStyle === item.label }"
-                        @click="formState.artStyle = item.label">
+                        :class="{ active: formState.artStyle === item.name }"
+                        @click="formState.artStyle = item.name">
                         <div class="imageWrapper">
-                          <img :src="item.fileUrl" :alt="item.label" class="artImage" loading="lazy" />
-                          <div class="text">{{ item.label }}</div>
+                          <img :src="item.images && item.images[0]" :alt="item.name" class="artImage" loading="lazy" />
+                          <div class="text">{{ item.name }}</div>
                         </div>
-                        <div class="editBtn" @click.stop="openArtStyleDialog(item)">
+                        <div class="editBtn" @click.stop="openVisualManualDialog(item)">
                           <i-edit theme="outline" size="14" />
+                        </div>
+                        <div class="delBtn" @click.stop="deleteVisualManual(item)">
+                          <i-delete theme="outline" size="14" />
                         </div>
                       </div>
                     </div>
@@ -93,84 +89,85 @@
         </div>
       </div>
     </t-dialog>
-
-    <!-- 新建/编辑画风弹窗 -->
+    <!-- 新建/编辑视觉手册弹窗 -->
     <t-dialog
       class="artStyleDialog"
-      v-model:visible="artStyleDialogVisible"
-      :header="editingArtStyle ? $t('workbench.project.dialog.editArtStyleTitle') : $t('workbench.project.dialog.newArtStyleTitle')"
-      width="80vw"
+      v-model:visible="visualManualDialogVisible"
+      :header="editingVisualManual ? $t('workbench.project.dialog.editVisualManualTitle') : $t('workbench.project.dialog.newVisualManualTitle')"
+      width="90vw"
       placement="center"
-      @confirm="handleArtStyleSubmit"
-      @close-btn-click="resetArtStyleDialog"
-      @cancel="resetArtStyleDialog"
+      @confirm="handleVisualManualSubmit"
+      @close-btn-click="resetVisualManualDialog"
+      @cancel="resetVisualManualDialog"
       :confirm-btn="$t('workbench.project.dialog.ok')"
       :cancel-btn="$t('workbench.project.dialog.cancel')">
-      <t-form label-align="top">
-        <t-form-item :label="$t('workbench.project.dialog.artStyleName')">
-          <t-input v-model="artStyleForm.name" :placeholder="$t('workbench.project.dialog.artStyleNamePh')" />
-        </t-form-item>
-        <t-form-item :label="$t('workbench.project.dialog.artStyleImage')">
-          <div class="coverUploadArea">
-            <div v-if="artStyleForm.coverUrl" class="coverPreview">
-              <img :src="artStyleForm.coverUrl" class="coverImg" />
-              <div class="coverActions">
-                <t-button size="small" variant="text" theme="danger" @click="artStyleForm.coverUrl = ''">
-                  {{ $t("workbench.project.dialog.remove") }}
-                </t-button>
+      <t-loading :loading="loading">
+        <t-form label-align="top">
+          <t-form-item>
+            <div class="nameAndCoverRow">
+              <div class="nameField" v-if="!editingVisualManual">
+                <label class="fieldLabel">{{ $t("workbench.project.dialog.visualManualName") }}</label>
+                <t-input v-model="visualManualForm.name" :placeholder="$t('workbench.project.dialog.visualManualNamePh')" @keydown.stop />
               </div>
-            </div>
-            <div v-else class="coverUploadTrigger" @click="triggerCoverUpload">
-              <input ref="coverInputRef" type="file" accept="image/*" style="display: none" @change="handleCoverFileChange" />
-              <i-plus size="24" />
-              <span>{{ $t("workbench.project.dialog.uploadCover") }}</span>
-            </div>
-          </div>
-        </t-form-item>
-        <t-form-item :label="$t('workbench.project.dialog.artStylePrompt')">
-          <div class="promptEditorWrapper">
-            <div class="promptEditorHeader">
-              <div class="aiExtractInline">
-                <div class="aiImageList">
-                  <div v-for="(img, idx) in aiImagePreviews" :key="idx" class="aiImageItem">
-                    <img :src="img" class="aiImg" />
-                    <div class="aiImgRemove" @click="removeAiImage(idx)">
+              <div class="coverField">
+                <label class="fieldLabel">{{ $t("workbench.project.dialog.visualManualCover") }}</label>
+                <div class="coverUploadArea multiCoverUploadArea">
+                  <div v-for="(img, idx) in visualManualForm.images" :key="idx" class="coverPreview">
+                    <img :src="img" class="coverImg" />
+                    <div class="coverImgRemove" @click="removeVisualManualCover(idx)">
                       <i-close size="10" />
                     </div>
                   </div>
-                  <div class="aiImageAdd" @click="triggerAiUpload">
-                    <input ref="aiInputRef" type="file" accept="image/*" multiple style="display: none" @change="handleAiFileChange" />
-                    <i-plus size="14" />
+                  <div class="coverUploadTrigger" @click="triggerVisualManualCoverUpload">
+                    <input
+                      ref="visualManualCoverInputRef"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      style="display: none"
+                      @change="handleVisualManualCoverFileChange" />
+                    <i-plus size="24" />
+                    <span>{{ $t("workbench.project.dialog.uploadCover") }}</span>
                   </div>
                 </div>
-                <t-button size="small" theme="primary" :loading="extractLoading" :disabled="!aiImagePreviews.length" @click="extractStylePrompt">
-                  <template #icon><i-magic size="14" /></template>
-                  {{ $t("workbench.project.dialog.aiExtract") }}
-                </t-button>
               </div>
             </div>
-            <MdEditor
-              v-model="artStyleForm.prompt"
-              :theme="'light'"
-              :toolbars="promptToolbars"
-              :footers="[]"
-              :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
-              style="height: 36vh"
-              @onUploadImg="() => {}" />
-          </div>
-        </t-form-item>
-      </t-form>
+          </t-form-item>
+          <t-form-item :label="$t('workbench.project.dialog.visualManualPrompt')">
+            <div class="promptEditorWrapper">
+              <div class="promptEditorHeader">
+                <div class="aiExtractInline">
+                  <t-tabs :value="visualManualTabValue" size="medium" @change="(v) => (visualManualTabValue = v)">
+                    <t-tab-panel v-for="tab in visualManualTabData" :key="tab.value" :value="tab.value" :label="tab.label">
+                      <MdEditor
+                        v-model="tab.data"
+                        :theme="'light'"
+                        :toolbars="promptToolbars"
+                        :footers="[]"
+                        :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
+                        style="height: 38vh; margin-top: 5px"
+                        @onUploadImg="() => {}" />
+                    </t-tab-panel>
+                  </t-tabs>
+                </div>
+              </div>
+            </div>
+          </t-form-item>
+        </t-form>
+      </t-loading>
     </t-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import axios from "@/utils/axios";
 import { MdEditor } from "md-editor-v3";
 import type { ToolbarNames } from "md-editor-v3";
 import "md-editor-v3/lib/style.css";
 import modelSelect from "@/components/modelSelect.vue";
+import type { TabValue } from "tdesign-vue-next";
+import { DialogPlugin } from "tdesign-vue-next";
 
 const addProjectShow = defineModel<boolean>();
 const props = defineProps<{
@@ -181,23 +178,16 @@ const emit = defineEmits<{
   (
     e: "edit",
     data: {
-     
       id: string;
-     
       name: string;
-     
       intro: string;
-     
       type: string;
-     
       artStyle: string;
-     
       videoRatio: string;
-     
       imageModel: string;
       videoModel: string;
       projectType: string;
-     imageQuality: "1K" | "2K" | "4K" | "";
+      imageQuality: "1K" | "2K" | "4K" | "";
     },
   ): void;
 }>();
@@ -214,6 +204,7 @@ interface ProjectData {
   videoModel: string;
   projectType: string;
   imageQuality: "1K" | "2K" | "4K" | "";
+  visualManual?: string;
 }
 
 interface ProjectFormData {
@@ -227,13 +218,31 @@ interface ProjectFormData {
   videoModel: string;
   imageQuality: "1K" | "2K" | "4K" | "";
 }
-
-interface ArtStyleItem {
-  id?: string | number;
-  fileUrl: string;
-  label: string;
-  prompt?: string;
+interface VisualManualItem {
+  name: string;
+  images?: string[];
+  data?: Data[];
 }
+interface Data {
+  label: string;
+  value: string;
+  data: string;
+}
+
+const DEFAULT_TAB_DATA: () => Data[] = () => [
+  { label: "README", value: "README", data: "" },
+  { label: "前缀", value: "prefix", data: "" },
+  { label: "角色", value: "art_character", data: "" },
+  { label: "角色衍生", value: "art_character_derivative", data: "" },
+  { label: "道具", value: "art_prop", data: "" },
+  { label: "道具衍生", value: "art_prop_derivative", data: "" },
+  { label: "场景", value: "art_scene", data: "" },
+  { label: "场景衍生", value: "art_scene_derivative", data: "" },
+  { label: "分镜", value: "art_storyboard", data: "" },
+  { label: "分镜视频", value: "art_storyboard_video", data: "" },
+  { label: "技法-导演规划", value: "director_planning", data: "" },
+  { label: "技法-分镜表设计", value: "director_storyboard_table", data: "" },
+];
 
 const isEdit = computed(() => !!props.projectData);
 
@@ -280,7 +289,6 @@ function handleOk() {
   if (!formState.value.videoRatio) return window.$message.warning($t("workbench.project.msg.enterVideoRatio"));
   if (!formState.value.intro) return window.$message.warning($t("workbench.project.msg.enterProjectIntro"));
   if (!formState.value.imageQuality) return window.$message.warning($t("workbench.project.msg.enterProjectQuality"));
-
   if (isEdit.value) {
     emit("edit", {
       id: formState.value.id as unknown as string,
@@ -311,9 +319,7 @@ function handleOk() {
   addProjectShow.value = false;
 }
 
-// ===== 影片画风 =====
-const artStyleOptions = ref<ArtStyleItem[]>([]);
-const artStyleLoading = ref(false);
+// ===== 视觉手册 Prompt 工具栏 =====
 
 const promptToolbars: ToolbarNames[] = [
   "bold",
@@ -328,120 +334,6 @@ const promptToolbars: ToolbarNames[] = [
   "=",
   "preview",
 ];
-
-// 画风弹窗
-const artStyleDialogVisible = ref(false);
-const editingArtStyle = ref<ArtStyleItem | null>(null);
-const artStyleForm = ref({ name: "", coverUrl: "", prompt: "" });
-const coverInputRef = ref<HTMLInputElement>();
-const aiInputRef = ref<HTMLInputElement>();
-const aiImagePreviews = ref<string[]>([]);
-const aiImageFiles = ref<File[]>([]);
-const extractLoading = ref(false);
-
-function openArtStyleDialog(item?: ArtStyleItem) {
-  if (item) {
-    editingArtStyle.value = item;
-    artStyleForm.value = { name: item.label, coverUrl: item.fileUrl, prompt: item.prompt || "" };
-  } else {
-    editingArtStyle.value = null;
-    artStyleForm.value = { name: "", coverUrl: "", prompt: "" };
-  }
-  aiImagePreviews.value = [];
-  aiImageFiles.value = [];
-  artStyleDialogVisible.value = true;
-}
-
-function resetArtStyleDialog() {
-  artStyleDialogVisible.value = false;
-  editingArtStyle.value = null;
-  artStyleForm.value = { name: "", coverUrl: "", prompt: "" };
-  aiImagePreviews.value = [];
-  aiImageFiles.value = [];
-}
-
-function triggerCoverUpload() {
-  coverInputRef.value?.click();
-}
-
-function handleCoverFileChange(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    artStyleForm.value.coverUrl = reader.result as string;
-  };
-  reader.readAsDataURL(file);
-  (e.target as HTMLInputElement).value = "";
-}
-
-function triggerAiUpload() {
-  aiInputRef.value?.click();
-}
-
-function handleAiFileChange(e: Event) {
-  const files = (e.target as HTMLInputElement).files;
-  if (!files) return;
-  Array.from(files).forEach((file) => {
-    aiImageFiles.value.push(file);
-    const reader = new FileReader();
-    reader.onload = () => {
-      aiImagePreviews.value.push(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-  });
-  (e.target as HTMLInputElement).value = "";
-}
-
-function removeAiImage(idx: number) {
-  aiImagePreviews.value.splice(idx, 1);
-  aiImageFiles.value.splice(idx, 1);
-}
-
-async function extractStylePrompt() {
-  if (!aiImagePreviews.value.length) return;
-  extractLoading.value = true;
-  try {
-    const { data } = await axios.post("/artStyle/extractStylePrompt", {
-      images: aiImagePreviews.value,
-    });
-    artStyleForm.value.prompt = data.prompt || data;
-    window.$message.success($t("workbench.project.msg.extractSuccess"));
-  } catch (e: any) {
-    window.$message.error(e.message ?? $t("workbench.project.msg.extractFailed"));
-  } finally {
-    extractLoading.value = false;
-  }
-}
-
-async function handleArtStyleSubmit() {
-  if (!artStyleForm.value.name.trim()) {
-    window.$message.warning($t("workbench.project.msg.enterArtStyleName"));
-    return;
-  }
-  try {
-    if (editingArtStyle.value) {
-      await axios.post("/artStyle/editArtStyle", {
-        id: editingArtStyle.value.id,
-        name: artStyleForm.value.name,
-        fileUrl: artStyleForm.value.coverUrl,
-        prompt: artStyleForm.value.prompt,
-      });
-      window.$message.success($t("workbench.project.msg.artStyleUpdated"));
-    } else {
-      await axios.post("/artStyle/addArtStyle", {
-        name: artStyleForm.value.name,
-        fileUrl: artStyleForm.value.coverUrl,
-        prompt: artStyleForm.value.prompt,
-      });
-      window.$message.success($t("workbench.project.msg.artStyleAdded"));
-    }
-    resetArtStyleDialog();
-    fetchArtStyles();
-  } catch (e: any) {
-    window.$message.error(e.message ?? $t("workbench.project.msg.operationFailed"));
-  }
-}
 
 watch(addProjectShow, (visible) => {
   if (visible) {
@@ -462,25 +354,141 @@ watch(addProjectShow, (visible) => {
     } else {
       resetForm();
     }
-    fetchArtStyles();
+    fetchVisualManuals();
   }
 });
 
-function fetchArtStyles() {
-  artStyleLoading.value = true;
+// ===== 视觉手册 =====
+const visualManualOptions = ref<VisualManualItem[]>([]);
+const visualManualLoading = ref(false);
+const visualManualDialogVisible = ref(false);
+const editingVisualManual = ref<VisualManualItem | null>(null);
+const visualManualForm = ref({ name: "", images: [] as string[] });
+const visualManualCoverInputRef = ref<HTMLInputElement>();
+const visualManualTabValue = ref<TabValue>("README");
+const visualManualTabData = ref<Data[]>(DEFAULT_TAB_DATA());
+
+function fetchVisualManuals() {
+  visualManualLoading.value = true;
   axios
-    .post("/artStyle/getArtStyle")
+    .post("/project/getVisualManual")
     .then(({ data }) => {
-      artStyleOptions.value = data.map((item: { id?: string | number; fileUrl: string; label: string; prompt?: string }) => ({
-        id: item.id,
-        fileUrl: item.fileUrl,
-        label: item.label,
-        prompt: item.prompt,
-      }));
+      visualManualOptions.value = data.map(
+        (item: { id?: string | number; name: string; image?: string | string[]; images?: string[]; data?: Data[] }) => ({
+          id: item.id,
+          name: item.name,
+          images: item.images ?? (Array.isArray(item.image) ? item.image : item.image ? [item.image] : []),
+          data: item.data,
+        }),
+      );
     })
     .finally(() => {
-      artStyleLoading.value = false;
+      visualManualLoading.value = false;
     });
+}
+
+function openVisualManualDialog(item?: VisualManualItem) {
+  editingVisualManual.value = item ?? null;
+  if (item) {
+    visualManualForm.value.name = item.name;
+    visualManualForm.value.images = item.images ? [...item.images] : [];
+    const existingData: Data[] = Array.isArray(item.data) ? item.data : [];
+    visualManualTabData.value = DEFAULT_TAB_DATA().map((tab) => {
+      const found = existingData.find((d) => d.value === tab.value);
+      return found ? { ...tab, data: found.data } : { ...tab };
+    });
+  } else {
+    visualManualForm.value = { name: "", images: [] };
+    visualManualTabData.value = DEFAULT_TAB_DATA();
+  }
+  visualManualTabValue.value = "README";
+  visualManualDialogVisible.value = true;
+}
+
+function resetVisualManualDialog() {
+  visualManualDialogVisible.value = false;
+  editingVisualManual.value = null;
+  visualManualForm.value = { name: "", images: [] };
+  visualManualTabData.value = DEFAULT_TAB_DATA();
+  visualManualTabValue.value = "README";
+}
+
+function triggerVisualManualCoverUpload() {
+  visualManualCoverInputRef.value?.click();
+}
+
+function handleVisualManualCoverFileChange(e: Event) {
+  const files = (e.target as HTMLInputElement).files;
+  if (!files || files.length === 0) return;
+  Array.from(files).forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      visualManualForm.value.images.push(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  });
+  (e.target as HTMLInputElement).value = "";
+}
+
+function removeVisualManualCover(idx: number) {
+  visualManualForm.value.images.splice(idx, 1);
+}
+const loading = ref(false);
+async function handleVisualManualSubmit() {
+  if (!visualManualForm.value.name.trim()) {
+    window.$message.warning($t("workbench.project.msg.enterVisualManualName"));
+    return;
+  }
+  if (!visualManualForm.value.images.length) {
+    window.$message.warning($t("workbench.project.msg.enterVisualManualImage"));
+    return;
+  }
+  const emptyTab = visualManualTabData.value.find((tab) => !tab.data.trim());
+  if (emptyTab) {
+    window.$message.warning(`「${emptyTab.label}」${$t("workbench.project.msg.enterVisualManualTabData")}`);
+    return;
+  }
+  try {
+    loading.value = true;
+    await axios.post("/project/editVisualManual", {
+      name: visualManualForm.value.name,
+      images: visualManualForm.value.images,
+      data: visualManualTabData.value,
+    });
+    loading.value = false;
+    if (editingVisualManual.value) {
+      window.$message.success($t("workbench.project.msg.visualManualUpdated"));
+    } else {
+      window.$message.success($t("workbench.project.msg.visualManualAdded"));
+    }
+    resetVisualManualDialog();
+    fetchVisualManuals();
+  } catch (e: any) {
+    loading.value = false;
+    window.$message.error(e.message ?? $t("workbench.project.msg.operationFailed"));
+  }
+}
+function deleteVisualManual(item: VisualManualItem) {
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.project.msg.deleteVisualManualHeader"),
+    body: $t("workbench.project.msg.deleteVisualManualBody", { name: item.name }),
+    confirmBtn: $t("workbench.project.msg.deleteVisualManualConfirm"),
+    cancelBtn: $t("workbench.project.msg.deleteVisualManualCancel"),
+    onConfirm: () => {
+      axios
+        .post("/project/deleteVisualManual", { name: item.name })
+        .then(() => {
+          fetchVisualManuals();
+          window.$message.success($t("workbench.project.msg.visualManualDeleted"));
+        })
+        .catch((e) => {
+          window.$message.error(e.message ?? $t("workbench.project.msg.operationFailed"));
+        })
+        .finally(() => {
+          dialog.destroy();
+        });
+    },
+  });
 }
 </script>
 
@@ -519,12 +527,10 @@ function fetchArtStyles() {
       align-items: center;
       gap: 6px;
       font-size: 13px;
-      color: var(--td-text-color-secondary);
     }
 
     .selectedHint {
       font-size: 13px;
-      color: var(--td-text-color-placeholder);
     }
   }
 
@@ -553,6 +559,9 @@ function fetchArtStyles() {
       z-index: 1;
 
       .editBtn {
+        opacity: 1;
+      }
+      .delBtn {
         opacity: 1;
       }
     }
@@ -589,7 +598,27 @@ function fetchArtStyles() {
     .editBtn {
       position: absolute;
       top: 6px;
+      left: 6px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
+
+      &:hover {
+        background: #fff;
+      }
+    }
+    .delBtn {
+      position: absolute;
+      top: 6px;
       right: 6px;
+
       width: 24px;
       height: 24px;
       display: flex;
@@ -608,6 +637,30 @@ function fetchArtStyles() {
   }
 }
 
+// 视觉手册名称与封面同行布局
+.nameAndCoverRow {
+  gap: 16px;
+  width: 100%;
+  .nameField {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .coverField {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 20px;
+  }
+
+  .fieldLabel {
+    font-size: 14px;
+    color: var(--td-text-color-primary);
+  }
+}
+
 // 画风弹窗样式
 .coverUploadArea {
   width: 100%;
@@ -623,6 +676,48 @@ function fetchArtStyles() {
       object-fit: cover;
       border-radius: 6px;
       border: 1px solid var(--td-component-border);
+    }
+  }
+
+  &.multiCoverUploadArea {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: flex-start;
+
+    .coverPreview {
+      position: relative;
+      flex-shrink: 0;
+
+      .coverImg {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid var(--td-component-border);
+        display: block;
+      }
+
+      .coverImgRemove {
+        position: absolute;
+        top: -6px;
+        right: -6px;
+        width: 18px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--td-error-color);
+        color: #fff;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 10px;
+        z-index: 1;
+
+        &:hover {
+          background: var(--td-error-color-hover);
+        }
+      }
     }
   }
 
@@ -649,7 +744,6 @@ function fetchArtStyles() {
   }
 }
 
-// AI提取行内样式（放在MdEditor上方）
 .promptEditorWrapper {
   width: 100%;
   flex: 1;
@@ -659,15 +753,10 @@ function fetchArtStyles() {
 
   .promptEditorHeader {
     display: flex;
-    align-items: center;
-    justify-content: flex-end;
     margin-bottom: 8px;
 
     .aiExtractInline {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
+      width: 100%;
       .aiImageList {
         display: flex;
         align-items: center;
@@ -733,7 +822,7 @@ function fetchArtStyles() {
 // 画风弹窗整体高度72vh
 :deep(.artStyleDialog) {
   .t-dialog__body {
-    height: 72vh;
+    height: 75vh;
     overflow-y: auto;
   }
 }
