@@ -298,7 +298,8 @@
       "checkUpdateGitee": "Проверить (Gitee)",
       "getFromGitee": "Скачать последний релиз с Gitee",
       "license": "Лицензия",
-      "licenseDesc": "Лицензионное соглашение · Нажмите для подробностей"
+      "licenseDesc": "Лицензионное соглашение · Нажмите для подробностей",
+      "updateAvailable": "найдена новая версия"
     },
     "logout": {
       "warning": "После выхода вам нужно будет снова войти в систему.",
@@ -335,6 +336,15 @@
     "skill": {
       "scanSkills": "ScanSkills",
       "fileLost": "Файл отсутствует"
+    },
+    "dev": {
+      "warning": "Ниже приведены инструменты разработчика, будьте осторожны!",
+      "openDevtool": "Открыть",
+      "devtoolsDoc": "Адрес документа",
+      "devtoolsDesc": "После включения в каталоге установки Toonflow будет создана папка .devtools. Убедитесь, что у Toonflow есть права на запись (запуск от имени администратора).",
+      "devtoolsDesc2": "Запустите npx @ai-sdk/devtools в этом каталоге, чтобы включить отладку телеметрии.",
+      "openDevtoolFailed": "Не удалось открыть инструменты разработчика. Убедитесь, что установлен рабочий стол Toonflow.",
+      "notInElectron": "Для веб-среды откройте консоль браузера вручную."
     }
   },
   "workbench": {
@@ -804,7 +814,8 @@
         "missingPrompts": "{count} ассетов не имеют промптов. Сначала сгенерируйте промпты",
         "imageDone": "Генерация изображений завершена",
         "imageGenFail": "Ошибка генерации изображений",
-        "unknownError": "Неизвестная ошибка"
+        "unknownError": "Неизвестная ошибка",
+        "promptGenCancelled": "Генерация отменена"
       }
     },
     "production": {
@@ -872,7 +883,8 @@
         "layoutLR": "Авторазметка - горизонтально",
         "layoutTB": "Авторазметка - вертикально",
         "uploadAssetImage": "Загрузить изображение ресурса",
-        "uploadStoryboardImage": "Загрузить изображение раскадровки"
+        "uploadStoryboardImage": "Загрузить изображение раскадровки",
+        "uploadImage": "Загрузка изображения объекта"
       },
       "save": "Выбирать",
       "cancel": "Отмена",
@@ -1134,7 +1146,9 @@
         "semiTransparent": "Полупрозрачный"
       },
       "guideSwitchEpisode": "Переключение эпизодов",
-      "guideSwitchEpisodeBody": "Переключение эпизодов перенесено сюда!"
+      "guideSwitchEpisodeBody": "Переключение эпизодов перенесено сюда!",
+      "autoLayoutLR": "Автоматический набор текста — левая и правая раскладка",
+      "autoLayoutTB": "Автоматический набор текста — верхняя и нижняя раскладка"
     },
     "task": {
       "title": "Список задач",
@@ -1190,5 +1204,8 @@
   "components.storyboardImageCheck.duration": "Длительность",
   "components.storyboardImageCheck.lines": "Реплики",
   "components.storyboardImageCheck.createTime": "Дата создания",
-  "workbench.script.extractAssets": "Извлечь ресурсы"
+  "workbench.script.extractAssets": "Извлечь ресурсы",
+  "promptManage": {
+    "prompt": "подсказать слово"
+  }
 }

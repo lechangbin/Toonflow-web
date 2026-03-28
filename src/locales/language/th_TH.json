@@ -298,7 +298,8 @@
       "checkUpdateGitee": "ตรวจสอบการอัปเดต (Gitee)",
       "getFromGitee": "รับเวอร์ชันล่าสุดจาก Gitee Release",
       "license": "ใบอนุญาต (License)",
-      "licenseDesc": "ข้อตกลงใบอนุญาตโอเพนซอร์ส · คลิกเพื่อดูรายละเอียด"
+      "licenseDesc": "ข้อตกลงใบอนุญาตโอเพนซอร์ส · คลิกเพื่อดูรายละเอียด",
+      "updateAvailable": "พบเวอร์ชันใหม่แล้ว"
     },
     "logout": {
       "warning": "หลังจากออกจากระบบ คุณจะต้องเข้าสู่ระบบใหม่เพื่อใช้งานระบบต่อไป",
@@ -335,6 +336,15 @@
     "skill": {
       "scanSkills": "สแกนทักษะ",
       "fileLost": "ไฟล์หายไป"
+    },
+    "dev": {
+      "warning": "ต่อไปนี้เป็นเครื่องมือสำหรับนักพัฒนาซอฟต์แวร์ โปรดดำเนินการด้วยความระมัดระวัง!",
+      "openDevtool": "เปิด",
+      "devtoolsDoc": "ที่อยู่เอกสาร",
+      "devtoolsDesc": "หลังจากเปิดใช้งานแล้ว โฟลเดอร์ .devtools จะถูกสร้างขึ้นในไดเร็กทอรีการติดตั้ง Toonflow โปรดตรวจสอบให้แน่ใจว่า Toonflow มีสิทธิ์ในการเขียน (ทำงานในฐานะผู้ดูแลระบบ)",
+      "devtoolsDesc2": "เรียกใช้ npx @ai-sdk/devtools ในไดเรกทอรีนี้เพื่อเปิดใช้งานการแก้ไขจุดบกพร่องการวัดและส่งข้อมูลทางไกล",
+      "openDevtoolFailed": "ไม่สามารถเปิดเครื่องมือสำหรับนักพัฒนาซอฟต์แวร์ได้ โปรดตรวจสอบให้แน่ใจว่าได้ติดตั้ง Toonflow desktop แล้ว",
+      "notInElectron": "สำหรับสภาพแวดล้อมแบบเว็บ โปรดเปิดคอนโซลเบราว์เซอร์ด้วยตนเอง"
     }
   },
   "workbench": {
@@ -804,7 +814,8 @@
         "missingPrompts": "มี {count} สินทรัพย์ที่ไม่มีพรอมต์ โปรดสร้างพรอมต์ก่อน",
         "imageDone": "สร้างรูปภาพเสร็จสมบูรณ์",
         "imageGenFail": "สร้างรูปภาพล้มเหลว",
-        "unknownError": "ข้อผิดพลาดที่ไม่ทราบสาเหตุ"
+        "unknownError": "ข้อผิดพลาดที่ไม่ทราบสาเหตุ",
+        "promptGenCancelled": "รุ่นถูกยกเลิก"
       }
     },
     "production": {
@@ -872,7 +883,8 @@
         "layoutLR": "จัดวางอัตโนมัติ-ซ้ายขวา",
         "layoutTB": "จัดวางอัตโนมัติ-บนล่าง",
         "uploadAssetImage": "อัปโหลดรูปทรัพยากร",
-        "uploadStoryboardImage": "อัปโหลดรูปสตอรี่บอร์ด"
+        "uploadStoryboardImage": "อัปโหลดรูปสตอรี่บอร์ด",
+        "uploadImage": "การอัพโหลดรูปภาพสินทรัพย์"
       },
       "save": "เลือก",
       "cancel": "ยกเลิก",
@@ -1134,7 +1146,9 @@
         "semiTransparent": "กึ่งโปร่งใส"
       },
       "guideSwitchEpisode": "สลับตอน",
-      "guideSwitchEpisodeBody": "ฟีเจอร์การสลับตอนถูกย้ายมาที่นี่แล้วนะ!"
+      "guideSwitchEpisodeBody": "ฟีเจอร์การสลับตอนถูกย้ายมาที่นี่แล้วนะ!",
+      "autoLayoutLR": "เรียงพิมพ์อัตโนมัติ - เค้าโครงซ้ายและขวา",
+      "autoLayoutTB": "เค้าโครงเรียงพิมพ์อัตโนมัติบนและล่าง"
     },
     "task": {
       "title": "รายการงาน",
@@ -1190,5 +1204,8 @@
   "components.storyboardImageCheck.duration": "ระยะเวลา",
   "components.storyboardImageCheck.lines": "บทพูด",
   "components.storyboardImageCheck.createTime": "เวลาสร้าง",
-  "workbench.script.extractAssets": "ดึงทรัพยากร"
+  "workbench.script.extractAssets": "ดึงทรัพยากร",
+  "promptManage": {
+    "prompt": "คำพูดที่รวดเร็ว"
+  }
 }

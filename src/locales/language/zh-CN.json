@@ -423,7 +423,14 @@
     "dev": {
       "aiDevtool": "切换桌面端模式",
       "devtool": "打开控制台",
-      "switchAiDevTool": "关闭/开启 {'@'}ai-sdk/devtools"
+      "switchAiDevTool": "关闭/开启 {'@'}ai-sdk/devtools",
+      "warning": "以下为开发者工具，谨慎操作！",
+      "openDevtool": "打开",
+      "devtoolsDoc": "文档地址",
+      "devtoolsDesc": "开启后会在Toonflow安装目录创建.devtools文件夹，请确保Toonflow有写入权限（管理员身份运行）。",
+      "devtoolsDesc2": "在该目录运行 npx @ai-sdk/devtools 开启遥测调试",
+      "openDevtoolFailed": "打开开发者工具失败，请确保已安装Toonflow桌面端",
+      "notInElectron": "WEB环境请手动打开浏览器控制台"
     }
   },
   "workbench": {
@@ -888,7 +895,8 @@
         "missingPrompts": "有 {count} 个资产缺少提示词，请先生成提示词",
         "imageDone": "图片生成完成",
         "imageGenFail": "图片生成失败",
-        "unknownError": "未知错误"
+        "unknownError": "未知错误",
+        "promptGenCancelled": "已取消生成"
       }
     },
     "production": {
@@ -956,7 +964,8 @@
         "layoutLR": "自动排版-左右布局",
         "layoutTB": "自动排版-上下布局",
         "uploadAssetImage": "资产图片上传",
-        "uploadStoryboardImage": "分镜图片上传"
+        "uploadStoryboardImage": "分镜图片上传",
+        "uploadImage": "资产图片上传"
       },
       "save": "选取",
       "cancel": "取消",
@@ -1220,7 +1229,9 @@
         "semiTransparent": "半透明"
       },
       "guideSwitchEpisode": "切换剧集",
-      "guideSwitchEpisodeBody": "切换剧集挪移到这里了哦"
+      "guideSwitchEpisodeBody": "切换剧集挪移到这里了哦",
+      "autoLayoutLR": "自动排版-左右布局",
+      "autoLayoutTB": "自动排版-上下布局"
     },
     "task": {
       "title": "任务列表",
@@ -1268,5 +1279,8 @@
     "cancelled": "已取消生成",
     "defaultReel": "正文卷"
   },
-  "workbench.project.msg.enterProjectQuality": "请选择图片质量"
+  "workbench.project.msg.enterProjectQuality": "请选择图片质量",
+  "promptManage": {
+    "prompt": "提示词"
+  }
 }

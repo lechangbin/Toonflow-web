@@ -35,13 +35,13 @@
 
       <Panel position="top-right">
         <div class="ac" style="gap: 8px">
-          <t-tooltip theme="primary" content="自动排版-左右布局">
+          <t-tooltip theme="primary" content="$t('workbench.production.autoLayoutLR')">
             <div class="item c" @click="layoutGraph('LR')">
               <i-tree-diagram theme="outline" size="24" />
             </div>
           </t-tooltip>
-          <t-tooltip theme="primary" content="自动排版-上下布局">
-            <div class="item c" @click="layoutGraph('TB')">
+          <t-tooltip theme="primary" content="$t('workbench.production.autoLayoutTB')">
+             <div class="item c" @click="layoutGraph('TB')">
               <i-branch-one theme="outline" size="24" />
             </div>
           </t-tooltip>

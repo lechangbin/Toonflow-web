@@ -304,7 +304,8 @@
       "checkUpdateGitee": "檢查更新(Gitee)",
       "getFromGitee": "從 Gitee Release 取得最新版本",
       "license": "授權條款",
-      "licenseDesc": "開源授權條款·點擊查看詳情"
+      "licenseDesc": "開源授權條款·點擊查看詳情",
+      "updateAvailable": "發現新版本"
     },
     "logout": {
       "warning": "登出後，您需要重新登入才能繼續使用系統。",
@@ -340,6 +341,14 @@
     },
     "skill": {
       "scanSkills": "掃描Skills"
+    },
+    "dev": {
+      "warning": "以下為開發者工具，謹慎操作！",
+      "openDevtool": "打開",
+      "devtoolsDoc": "文件地址",
+      "devtoolsDesc": "開啟後會在Toonflow安裝目錄建立.devtools資料夾，請確保Toonflow有寫入權限（管理員身分執行）。",
+      "openDevtoolFailed": "開啟開發者工具失敗，請確保已安裝Toonflow桌面端",
+      "notInElectron": "WEB環境請手動開啟瀏覽器控制台"
     }
   },
   "workbench": {
@@ -810,7 +819,8 @@
         "missingPrompts": "有 {count} 個資產缺少提示詞，請先生成提示詞",
         "imageDone": "圖片生成完成",
         "imageGenFail": "圖片生成失敗",
-        "unknownError": "未知錯誤"
+        "unknownError": "未知錯誤",
+        "promptGenCancelled": "已取消生成"
       }
     },
     "production": {
@@ -875,7 +885,8 @@
         "generateFailed": "生成失敗",
         "generateFirst": "請先生成圖片",
         "generatedResult": "生成結果",
-        "waitingGenerate": "等待生成"
+        "waitingGenerate": "等待生成",
+        "uploadImage": "資產圖片上傳"
       },
       "save": "選取",
       "cancel": "取消",
@@ -1140,7 +1151,9 @@
         "semiTransparent": "半透明"
       },
       "guideSwitchEpisode": "切換劇集",
-      "guideSwitchEpisodeBody": "切換劇集移到這裡了喔"
+      "guideSwitchEpisodeBody": "切換劇集移到這裡了喔",
+      "autoLayoutLR": "自動排版-左右佈局",
+      "autoLayoutTB": "自動排版-上下佈局"
     },
     "task": {
       "title": "任務列表",
@@ -1178,5 +1191,8 @@
     "enterUsernameAndPassword": "請輸入使用者名稱或密碼",
     "loginSuccess": "登入成功",
     "settingsSaved": "設定已儲存"
+  },
+  "promptManage": {
+    "prompt": "提示詞"
   }
 }

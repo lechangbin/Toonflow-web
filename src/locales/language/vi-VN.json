@@ -292,7 +292,8 @@
       "checkUpdateGitee": "Kiểm tra cập nhật (Gitee)",
       "getFromGitee": "Lấy phiên bản mới nhất từ Gitee Release",
       "license": "Giấy phép",
-      "licenseDesc": "Thỏa thuận giấy phép mã nguồn mở · Nhấn để xem chi tiết"
+      "licenseDesc": "Thỏa thuận giấy phép mã nguồn mở · Nhấn để xem chi tiết",
+      "updateAvailable": "phiên bản mới được tìm thấy"
     },
     "logout": {
       "warning": "Sau khi đăng xuất, bạn cần đăng nhập lại để tiếp tục sử dụng hệ thống.",
@@ -325,6 +326,15 @@
         "serveDesc": "Tệp liên quan đến dịch vụ Backend."
       },
       "openFailed": "Mở thư mục thất bại"
+    },
+    "dev": {
+      "warning": "Sau đây là các công cụ dành cho nhà phát triển, vui lòng sử dụng thận trọng!",
+      "openDevtool": "Mở",
+      "devtoolsDoc": "Địa chỉ tài liệu",
+      "devtoolsDesc": "Sau khi bật lên sẽ tạo một thư mục .devtools trong thư mục cài đặt Toonflow. Hãy đảm bảo rằng Toonflow có quyền ghi (chạy với tư cách quản trị viên).",
+      "devtoolsDesc2": "Chạy npx @ai-sdk/devtools trong thư mục này để bật gỡ lỗi đo từ xa",
+      "openDevtoolFailed": "Không mở được công cụ dành cho nhà phát triển, vui lòng đảm bảo đã cài đặt Toonflow desktop",
+      "notInElectron": "Đối với môi trường WEB, vui lòng mở bảng điều khiển trình duyệt theo cách thủ công"
     }
   },
   "workbench": {
@@ -794,7 +804,8 @@
         "missingPrompts": "Có {count} tài nguyên thiếu lời nhắc, vui lòng tạo lời nhắc trước",
         "imageDone": "Tạo hình ảnh hoàn tất",
         "imageGenFail": "Tạo hình ảnh thất bại",
-        "unknownError": "Lỗi không xác định"
+        "unknownError": "Lỗi không xác định",
+        "promptGenCancelled": "Thế hệ bị hủy"
       }
     },
     "production": {
@@ -862,7 +873,8 @@
         "layoutLR": "Bố cục tự động - Ngang",
         "layoutTB": "Bố cục tự động - Dọc",
         "uploadAssetImage": "Tải lên hình ảnh tài sản",
-        "uploadStoryboardImage": "Tải lên hình ảnh storyboard"
+        "uploadStoryboardImage": "Tải lên hình ảnh storyboard",
+        "uploadImage": "Tải lên hình ảnh nội dung"
       },
       "save": "Lựa chọn",
       "cancel": "Hủy",
@@ -1124,7 +1136,9 @@
         "semiTransparent": "Bán trong suốt"
       },
       "guideSwitchEpisode": "Chuyển đổi tập",
-      "guideSwitchEpisodeBody": "Tính năng chuyển đổi tập đã được chuyển đến đây nhé!"
+      "guideSwitchEpisodeBody": "Tính năng chuyển đổi tập đã được chuyển đến đây nhé!",
+      "autoLayoutLR": "Tự động sắp chữ-bố trí bên trái và bên phải",
+      "autoLayoutTB": "Tự động sắp chữ bố cục trên và dưới"
     },
     "task": {
       "title": "Danh sách tác vụ",
@@ -1180,5 +1194,8 @@
   "components.storyboardImageCheck.duration": "Thời lượng",
   "components.storyboardImageCheck.lines": "Lời thoại",
   "components.storyboardImageCheck.createTime": "Thời gian tạo",
-  "workbench.script.extractAssets": "Trích xuất tài sản"
+  "workbench.script.extractAssets": "Trích xuất tài sản",
+  "promptManage": {
+    "prompt": "lời nhắc"
+  }
 }

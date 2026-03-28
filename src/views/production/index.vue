@@ -39,16 +39,16 @@
           </template>
         </t-select>
         <i-loading-four class="spin" size="16" style="margin-left: 0.5rem" v-show="loading"></i-loading-four>
-        <t-tooltip theme="primary" content="自动排版-左右布局">
+        <t-tooltip theme="primary" content="$t('workbench.production.autoLayoutLR')">
           <div class="item c" @click="layoutGraph('LR')">
             <i-tree-diagram theme="outline" size="24" />
           </div>
         </t-tooltip>
-        <t-tooltip theme="primary" content="自动排版-上下布局">
+        <!-- <t-tooltip theme="primary" content="$t('workbench.production.autoLayoutTB')">
           <div class="item c" @click="layoutGraph('TB')">
             <i-branch-one theme="outline" size="24" />
           </div>
-        </t-tooltip>
+        </t-tooltip> -->
       </div>
       <div class="openRightChatBoxBtn c" v-show="!openShowVisible" @click.stop="openShowVisible = true">
         <i-menu-unfold-one theme="outline" size="24" fill="#000000" />

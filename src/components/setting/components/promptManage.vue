@@ -12,7 +12,7 @@
       </t-card>
     </div>
     <div class="show">
-      <t-dialog v-model:visible="visible" header="提示词" width="70%" :close-on-overlay-click="false" @confirm="onConfirm" top="9vh">
+      <t-dialog v-model:visible="visible" header="$t('promptManage.prompt')" width="70%" :close-on-overlay-click="false" @confirm="onConfirm" top="9vh">
         <MdEditor
           v-model="promptData.data"
           :theme="'light'"
@@ -56,7 +56,7 @@ function getPrompt() {
         id: item.id,
         name: item.name,
         type: item.type,
-        data: JSON.parse(item.data),
+        data: item.data,
       };
     });
   });
