@@ -48,6 +48,7 @@
       "language": "言語設定",
       "vendorConfig": "モデルサービス",
       "agentConfig": "Agent 設定",
+      "promptManage": "プロンプト管理",
       "memoryConfig": "Agent メモリ設定",
       "loginConfig": "ログイン設定",
       "dbConfig": "データベース操作",
@@ -384,7 +385,12 @@
         "aiExtract": "AI プロンプト抽出",
         "promptPlaceholder": "画像生成時にビジュアルマニュアルを指定するために使用されるビジュアルマニュアルプロンプトワードについて説明します。",
         "modelData": "画像モデルの選択",
-        "videoModelData": "ビデオモデルを選択してください"
+        "videoModelData": "ビデオモデルを選択してください",
+        "prompt": {
+          "placeholder": "プロンプトの単語を入力してください",
+          "saveSuccess": "更新に成功しました"
+        },
+        "basedOnScript": "脚本に基づいて"
       },
       "msg": {
         "fetchFailed": "プロジェクトリストの取得に失敗しました",
@@ -412,6 +418,10 @@
         "enterVideoRatio": "ビデオ比率を選択してください",
         "enterImageModel": "画像モデルを選択してください",
         "enterVideoModel": "ビデオモデルを選択してください"
+      },
+      "type": {
+        "novel": "原作小説に基づいて",
+        "script": "小説の脚本に基づく"
       }
     },
     "novel": {

@@ -47,6 +47,7 @@
       "language": "Cài đặt ngôn ngữ",
       "vendorConfig": "Dịch vụ mô hình",
       "agentConfig": "Cấu hình Agent",
+      "promptManage": "Quản lý Prompt",
       "memoryConfig": "Cấu hình bộ nhớ Agent",
       "loginConfig": "Cấu hình đăng nhập",
       "dbConfig": "Thao tác cơ sở dữ liệu",
@@ -375,7 +376,12 @@
         "aiExtract": "AI trích xuất Prompt",
         "promptPlaceholder": "Mô tả từ nhắc hướng dẫn sử dụng trực quan, được sử dụng để chỉ định hướng dẫn trực quan khi tạo hình ảnh.",
         "modelData": "Chọn mô hình hình ảnh",
-        "videoModelData": "Chọn mô hình video"
+        "videoModelData": "Chọn mô hình video",
+        "prompt": {
+          "placeholder": "Nhập từ gợi ý",
+          "saveSuccess": "Cập nhật thành công"
+        },
+        "basedOnScript": "dựa trên kịch bản"
       },
       "msg": {
         "fetchFailed": "Lấy danh sách dự án thất bại",
@@ -403,6 +409,10 @@
         "enterVideoRatio": "Vui lòng chọn tỷ lệ video",
         "enterImageModel": "Vui lòng chọn mẫu hình ảnh",
         "enterVideoModel": "Vui lòng chọn một mẫu video"
+      },
+      "type": {
+        "novel": "Dựa trên tiểu thuyết gốc",
+        "script": "Dựa trên kịch bản tiểu thuyết"
       }
     },
     "novel": {

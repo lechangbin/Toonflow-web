@@ -15,7 +15,7 @@
               :status="message.status"
               allowContentSegmentCustom>
               <!-- <template #actionbar> -->
-                <!-- <t-chat-actionbar :action-bar="['replay', 'copy']" /> -->
+              <!-- <t-chat-actionbar :action-bar="['replay', 'copy']" /> -->
               <!-- </template> -->
             </t-chat-message>
           </t-chat-list>
@@ -53,6 +53,16 @@
             </template>
           </t-chat-sender>
           <i-dot class="dot" theme="outline" :fill="connected ? 'green' : 'red'" />
+          <transition name="fade">
+            <div v-if="forceGenerateVisible" class="forceGenerateMask">
+              <div class="forceGenerateCard">
+                <div class="forceGenerateDesc">{{ $t("workbench.scriptAgent.forceGenerate.desc") }}</div>
+                <div class="forceGenerateActions">
+                  <t-button @click="handleForceConfirm">{{ $t("workbench.scriptAgent.forceGenerate.confirm") }}</t-button>
+                </div>
+              </div>
+            </div>
+          </transition>
         </div>
       </Pane>
       <Pane :size="70" :min-size="30" class="data">
@@ -224,6 +234,7 @@ async function setPlanData() {
 }
 onMounted(() => {
   getPlanData();
+  getNovel();
 });
 
 const defMsg: ChatMessagesData[] = [
@@ -279,7 +290,6 @@ onMounted(() => {
   if (messages.value.length) {
     messages.value = [...defMsg, ...messages.value];
   }
-
   socket.value?.on("getPlanData", (_, callback) => {
     callback(planData.value);
   });
@@ -287,7 +297,6 @@ onMounted(() => {
   socket.value?.on("setPlanData", ({ key, value }: any) => {
     getScriptApi();
   });
-
   getHistory();
 });
 
@@ -297,9 +306,25 @@ onUnmounted(() => {});
 
 const currentMsgId = ref("");
 
+// 强制生成蒙层
+const forceGenerateVisible = ref(false);
+const novelData = ref([]);
+function getNovel() {
+  axios.post("/novel/getNovelData", { projectId: project.value?.id }).then((res) => {
+    novelData.value = res.data;
+    const hasUnfinished = (novelData.value as any[]).some((item: any) => item.eventState === 0);
+    if (hasUnfinished && !forceGenerateVisible.value) {
+      forceGenerateVisible.value = true;
+    }
+  });
+}
+
 function handleSend(text: string) {
   chat(text);
   inputValue.value = "";
+}
+function handleForceConfirm() {
+  forceGenerateVisible.value = false;
 }
 
 function handleStop() {
@@ -420,8 +445,6 @@ async function getScriptApi() {
     const res = await axios.post("/script/getScrptApi", {
       projectId: project.value?.id,
     });
-    console.log("%c Line:424 🍻 res.data", "background:#33a5ff", res.data);
-
     planData.value.script = res.data;
   } catch (error) {
     console.error("搜索剧本失败:", error);
@@ -556,16 +579,14 @@ function changeTab(value: TabValue) {
     .scriptIndex {
       font-size: 12px;
       font-weight: 600;
-      color: var(--td-brand-color);
       flex-shrink: 0;
-      background: var(--td-brand-color-light);
+      background: #e6e3e3;
       padding: 1px 6px;
       border-radius: 4px;
     }
     .scriptTitle {
       font-size: 14px;
       font-weight: 600;
-      color: var(--td-text-color-primary);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -574,7 +595,6 @@ function changeTab(value: TabValue) {
   .scriptCardBody {
     font-size: 13px;
     line-height: 1.7;
-    color: var(--td-text-color-primary);
     padding: 10px 12px;
     flex: 1;
     max-height: 300px;
@@ -587,7 +607,6 @@ function changeTab(value: TabValue) {
     }
     .emptyContent {
       display: block;
-      color: var(--td-text-color-placeholder);
       font-size: 13px;
     }
     :deep(.md-editor-preview-wrapper) {
@@ -597,14 +616,13 @@ function changeTab(value: TabValue) {
   .scriptCardFooter {
     gap: 8px;
     padding: 8px 12px;
-    border-top: 1px solid var(--td-border-level-2-color);
+    border-top: 1px solid #e6e3e3;
     background-color: #fafafa;
     .assetsLabel {
       display: flex;
       align-items: center;
       gap: 3px;
       font-size: 12px;
-      color: var(--td-text-color-secondary);
       white-space: nowrap;
       margin-top: 2px;
       flex-shrink: 0;
@@ -629,7 +647,6 @@ function changeTab(value: TabValue) {
     label {
       font-size: 13px;
       font-weight: 500;
-      color: var(--td-text-color-secondary);
     }
     .assets-list {
       display: flex;
@@ -643,7 +660,6 @@ function changeTab(value: TabValue) {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border: 1px solid var(--td-border-level-2-color);
     border-radius: 6px;
     padding: 8px 12px;
     background: #fafafa;
@@ -661,6 +677,37 @@ function changeTab(value: TabValue) {
   }
 }
 
+.forceGenerateMask {
+  position: absolute;
+  inset: 0;
+  background: rgba(170, 170, 170, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  border-radius: 10px;
+  .forceGenerateCard {
+    background: #fdfbfb;
+    border-radius: 12px;
+    padding: 28px 32px 24px;
+    max-width: 300px;
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    .forceGenerateDesc {
+      font-size: 12px;
+    }
+    .forceGenerateActions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
 .settingMenu {
   padding: 4px 0;
   .settingMenuItem {
@@ -671,12 +718,6 @@ function changeTab(value: TabValue) {
     font-size: 13px;
     cursor: pointer;
     white-space: nowrap;
-    &:hover {
-      background-color: #f3f3f3;
-    }
-    &.danger {
-      color: #e34d59;
-    }
   }
 }
 :deep(.t-tabs__operations--right) {

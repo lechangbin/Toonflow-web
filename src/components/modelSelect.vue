@@ -101,7 +101,6 @@ const titleMap = {
 };
 //获取模型选择API数据
 function handleModelChange() {
-  console.log("%c Line:102 🌰", "background:#4fff4B");
   axios
     .post("/modelSelect/getModelList", { type: props.type })
     .then((response) => {

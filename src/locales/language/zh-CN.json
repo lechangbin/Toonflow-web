@@ -58,6 +58,7 @@
       "language": "语言设置",
       "vendorConfig": "模型服务",
       "agentConfig": "Agent配置",
+      "promptManage": "提示词管理",
       "memoryConfig": "Agent记忆配置",
       "loginConfig": "登录配置",
       "dbConfig": "数据库操作",
@@ -474,7 +475,12 @@
         "aiExtract": "AI提取提示词",
         "promptPlaceholder": "描述视觉手册提示词，用于生成图片时指定视觉手册",
         "modelData": "选择图片模型",
-        "videoModelData": "选择视频模型"
+        "videoModelData": "选择视频模型",
+        "prompt": {
+          "placeholder": "输入提示词",
+          "saveSuccess": "更新成功"
+        },
+        "basedOnScript": "基于剧本"
       },
       "msg": {
         "fetchFailed": "获取项目列表失败",
@@ -502,6 +508,10 @@
         "enterVideoRatio": "请选择影片比例",
         "enterImageModel": "请选择图片模型",
         "enterVideoModel": "请选择视频模型"
+      },
+      "type": {
+        "novel": "基于小说原文",
+        "script": "基于小说剧本"
       }
     },
     "novel": {
@@ -641,6 +651,12 @@
         "message": "消息记忆",
         "summary": "摘要记忆",
         "all": "全部记忆"
+      },
+      "forceGenerate": {
+        "title": "是否强制生成",
+        "desc": "当前存在尚未完成事件分析的章节，是否仍然强制继续生成？",
+        "confirm": "强制生成",
+        "cancel": "取消"
       },
       "msg": {
         "clearConfirm": "确认清空",
