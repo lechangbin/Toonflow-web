@@ -19,8 +19,15 @@
       <t-row style="gap: 20px">
         <t-col :xs="12" :sm="6" :md="6" :lg="4" :xl="4" v-for="project in allProject" :key="project.id">
           <t-card hoverShadow class="card" @click="openProject(project.id)">
-            <div class="title">
-              {{ project.name }}
+            <div class="jb ac">
+              <div class="title">
+                {{ project.name }}
+              </div>
+              <div>
+                <t-tag shape="round">
+                  {{ project.projectType == "novel" ? $t(`workbench.project.type.novel`) : $t(`workbench.project.type.script`) }}
+                </t-tag>
+              </div>
             </div>
             <t-tag shape="round" v-if="project.artStyle">{{ project.artStyle }}</t-tag>
             <div class="intro">
@@ -64,6 +71,7 @@ const editProjectData = ref<{
   videoRatio: string | null;
   imageModel: string;
   videoModel: string;
+  projectType: string;
 } | null>(null);
 
 function getAllProject() {
@@ -88,7 +96,8 @@ function openProject(projectId: string | undefined) {
   const item = allProject.value.find((p) => p.id === projectId);
   if (item) project.value = item;
   else return window.$message.error($t("workbench.project.msg.notFound"));
-  router.push(`/novel`);
+  if (item.projectType === "novel") router.push(`/novel`);
+  else if (item.projectType === "script") router.push(`/script`);
 }
 
 function openEdit(item: {
@@ -100,6 +109,7 @@ function openEdit(item: {
   videoRatio: string | null;
   imageModel: string;
   videoModel: string;
+  projectType: string;
 }) {
   editProjectData.value = {
     ...item,

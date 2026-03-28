@@ -9,6 +9,7 @@ interface Project {
   updatedAt: number;
   imageModel: string;
   videoModel: string;
+  projectType: string;
 }
 
 export default defineStore(

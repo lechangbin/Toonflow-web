@@ -389,7 +389,8 @@
         "prompt": {
           "placeholder": "プロンプトの単語を入力してください",
           "saveSuccess": "更新に成功しました"
-        }
+        },
+        "basedOnScript": "脚本に基づいて"
       },
       "msg": {
         "fetchFailed": "プロジェクトリストの取得に失敗しました",
@@ -417,6 +418,10 @@
         "enterVideoRatio": "ビデオ比率を選択してください",
         "enterImageModel": "画像モデルを選択してください",
         "enterVideoModel": "ビデオモデルを選択してください"
+      },
+      "type": {
+        "novel": "原作小説に基づいて",
+        "script": "小説の脚本に基づく"
       }
     },
     "novel": {

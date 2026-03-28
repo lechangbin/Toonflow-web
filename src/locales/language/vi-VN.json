@@ -380,7 +380,8 @@
         "prompt": {
           "placeholder": "Nhập từ gợi ý",
           "saveSuccess": "Cập nhật thành công"
-        }
+        },
+        "basedOnScript": "dựa trên kịch bản"
       },
       "msg": {
         "fetchFailed": "Lấy danh sách dự án thất bại",
@@ -408,6 +409,10 @@
         "enterVideoRatio": "Vui lòng chọn tỷ lệ video",
         "enterImageModel": "Vui lòng chọn mẫu hình ảnh",
         "enterVideoModel": "Vui lòng chọn một mẫu video"
+      },
+      "type": {
+        "novel": "Dựa trên tiểu thuyết gốc",
+        "script": "Dựa trên kịch bản tiểu thuyết"
       }
     },
     "novel": {

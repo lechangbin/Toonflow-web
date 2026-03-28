@@ -464,7 +464,8 @@
         "prompt": {
           "placeholder": "Enter prompt word",
           "saveSuccess": "Update successful"
-        }
+        },
+        "basedOnScript": "based on script"
       },
       "msg": {
         "fetchFailed": "Failed to fetch project list",
@@ -492,6 +493,10 @@
         "enterVideoRatio": "Please select video ratio",
         "enterImageModel": "Please select a picture model",
         "enterVideoModel": "Please select a video model"
+      },
+      "type": {
+        "novel": "Based on the original novel",
+        "script": "Based on novel script"
       }
     },
     "novel": {
@@ -631,6 +636,12 @@
         "message": "Message Memory",
         "summary": "Summary Memory",
         "all": "All Memory"
+      },
+      "forceGenerate": {
+        "title": "Force Generate?",
+        "desc": "Some chapters have not completed event analysis. Do you still want to force generate?",
+        "confirm": "Force Generate",
+        "cancel": "Cancel"
       },
       "msg": {
         "clearConfirm": "Confirm Clear",

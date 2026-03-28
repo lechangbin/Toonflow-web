@@ -425,6 +425,10 @@
         "enterVideoRatio": "請選擇影片比例",
         "enterImageModel": "請選擇圖片模型",
         "enterVideoModel": "請選擇視訊模型"
+      },
+      "type": {
+        "novel": "基於小說原文",
+        "script": "基於小說劇本"
       }
     },
     "novel": {
