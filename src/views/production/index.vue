@@ -44,11 +44,11 @@
             <i-tree-diagram theme="outline" size="24" />
           </div>
         </t-tooltip>
-        <t-tooltip theme="primary" content="自动排版-上下布局">
+        <!-- <t-tooltip theme="primary" content="自动排版-上下布局">
           <div class="item c" @click="layoutGraph('TB')">
             <i-branch-one theme="outline" size="24" />
           </div>
-        </t-tooltip>
+        </t-tooltip> -->
       </div>
       <div class="openRightChatBoxBtn c" v-show="!openShowVisible" @click.stop="openShowVisible = true">
         <i-menu-unfold-one theme="outline" size="24" fill="#000000" />
