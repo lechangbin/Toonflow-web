@@ -101,16 +101,15 @@ const titleMap = {
 };
 //获取模型选择API数据
 function handleModelChange() {
-  console.log("%c Line:102 🌰", "background:#4fff4B");
   axios
     .post("/modelSelect/getModelList", { type: props.type })
     .then((response) => {
       const groupMap = new Map<string, VendorOption>();
       response.data.forEach((item: any) => {
-        const groupKey = item.name;
+        const groupKey = item.id;
         if (!groupMap.has(groupKey)) {
           groupMap.set(groupKey, {
-            group: groupKey,
+            group: item.name,
             id: item.id,
             children: [],
           });

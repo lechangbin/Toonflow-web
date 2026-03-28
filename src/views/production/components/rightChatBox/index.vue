@@ -62,18 +62,6 @@
                 </div>
               </template>
             </t-popup>
-            <div class="ac modelSelCls">
-              <modelSelect class="paramSelect" v-model="imageModelData.modelId" type="image" size="small" />
-              <t-select
-                v-model="imageModelData.quality"
-                class="paramSelect ml-5"
-                size="small"
-                :placeholder="$t('workbench.production.editImage.quality')">
-                <t-option value="1K" label="1K" />
-                <t-option value="2K" label="2K" />
-                <t-option value="4K" label="4K" />
-              </t-select>
-            </div>
           </div>
         </template>
       </t-chat-sender>
@@ -101,7 +89,7 @@ const props = defineProps({
 });
 const emit = defineEmits(["close"]);
 // const inputValue = ref("请输出500字小作文，去洗车店洗车走路更快还是开车更快");
-const inputValue = ref($t("workbench.production.chatBox.generateDerivedAssets"));
+const inputValue = ref();
 const loadingHistory = ref(false);
 const status = ref<"idle" | "pending" | "streaming">("idle");
 

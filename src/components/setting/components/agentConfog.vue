@@ -144,7 +144,7 @@ function confirmConfig() {
     name: currentItem.value?.name,
     model: selectValue.value.split(":")[1] || currentItem.value?.model,
     modelName: currentItem.value?.modelName,
-    vendorId: Number(selectValue.value.split(":")[0]),
+    vendorId: selectValue.value.split(":")[0],
     desc: currentItem.value?.desc,
   };
   axios
