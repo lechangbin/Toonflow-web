@@ -297,7 +297,8 @@
       "checkUpdateGitee": "アップデート確認 (Gitee)",
       "getFromGitee": "Gitee Releaseから最新版を取得",
       "license": "ライセンス",
-      "licenseDesc": "オープンソースライセンス・クリックして詳細を確認"
+      "licenseDesc": "オープンソースライセンス・クリックして詳細を確認",
+      "updateAvailable": "新しいバージョンが見つかりました"
     },
     "logout": {
       "warning": "ログアウト後、システムを継続して使用するには再ログインが必要です。",
@@ -334,6 +335,15 @@
     "skill": {
       "scanSkills": "スキャンスキル",
       "fileLost": "ファイルがありません"
+    },
+    "dev": {
+      "warning": "以下は開発者ツールです。注意して操作してください。",
+      "openDevtool": "開ける",
+      "devtoolsDoc": "書類のアドレス",
+      "devtoolsDesc": "オンにすると、Toonflow のインストール ディレクトリに .devtools フォルダーが作成されます。 Toonflow に書き込み権限があることを確認してください (管理者として実行)。",
+      "devtoolsDesc2": "このディレクトリで npx @ai-sdk/devtools を実行して、テレメトリのデバッグを有効にします",
+      "openDevtoolFailed": "開発者ツールを開けませんでした。Toonflow デスクトップがインストールされていることを確認してください",
+      "notInElectron": "WEB環境の場合はブラウザコンソールを手動で開いてください"
     }
   },
   "workbench": {
@@ -803,7 +813,8 @@
         "missingPrompts": "プロンプトがないアセットが {count} 件あります。先にプロンプトを生成してください",
         "imageDone": "画像の生成が完了しました",
         "imageGenFail": "画像の生成に失敗しました",
-        "unknownError": "不明なエラー"
+        "unknownError": "不明なエラー",
+        "promptGenCancelled": "生成がキャンセルされました"
       }
     },
     "production": {
@@ -871,7 +882,8 @@
         "layoutLR": "自動レイアウト-左右",
         "layoutTB": "自動レイアウト-上下",
         "uploadAssetImage": "アセット画像アップロード",
-        "uploadStoryboardImage": "絵コンテ画像アップロード"
+        "uploadStoryboardImage": "絵コンテ画像アップロード",
+        "uploadImage": "アセットイメージのアップロード"
       },
       "save": "選択",
       "cancel": "キャンセル",
@@ -1133,7 +1145,9 @@
         "semiTransparent": "半透明"
       },
       "guideSwitchEpisode": "エピソードを切り替え",
-      "guideSwitchEpisodeBody": "エピソードの切り替えはこちらに移動しました"
+      "guideSwitchEpisodeBody": "エピソードの切り替えはこちらに移動しました",
+      "autoLayoutLR": "自動組版 - 左右レイアウト",
+      "autoLayoutTB": "自動写植上下レイアウト"
     },
     "task": {
       "title": "タスクリスト",
@@ -1189,5 +1203,8 @@
   "components.storyboardImageCheck.duration": "時間",
   "components.storyboardImageCheck.lines": "セリフ",
   "components.storyboardImageCheck.createTime": "作成日時",
-  "workbench.script.extractAssets": "アセットを抽出"
+  "workbench.script.extractAssets": "アセットを抽出",
+  "promptManage": {
+    "prompt": "即効性のある言葉"
+  }
 }

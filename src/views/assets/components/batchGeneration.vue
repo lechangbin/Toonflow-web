@@ -302,13 +302,13 @@ async function handleBatchGeneratePrompt() {
   const batchSize = otherSetting.value.assetsBatchGenereateSize || 5; // 从设置中获取批量生成的大小，默认为5
   try {
     for (let i = 0; i < selectedAssets.length; i += batchSize) {
-      if (promptGenerateCancel.value) throw new Error("已取消生成");
+      if (promptGenerateCancel.value) throw new Error($t('workbench.assets.batch.promptGenCancelled'));
       const batch = selectedAssets.slice(i, i + batchSize);
       await Promise.allSettled(batch.map((item) => generatePrompt(item)));
     }
     window.$message.success($t('workbench.assets.batch.promptDone'));
   } catch (e) {
-    if (e instanceof Error && e.message !== "已取消生成") {
+    if (e instanceof Error && e.message !== $t('workbench.assets.batch.promptGenCancelled')) {
       window.$message.error(e.message);
     }
   } finally {
@@ -361,7 +361,7 @@ async function handleBatchGenerateImage() {
   const batchSize = otherSetting.value.assetsBatchGenereateSize || 5; // 从设置中获取批量生成的大小，默认为5
   try {
     for (let i = 0; i < selectedAssets.length; i += batchSize) {
-      if (imageGenerateCancel.value) throw new Error("已取消生成");
+      if (imageGenerateCancel.value) throw new Error($t('workbench.assets.batch.promptGenCancelled'));
       const batch = selectedAssets.slice(i, i + batchSize);
       await Promise.allSettled(
         batch.map((item) =>
@@ -376,7 +376,7 @@ async function handleBatchGenerateImage() {
     }
     window.$message.success($t('workbench.assets.batch.imageDone'));
   } catch (e) {
-    if (e instanceof Error && e.message !== "已取消生成") {
+    if (e instanceof Error && e.message !== $t('workbench.assets.batch.promptGenCancelled')) {
       window.$message.error(e.message);
     }
   } finally {

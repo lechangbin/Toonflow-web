@@ -365,7 +365,7 @@
       "getFromGitee": "Get the latest release from Gitee",
       "license": "License",
       "licenseDesc": "Open-source license agreement · Click for details",
-      "updateAvailable": "Update Available",
+      "updateAvailable": "new version found",
       "currentVersion": "Current Version",
       "latestVersionLabel": "Latest Version",
       "selectUpdateSource": "Select Update Source",
@@ -409,6 +409,15 @@
         "serveDesc": "Backend service related files."
       },
       "openFailed": "Failed to open folder"
+    },
+    "dev": {
+      "warning": "The following are developer tools, please operate with caution!",
+      "openDevtool": "Open",
+      "devtoolsDoc": "Document address",
+      "devtoolsDesc": "After being turned on, a .devtools folder will be created in the Toonflow installation directory. Please ensure that Toonflow has write permissions (run as administrator).",
+      "devtoolsDesc2": "Run npx @ai-sdk/devtools in this directory to enable telemetry debugging",
+      "openDevtoolFailed": "Failed to open developer tools, please make sure Toonflow desktop is installed",
+      "notInElectron": "For WEB environment, please open the browser console manually"
     }
   },
   "workbench": {
@@ -884,7 +893,8 @@
         "missingPrompts": "{count} assets are missing prompts. Please generate prompts first",
         "imageDone": "Image generation completed",
         "imageGenFail": "Image generation failed",
-        "unknownError": "Unknown error"
+        "unknownError": "Unknown error",
+        "promptGenCancelled": "Generation canceled"
       }
     },
     "production": {
@@ -952,7 +962,8 @@
         "layoutLR": "Auto Layout - Horizontal",
         "layoutTB": "Auto Layout - Vertical",
         "uploadAssetImage": "Upload Asset Image",
-        "uploadStoryboardImage": "Upload Storyboard Image"
+        "uploadStoryboardImage": "Upload Storyboard Image",
+        "uploadImage": "Asset image upload"
       },
       "save": "Select",
       "cancel": "Cancel",
@@ -1214,7 +1225,9 @@
         "semiTransparent": "Semi-Transparent"
       },
       "guideSwitchEpisode": "Switch Episodes",
-      "guideSwitchEpisodeBody": "Switching episodes has been moved here!"
+      "guideSwitchEpisodeBody": "Switching episodes has been moved here!",
+      "autoLayoutLR": "Automatic typesetting-left and right layout",
+      "autoLayoutTB": "Automatic typesetting-top and bottom layout"
     },
     "task": {
       "title": "Task List",
@@ -1270,5 +1283,8 @@
   "components.storyboardImageCheck.duration": "Duration",
   "components.storyboardImageCheck.lines": "Lines",
   "components.storyboardImageCheck.createTime": "Created Time",
-  "workbench.script.extractAssets": "Extract Assets"
+  "workbench.script.extractAssets": "Extract Assets",
+  "promptManage": {
+    "prompt": "prompt word"
+  }
 }

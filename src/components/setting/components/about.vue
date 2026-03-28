@@ -183,7 +183,7 @@ async function checkUpdate() {
   const { data } = await axios.post("/setting/about/checkUpdate");
 
   if (data.needUpdate) {
-    window.$message.success("检测到新版本");
+    window.$message.success(t("settings.about.updateAvailable"));
     updateInfo.value = data;
     updateSource.value = "github";
     updateDialogVisible.value = true;
