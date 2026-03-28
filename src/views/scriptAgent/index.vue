@@ -103,11 +103,12 @@
                         <span class="scriptTitle">{{ item.name }}</span>
                       </div>
                       <div class="scriptCardActions">
-                        12313123
-                        <!-- <t-button size="small" @click="editScript(index)">
+                        <t-button size="small" @click="editScript(index)">
                           <template #icon><i-edit size="14" /></template>
-                          {{ $t("workbench.scriptAgent.edit") }}
-                        </t-button> -->
+                        </t-button>
+                        <t-button theme="danger" variant="outline" size="small" @click="delScript(index)">
+                          <template #icon><i-delete size="14" /></template>
+                        </t-button>
                       </div>
                     </div>
                     <div class="scriptCardBody">
@@ -125,7 +126,7 @@
     <!-- <editMdPreivew v-model="dialogVisible" @save="onConfirm" :content="editContent" /> -->
 
     <!-- 剧本编辑对话框 -->
-    <!-- <t-dialog
+    <t-dialog
       v-model:visible="scriptEditVisible"
       :header="$t('workbench.scriptAgent.editScript')"
       width="680px"
@@ -145,26 +146,8 @@
             :placeholder="$t('workbench.scriptAgent.contentPlaceholder')"
             :autosize="{ minRows: 8, maxRows: 16 }" />
         </div>
-        <div class="scriptEditField">
-          <label>{{ $t("workbench.scriptAgent.relatedAssets") }}</label>
-
-          <div class="assets-section">
-            <div class="assets-header">
-              <t-button size="small" theme="primary" variant="outline" @click="handleSelectAssets">
-                <template #icon><i-plus /></template>
-                {{ $t("workbench.scriptAgent.selectAssets") }}
-              </t-button>
-            </div>
-            <div class="assets-list" v-if="scriptEditData.relatedAssets.length">
-              <t-tag v-for="asset in scriptEditData.relatedAssets" :key="asset.id" closable variant="light-outline" @close="removeAsset(asset.id)">
-                {{ asset.name }}
-              </t-tag>
-            </div>
-            <div v-else class="assets-empty">{{ $t("workbench.scriptAgent.noAssets") }}</div>
-          </div>
-        </div>
       </div>
-    </t-dialog> -->
+    </t-dialog>
   </div>
 </template>
 
@@ -277,6 +260,54 @@ function editMdPreview() {
   if (currentTable.value == 1) editContent.value = planData.value.storySkeleton;
   else if (currentTable.value == 2) editContent.value = planData.value.adaptationStrategy;
   dialogVisible.value = true;
+}
+
+const scriptEditIndex = ref(-1);
+const scriptEditData = ref({
+  name: "",
+  content: "",
+});
+const scriptEditVisible = ref(false);
+
+function editScript(index: number) {
+  const item = planData.value.script[index];
+  scriptEditIndex.value = index;
+  scriptEditData.value = {
+    name: item.name,
+    content: item.content,
+  };
+  scriptEditVisible.value = true;
+}
+
+async function saveScript() {
+  if (scriptEditIndex.value < 0) return;
+  planData.value.script[scriptEditIndex.value] = { ...scriptEditData.value };
+  await scriptAgentStore().setPlanData();
+  await getPlanData();
+  window.$message.success($t("workbench.scriptAgent.msg.scriptUpdated"));
+  scriptEditVisible.value = false;
+}
+async function delScript(index: number) {
+  const item = planData.value.script[index];
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.scriptAgent.msg.deleteConfirm"),
+    body: $t("workbench.scriptAgent.msg.deleteBody"),
+    confirmBtn: $t("workbench.scriptAgent.msg.confirmDelete"),
+    cancelBtn: $t("workbench.scriptAgent.msg.cancel"),
+    theme: "danger",
+    onConfirm: async () => {
+      if (item.id) {
+        await axios.post("/script/delScript", { id: [item.id] });
+        planData.value.script.splice(index, 1);
+      } else {
+        planData.value.script.splice(index, 1);
+      }
+      await scriptAgentStore().setPlanData();
+      await getPlanData();
+      window.$message.success($t("workbench.scriptAgent.msg.scriptDeleted"));
+      dialog.destroy();
+    },
+  });
 }
 </script>
 
@@ -397,6 +428,8 @@ function editMdPreview() {
     }
     .scriptCardActions {
       flex-shrink: 0;
+      display: flex;
+      gap: 4px;
     }
     .scriptIndex {
       font-size: 12px;

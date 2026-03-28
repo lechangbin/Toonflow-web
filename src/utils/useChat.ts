@@ -80,10 +80,11 @@ export interface UseChatOptions {
   onError?: (error: { code: string; message: string }) => void;
   onConnect?: () => void;
   onDisconnect?: () => void;
+  manageLifecycle?: boolean;
 }
 
 export function useChat(options: UseChatOptions) {
-  const { url, auth, autoConnect = true, xmlTags = [], keepXmlInMessage = true, onXmlTag, onError, onConnect, onDisconnect } = options;
+  const { url, auth, autoConnect = true, xmlTags = [], keepXmlInMessage = true, onXmlTag, onError, onConnect, onDisconnect, manageLifecycle = true } = options;
 
   const socket = shallowRef<Socket | null>(null);
   const connected = ref(false);
@@ -670,15 +671,19 @@ export function useChat(options: UseChatOptions) {
   };
 
   // 生命周期
-  onMounted(() => {
-    if (autoConnect) connect();
-  });
+  if (manageLifecycle) {
+    onMounted(() => {
+      if (autoConnect) connect();
+    });
 
-  onUnmounted(() => {
-    disconnect();
-    socket.value?.removeAllListeners();
-    socket.value = null;
-  });
+    onUnmounted(() => {
+      disconnect();
+      socket.value?.removeAllListeners();
+      socket.value = null;
+    });
+  } else if (autoConnect) {
+    connect();
+  }
 
   return {
     socket,
