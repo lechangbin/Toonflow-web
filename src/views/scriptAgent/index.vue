@@ -128,7 +128,7 @@
       v-model:visible="scriptEditVisible"
       :header="$t('workbench.scriptAgent.editScript')"
       width="680px"
-      top="1vh"
+      placement="center"
       :confirm-btn="{ content: $t('workbench.scriptAgent.save'), theme: 'primary' }"
       @confirm="saveScript"
       @close="scriptEditVisible = false">
