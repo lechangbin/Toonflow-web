@@ -201,9 +201,9 @@ const selectValue = ref("");
 const resolution = ref("");
 const concurrentCount = ref(1);
 const resolutionOptions = [
-  { label: "1K", value: "1k" },
-  { label: "2K", value: "2k" },
-  { label: "4K", value: "4k" },
+  { label: "1K", value: "1K" },
+  { label: "2K", value: "2K" },
+  { label: "4K", value: "4K" },
 ];
 const options = ref([
   { labelKey: "workbench.cornerScape.filterRole", value: "role" },
