@@ -1,9 +1,9 @@
 <template>
   <div class="test">
     <t-button theme="primary" @click="test">测试按钮</t-button>
-    <t-card>
+    <pre>
       {{ log }}
-    </t-card>
+    </pre>
   </div>
 </template>
 

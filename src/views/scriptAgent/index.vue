@@ -16,6 +16,7 @@
               allowContentSegmentCustom>
               <!-- <template #actionbar> -->
               <!-- <t-chat-actionbar :action-bar="['replay', 'copy']" /> -->
+              <!-- <t-chat-actionbar :action-bar="['replay', 'copy']" /> -->
               <!-- </template> -->
             </t-chat-message>
           </t-chat-list>
@@ -287,9 +288,8 @@ const { connected, messages, chat, stopGenerate, socket } = useChat({
 });
 
 onMounted(() => {
-  if (messages.value.length) {
-    messages.value = [...defMsg, ...messages.value];
-  }
+  messages.value = [...defMsg, ...messages.value];
+
   socket.value?.on("getPlanData", (_, callback) => {
     callback(planData.value);
   });

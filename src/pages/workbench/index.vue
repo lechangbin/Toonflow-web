@@ -68,7 +68,6 @@
 <script setup lang="ts">
 import setting from "@/components/setting/index.vue";
 import migrateShow from "@/components/migrateShow.vue";
-import scanSkills from "@/utils/scanSkills";
 
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -108,11 +107,6 @@ function handleClick(menu: any) {
   activeMenu.value = menu.path;
 }
 
-onMounted(() => {
-  setTimeout(() => {
-    scanSkills();
-  }, 3000);
-});
 </script>
 
 <style lang="scss" scoped>

@@ -22,5 +22,5 @@ export default defineStore(
 
     return { showSetting, baseUrl, otherSetting, themeSetting, language, activeMenu, isElectron };
   },
-  { persist: { pick: ["baseUrl", "otherSetting", "themeSetting", "language"] } },
+  { persist: { pick: ["baseUrl", "otherSetting", "themeSetting", "language", "activeMenu"] } },
 );
