@@ -32,9 +32,9 @@
               v-model="resolution"
               :placeholder="$t('workbench.cornerScape.resolutionPh')"
               :options="[
-                { label: '1K', value: '1k' },
-                { label: '2K', value: '2k' },
-                { label: '4K', value: '4k' },
+                { label: '1K', value: '1K' },
+                { label: '2K', value: '2K' },
+                { label: '4K', value: '4K' },
               ]"></t-select>
           </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.concurrency')">
@@ -146,6 +146,26 @@
           <t-empty v-else type="maintenance" :title="$t('workbench.cornerScape.noImage')" />
         </div>
         <t-form v-if="currentItem" labelAlign="top">
+          <t-form-item>
+            <template #label>
+              <div class="historyLabel jb ac">
+                <span>{{ $t("workbench.cornerScape.history") }}</span>
+                <t-button size="small" theme="primary" :disabled="!selectedHistoryId" @click="confirmReplace">
+                  {{ $t("workbench.cornerScape.confirmReplace") }}
+                </t-button>
+              </div>
+            </template>
+            <div class="historyImageList f">
+              <div
+                v-for="item in currentItem.historyImages"
+                :key="item.id"
+                class="historyImageItem"
+                :class="{ selected: selectedHistoryId === item.id }"
+                @click.stop="toggleHistorySelect(item.id)">
+                <t-image :src="item.filePath" :style="{ width: '100px', minWidth: '100px', height: '100px' }" :lazy="true" fit="contain" />
+              </div>
+            </div>
+          </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.genModel')">
             <modelSelect v-model="selectValue" :type="`image`" />
           </t-form-item>
@@ -181,7 +201,10 @@
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import modelSelect from "@/components/modelSelect.vue";
-
+interface Image {
+  filePath: string;
+  id: number;
+}
 interface DataItem {
   id: number;
   type: string;
@@ -193,12 +216,13 @@ interface DataItem {
   resolution: string;
   describe: string;
   promptState: string;
+  historyImages: Image[];
 }
 
 const checkboxValue = ref<string[]>([]);
-
-const selectValue = ref("");
-const resolution = ref("");
+const { project } = storeToRefs(projectStore());
+const selectValue = ref(project.value?.imageModel ?? "");
+const resolution = ref("1K");
 const concurrentCount = ref(1);
 const resolutionOptions = [
   { label: "1K", value: "1K" },
@@ -218,7 +242,6 @@ const translatedOptions = computed(() =>
   })),
 );
 const dataList = ref<DataItem[]>([]);
-const { project } = storeToRefs(projectStore());
 const loading = ref(false);
 
 // 用于取消进行中的生成请求
@@ -305,6 +328,35 @@ function clearSelection() {
 // Drawer
 const drawerVisible = ref(false);
 const currentItem = ref<DataItem | null>(null);
+const selectedHistoryId = ref<number | null>(null);
+
+function toggleHistorySelect(id: number) {
+  selectedHistoryId.value = selectedHistoryId.value === id ? null : id;
+}
+
+async function confirmReplace() {
+  if (!currentItem.value) return;
+  const selectedImage = currentItem.value.historyImages.find((img) => img.id === selectedHistoryId.value);
+  try {
+    await axios.post("/assets/saveAssets", {
+      id: currentItem.value.id,
+      type: currentItem.value.type,
+      projectId: project.value?.id,
+      prompt: currentItem.value.prompt,
+      imageId: selectedImage?.id,
+    });
+    //拿选中的图片替换当前图片
+    if (selectedImage) {
+      currentItem.value.filePath = selectedImage.filePath;
+      currentItem.value.state = "已完成";
+    }
+    getFilteredData();
+    window.$message.success($t("workbench.cornerScape.msg.replaceSuccess"));
+  } catch (e) {
+    window.$message.error($t("workbench.cornerScape.msg.replaceFailed"));
+    return;
+  }
+}
 const editForm = reactive({
   assetsId: 0,
   model: "",
@@ -315,6 +367,7 @@ const editForm = reactive({
 });
 
 function openDrawer(item: DataItem) {
+  selectedHistoryId.value = null;
   editForm.assetsId = item.id;
   editForm.name = item.name || "";
   editForm.type = item.type || "";
@@ -761,6 +814,48 @@ watch(generatingData, (val) => {
   .imageToolsWrap {
     opacity: 1;
     pointer-events: auto;
+  }
+}
+
+.historyLabel {
+  width: 100%;
+}
+
+.historyImageList {
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  width: 0;
+  min-width: 100%;
+  flex-shrink: 1;
+  padding-bottom: 4px;
+
+  &::-webkit-scrollbar {
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+.historyImageItem {
+  border-radius: 4px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  flex-shrink: 0;
+  overflow: hidden;
+
+  &:hover {
+    border-color: var(--td-brand-color-light);
+  }
+  &.selected {
+    border-color: var(--td-brand-color);
   }
 }
 

@@ -652,8 +652,12 @@
         "batchStarted": "เริ่มการสร้างเป็นชุดแล้ว จำนวน {count} รายการ ทำพร้อมกัน {concurrent} รายการ",
         "batchItemFailed": "สร้าง {name} ล้มเหลว: {error}",
         "batchComplete": "การสร้างเป็นชุดเสร็จสมบูรณ์",
-        "batchFailed": "การสร้างแบทช์ล้มเหลว"
-      }
+        "batchFailed": "การสร้างแบทช์ล้มเหลว",
+        "replaceFailed": "การเปลี่ยนล้มเหลว",
+        "replaceSuccess": "การเปลี่ยนสำเร็จ"
+      },
+      "history": "ภาพประวัติศาสตร์",
+      "confirmReplace": "ยืนยันการเปลี่ยน"
     },
     "script": {
       "searchPlaceholder": "ค้นหาชื่อบทภาพยนตร์...",

@@ -652,8 +652,12 @@
         "batchStarted": "Начата пакетная генерация. Всего: {count}, Потоков: {concurrent}",
         "batchItemFailed": "Ошибка генерации {name}: {error}",
         "batchComplete": "Пакетная генерация завершена",
-        "batchFailed": "Генерация пакета не удалась"
-      }
+        "batchFailed": "Генерация пакета не удалась",
+        "replaceFailed": "Замена не удалась",
+        "replaceSuccess": "Замена прошла успешно"
+      },
+      "history": "исторические фотографии",
+      "confirmReplace": "Подтвердить замену"
     },
     "script": {
       "searchPlaceholder": "Поиск по названию сценария...",

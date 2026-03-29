@@ -642,8 +642,12 @@
         "batchStarted": "Bắt đầu tạo hàng loạt, tổng cộng {count} mục, số luồng đồng thời {concurrent}",
         "batchItemFailed": "Tạo {name} thất bại: {error}",
         "batchComplete": "Tạo hàng loạt hoàn tất",
-        "batchFailed": "Tạo hàng loạt không thành công"
-      }
+        "batchFailed": "Tạo hàng loạt không thành công",
+        "replaceFailed": "Thay thế không thành công",
+        "replaceSuccess": "Thay thế thành công"
+      },
+      "history": "hình ảnh lịch sử",
+      "confirmReplace": "Xác nhận thay thế"
     },
     "script": {
       "searchPlaceholder": "Tìm kiếm tên kịch bản...",

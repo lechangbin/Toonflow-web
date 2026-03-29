@@ -731,8 +731,12 @@
         "batchStarted": "Batch generation started. Total: {count}, Concurrency: {concurrent}",
         "batchItemFailed": "{name} generation failed: {error}",
         "batchComplete": "Batch generation completed",
-        "batchFailed": "Batch generation failed"
-      }
+        "batchFailed": "Batch generation failed",
+        "replaceFailed": "Replacement failed",
+        "replaceSuccess": "Replacement successful"
+      },
+      "history": "historical pictures",
+      "confirmReplace": "Confirm replacement"
     },
     "script": {
       "searchPlaceholder": "Search script names...",

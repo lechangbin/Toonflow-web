@@ -657,8 +657,12 @@
         "batchStarted": "開始批次生成，共 {count} 個，並發數 {concurrent}",
         "batchItemFailed": "{name} 生成失敗：{error}",
         "batchComplete": "批次生成完成",
-        "batchFailed": "批量生成失敗"
-      }
+        "batchFailed": "批量生成失敗",
+        "replaceFailed": "替換失敗",
+        "replaceSuccess": "替換成功"
+      },
+      "history": "歷史圖片",
+      "confirmReplace": "確認替換"
     },
     "script": {
       "searchPlaceholder": "搜尋劇本名稱...",
