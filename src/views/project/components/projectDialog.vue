@@ -450,11 +450,20 @@ async function handleVisualManualSubmit() {
   }
   try {
     loading.value = true;
-    await axios.post("/project/editVisualManual", {
-      name: visualManualForm.value.name,
-      images: visualManualForm.value.images,
-      data: visualManualTabData.value,
-    });
+    if (editingVisualManual.value) {
+      await axios.post("/project/editVisualManual", {
+        name: visualManualForm.value.name,
+        images: visualManualForm.value.images,
+        data: visualManualTabData.value,
+      });
+    } else {
+      await axios.post("/project/addVisualManual", {
+        name: visualManualForm.value.name,
+        images: visualManualForm.value.images,
+        data: visualManualTabData.value,
+      });
+    }
+
     loading.value = false;
     if (editingVisualManual.value) {
       window.$message.success($t("workbench.project.msg.visualManualUpdated"));
