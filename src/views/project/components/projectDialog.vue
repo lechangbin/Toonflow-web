@@ -479,12 +479,14 @@ function deleteVisualManual(item: VisualManualItem) {
         .post("/project/deleteVisualManual", { name: item.name })
         .then(() => {
           fetchVisualManuals();
+          resetVisualManualDialog();
           window.$message.success($t("workbench.project.msg.visualManualDeleted"));
         })
         .catch((e) => {
           window.$message.error(e.message ?? $t("workbench.project.msg.operationFailed"));
         })
         .finally(() => {
+          fetchVisualManuals();
           dialog.destroy();
         });
     },
