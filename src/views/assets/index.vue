@@ -310,9 +310,9 @@
           </t-form-item>
           <t-form-item :label="$t('workbench.assets.resolution')" name="resolution" v-if="batchType === $t('workbench.assets.batchGenImage')">
             <t-select v-model="resolution" :placeholder="$t('workbench.assets.resolutionPh')">
-              <t-option key="1k" label="1k" value="1k" />
-              <t-option key="2k" label="2k" value="2k" />
-              <t-option key="4k" label="4k" value="4k" />
+              <t-option key="1K" label="1K" value="1K" />
+              <t-option key="2K" label="2K" value="2K" />
+              <t-option key="4K" label="4K" value="4K" />
             </t-select>
           </t-form-item>
         </t-form>
@@ -518,7 +518,7 @@ async function handleAdd(type: string) {
 }
 const batchGenerationShow = ref(false);
 const selectValue = ref(""); //选择的模型
-const resolution = ref("1k"); //选择的分辨率
+const resolution = ref("1K"); //选择的分辨率
 const batchType = ref("");
 function batchGeneration(type: number) {
   batchType.value = type === 1 ? $t("workbench.assets.batchGenPrompt") : $t("workbench.assets.batchGenImage");

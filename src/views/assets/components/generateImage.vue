@@ -12,8 +12,8 @@
         <t-card :bordered="false" :style="{ width: '40%' }">
           <div class="uploadReferenceImage">
             <div class="jb">
-              <span style="font-size: 16px; font-weight: 900">{{ $t('workbench.assets.gen.uploadRef') }}</span>
-              <t-tag>{{ $t('workbench.assets.gen.optional') }}</t-tag>
+              <span style="font-size: 16px; font-weight: 900">{{ $t("workbench.assets.gen.uploadRef") }}</span>
+              <t-tag>{{ $t("workbench.assets.gen.optional") }}</t-tag>
             </div>
             <div class="upload">
               <t-upload
@@ -30,10 +30,10 @@
           </div>
           <div class="rawPicturePrompt">
             <div class="jb">
-              <span style="font-size: 16px; font-weight: 900">{{ $t('workbench.assets.gen.promptLabel') }}</span>
+              <span style="font-size: 16px; font-weight: 900">{{ $t("workbench.assets.gen.promptLabel") }}</span>
               <div class="ac" style="cursor: pointer" @click.stop="generatePrompt">
                 <i-magic theme="outline" size="18" />
-                <span style="margin-left: 5px; font-size: 13px">{{ $t('workbench.assets.gen.smartGenerate') }}</span>
+                <span style="margin-left: 5px; font-size: 13px">{{ $t("workbench.assets.gen.smartGenerate") }}</span>
               </div>
             </div>
             <div class="input">
@@ -48,26 +48,28 @@
           </div>
           <div class="selectModel f">
             <div style="width: 60%">
-              <span style="font-size: 16px; font-weight: 900">{{ $t('workbench.assets.gen.selectModel') }}</span>
+              <span style="font-size: 16px; font-weight: 900">{{ $t("workbench.assets.gen.selectModel") }}</span>
               <modelSelect v-model="selectValue" :type="`image`" />
             </div>
             <div style="width: 40%; margin-left: 15px">
-              <span style="font-size: 16px; font-weight: 900">{{ $t('workbench.assets.gen.selectResolution') }}</span>
+              <span style="font-size: 16px; font-weight: 900">{{ $t("workbench.assets.gen.selectResolution") }}</span>
               <t-select v-model="resolution">
-                <t-option key="1k" label="1k" value="1k" />
-                <t-option key="2k" label="2k" value="2k" />
-                <t-option key="4k" label="4k" value="4k" />
+                <t-option key="1K" label="1K" value="1K" />
+                <t-option key="2K" label="2K" value="2K" />
+                <t-option key="4K" label="4K" value="4K" />
               </t-select>
             </div>
           </div>
           <div class="generateButton" style="margin-top: 20px">
-            <t-button theme="primary" size="large" block :loading="generateLoading" @click="handleGenerate">{{ $t('workbench.assets.gen.generateBtn') }}</t-button>
+            <t-button theme="primary" size="large" block :loading="generateLoading" @click="handleGenerate">
+              {{ $t("workbench.assets.gen.generateBtn") }}
+            </t-button>
           </div>
         </t-card>
         <t-divider layout="vertical" style="height: 700px" />
         <t-card :title="$t('workbench.assets.gen.resultTitle')" :bordered="false" :style="{ width: '60%' }">
           <template #actions>
-            <t-tag v-if="resultImages.length">{{ $t('workbench.assets.gen.generatedCount', { count: resultImages.length }) }}</t-tag>
+            <t-tag v-if="resultImages.length">{{ $t("workbench.assets.gen.generatedCount", { count: resultImages.length }) }}</t-tag>
           </template>
           <div class="resultImages" style="gap: 20px; flex-wrap: wrap">
             <div class="image f w">
@@ -85,7 +87,7 @@
                 <div v-else-if="img.state === '生成失败' && !img.src" class="failed-overlay f ac jc">
                   <div style="text-align: center">
                     <i-close-one theme="filled" size="40" fill="#d0021b" />
-                    <div style="margin-top: 10px; color: #d0021b; font-weight: bold">{{ $t('workbench.assets.gen.genFailed') }}</div>
+                    <div style="margin-top: 10px; color: #d0021b; font-weight: bold">{{ $t("workbench.assets.gen.genFailed") }}</div>
                   </div>
                 </div>
                 <t-image v-else :src="img.src" fit="cover" :style="{ width: '100%', height: '100%', borderRadius: '20px' }">
@@ -125,7 +127,9 @@
             </div>
           </div>
           <div class="keep">
-            <t-button theme="primary" size="large" block :disabled="selectedImageIndex === null" @click="onClick">{{ $t('workbench.assets.gen.confirmSelect') }}</t-button>
+            <t-button theme="primary" size="large" block :disabled="selectedImageIndex === null" @click="onClick">
+              {{ $t("workbench.assets.gen.confirmSelect") }}
+            </t-button>
           </div>
         </t-card>
       </div>
@@ -159,6 +163,8 @@ const generateImageShow = defineModel({
 //关闭生成图片的弹窗
 function handleCancel() {
   generateImageShow.value = false;
+  generateLoading.value = false;
+  stopPolling();
   emit("update");
 }
 //上传参考图片
@@ -179,38 +185,35 @@ async function generatePrompt() {
       assetsId: props.formData.id,
       type: props.formData.type ?? "props",
       name: props.formData.name,
-      describe: props.formData.describe ? props.formData.describe : $t('workbench.assets.noDescription'),
+      describe: props.formData.describe ? props.formData.describe : $t("workbench.assets.noDescription"),
     });
-    window.$message.success($t('workbench.assets.gen.promptSuccess'));
+    window.$message.success($t("workbench.assets.gen.promptSuccess"));
     if (data.assetsId === props.formData.id) {
       props.formData.prompt = data.prompt;
     }
   } catch (e: any) {
-    window.$message.error(e.message ?? $t('workbench.assets.gen.promptFail'));
+    window.$message.error(e.message ?? $t("workbench.assets.gen.promptFail"));
   } finally {
     promptLoading.value = false;
   }
 }
 const emit = defineEmits(["update"]);
-const resolution = ref("1k");
+const resolution = ref("1K");
 //生成图片
 async function handleGenerate() {
-  generateLoading.value = true;
   if (!props.formData.prompt) {
-    window.$message.error($t('workbench.assets.gen.fillPrompt'));
-    generateLoading.value = false;
+    window.$message.error($t("workbench.assets.gen.fillPrompt"));
     return;
   }
   if (!resolution.value) {
-    window.$message.error($t('workbench.assets.gen.pickResolution'));
-    generateLoading.value = false;
+    window.$message.error($t("workbench.assets.gen.pickResolution"));
     return;
   }
   if (!selectValue.value) {
-    window.$message.error($t('workbench.assets.gen.pickModel'));
-    generateLoading.value = false;
+    window.$message.error($t("workbench.assets.gen.pickModel"));
     return;
   }
+  generateLoading.value = true;
   try {
     let referenceImageBase64 = "";
     if (referenceFileList.value.length > 0) {
@@ -226,33 +229,22 @@ async function handleGenerate() {
         });
       }
     }
-    const generatePromise = axios.post("/assetsGenerate/generateAssets", {
+    await axios.post("/assetsGenerate/generateAssets", {
       type: props.formData.type ?? "props",
       projectId: project.value?.id,
-      name: props.formData.name ?? $t('workbench.assets.gen.unnamed'),
+      name: props.formData.name ?? $t("workbench.assets.gen.unnamed"),
       base64: referenceImageBase64,
       prompt: props.formData.prompt,
       model: selectValue.value,
       id: props.formData.id,
       resolution: resolution.value,
     });
-
-    setTimeout(() => fetchGeneratedImages(), 500);
-
-    generatePromise
-      .then(async () => {
-        window.$message.success($t('workbench.assets.gen.assetGenSuccess'));
-        await fetchGeneratedImages();
-      })
-      .catch((e: any) => {
-        window.$message.error(e.message ?? $t('workbench.assets.gen.assetGenFail'));
-        fetchGeneratedImages();
-      })
-      .finally(() => {
-        generateLoading.value = false;
-      });
+    window.$message.success($t("workbench.assets.gen.assetGenSuccess"));
+    await fetchGeneratedImages();
   } catch (e: any) {
-    window.$message.error(e.message ?? $t('workbench.assets.gen.assetGenFail'));
+    window.$message.error(e.message ?? $t("workbench.assets.gen.assetGenFail"));
+    fetchGeneratedImages();
+  } finally {
     generateLoading.value = false;
   }
 }
@@ -271,7 +263,7 @@ function handleCustomUpload(files: any[]): void {
           src: base64,
           state: "已完成",
         });
-        window.$message.success($t('workbench.assets.gen.uploadOk'));
+        window.$message.success($t("workbench.assets.gen.uploadOk"));
         customFileList.value = [];
       };
       reader.readAsDataURL(file);
@@ -300,11 +292,21 @@ watch(
       value2.value = "";
       selectedImageIndex.value = null;
       hoveredImageIndex.value = null;
+      generateLoading.value = false;
       fetchGeneratedImages();
     }
   },
 );
 // 获取图片列表
+let pollingTimer: ReturnType<typeof setTimeout> | null = null;
+
+function stopPolling() {
+  if (pollingTimer) {
+    clearTimeout(pollingTimer);
+    pollingTimer = null;
+  }
+}
+
 async function fetchGeneratedImages() {
   const { data } = await axios.post("/assets/getImage", { assetsId: props.formData.id });
   const images = data.tempAssets.map((item: { id: string; filePath: string; state: string; selected?: boolean }) => ({
@@ -318,6 +320,13 @@ async function fetchGeneratedImages() {
   if (selectedIdx !== -1) {
     selectedImageIndex.value = selectedIdx;
   }
+
+  // 如果还有"生成中"的图片，自动轮询刷新
+  const hasGenerating = images.some((img: { state: string }) => img.state === "生成中");
+  stopPolling();
+  if (hasGenerating && generateImageShow.value) {
+    pollingTimer = setTimeout(() => fetchGeneratedImages(), 3000);
+  }
 }
 
 //选择图片
@@ -325,7 +334,7 @@ function selectImage(index: number) {
   const img = resultImages.value[index];
   if (img.state === "已完成") {
     selectedImageIndex.value = index;
-    window.$message.success($t('workbench.assets.gen.imageSelected'));
+    window.$message.success($t("workbench.assets.gen.imageSelected"));
   }
 }
 
@@ -337,7 +346,7 @@ function deleteImage(index: number) {
   } else if (selectedImageIndex.value !== null && selectedImageIndex.value > index) {
     selectedImageIndex.value--;
   }
-  window.$message.success($t('workbench.assets.gen.imageDeleted'));
+  window.$message.success($t("workbench.assets.gen.imageDeleted"));
 }
 //确认选择
 async function onClick() {
@@ -353,7 +362,7 @@ async function onClick() {
       projectId: project.value?.id,
       imageId: isLocalUpload ? undefined : Number(selectedImage.id),
     });
-    window.$message.success($t('workbench.assets.gen.imageSaved'));
+    window.$message.success($t("workbench.assets.gen.imageSaved"));
     generateImageShow.value = false;
     emit("update");
   }

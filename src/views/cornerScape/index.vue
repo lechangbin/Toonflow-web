@@ -181,7 +181,6 @@
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import modelSelect from "@/components/modelSelect.vue";
-
 interface DataItem {
   id: number;
   type: string;
@@ -196,8 +195,8 @@ interface DataItem {
 }
 
 const checkboxValue = ref<string[]>([]);
-
-const selectValue = ref("");
+const { project } = storeToRefs(projectStore());
+const selectValue = ref(project.value?.imageModel ?? "");
 const resolution = ref("");
 const concurrentCount = ref(1);
 const resolutionOptions = [
@@ -218,7 +217,6 @@ const translatedOptions = computed(() =>
   })),
 );
 const dataList = ref<DataItem[]>([]);
-const { project } = storeToRefs(projectStore());
 const loading = ref(false);
 
 // 用于取消进行中的生成请求

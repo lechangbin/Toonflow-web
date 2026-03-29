@@ -232,14 +232,14 @@ interface Data {
 const DEFAULT_TAB_DATA: () => Data[] = () => [
   { label: "README", value: "README", data: "" },
   { label: "前缀", value: "prefix", data: "" },
-  { label: "角色", value: "art_character", data: "" },
-  { label: "角色衍生", value: "art_character_derivative", data: "" },
-  { label: "道具", value: "art_prop", data: "" },
-  { label: "道具衍生", value: "art_prop_derivative", data: "" },
-  { label: "场景", value: "art_scene", data: "" },
-  { label: "场景衍生", value: "art_scene_derivative", data: "" },
-  { label: "分镜", value: "art_storyboard", data: "" },
-  { label: "分镜视频", value: "art_storyboard_video", data: "" },
+  { label: "前缀-角色", value: "art_character", data: "" },
+  { label: "前缀-角色衍生", value: "art_character_derivative", data: "" },
+  { label: "前缀-道具", value: "art_prop", data: "" },
+  { label: "前缀-道具衍生", value: "art_prop_derivative", data: "" },
+  { label: "前缀-场景", value: "art_scene", data: "" },
+  { label: "前缀-场景衍生", value: "art_scene_derivative", data: "" },
+  { label: "前缀-分镜", value: "art_storyboard", data: "" },
+  { label: "前缀-分镜视频", value: "art_storyboard_video", data: "" },
   { label: "技法-导演规划", value: "director_planning", data: "" },
   { label: "技法-分镜表设计", value: "director_storyboard_table", data: "" },
 ];
@@ -450,15 +450,21 @@ async function handleVisualManualSubmit() {
   }
   try {
     loading.value = true;
-    await axios.post("/project/editVisualManual", {
-      name: visualManualForm.value.name,
-      images: visualManualForm.value.images,
-      data: visualManualTabData.value,
-    });
+
     loading.value = false;
     if (editingVisualManual.value) {
+      await axios.post("/project/editVisualManual", {
+        name: visualManualForm.value.name,
+        images: visualManualForm.value.images,
+        data: visualManualTabData.value,
+      });
       window.$message.success($t("workbench.project.msg.visualManualUpdated"));
     } else {
+      await axios.post("/project/editVisualManual", {
+        name: visualManualForm.value.name,
+        images: visualManualForm.value.images,
+        data: visualManualTabData.value,
+      });
       window.$message.success($t("workbench.project.msg.visualManualAdded"));
     }
     resetVisualManualDialog();
