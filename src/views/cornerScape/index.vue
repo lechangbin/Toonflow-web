@@ -32,9 +32,9 @@
               v-model="resolution"
               :placeholder="$t('workbench.cornerScape.resolutionPh')"
               :options="[
-                { label: '1K', value: '1k' },
-                { label: '2K', value: '2k' },
-                { label: '4K', value: '4k' },
+                { label: '1K', value: '1K' },
+                { label: '2K', value: '2K' },
+                { label: '4K', value: '4K' },
               ]"></t-select>
           </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.concurrency')">
@@ -197,7 +197,7 @@ interface DataItem {
 const checkboxValue = ref<string[]>([]);
 const { project } = storeToRefs(projectStore());
 const selectValue = ref(project.value?.imageModel ?? "");
-const resolution = ref("");
+const resolution = ref("1K");
 const concurrentCount = ref(1);
 const resolutionOptions = [
   { label: "1K", value: "1K" },
