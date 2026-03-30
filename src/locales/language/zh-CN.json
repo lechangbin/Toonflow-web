@@ -446,7 +446,8 @@
       "cornerScape": "塑角造景",
       "production": "视频生产",
       "assetCenter": "资产中心",
-      "settings": "设置"
+      "settings": "设置",
+      "jumpGithub": "跳转Github"
     },
     "project": {
       "title": "我的项目",
@@ -1262,6 +1263,14 @@
       },
       "guideSwitchEpisode": "切换剧集",
       "guideSwitchEpisodeBody": "切换剧集挪移到这里了哦",
+      "guideRefresh": "刷新数据",
+      "guideRefreshBody": "点击刷新按钮重新获取工作区数据",
+      "guideCanvasNav": "画布操作",
+      "guideCanvasNavBody": "滚轮上下平移画布，Ctrl + 滚轮缩放画布，按住鼠标左键拖拽自由平移",
+      "guideRightChat": "AI 对话",
+      "guideRightChatBody": "在右侧对话框中与 AI 交流，驱动自动化流程",
+      "guideLayoutBtn": "自动排版",
+      "guideLayoutBtnBody": "点击此按钮可自动整理节点布局",
       "autoLayoutLR": "自动排版-左右布局",
       "autoLayoutTB": "自动排版-上下布局",
       "getFlowData": "刷新工作区"

@@ -139,8 +139,8 @@
           </t-form-item>
 
           <template v-if="modelFormData.type === 'text'">
-            <t-form-item name="multimodal" :label="$t('settings.vendor.think')">
-              <t-radio-group v-model="modelFormData.multimodal">
+            <t-form-item name="think" :label="$t('settings.vendor.think')">
+              <t-radio-group v-model="modelFormData.think">
                 <t-radio :value="true">{{ $t("settings.vendor.supported") }}</t-radio>
                 <t-radio :value="false">{{ $t("settings.vendor.notSupported") }}</t-radio>
               </t-radio-group>
@@ -275,8 +275,7 @@ interface TextModel {
   name: string;
   modelName: string;
   type: "text";
-  multimodal: boolean;
-  tool: boolean;
+  think: boolean;
   associationSkills: string;
 }
 
@@ -668,8 +667,7 @@ const modelFormData = ref({
   name: "",
   modelName: "",
   type: "text" as "text" | "image" | "video",
-  multimodal: false,
-  tool: false,
+  think: false,
   mode: [] as string[],
   mixedMode: [] as string[], // otherOptions 选中项，单独存放，构建时作为数组元素加入 mode
   audio: "optional" as "optional" | false | true,
@@ -682,8 +680,7 @@ function resetModelForm(type: "text" | "image" | "video" = "text") {
     name: "",
     modelName: "",
     type,
-    multimodal: false,
-    tool: false,
+    think: false,
     mode: [],
     mixedMode: [],
     audio: "optional",
@@ -731,8 +728,7 @@ function buildModelFromForm(): VendorModel | null {
       name,
       modelName,
       type: "text",
-      multimodal: modelFormData.value.multimodal,
-      tool: modelFormData.value.tool,
+      think: modelFormData.value.think,
       associationSkills: modelFormData.value.associationSkills,
     };
   }
@@ -837,8 +833,7 @@ function handleEditModel(model: VendorModel) {
       name: model.name,
       modelName: model.modelName,
       type: "text",
-      multimodal: model.multimodal,
-      tool: model.tool,
+      think: model.think,
       mode: [],
       mixedMode: [],
       audio: "optional",
@@ -852,8 +847,7 @@ function handleEditModel(model: VendorModel) {
       name: model.name,
       modelName: model.modelName,
       type: "image",
-      multimodal: false,
-      tool: false,
+      think: false,
       mode: [...model.mode],
       mixedMode: [],
       audio: "optional",
@@ -884,8 +878,7 @@ function handleEditModel(model: VendorModel) {
       name: model.name,
       modelName: model.modelName,
       type: "video",
-      multimodal: false,
-      tool: false,
+      think: false,
       mode: flatMode,
       mixedMode,
       audio: model.audio,

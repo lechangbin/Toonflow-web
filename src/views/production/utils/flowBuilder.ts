@@ -207,7 +207,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         target: ids.assets,
         sourceHandle: `${ids.script}-assets`,
         targetHandle: `${ids.assets}-target`,
-        animated: true,
+        animated: false,
         style: edgeStyle,
       },
       // Script -> StoryboardTable
@@ -217,7 +217,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         target: ids.scriptPlan,
         sourceHandle: `${ids.script}-source`,
         targetHandle: `${ids.scriptPlan}-target`,
-        animated: true,
+        animated: false,
         style: edgeStyle,
       },
       // ScriptPlan -> StoryboardTable
@@ -227,7 +227,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         target: ids.storyboardTable,
         sourceHandle: `${ids.scriptPlan}-source`,
         targetHandle: `${ids.storyboardTable}-target`,
-        animated: true,
+        animated: false,
         style: edgeStyle,
       },
       // StoryboardTable -> Storyboard
@@ -237,7 +237,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         target: ids.storyboard,
         sourceHandle: `${ids.storyboardTable}-source`,
         targetHandle: `${ids.storyboard}-target`,
-        animated: true,
+        animated: false,
         style: edgeStyle,
       },
       // Storyboard -> Workbench
@@ -247,7 +247,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         target: ids.workbench,
         sourceHandle: `${ids.storyboard}-source`,
         targetHandle: `${ids.workbench}-target`,
-        animated: true,
+        animated: false,
         style: edgeStyle,
       },
       // Workbench -> Poster
@@ -257,7 +257,7 @@ export function useFlowBuilder(flowData: Ref<FlowData>, nodePositions: Ref<NodeP
         target: ids.poster,
         sourceHandle: `${ids.workbench}-source`,
         targetHandle: `${ids.poster}-target`,
-        animated: true,
+        animated: false,
         style: edgeStyle,
       },
     ];

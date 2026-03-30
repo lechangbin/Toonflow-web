@@ -2,7 +2,7 @@
   <div class="generateImage">
     <t-dialog
       v-model:visible="generateImageShow"
-      top="2vh"
+      top="4vh"
       width="80vw"
       :header="$t('workbench.assets.gen.header')"
       :maskClosable="false"

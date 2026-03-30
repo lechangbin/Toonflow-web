@@ -1,9 +1,9 @@
 <template>
   <t-card class="storyboard">
-    <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
-    <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
-    <div class="titleBar dragHandle">
+    <div class="titleBar dragHandle pr">
       <div class="title">{{ $t("workbench.production.node.storyboard.title") }}</div>
+      <Handle :id="props.handleIds.target" type="target" :position="Position.Left" style="left: calc(-1 * var(--td-comp-paddingLR-xl))" />
+      <Handle :id="props.handleIds.source" type="source" :position="Position.Right" style="right: calc(-1 * var(--td-comp-paddingLR-xl))" />
     </div>
     <div class="content">
       <t-empty v-if="!storyboard.length" style="margin-top: 16px"></t-empty>
@@ -414,6 +414,7 @@ function editInfo(item: Storyboard) {
 <style lang="scss" scoped>
 .storyboard {
   min-width: 500px;
+  max-width: 100vw;
   user-select: text;
   cursor: default;
 

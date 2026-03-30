@@ -2534,6 +2534,11 @@ isarray@~1.0.0:
   resolved "https://registry.npmmirror.com/isarray/-/isarray-1.0.0.tgz#bb935d48582cba168c06834957a54a3e07124f11"
   integrity sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==
 
+js-confetti@^0.13.1:
+  version "0.13.1"
+  resolved "https://registry.npmmirror.com/js-confetti/-/js-confetti-0.13.1.tgz#0f171b8242dae9ce1a17fa4e09251f26a75800b1"
+  integrity sha512-Kau3apum0zYIvELfZv0lL5VY7dvzpbKi4Oq0XdfjDKdNZc/O+IeGRyLEej7GJ/1APbASvb+ZTWDxmTxxSFkTOg==
+
 js-tokens@^9.0.1:
   version "9.0.1"
   resolved "https://registry.npmmirror.com/js-tokens/-/js-tokens-9.0.1.tgz#2ec43964658435296f6761b34e10671c2d9527f4"

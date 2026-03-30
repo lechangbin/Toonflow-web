@@ -11,7 +11,7 @@ export function useLayout(flowId?: string) {
   const graph = ref(new dagre.graphlib.Graph());
   const previousDirection = ref("LR"); // 上一次布局方向
 
-  function layout(nodes: Node<any, any, string>[], edges: Edge[], direction: "LR" | "TB", spacing: number = 250) {
+  function layout(nodes: Node<any, any, string>[], edges: Edge[], direction: "LR" | "TB", nodesep: number = 250, ranksep?: number) {
     // 每次都新建 Graph，避免遗留节点和边影响布局
     const dagreGraph = new dagre.graphlib.Graph();
     graph.value = dagreGraph;
@@ -19,8 +19,8 @@ export function useLayout(flowId?: string) {
     dagreGraph.setDefaultEdgeLabel(() => ({}));
     dagreGraph.setGraph({
       rankdir: direction,
-      nodesep: spacing, // 节点间的水平间距
-      ranksep: spacing, // 层级间的垂直间距
+      nodesep,
+      ranksep: ranksep ?? nodesep,
     });
     previousDirection.value = direction;
 
