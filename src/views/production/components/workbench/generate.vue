@@ -782,7 +782,7 @@ function modeToKey(m: VideoModelMode): string {
 }
 const { project } = storeToRefs(projectStore());
 //模型
-const modelDd = ref<string>(project.value?.videoModel ?? "");
+const modelDd = ref<string>("");
 // 模型选项列表是否已加载（用于控制分辨率/时长/音频/模式的显示）
 const modelLoaded = ref<boolean>(false);
 // 分辨率选项
