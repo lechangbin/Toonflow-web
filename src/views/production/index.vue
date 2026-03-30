@@ -6,6 +6,8 @@
     :max-zoom="10"
     :min-zoom="0.1"
     fit-view-on-init
+    pan-on-scroll
+    :zoom-on-scroll="false"
     :selection-key-code="null"
     :multi-selection-key-code="null">
     <template #node-script="props">
@@ -45,14 +47,14 @@
           </template>
         </t-select>
         <t-tooltip placement="bottom" theme="primary" content="$t('workbench.production.getFlowData')">
-          <t-button @click="refFlowData" variant="outline">
+          <t-button class="guide-refresh-btn" @click="refFlowData" variant="outline">
             <template #icon>
               <i-refresh size="16" />
             </template>
           </t-button>
         </t-tooltip>
         <t-tooltip placement="bottom" theme="primary" content="$t('workbench.production.autoLayoutLR')">
-          <t-button @click="layoutGraph()" variant="outline" style="margin-left: 8px">
+          <t-button class="guide-layout-btn" @click="layoutGraph()" variant="outline" style="margin-left: 8px">
             <template #icon>
               <i-tree-diagram size="16" />
             </template>
@@ -72,7 +74,7 @@
         <rightChatBox :title="title" v-model="flowData" @close="openShowVisible = false" />
       </transition>
     </div>
-    <!-- <t-guide v-model="current" :steps="steps" @finish="finishGuide" /> -->
+    <t-guide v-model="current" :steps="steps" @finish="() => (current = -1)" />
   </VueFlow>
 </template>
 
@@ -181,33 +183,85 @@ async function getScriptData() {
 }
 
 async function layoutGraph(direction: "LR" | "TB" = "LR") {
-  const spacing = 200;
   const oldData = toObject();
-  oldData.nodes = layout(oldData.nodes, oldData.edges, direction, spacing);
-  // LR 布局时，强制调整各节点位置
-  if (direction === "LR") {
-    const scriptNode = oldData.nodes.find((n) => n.id === "script");
-    const assetsNode = oldData.nodes.find((n) => n.id === "assets");
-    const scriptVNode = findNode("script");
-    const scriptHeight = scriptVNode?.dimensions?.height ?? 50;
 
-    // assets 放在 script 正下方，左对齐，顶部紧接 script 底部
-    if (scriptNode && assetsNode) {
-      assetsNode.position.x = scriptNode.position.x;
-      assetsNode.position.y = scriptNode.position.y + scriptHeight + spacing;
+  // 收集每个节点的实际尺寸
+  const dims = new Map<string, { w: number; h: number }>();
+  for (const n of oldData.nodes) {
+    const vNode = findNode(n.id);
+    dims.set(n.id, {
+      w: vNode?.dimensions?.width ?? 150,
+      h: vNode?.dimensions?.height ?? 50,
+    });
+  }
+
+  const gap = 80; // 节点之间的最小留白
+
+  if (direction === "LR") {
+    // 手动布局：主链从左到右排列，assets 放在 script 正下方
+    const mainChain = ["script", "scriptPlan", "storyboardTable", "storyboard", "workbench", "poster"];
+    const chainNodes = mainChain.filter((id) => oldData.nodes.some((n) => n.id === id));
+
+    // 逐个排列主链节点，x 基于前一个节点的右边缘 + gap，顶部对齐
+    let curX = 0;
+    for (const id of chainNodes) {
+      const node = oldData.nodes.find((n) => n.id === id);
+      const dim = dims.get(id);
+      if (!node || !dim) continue;
+      node.position.x = curX;
+      node.position.y = 0;
+      curX += dim.w + gap;
     }
 
-    // 主链节点（scriptPlan 及之后）全部与 script 顶部对齐
-    if (scriptNode) {
-      const mainChain = ["scriptPlan", "storyboardTable", "storyboard", "workbench", "poster"];
-      for (const id of mainChain) {
-        const node = oldData.nodes.find((n) => n.id === id);
-        if (node) {
-          node.position.y = scriptNode.position.y;
+    // assets 放在 script 正下方
+    const scriptNode = oldData.nodes.find((n) => n.id === "script");
+    const assetsNode = oldData.nodes.find((n) => n.id === "assets");
+    const scriptDim = dims.get("script");
+    if (scriptNode && assetsNode && scriptDim) {
+      assetsNode.position.x = scriptNode.position.x;
+      assetsNode.position.y = scriptNode.position.y + scriptDim.h + gap;
+    }
+
+    // 确保 assets 不与主链中其他节点重叠（检查水平方向）
+    if (assetsNode) {
+      const assetsDim = dims.get("assets");
+      if (assetsDim) {
+        const assetsRight = assetsNode.position.x + assetsDim.w;
+        const assetsTop = assetsNode.position.y;
+        const assetsBottom = assetsTop + assetsDim.h;
+        for (const id of chainNodes) {
+          if (id === "script") continue;
+          const node = oldData.nodes.find((n) => n.id === id);
+          const dim = dims.get(id);
+          if (!node || !dim) continue;
+          const nodeTop = node.position.y;
+          const nodeBottom = nodeTop + dim.h;
+          // 检查垂直范围是否有交集
+          const vertOverlap = assetsTop < nodeBottom && assetsBottom > nodeTop;
+          if (vertOverlap && node.position.x < assetsRight) {
+            // 将该节点及其后续都右移
+            const shift = assetsRight + gap - node.position.x;
+            const idx = chainNodes.indexOf(id);
+            for (let i = idx; i < chainNodes.length; i++) {
+              const shiftNode = oldData.nodes.find((n) => n.id === chainNodes[i]);
+              if (shiftNode) shiftNode.position.x += shift;
+            }
+            break;
+          }
         }
       }
     }
+  } else {
+    // TB 方向使用 dagre 自动布局
+    const widths = [...dims.values()].map((d) => d.w);
+    const heights = [...dims.values()].map((d) => d.h);
+    const avgWidth = widths.length ? widths.reduce((a, b) => a + b, 0) / widths.length : 150;
+    const avgHeight = heights.length ? heights.reduce((a, b) => a + b, 0) / heights.length : 50;
+    const ranksep = avgHeight * 0.5 + gap;
+    const nodesep = avgWidth * 0.3 + gap;
+    oldData.nodes = layout(oldData.nodes, oldData.edges, direction, nodesep, ranksep);
   }
+
   await fromObject(oldData);
   await nextTick();
   fitView({ duration: 300 });
@@ -224,6 +278,7 @@ watch(
     if (newVal < 0) return;
     await refFlowData();
     productionAgentStore().updateContext();
+    await productionAgentStore().getHistory();
   },
 );
 
@@ -231,6 +286,34 @@ async function refFlowData() {
   await productionAgentStore().getFlowData();
   layoutGraph();
 }
+
+const current = useLocalStorage("productionCurrent", 0);
+const steps = [
+  {
+    element: ".episodesSelect",
+    title: $t("workbench.production.guideSwitchEpisode"),
+    body: $t("workbench.production.guideSwitchEpisodeBody"),
+    placement: "bottom",
+  },
+  {
+    element: ".guide-refresh-btn",
+    title: $t("workbench.production.guideRefresh"),
+    body: $t("workbench.production.guideRefreshBody"),
+    placement: "bottom",
+  },
+  {
+    element: ".guide-layout-btn",
+    title: $t("workbench.production.guideLayoutBtn"),
+    body: $t("workbench.production.guideLayoutBtnBody"),
+    placement: "bottom",
+  },
+  {
+    element: ".vue-flow__controls",
+    title: $t("workbench.production.guideCanvasNav"),
+    body: $t("workbench.production.guideCanvasNavBody"),
+    placement: "right",
+  },
+] as any;
 </script>
 <style lang="scss" scoped>
 .flowMain {

@@ -3,10 +3,29 @@ import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 import { useChat } from "@/utils/useChat";
 import type { FlowData } from "@/views/production/utils/flowBuilder";
+import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 
 export default defineStore(
   "productionAgent",
   () => {
+    const defMsg: ChatMessagesData[] = [
+      {
+        id: "welcome",
+        role: "assistant",
+        content: [
+          { type: "text", status: "complete", data: $t("workbench.production.chatBox.welcomeMessage") },
+          {
+            type: "suggestion",
+            status: "complete",
+            data: [{ title: $t("workbench.production.chatBox.startMakingVideo"), prompt: $t("workbench.production.chatBox.startMakingVideoPrompt") }],
+          },
+        ],
+      },
+    ];
+    onMounted(() => {
+      if (messages.value.length <= 0) messages.value = [...defMsg, ...messages.value];
+    });
+
     const flowData = ref<FlowData>({
       script: "", // 剧本
       scriptPlan: "", //拍摄计划
@@ -48,6 +67,9 @@ export default defineStore(
       socket,
       (s) => {
         if (s) {
+          s.on("connect", () => {
+            getHistory();
+          });
           s.on("getFlowData", (_, callback) => {
             callback(flowData.value);
           });
@@ -333,6 +355,7 @@ export default defineStore(
         }
       },
     );
+
     function updateContext() {
       if (episodesId.value < 0) return;
       const ctx = {
@@ -342,6 +365,19 @@ export default defineStore(
       };
       if (!connected.value) connect();
       socket.value!.emit("updateContext", ctx);
+    }
+
+    const loadingHistory = ref(false);
+    async function getHistory() {
+      loadingHistory.value = true;
+      const { data } = await axios.post(`/agents/getMemory`, {
+        projectId: projectStore().project?.id,
+        episodesId: episodesId.value,
+        agentType: "productionAgent",
+      });
+      messages.value = [];
+      messages.value = [...defMsg, ...data];
+      loadingHistory.value = false;
     }
 
     return {
@@ -358,6 +394,8 @@ export default defineStore(
       stopAssetsPolling,
       stopStoryboardPolling,
       updateContext,
+      getHistory,
+      loadingHistory,
     };
   },
   { persist: false },

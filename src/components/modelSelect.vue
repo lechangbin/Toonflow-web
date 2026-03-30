@@ -3,6 +3,7 @@
     :size="props.size"
     v-model="selectValue"
     :placeholder="props.placeholder ?? $t('components.modelSelect.placeholder')"
+    :key="optionsKey"
     @change="onChange"
     @popup-visible-change="onPopupVisibleChange">
     <t-option-group v-for="(list, index) in optionsData" :key="index" :label="list.group">
@@ -23,9 +24,11 @@
     </t-option-group>
     <!-- 无可用模型时，显示跳转设置的按钮 -->
     <template #empty>
-      <t-button size="small" variant="text" theme="primary" @click.stop="goVendorConfig">
-        {{ $t("components.modelSelect.goSetting") }}
-      </t-button>
+      <div class="emptyActionWrap">
+        <t-button class="emptyActionButton" size="small" variant="text" theme="primary" @click="goVendorConfig">
+          {{ $t("components.modelSelect.goSetting") }}
+        </t-button>
+      </div>
     </template>
   </t-select>
 </template>
@@ -70,9 +73,11 @@ const props = defineProps({
     default: false,
   },
 });
+
 const emit = defineEmits<{
   change: [value: string, data?: any];
 }>();
+
 async function onChange(value: any) {
   selectValue.value = value;
   if (props.changeConfig) {
@@ -85,6 +90,7 @@ async function onChange(value: any) {
   }
 }
 const optionsData = ref<VendorOption[]>([]);
+const optionsKey = ref(0);
 onMounted(() => {
   handleModelChange();
 });
@@ -123,6 +129,7 @@ function handleModelChange() {
         });
       });
       optionsData.value = Array.from(groupMap.values());
+      optionsKey.value++;
 
       if (
         optionsData.value
@@ -194,6 +201,17 @@ function goVendorConfig() {
 .optionType {
   color: var(--td-text-color-secondary);
   flex-shrink: 0;
+}
+
+.emptyActionWrap {
+  display: flex;
+  justify-content: center;
+  padding: 8px 12px;
+}
+
+.emptyActionButton {
+  min-width: 140px;
+  color: #339af0;
 }
 
 .fallbackAvatar {

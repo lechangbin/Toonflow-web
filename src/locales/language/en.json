@@ -433,7 +433,8 @@
       "cornerScape": "Characters & Scenes",
       "production": "Video Production",
       "assetCenter": "Asset Center",
-      "settings": "Settings"
+      "settings": "Settings",
+      "jumpGithub": "Jump to Github"
     },
     "project": {
       "title": "My Projects",
@@ -1259,6 +1260,14 @@
       },
       "guideSwitchEpisode": "Switch Episodes",
       "guideSwitchEpisodeBody": "Switching episodes has been moved here!",
+      "guideRefresh": "Refresh Data",
+      "guideRefreshBody": "Click the refresh button to reload workspace data",
+      "guideCanvasNav": "Canvas Navigation",
+      "guideCanvasNavBody": "Scroll to pan vertically, Ctrl + Scroll to zoom, drag with left mouse button to pan freely",
+      "guideRightChat": "AI Chat",
+      "guideRightChatBody": "Chat with AI in the right panel to drive automated workflows",
+      "guideLayoutBtn": "Auto Layout",
+      "guideLayoutBtnBody": "Click this button to automatically arrange node layout",
       "autoLayoutLR": "Automatic typesetting-left and right layout",
       "autoLayoutTB": "Automatic typesetting-top and bottom layout",
       "getFlowData": "Refresh workspace"

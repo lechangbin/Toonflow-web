@@ -25,6 +25,11 @@
             <i-setting-one class="icon" />
           </div>
         </t-tooltip>
+        <t-tooltip :content="$t('workbench.menu.jumpGithub')" placement="right" theme="light" destroyOnClose :showArrow="false">
+          <div class="item c" @click="jumpGithub">
+            <i-github-one size="24" />
+          </div>
+        </t-tooltip>
       </div>
     </div>
     <div class="view">
@@ -59,6 +64,7 @@
       </div>
     </div>
   </div>
+  <hello />
   <setting />
   <migrateShow />
 </template>
@@ -66,6 +72,7 @@
 <script setup lang="ts">
 import setting from "@/components/setting/index.vue";
 import migrateShow from "@/components/migrateShow.vue";
+import hello from "@/components/hello.vue";
 
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -103,6 +110,14 @@ function handleClick(menu: any) {
   if (menu.needProject && !project.value) return;
   router.push(menu.path);
   activeMenu.value = menu.path;
+}
+
+async function jumpGithub() {
+  if (isElectron.value) {
+    await fetch("toonflow://getPort?url=https://github.com/HBAI-Ltd/Toonflow-app");
+  } else {
+    window.open("https://github.com/HBAI-Ltd/Toonflow-app");
+  }
 }
 </script>
 
@@ -142,7 +157,6 @@ function handleClick(menu: any) {
       width: 100%;
       height: fit-content;
       .item {
-        margin-top: 8px;
         cursor: pointer;
         width: 50px;
         height: 50px;
