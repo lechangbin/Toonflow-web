@@ -54,7 +54,7 @@ export interface VideoPollingOptions {
  * poller.destroy();
  * ```
  */
-export function createVideoPolling(scriptId: number | string, options: VideoPollingOptions = {}) {
+export function createVideoPolling(id: number | string, options: VideoPollingOptions = {}) {
   const {
     interval = 5000,
     maxErrors = 10,
@@ -87,7 +87,7 @@ export function createVideoPolling(scriptId: number | string, options: VideoPoll
       abortController = new AbortController();
       const { data } = await axios.post(
         "/production/workbench/videoPolling",
-        { scriptId, specifyIds: [...pendingIds] },
+        { id, specifyIds: [...pendingIds] },
         { signal: abortController.signal },
       );
 

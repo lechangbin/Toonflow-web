@@ -41,7 +41,10 @@
             <t-input-number v-model="concurrentCount" autoWidth :placeholder="$t('workbench.cornerScape.concurrencyPh')"></t-input-number>
           </t-form-item>
           <t-form-item>
-            <t-button theme="primary" block @click="batchGeneration">{{ $t("workbench.cornerScape.startBatch") }}</t-button>
+            <t-button theme="primary" block @click="batchGenerationPrompt">{{ $t("workbench.cornerScape.batchGenerationPrompt") }}</t-button>
+            <t-button theme="primary" block @click="batchGenerationImage" style="margin-left: 10px">
+              {{ $t("workbench.cornerScape.startBatch") }}
+            </t-button>
           </t-form-item>
         </t-form>
       </t-card>
@@ -50,10 +53,12 @@
       <t-card v-show="dataList.length > 0" shadow class="card" v-for="item in dataList" :key="item.id" @click.stop="openDrawer(item)">
         <div class="imageBox">
           <t-checkbox class="selectBox" :checked="selectedIds.includes(item.id)" @change="toggleSelect(item.id)" />
-          <t-empty v-if="!item.state" type="maintenance" :title="$t('workbench.cornerScape.waitingGen')" />
-          <div v-else-if="item.state === '生成中'" class="generatingBox">
+          <t-empty v-if="!item.state && item.promptState !== '生成中'" type="maintenance" :title="$t('workbench.cornerScape.waitingGen')" />
+          <div v-else-if="item.state === '生成中' || item.promptState === '生成中'" class="generatingBox">
             <t-loading />
-            <span class="generatingText">{{ $t("workbench.cornerScape.generating") }}</span>
+            <span class="generatingText">
+              {{ item.promptState === "生成中" ? $t("workbench.cornerScape.generatingPrompt") : $t("workbench.cornerScape.generating") }}
+            </span>
           </div>
           <t-empty v-else-if="item.state === '生成失败'" type="fail" :title="$t('workbench.cornerScape.genFailed')" />
           <t-image v-else class="image" :src="item.filePath ?? undefined" fit="contain" :preview="true" :lazy="true">
@@ -88,7 +93,7 @@
               {{ item.resolution }}
             </t-tag>
           </div>
-          <div class="prompt" v-if="item.prompt">
+          <div class="prompt" v-if="item.describe">
             {{
               item.type === "role"
                 ? $t("workbench.cornerScape.typeRole")
@@ -97,7 +102,7 @@
                   : item.type === "tool"
                     ? $t("workbench.cornerScape.typeTool")
                     : $t("workbench.cornerScape.typeUnknown")
-            }}{{ $t("workbench.cornerScape.descriptionSuffix") }}{{ item.prompt }}
+            }}{{ $t("workbench.cornerScape.descriptionSuffix") }}{{ item.describe }}
           </div>
         </div>
       </t-card>
@@ -169,7 +174,8 @@
               v-model="editForm.prompt"
               :placeholder="$t('workbench.cornerScape.promptPh')"
               :autosize="{ minRows: 4, maxRows: 10 }"
-              :disabled="polishing" />
+              :disabled="polishing"
+              @blur="savePromptOnBlur" />
           </t-form-item>
           <t-form-item>
             <div class="drawerActions">
@@ -356,16 +362,36 @@ const editForm = reactive({
   name: "",
 });
 
-function openDrawer(item: DataItem) {
+async function openDrawer(item: DataItem) {
   selectedHistoryId.value = null;
+  // 先用当前数据打开抽屉
   editForm.assetsId = item.id;
   editForm.name = item.name || "";
   editForm.type = item.type || "";
   editForm.model = item.model || "";
   currentItem.value = item;
   editForm.resolution = item.resolution || "";
-  editForm.prompt = item.prompt ? item.prompt : item.describe;
+  editForm.prompt = item.prompt || "";
   drawerVisible.value = true;
+  // 重新获取最新数据（含历史图片）
+  try {
+    const { data } = await axios.post("/cornerScape/getAllAssets", {
+      projectId: project.value?.id,
+      type: checkboxValue.value,
+    });
+    const freshItem = (data as DataItem[]).find((d) => d.id === item.id);
+    if (freshItem) {
+      // 更新 dataList 中对应项
+      const idx = dataList.value.findIndex((d) => d.id === item.id);
+      if (idx !== -1) dataList.value[idx] = freshItem;
+      // 更新当前抽屉项
+      currentItem.value = freshItem;
+      editForm.prompt = freshItem.prompt || editForm.prompt;
+      editForm.resolution = freshItem.resolution || editForm.resolution;
+    }
+  } catch (e) {
+    console.error("刷新资产详情失败:", e);
+  }
 }
 
 function setItemState(id: number, state: string) {
@@ -419,6 +445,28 @@ function regenerateItem() {
     });
 }
 
+// 提示词失焦保存
+async function savePromptOnBlur() {
+  if (!currentItem.value) return;
+  // 内容没有变化则不保存
+  if (editForm.prompt === currentItem.value.prompt) return;
+  try {
+    await axios.post("/assets/saveAssets", {
+      id: currentItem.value.id,
+      type: currentItem.value.type,
+      projectId: project.value?.id,
+      prompt: editForm.prompt,
+    });
+    // 同步更新本地数据
+    currentItem.value.prompt = editForm.prompt;
+    const target = dataList.value.find((d) => d.id === currentItem.value!.id);
+    if (target) target.prompt = editForm.prompt;
+    window.$message.success($t("workbench.cornerScape.msg.saveSuccess"));
+  } catch (e) {
+    window.$message.error($t("workbench.cornerScape.msg.saveFailed"));
+  }
+}
+
 // AI 润色
 const polishing = ref(false);
 async function polishPrompts() {
@@ -446,8 +494,44 @@ async function polishPrompts() {
     polishing.value = false;
   }
 }
-// 批量生成
-async function batchGeneration() {
+//批量生成提示词
+async function batchGenerationPrompt() {
+  if (selectedIds.value.length === 0) {
+    window.$message.warning($t("workbench.cornerScape.msg.selectAtLeastOne"));
+    return;
+  }
+
+  const items = dataList.value.filter((item) => selectedIds.value.includes(item.id));
+
+  // 前端先将所有选中项的 promptState 标记为"生成中"，让轮询自动接管状态跟踪
+  items.forEach((item) => {
+    item.promptState = "生成中";
+  });
+
+  // 清除已选中的项
+  selectedIds.value = [];
+
+  try {
+    await axios.post("/assetsGenerate/batchPolishAssetsPrompt", {
+      projectId: project.value?.id,
+      items: items.map((item) => ({
+        assetsId: item.id,
+        type: item.type ?? "props",
+        name: item.name,
+        describe: item.describe ? item.describe : $t("workbench.cornerScape.noDescription"),
+      })),
+    });
+  } catch (e: any) {
+    window.$message.error(e.message ?? $t("workbench.cornerScape.msg.promptGenFail"));
+    // 生成失败时重置 promptState
+    items.forEach((item) => {
+      const target = dataList.value.find((row) => row.id === item.id);
+      if (target) target.promptState = "";
+    });
+  }
+}
+// 批量生成图片
+async function batchGenerationImage() {
   if (selectedIds.value.length === 0) {
     window.$message.warning($t("workbench.cornerScape.msg.selectAtLeastOne"));
     return;
@@ -462,6 +546,17 @@ async function batchGeneration() {
   }
 
   const items = dataList.value.filter((item) => selectedIds.value.includes(item.id));
+  //检查如果勾选的数据prompt有空的，提示用户勾选的哪一个提示词未生成，然后终止批量生成
+  const emptyPrompts = items.filter((item) => !item.prompt);
+  if (emptyPrompts.length > 0) {
+    const emptyPromptNames = emptyPrompts.map((item) => item.name).join(", ");
+    window.$message.warning(
+      $t("workbench.cornerScape.msg.emptyPrompt", {
+        emptyPromptNames,
+      }),
+    );
+    return;
+  }
   const concurrent = Math.max(1, concurrentCount.value || 1);
 
   // 前端先将所有选中项标记为"生成中"
@@ -479,7 +574,7 @@ async function batchGeneration() {
         id: item.id,
         type: item.type ?? "props",
         name: item.name ?? $t("workbench.cornerScape.unnamed"),
-        prompt: item.prompt || item.describe,
+        prompt: item.prompt,
       })),
     });
     window.$message.success($t("workbench.cornerScape.msg.batchComplete"));
@@ -523,14 +618,36 @@ async function pollingImageAssets() {
   const ids = generatingData.value.map((item) => item.id);
   try {
     const { data } = await axios.post("/assets/pollingImageAssets", { ids });
+    let hasCompleted = false;
     if (Array.isArray(data) && data.length) {
       data.forEach((item: { id: number; state: string; filePath: string }) => {
         const target = dataList.value.find((row) => row.id === item.id);
         if (target) {
+          if (target.state === "生成中" && item.state !== "生成中") hasCompleted = true;
           target.state = item.state;
           if (item.filePath !== undefined) target.filePath = item.filePath;
         }
       });
+    }
+    // 有图片生成完成时，重新获取完整数据以刷新 historyImages
+    if (hasCompleted) {
+      try {
+        const { data: freshData } = await axios.post("/cornerScape/getAllAssets", {
+          projectId: project.value?.id,
+          type: checkboxValue.value,
+        });
+        (freshData as DataItem[]).forEach((fresh) => {
+          const target = dataList.value.find((row) => row.id === fresh.id);
+          if (target) target.historyImages = fresh.historyImages;
+        });
+        // 同步更新抽屉中的当前项
+        if (currentItem.value) {
+          const freshCurrent = (freshData as DataItem[]).find((d) => d.id === currentItem.value!.id);
+          if (freshCurrent) currentItem.value.historyImages = freshCurrent.historyImages;
+        }
+      } catch (e) {
+        console.error("刷新历史图片失败:", e);
+      }
     }
   } catch (e) {
     console.error("轮询图片生成状态失败:", e);
