@@ -65,7 +65,12 @@
         <span>{{ $t("workbench.production.node.storyboard.scaleRatio") }}</span>
         <t-input-number v-model="gridScale" :min="0.1" :max="3" :step="0.1" :decimal-places="1" size="small" style="width: 120px" />
       </div>
-      <t-button block @click="previewAll">{{ $t("workbench.production.node.storyboard.gridPreview") }}</t-button>
+      <div class="ac" style="gap: 10px">
+        <t-button block @click="previewAll" :disabled="!storyboard.length">{{ $t("workbench.production.node.storyboard.gridPreview") }}</t-button>
+        <t-button block @click="batchGenerateImage" :disabled="!storyboard.length">
+          {{ $t("workbench.production.node.storyboard.batchGenerateImage") }}
+        </t-button>
+      </div>
     </div>
     <editImage v-model:visible="visible" v-if="visible" :editData="currentRow" type="storyboard" @save="save" />
     <t-image-viewer
@@ -83,8 +88,11 @@ import editImage from "../components/editImage/index.vue";
 import { LoadingPlugin } from "tdesign-vue-next";
 import { Handle, Position, type Edge } from "@vue-flow/core";
 import axios from "@/utils/axios";
-import type { NodeType } from "../utils/editImageType";
 import type { AssetItem } from "../utils/flowBuilder";
+import projectStore from "@/stores/project";
+
+const { project } = storeToRefs(projectStore());
+
 interface Storyboard {
   id: number;
   title: string;
@@ -183,6 +191,7 @@ async function previewAll() {
   try {
     const { data } = await axios.post("/production/storyboard/previewImage", {
       storyboardIds: allIds,
+      projectId: project.value?.id,
     });
     previewImages.value = [data];
     previewVisible.value = true;
@@ -192,7 +201,18 @@ async function previewAll() {
     LoadingPlugin(false);
   }
 }
-
+function batchGenerateImage() {
+  LoadingPlugin(true);
+  const allIds = (storyboard.value ?? []).filter((s) => s.src).map((s) => s.id!);
+  if (!allIds.length) {
+    window.$message.warning($t("workbench.production.node.storyboard.noPreviewImages"));
+    LoadingPlugin(false);
+    return;
+  }
+  axios.post("/production/storyboard/batchGenerateImage", {
+    scriptId: allIds,
+  });
+}
 function editStoryboaryImage(item: Storyboard, images: string[], id: number | null = null, insertAfterIndex: number | null = null) {
   currentRow.value = {
     id,

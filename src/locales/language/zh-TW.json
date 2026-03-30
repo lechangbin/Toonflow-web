@@ -1027,7 +1027,8 @@
         "confirmSuccess": "確認選取成功",
         "batchSubmitted": "已送出批次生成請求，正在處理中...",
         "configNotFound": "設定不存在",
-        "pollingFailed": "視訊狀態查詢失敗，請手動刷新"
+        "pollingFailed": "視訊狀態查詢失敗，請手動刷新",
+        "batchGeneratePrompt": "大量生成提示詞"
       },
       "editVideo": {
         "reset": "重設",

@@ -20,10 +20,19 @@
       </div>
       <t-card class="infoPanel">
         <div class="promptSection">
-          <div class="sectionTitle">
-            <span class="titleIndicator" />
-            {{ $t("workbench.production.generate.videoPrompt") }}
+          <div class="jb">
+            <div class="sectionTitle">
+              <span class="titleIndicator" />
+              {{ $t("workbench.production.generate.videoPrompt") }}
+            </div>
+            <div>
+              <t-button theme="primary" size="small" class="generateBtn" @click="generateVideoPrompt">
+                <template #icon><i-arrow-up size="16" /></template>
+                {{ $t("workbench.production.generate.generate") }}
+              </t-button>
+            </div>
           </div>
+
           <t-textarea
             v-model="promptText"
             :placeholder="$t('workbench.production.generate.promptPlaceholder')"
@@ -306,6 +315,10 @@
         <div class="headerRight">
           <t-button theme="primary" size="small" :disabled="checkedIds.size === 0" @click="handleBatchGenerate">
             <template #icon><i-magic size="16" /></template>
+            {{ $t("workbench.production.generate.batchGeneratePrompt") }}
+          </t-button>
+          <t-button theme="primary" size="small" :disabled="checkedIds.size === 0" @click="handleBatchGenerate">
+            <template #icon><i-magic size="16" /></template>
             {{ $t("workbench.production.generate.batchGenerate") }}
           </t-button>
           <t-button theme="default" variant="outline" size="small" :disabled="checkedIds.size === 0" @click="handleBatchDownload">
@@ -425,6 +438,7 @@ interface VideoGenerationConfig {
   storyboardId: number | string;
   videoId: number | string;
   prompt: string;
+  videoPrompt?: string;
   model: string;
   mode: string;
   resolution: string;
@@ -448,6 +462,7 @@ interface StoryboardItem {
   name: string;
   detail?: string;
   prompt: string;
+  videoPrompt?: string;
   seconds?: number;
   duration?: string | number;
   /** 分镜原图路径（始终不变，作为无 config.data 时的默认展示图） */
@@ -647,6 +662,7 @@ function getProductionData() {
   return axios
     .post("/production/getProductionData", {
       scriptId: episodesId!.value,
+      projectId: project.value?.id,
     })
     .then(({ data }) => {
       const list: StoryboardItem[] = data || [];
@@ -741,8 +757,8 @@ function selectShot(id: number | string) {
     // 没有任何模型信息，清空选项等待用户选模型
     resetModelOptions();
   }
-  // 提示词：有 config.prompt 用配置的，否则用分镜本身的 prompt
-  promptText.value = item.config?.prompt || item.prompt || "";
+  // 提示词：有 config.videoPrompt 用配置的，否则用分镜本身的 videoPrompt
+  promptText.value = item.config?.videoPrompt || item.videoPrompt || "";
 }
 
 // 清空模型相关选项（等待用户选择模型）
@@ -1310,6 +1326,12 @@ function handleBatchDownload() {
     })
     .filter((v): v is NonNullable<typeof v> => !!v);
   emit("close", videos);
+}
+//生成视频提示词
+function generateVideoPrompt() {
+  //获取到选中的分镜图片id
+  const shot = currentShot.value;
+  if (!shot) return;
 }
 </script>
 

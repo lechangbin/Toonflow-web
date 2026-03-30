@@ -1101,7 +1101,8 @@
         "confirmSuccess": "Selection confirmed",
         "batchSubmitted": "Batch generation request submitted. Processing...",
         "configNotFound": "Configuration not found",
-        "pollingFailed": "Video status query failed, please refresh manually"
+        "pollingFailed": "Video status query failed, please refresh manually",
+        "batchGeneratePrompt": "Generate prompt words in batches"
       },
       "editVideo": {
         "reset": "Reset",
