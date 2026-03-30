@@ -29,6 +29,7 @@
       </t-chat-list>
       <t-chat-sender
         class="inputBox"
+        :disabled="status === 'pending' || status === 'streaming'"
         v-model="inputValue"
         :loading="status === 'pending' || status === 'streaming'"
         :placeholder="$t('workbench.production.chatBox.inputPlaceholder')"
@@ -92,9 +93,7 @@ const defMsg: ChatMessagesData[] = [
       {
         type: "suggestion",
         status: "complete",
-        data: [
-          { title: $t("workbench.production.chatBox.startMakingVideo"), prompt: $t("workbench.production.chatBox.startMakingVideoPrompt") },
-        ],
+        data: [{ title: $t("workbench.production.chatBox.startMakingVideo"), prompt: $t("workbench.production.chatBox.startMakingVideoPrompt") }],
       },
     ],
   },

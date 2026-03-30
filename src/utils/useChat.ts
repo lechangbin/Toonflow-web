@@ -617,6 +617,14 @@ export function useChat(options: UseChatOptions) {
     const id = messageId || currentMessageId.value;
     if (!id) return false;
 
+    // 立即更新本地状态，不等服务端响应
+    const msg = findMessage(id);
+    if (msg) {
+      msg.status = "stop";
+    }
+    currentMessageId.value = null;
+    status.value = "idle";
+
     return emit("stop", { messageId: id });
   };
 

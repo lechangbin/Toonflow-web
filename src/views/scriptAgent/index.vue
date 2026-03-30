@@ -22,6 +22,7 @@
           </t-chat-list>
           <t-chat-sender
             class="inputBox"
+            :disabled="status === 'pending' || status === 'streaming'"
             v-model="inputValue"
             :loading="status === 'pending' || status === 'streaming'"
             placeholder="$t('workbench.scriptAgent.inputPlaceholder')"
