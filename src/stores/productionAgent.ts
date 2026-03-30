@@ -104,11 +104,13 @@ export default defineStore(
           });
           s.on("generateDeriveAsset", async (data, callback) => {
             console.log("%c Line:106 🍢 data", "background:#f5ce50", data);
-            batchGenerateAssets(data.id);
+            const assetsData = await batchGenerateAssets(data.ids);
+            callback({ success: true, message: assetsData });
           });
           s.on("generateStoryboard", async (data, callback) => {
             console.log("%c Line:109 🌮 data", "background:#7f2b82", data);
-            batchGenerateStoryboard(data.storyboardIds);
+            const storyData = await batchGenerateStoryboard(data.ids);
+            callback({ success: true, message: storyData });
           });
         }
       },
@@ -132,11 +134,26 @@ export default defineStore(
           item.state = "生成中";
         }
       });
-      await axios.post("/production/storyboard/batchGenerateImage", {
+      const { data } = await axios.post("/production/storyboard/batchGenerateImage", {
         scriptId: episodesId.value,
         projectId: projectStore().project?.id,
         storyboardIds: allIds,
+        script: flowData.value.script,
+        scriptPlan: flowData.value.scriptPlan,
+        storyboardTable: flowData.value.storyboardTable,
+        assets: flowData.value.assets,
       });
+      if (data) {
+        if (flowData.value.storyboard.length === 0) {
+          flowData.value.storyboard = data;
+          return data;
+        } else {
+          const idSet = new Set(data.map((d: { id: number }) => d.id));
+          flowData.value.storyboard = flowData.value.storyboard.filter((s) => !idSet.has(s.id!)).concat(data);
+          return flowData.value.storyboard;
+        }
+      }
+      return data;
     }
     async function batchGenerateAssets(allIds: number[]) {
       flowData.value.assets.forEach((asset) => {
@@ -149,11 +166,26 @@ export default defineStore(
         }
       });
       try {
-        await axios.post("/production/assets/batchGenerateAssetsImage", {
+        const { data } = await axios.post("/production/assets/batchGenerateAssetsImage", {
           assetIds: allIds,
           projectId: projectStore().project?.id,
           scriptId: episodesId.value,
         });
+        if (data) {
+          data.forEach((record: { id: number; state: "未生成" | "生成中" | "已完成" | "生成失败"; src: string }) => {
+            flowData.value.assets.forEach((asset) => {
+              if (asset.derive) {
+                asset.derive.forEach((derive) => {
+                  if (derive.id === record.id) {
+                    derive.state = record.state;
+                    derive.src = record.src;
+                  }
+                });
+              }
+            });
+          });
+        }
+        return data;
       } catch (e) {
         console.log("%c Line:152 🥝 e", "background:#b03734", e);
       }
