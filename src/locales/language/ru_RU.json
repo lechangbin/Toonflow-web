@@ -600,7 +600,8 @@
         "memoryCleared": "{type} очищена",
         "scriptUpdated": "Сценарий успешно обновлен",
         "scriptUpdateFailed": "Не удалось обновить сценарий, попробуйте позже",
-        "searchScriptFailed": "Не удалось найти сценарии"
+        "searchScriptFailed": "Не удалось найти сценарии",
+        "updated": "Сохранено успешно."
       }
     },
     "cornerScape": {

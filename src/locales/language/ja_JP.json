@@ -599,7 +599,8 @@
         "memoryCleared": "{type}をクリアしました",
         "scriptUpdated": "シナリオの更新に成功しました",
         "scriptUpdateFailed": "シナリオの更新に失敗しました。後で再試行してください",
-        "searchScriptFailed": "シナリオの検索に失敗しました"
+        "searchScriptFailed": "シナリオの検索に失敗しました",
+        "updated": "正常に保存されました"
       }
     },
     "cornerScape": {

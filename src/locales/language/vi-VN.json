@@ -590,7 +590,8 @@
         "memoryCleared": "Đã xóa {type}",
         "scriptUpdated": "Cập nhật kịch bản thành công",
         "scriptUpdateFailed": "Cập nhật kịch bản thất bại, vui lòng thử lại sau",
-        "searchScriptFailed": "Tìm kiếm kịch bản thất bại"
+        "searchScriptFailed": "Tìm kiếm kịch bản thất bại",
+        "updated": "Đã lưu thành công"
       }
     },
     "cornerScape": {

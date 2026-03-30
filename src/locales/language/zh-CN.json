@@ -692,7 +692,8 @@
         "memoryCleared": "{type}已清空",
         "scriptUpdated": "剧本更新成功",
         "scriptUpdateFailed": "更新剧本失败，请稍后再试",
-        "searchScriptFailed": "搜索剧本失败"
+        "searchScriptFailed": "搜索剧本失败",
+        "updated": "保存成功"
       }
     },
     "cornerScape": {

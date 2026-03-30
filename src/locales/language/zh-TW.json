@@ -605,7 +605,8 @@
         "memoryCleared": "{type}已清除",
         "scriptUpdated": "劇本更新成功",
         "scriptUpdateFailed": "更新劇本失敗，請稍後再試",
-        "searchScriptFailed": "搜尋劇本失敗"
+        "searchScriptFailed": "搜尋劇本失敗",
+        "updated": "保存成功"
       }
     },
     "cornerScape": {
