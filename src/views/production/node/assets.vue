@@ -9,7 +9,7 @@
         <div v-for="asset in assets" :key="asset.id" class="assetItemBox">
           <t-card class="assetCard">
             <div v-if="asset.src" class="assetImageWrap">
-              <t-image :src="asset.src" fit="cover" class="assetImage" :preview="true" :lazy="true">
+              <t-image :src="asset.src" fit="contain" class="assetImage" :preview="true" :lazy="true">
                 <template #overlayContent>
                   <div class="imageToolsWrap show">
                     <ImageTools :src="asset.src" position="br" />
