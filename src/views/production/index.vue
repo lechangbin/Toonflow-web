@@ -33,7 +33,13 @@
     <Controls />
     <div class="floatingWindow">
       <div class="episodesSelect f ac">
-        <t-select v-model="episodesId" :placeholder="$t('workbench.production.selectPlaceholder')" autoWidth :options="episodesOptions" filterable>
+        <t-select
+          :value="episodesId"
+          :placeholder="$t('workbench.production.selectPlaceholder')"
+          autoWidth
+          :options="episodesOptions"
+          filterable
+          @change="handleEpisodesChange">
           <template #label>
             <i-document-folder size="24" />
           </template>
@@ -98,7 +104,7 @@ const { toObject, fromObject, fitView, findNode } = useVueFlow();
 const { layout } = useLayout();
 
 import productionAgentStore from "@/stores/productionAgent";
-const { episodesId, flowData } = storeToRefs(productionAgentStore());
+const { episodesId, flowData, status } = storeToRefs(productionAgentStore());
 provide("episodesId", episodesId);
 
 const loading = ref(false);
@@ -120,6 +126,44 @@ onMounted(() => {
 });
 
 const episodesOptions = ref<{ label: string; value: number }[]>([]);
+function confirmEpisodesSwitch() {
+  if (status.value !== "pending" && status.value !== "streaming") {
+    return Promise.resolve(true);
+  }
+
+  return new Promise<boolean>((resolve) => {
+    const dialog = DialogPlugin.confirm({
+      header: "切换剧集确认",
+      body: "当前任务仍在进行中，切换剧集会重连会话，是否继续切换？",
+      confirmBtn: $t("workbench.production.save"),
+      cancelBtn: $t("workbench.production.cancel"),
+      theme: "warning",
+      onConfirm: () => {
+        dialog.destroy();
+        resolve(true);
+      },
+      onCancel: () => {
+        dialog.destroy();
+        resolve(false);
+      },
+      onClose: () => {
+        dialog.destroy();
+        resolve(false);
+      },
+    });
+  });
+}
+
+function handleEpisodesChange(value: unknown) {
+  const rawValue = Array.isArray(value) ? value[0] : value;
+  const nextEpisodesId = Number(rawValue);
+  if (!Number.isFinite(nextEpisodesId) || nextEpisodesId === episodesId.value) return;
+
+  void (async () => {
+    if (!(await confirmEpisodesSwitch())) return;
+    episodesId.value = nextEpisodesId;
+  })();
+}
 
 async function getScriptData() {
   //获取剧本
@@ -177,7 +221,9 @@ const title = computed(() => {
 watch(
   () => episodesId.value,
   async (newVal) => {
-    refFlowData();
+    if (newVal < 0) return;
+    await refFlowData();
+    productionAgentStore().updateContext();
   },
 );
 

@@ -58,6 +58,8 @@ import generate from "./generate.vue";
 import editVideo from "./editVideo/index.vue";
 import { generateId, useTracksStore, type MediaClip, type SubtitleClip, type Clip } from "vue-clip-track";
 import type { MediaItem, AudioItem } from "./editVideo/utils/mediaData";
+import projectStore from "@/stores/project";
+const { project } = storeToRefs(projectStore());
 
 const visible = defineModel("visible", {
   type: Boolean,
@@ -110,50 +112,55 @@ function changeMenu(type: string) {
 }
 //查询剪辑素材
 function editFootage() {
-  axios.post("/assets/getMaterialData").then(({ data }) => {
-    const videoList = data.data.filter((item: any) => getMediaType(item.filePath) === "video");
-    const audioList = data.data.filter((item: any) => getMediaType(item.filePath) === "audio");
-    const imageList = data.data.filter((item: any) => getMediaType(item.filePath) === "image");
+  axios
+    .post("/assets/getMaterialData", {
+      projectId: project.value?.id,
+    })
+    .then(({ data }) => {
+      const videoList = data.data.filter((item: any) => getMediaType(item.filePath) === "video");
+      console.log("%c Line:121 🥒 videoList", "background:#33a5ff", videoList);
+      const audioList = data.data.filter((item: any) => getMediaType(item.filePath) === "audio");
+      const imageList = data.data.filter((item: any) => getMediaType(item.filePath) === "image");
 
-    initialVideoItems.value = data.video.map((item: any) => ({
-      id: `video-${item.id}`,
-      type: "video",
-      name: $t("workbench.production.wb.storyboardVideoName", { storyboard: item.storyboard }),
-      duration: item.duration || 0,
-      icon: "🎬",
-      color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      url: item.filePath,
-      selected: item.selected || false,
-    }));
-    mockMediaItems.value = videoList.map((item: any) => ({
-      id: `video-${item.id}`,
-      type: "video",
-      name: item.name,
-      duration: item.duration || 0,
-      icon: "🎥",
-      color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-      url: item.filePath,
-      loading: true,
-    }));
-    mockAudioItems.value = audioList.map((item: any) => ({
-      id: `audio-${item.id}`,
-      type: "audio",
-      name: item.name,
-      duration: item.duration || 0,
-      url: item.filePath,
-      loading: true,
-    }));
-    mockImageItems.value = imageList.map((item: any) => ({
-      id: `image-${item.id}`,
-      type: "image",
-      name: item.name,
-      duration: item.duration || 5,
-      icon: "🖼️",
-      color: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-      url: item.filePath,
-      loading: true,
-    }));
-  });
+      initialVideoItems.value = data.video.map((item: any) => ({
+        id: `video-${item.id}`,
+        type: "video",
+        name: $t("workbench.production.wb.storyboardVideoName", { storyboard: item.storyboard }),
+        duration: item.duration || 0,
+        icon: "🎬",
+        color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        url: item.filePath,
+        selected: item.selected || false,
+      }));
+      mockMediaItems.value = videoList.map((item: any) => ({
+        id: `video-${item.id}`,
+        type: "video",
+        name: item.name,
+        duration: item.duration || 0,
+        icon: "🎥",
+        color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        url: item.filePath,
+        loading: true,
+      }));
+      mockAudioItems.value = audioList.map((item: any) => ({
+        id: `audio-${item.id}`,
+        type: "audio",
+        name: item.name,
+        duration: item.duration || 0,
+        url: item.filePath,
+        loading: true,
+      }));
+      mockImageItems.value = imageList.map((item: any) => ({
+        id: `image-${item.id}`,
+        type: "image",
+        name: item.name,
+        duration: item.duration || 5,
+        icon: "🖼️",
+        color: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
+        url: item.filePath,
+        loading: true,
+      }));
+    });
 }
 
 /** 追加视频片段（以及可选的字幕）到 tracksStore 对应轨道末尾 */

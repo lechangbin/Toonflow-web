@@ -18,7 +18,7 @@ export default defineStore(
 
     const episodesId = ref<number>(-1);
 
-    const { connected, messages, chat, stopGenerate, socket, status } = useChat({
+    const { connected, messages, chat, stopGenerate, socket, status, reconnect, connect } = useChat({
       url: `${settingStore().baseUrl}/socket/productionAgent`,
       auth: {
         isolationKey: `${projectStore().project?.id}:productionAgent:${episodesId.value}`,
@@ -26,7 +26,7 @@ export default defineStore(
         scriptId: episodesId.value,
       },
       manageLifecycle: false,
-      autoConnect: true,
+      autoConnect: false,
       xmlTags: [
         { tag: "script", keepInMessage: false },
         { tag: "scriptPlan", keepInMessage: false },
@@ -340,6 +340,17 @@ export default defineStore(
         }
       },
     );
+    function updateContext() {
+      if (episodesId.value < 0) return;
+      const ctx = {
+        isolationKey: `${projectStore().project?.id}:productionAgent:${episodesId.value}`,
+        projectId: projectStore().project?.id,
+        scriptId: episodesId.value,
+      };
+      if (!connected.value) connect();
+      socket.value!.emit("updateContext", ctx);
+    }
+
     return {
       connected,
       messages,
@@ -353,6 +364,7 @@ export default defineStore(
       episodesId,
       stopAssetsPolling,
       stopStoryboardPolling,
+      updateContext,
       batchGenerateStoryboard,
     };
   },
