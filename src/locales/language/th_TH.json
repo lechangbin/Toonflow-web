@@ -360,7 +360,8 @@
       "cornerScape": "สร้างตัวละครและฉาก",
       "production": "ผลิตวิดีโอ",
       "assetCenter": "ศูนย์สินทรัพย์",
-      "settings": "การตั้งค่า"
+      "settings": "การตั้งค่า",
+      "jumpGithub": "ข้ามไปที่ Github"
     },
     "project": {
       "title": "โปรเจกต์ของฉัน",

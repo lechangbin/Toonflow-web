@@ -71,36 +71,16 @@
 import { useMousePressed, useMouse } from "@vueuse/core";
 import _ from "lodash";
 import axios from "@/utils/axios";
-import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import productionAgentStore from "@/stores/productionAgent";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
-const { connected, messages, status, episodesId } = storeToRefs(productionAgentStore());
+const { connected, messages, status, episodesId, loadingHistory } = storeToRefs(productionAgentStore());
 
 const props = defineProps({ title: String });
 
 const emit = defineEmits(["close"]);
 
 const inputValue = ref("");
-const loadingHistory = ref(false);
-
-const defMsg: ChatMessagesData[] = [
-  {
-    id: "welcome",
-    role: "assistant",
-    content: [
-      { type: "text", status: "complete", data: $t("workbench.production.chatBox.welcomeMessage") },
-      {
-        type: "suggestion",
-        status: "complete",
-        data: [{ title: $t("workbench.production.chatBox.startMakingVideo"), prompt: $t("workbench.production.chatBox.startMakingVideoPrompt") }],
-      },
-    ],
-  },
-];
-onMounted(() => {
-  if (messages.value.length <= 0) messages.value = [...defMsg, ...messages.value];
-});
 
 function handleSend(text: string) {
   productionAgentStore().chat(text);
@@ -133,20 +113,9 @@ function handleClearMemory(type: "message" | "summary" | "all") {
       await axios.post(`/agents/clearMemory`, { projectId: project.value?.id, agentType: "productionAgent", episodesId: episodesId.value, type });
       window.$message.success($t("workbench.production.chatBox.memoryCleared", { type: memoryTypeLabel[type] }));
       dialog.destroy();
-      getHistory();
+      productionAgentStore().getHistory();
     },
   });
-}
-
-async function getHistory() {
-  loadingHistory.value = true;
-  const { data } = await axios.post(`/agents/getMemory`, {
-    projectId: project.value?.id,
-    episodesId: episodesId.value,
-    agentType: "productionAgent",
-  });
-  messages.value = [...defMsg, ...data];
-  loadingHistory.value = false;
 }
 
 const resizeHandleRef = ref<HTMLElement | null>(null);

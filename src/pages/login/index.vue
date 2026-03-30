@@ -62,7 +62,7 @@ const handleChangeLang = (data) => {
 };
 
 const store = settingStore();
-const { baseUrl } = storeToRefs(store);
+const { baseUrl, isElectron } = storeToRefs(store);
 
 const showSettingModal = ref(false);
 const tempBaseUrl = ref(baseUrl.value);
@@ -107,10 +107,6 @@ const handleLogin = () => {
       window.$message.error(e.message);
     });
 };
-
-const isElectron = computed(() => {
-  return window?.$electron;
-});
 </script>
 
 <style lang="scss" scoped>

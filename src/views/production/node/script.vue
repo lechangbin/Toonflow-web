@@ -1,9 +1,9 @@
 <template>
   <t-card class="script">
-    <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
-    <div class="titleBar dragHandle">
-      <div class="title c">{{ $t('workbench.production.node.script.title') }}</div>
-      <t-button size="small" variant="text" @click="openEdit">{{ $t('workbench.production.edit') }}</t-button>
+    <div class="titleBar dragHandle pr">
+      <div class="title c">{{ $t("workbench.production.node.script.title") }}</div>
+      <t-button size="small" variant="text" @click="openEdit">{{ $t("workbench.production.edit") }}</t-button>
+      <Handle :id="props.handleIds.source" type="source" :position="Position.Right" style="right: calc(-1 * var(--td-comp-paddingLR-xl))" />
     </div>
     <div class="content">
       <MdPreview v-model="script" :theme="'light'" />
@@ -106,7 +106,7 @@ function onPaste(e: ClipboardEvent) {
 
 <style lang="scss" scoped>
 .script {
-  max-width: 40vw;
+  max-width: 100vw;
   width: fit-content;
   min-width: 200px;
   user-select: text;

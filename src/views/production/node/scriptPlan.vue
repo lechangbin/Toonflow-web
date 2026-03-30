@@ -1,10 +1,10 @@
 <template>
   <t-card class="scriptPlan">
-    <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
-    <Handle :id="props.handleIds.source" type="source" :position="Position.Right" />
-    <div class="titleBar dragHandle">
+    <div class="titleBar dragHandle pr">
       <div class="title c">{{ $t("workbench.production.node.scriptPlan.title") }}</div>
       <t-button size="small" variant="text" @click="openEdit">{{ $t("workbench.production.edit") }}</t-button>
+      <Handle :id="props.handleIds.target" type="target" :position="Position.Left" style="left: calc(-1 * var(--td-comp-paddingLR-xl))" />
+      <Handle :id="props.handleIds.source" type="source" :position="Position.Right" style="right: calc(-1 * var(--td-comp-paddingLR-xl))" />
     </div>
     <div class="content">
       <t-empty v-if="!scriptPlan" style="margin-top: 16px"></t-empty>
@@ -107,7 +107,7 @@ function onPaste(e: ClipboardEvent) {
 
 <style lang="scss" scoped>
 .scriptPlan {
-  max-width: 40vw;
+  max-width: 100vw;
   width: fit-content;
   min-width: 200px;
   user-select: text;

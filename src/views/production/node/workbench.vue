@@ -1,9 +1,9 @@
 <template>
   <t-card class="workbench" @click="visible = !visible">
-    <Handle :id="props.handleIds.target" type="target" :position="Position.Left" />
-    <!-- <Handle :id="props.handleIds.source" type="source" :position="Position.Right" /> -->
-    <div class="titleBar dragHandle">
+    <div class="titleBar dragHandle pr">
       <div class="title">{{ $t("workbench.production.node.workbench.title") }}</div>
+      <Handle :id="props.handleIds.target" type="target" :position="Position.Left" style="left: calc(-1 * var(--td-comp-paddingLR-xl))" />
+      <!-- <Handle :id="props.handleIds.source" type="source" :position="Position.Right" /> -->
     </div>
     <div class="videoPreview">
       <div class="videoPlaceholder" :style="{ background: workbenchData?.gradient }">
