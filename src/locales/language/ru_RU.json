@@ -601,7 +601,8 @@
         "memoryCleared": "{type} очищена",
         "scriptUpdated": "Сценарий успешно обновлен",
         "scriptUpdateFailed": "Не удалось обновить сценарий, попробуйте позже",
-        "searchScriptFailed": "Не удалось найти сценарии"
+        "searchScriptFailed": "Не удалось найти сценарии",
+        "updated": "Сохранено успешно."
       }
     },
     "cornerScape": {
@@ -727,7 +728,8 @@
           "updateFailed": "Не удалось обновить сценарий, попробуйте позже"
         }
       },
-      "deleteScript": "Удаление скриптов в пакетном режиме"
+      "deleteScript": "Удаление скриптов в пакетном режиме",
+      "extractAssets": ""
     },
     "assets": {
       "addPrefix": "Добавить",

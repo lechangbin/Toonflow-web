@@ -601,7 +601,8 @@
         "memoryCleared": "ล้าง{type}แล้ว",
         "scriptUpdated": "อัปเดตบทภาพยนตร์สำเร็จ",
         "scriptUpdateFailed": "อัปเดตบทภาพยนตร์ล้มเหลว โปรดลองอีกครั้งในภายหลัง",
-        "searchScriptFailed": "ค้นหาบทภาพยนตร์ล้มเหลว"
+        "searchScriptFailed": "ค้นหาบทภาพยนตร์ล้มเหลว",
+        "updated": "บันทึกเรียบร้อยแล้ว"
       }
     },
     "cornerScape": {
@@ -727,7 +728,8 @@
           "updateFailed": "อัปเดตบทภาพยนตร์ล้มเหลว โปรดลองอีกครั้งในภายหลัง"
         }
       },
-      "deleteScript": "ลบสคริปต์เป็นชุด"
+      "deleteScript": "ลบสคริปต์เป็นชุด",
+      "extractAssets": ""
     },
     "assets": {
       "addPrefix": "เพิ่ม",
