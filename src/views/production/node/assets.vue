@@ -68,7 +68,6 @@
 </template>
 
 <script setup lang="ts">
-import axios from "@/utils/axios";
 import { Handle, Position, type Edge } from "@vue-flow/core";
 import editImage from "../components/editImage/index.vue";
 import { type AssetItem, type DeriveAsset } from "../utils/flowBuilder";
