@@ -12,7 +12,17 @@ export default defineStore(
       scriptPlan: "", //拍摄计划
       storyboardTable: "", //分镜表
       assets: [], // 衍生资产
-      storyboard: [], //分镜面板
+      storyboard: [
+        {
+          id: 1,
+          title: "123123123",
+          description: "123123123",
+          duration: 10,
+          prompt: "12312312",
+          src: "https://p2-kling.klingai.com/kcdn/cdn-kcdn112452/kling-web/dialog-weekly-exp3.png?x-oss-process=image%2Fresize%2Cw_740%2Ch_620%2Cm_mfit%2Fformat%2Cwebp",
+          state: "已完成",
+        },
+      ], //分镜面板
       workbench: { name: "", duration: "", resolution: "", fps: "" }, // 工作台数据
     });
 
@@ -31,6 +41,7 @@ export default defineStore(
         { tag: "script", keepInMessage: false },
         { tag: "scriptPlan", keepInMessage: false },
         { tag: "storyboardTable", keepInMessage: false },
+        { tag: "storyboard", keepInMessage: false },
       ],
       onXmlTag: (data) => {
         const { tag, value, children, attrs, status } = data;
@@ -40,6 +51,9 @@ export default defineStore(
           flowData.value.scriptPlan = value ?? "";
         } else if (tag === "storyboardTable") {
           flowData.value.storyboardTable = value ?? "";
+        } else if (tag === "storyboard") {
+          console.log("%c Line:46 🍞 value", "background:#4fff4B", value);
+          flowData.value.storyboard = JSON.parse(value ?? "") ?? "";
         }
       },
     });
@@ -349,6 +363,12 @@ export default defineStore(
       };
       if (!connected.value) connect();
       socket.value!.emit("updateContext", ctx);
+    }
+    async function addStoryboardInfo(data: { prompt: string }[]) {
+      await axios.post("/production/storyboard/batchAddStoryboardInfo", {
+        scriptId: episodesId.value,
+        data,
+      });
     }
 
     return {

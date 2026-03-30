@@ -1318,5 +1318,9 @@
   },
   "workbench.production.node.storyboard.batchGenerateImage": "重新生成",
   "workbench.production.node.storyboard.batchGenerateFailed": "生成失败",
-  "workbench.production.node.storyboard.batchGenerateSuccess": "开始生成分镜"
+  "workbench.production.node.storyboard.batchGenerateSuccess": "开始生成分镜",
+  "workbench.production.node.storyboard.removeFailed": "删除分镜失败",
+  "workbench.production.node.storyboard.editNode": "编辑",
+  "workbench.production.node.storyboard.deleteNode": "删除",
+  "workbench.production.node.storyboard.confirmDeleteBody": "确认是否删除该分镜"
 }

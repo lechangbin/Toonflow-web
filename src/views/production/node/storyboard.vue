@@ -32,12 +32,23 @@
                 <t-image v-if="item.src" :src="item.src" fit="contain" class="frameImg" @click="editStoryboaryImage(item, [item.src], item.id)">
                   <template #overlayContent>
                     <div class="imageToolsWrap show">
+                      <t-tooltip theme="primary" :content="$t('workbench.production.node.storyboard.deleteNode')">
+                        <div class="remove ac" @click.stop="removeFn(item.id!)">
+                          <i-delete theme="outline" size="18" fill="#fff" />
+                        </div>
+                      </t-tooltip>
+                      <t-tooltip theme="primary" :content="$t('workbench.production.node.storyboard.editNode')">
+                        <div class="editNode ac" @click.stop="editInfo(item)">
+                          <i-edit theme="outline" size="18" fill="#fff" />
+                        </div>
+                      </t-tooltip>
                       <ImageTools :src="item.src" position="br" />
                     </div>
                   </template>
                 </t-image>
                 <div v-else class="generatingPlaceholder">
                   <t-loading v-if="item.state === '生成中'" size="small" />
+                  <span v-else-if="item.state === '生成失败'" style="color: #ff4d4f">生成失败</span>
                   <t-empty v-else size="small" :title="$t('workbench.production.node.storyboard.notGenerated')" />
                 </div>
               </div>
@@ -67,9 +78,9 @@
       </div>
       <div class="ac" style="gap: 10px">
         <t-button block @click="previewAll" :disabled="!storyboard.length">{{ $t("workbench.production.node.storyboard.gridPreview") }}</t-button>
-        <t-button block @click="batchGenerateImage" :disabled="!storyboard.length" :loading="generateLoading">
+        <!-- <t-button block @click="batchGenerateImage" :disabled="!storyboard.length" :loading="generateLoading">
           {{ $t("workbench.production.node.storyboard.batchGenerateImage") }}
-        </t-button>
+        </t-button> -->
       </div>
     </div>
     <editImage v-model:visible="visible" v-if="visible" :editData="currentRow" type="storyboard" @save="save" />
@@ -293,6 +304,111 @@ async function save({ imageUrl, insertId }: { imageUrl: string; insertId: number
   const target = storyboard.value.find((s) => s.id === id);
   if (target) target.src = imageUrl;
 }
+
+async function removeFn(id: number) {
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.assets.confirmDeleteHeader"),
+    body: $t("workbench.production.node.storyboard.confirmDeleteBody"),
+    confirmBtn: $t("workbench.assets.deleteBtn"),
+    cancelBtn: $t("workbench.assets.cancelBtn"),
+    theme: "warning",
+    onConfirm: async () => {
+      try {
+        await axios.post("/production/storyboard/removeFrame", {
+          id,
+          projectId: project.value?.id,
+        });
+        const index = storyboard.value.findIndex((s) => s.id === id);
+        if (index !== -1) {
+          storyboard.value.splice(index, 1);
+        }
+      } catch (e) {
+        window.$message.error((e as any)?.message || $t("workbench.production.node.storyboard.removeFailed"));
+      } finally {
+        dialog.destroy();
+      }
+    },
+  });
+  try {
+    await axios.post("/production/storyboard/removeFrame", {
+      id,
+      projectId: project.value?.id,
+    });
+    const index = storyboard.value.findIndex((s) => s.id === id);
+    if (index !== -1) {
+      storyboard.value.splice(index, 1);
+    }
+  } catch (e) {
+    window.$message.error((e as any)?.message || $t("workbench.production.node.storyboard.removeFailed"));
+  }
+}
+
+function editInfo(item: Storyboard) {
+  const formData = reactive({
+    title: item.title ?? "",
+    description: item.description ?? "",
+    prompt: item.prompt ?? "",
+  });
+
+  const bodyVNode = () =>
+    h("div", { class: "editInfoForm" }, [
+      h("div", { class: "editInfoField" }, [
+        h("label", { class: "editInfoLabel" }, "标题"),
+        h(resolveComponent("t-input"), {
+          value: formData.title,
+          placeholder: "请输入标题",
+          "onUpdate:value": (v: string) => (formData.title = v),
+        }),
+      ]),
+      h("div", { class: "editInfoField" }, [
+        h("label", { class: "editInfoLabel" }, "描述"),
+        h(resolveComponent("t-textarea"), {
+          value: formData.description,
+          placeholder: "请输入描述",
+          autosize: { minRows: 2, maxRows: 4 },
+          "onUpdate:value": (v: string) => (formData.description = v),
+        }),
+      ]),
+      h("div", { class: "editInfoField" }, [
+        h("label", { class: "editInfoLabel" }, "提示词"),
+        h(resolveComponent("t-textarea"), {
+          value: formData.prompt,
+          placeholder: "请输入提示词",
+          autosize: { minRows: 3, maxRows: 6 },
+          "onUpdate:value": (v: string) => (formData.prompt = v),
+        }),
+      ]),
+    ]);
+
+  const confirmDialog = DialogPlugin.confirm({
+    header: "提示词修改",
+    body: bodyVNode,
+    width: 480,
+    confirmBtn: {
+      content: "提交",
+      theme: "primary",
+      loading: false,
+    },
+    onConfirm: async () => {
+      confirmDialog.update({ confirmBtn: { content: "提交中", loading: true } });
+      try {
+        await axios.post("/production/storyboard/editStoryboardInfo", {
+          id: item.id,
+          title: formData.title,
+          description: formData.description,
+          prompt: formData.prompt,
+        });
+        item.prompt = formData.prompt;
+        window.$message.success("修改成功");
+      } catch (e) {
+        window.$message.error((e as any)?.message || "修改失败");
+      } finally {
+        confirmDialog.update({ confirmBtn: { content: "提交", loading: false } });
+        confirmDialog.destroy();
+      }
+    },
+  });
+}
 </script>
 
 <style lang="scss" scoped>
@@ -402,7 +518,34 @@ async function save({ imageUrl, insertId }: { imageUrl: string; insertId: number
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s ease;
+      .remove {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 9999;
+        padding: 5px;
+        border-radius: 10px;
+        background-color: rgba(220, 50, 50, 0.7);
+        cursor: pointer;
+        &:hover {
+          background-color: rgba(220, 50, 50, 1);
+        }
+      }
+      .editNode {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        z-index: 9999;
+        padding: 5px;
+        border-radius: 10px;
+        background-color: rgba(24, 144, 255, 0.7);
+        cursor: pointer;
+        &:hover {
+          background-color: rgba(24, 144, 255, 1);
+        }
+      }
     }
+
     &:hover {
       .imageToolsWrap {
         opacity: 1;
@@ -457,5 +600,22 @@ async function save({ imageUrl, insertId }: { imageUrl: string; insertId: number
 }
 :deep(.t-image__wrapper) {
   background-color: transparent !important;
+}
+.editInfoForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.editInfoField {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editInfoLabel {
+  font-size: 13px;
+  color: var(--td-text-color-secondary);
 }
 </style>
