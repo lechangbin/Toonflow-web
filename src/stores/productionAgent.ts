@@ -84,6 +84,8 @@ export default defineStore(
             deriveAssetList.splice(index, 1);
             callback({ success: true, message: "删除成功" });
           });
+          s.on("generateDeriveAsset", async (data, callback) => {});
+          s.on("generateStoryboard", async (data, callback) => {});
         }
       },
       { immediate: true },

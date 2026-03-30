@@ -39,14 +39,14 @@
           </template>
         </t-select>
         <t-tooltip placement="bottom" theme="primary" content="$t('workbench.production.getFlowData')">
-          <t-button @click="refFlowData" variant="outline" style="margin-left: 8px">
+          <t-button @click="refFlowData" variant="outline">
             <template #icon>
               <i-refresh size="16" />
             </template>
           </t-button>
         </t-tooltip>
         <t-tooltip placement="bottom" theme="primary" content="$t('workbench.production.autoLayoutLR')">
-          <t-button @click="layoutGraph()" variant="outline">
+          <t-button @click="layoutGraph()" variant="outline" style="margin-left: 8px">
             <template #icon>
               <i-tree-diagram size="16" />
             </template>
