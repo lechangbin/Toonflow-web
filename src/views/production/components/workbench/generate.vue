@@ -334,6 +334,7 @@
             <template #icon><i-magic size="16" /></template>
             {{ $t("workbench.production.generate.batchGeneratePrompt") }}
           </t-button>
+          <t-tag>{{ project?.videoModel }}</t-tag>
           <t-select
             v-model="batchResolution"
             size="small"
