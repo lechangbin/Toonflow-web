@@ -1012,7 +1012,8 @@
         "confirmSuccess": "Xác nhận chọn thành công",
         "batchSubmitted": "Đã gửi yêu cầu tạo hàng loạt, đang xử lý...",
         "configNotFound": "Cấu hình không tồn tại",
-        "pollingFailed": "Truy vấn trạng thái video không thành công, vui lòng làm mới theo cách thủ công"
+        "pollingFailed": "Truy vấn trạng thái video không thành công, vui lòng làm mới theo cách thủ công",
+        "batchGeneratePrompt": "Tạo các từ nhắc nhở theo đợt"
       },
       "editVideo": {
         "reset": "Đặt lại",

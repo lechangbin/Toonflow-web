@@ -1105,7 +1105,8 @@
         "configNotFound": "配置不存在",
         "stateSuccess": "生成成功",
         "statePending": "待生产",
-        "pollingFailed": "视频状态查询失败，请手动刷新"
+        "pollingFailed": "视频状态查询失败，请手动刷新",
+        "batchGeneratePrompt": "批量生成提示词"
       },
       "editVideo": {
         "reset": "重置",
