@@ -1325,5 +1325,7 @@
   "promptManage": {
     "prompt": "提示词"
   },
-  "workbench.production.node.storyboard.batchGenerateImage": "图片生成"
+  "workbench.production.node.storyboard.batchGenerateImage": "重新生成",
+  "workbench.production.node.storyboard.batchGenerateFailed": "生成失败",
+  "workbench.production.node.storyboard.batchGenerateSuccess": "开始生成分镜"
 }

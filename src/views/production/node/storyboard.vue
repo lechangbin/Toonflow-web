@@ -67,7 +67,7 @@
       </div>
       <div class="ac" style="gap: 10px">
         <t-button block @click="previewAll" :disabled="!storyboard.length">{{ $t("workbench.production.node.storyboard.gridPreview") }}</t-button>
-        <t-button block @click="batchGenerateImage" :disabled="!storyboard.length">
+        <t-button block @click="batchGenerateImage" :disabled="!storyboard.length" :loading="generateLoading">
           {{ $t("workbench.production.node.storyboard.batchGenerateImage") }}
         </t-button>
       </div>
@@ -90,8 +90,9 @@ import { Handle, Position, type Edge } from "@vue-flow/core";
 import axios from "@/utils/axios";
 import type { AssetItem } from "../utils/flowBuilder";
 import projectStore from "@/stores/project";
-
+import productionAgentStore from "@/stores/productionAgent";
 const { project } = storeToRefs(projectStore());
+const { batchGenerateStoryboard } = productionAgentStore();
 
 interface Storyboard {
   id: number;
@@ -201,17 +202,27 @@ async function previewAll() {
     LoadingPlugin(false);
   }
 }
-function batchGenerateImage() {
-  LoadingPlugin(true);
-  const allIds = (storyboard.value ?? []).filter((s) => s.src).map((s) => s.id!);
-  if (!allIds.length) {
-    window.$message.warning($t("workbench.production.node.storyboard.noPreviewImages"));
-    LoadingPlugin(false);
-    return;
+const generateLoading = ref(false);
+async function batchGenerateImage() {
+  // LoadingPlugin(true);
+  generateLoading.value = true;
+  try {
+    await batchGenerateStoryboard();
+    window.$message.success($t("workbench.production.node.storyboard.batchGenerateSuccess"));
+  } catch (e) {
+    window.$message.error($t("workbench.production.node.storyboard.batchGenerateFailed"));
+  } finally {
+    generateLoading.value = false;
   }
-  axios.post("/production/storyboard/batchGenerateImage", {
-    scriptId: allIds,
-  });
+  // const allIds = (storyboard.value ?? []).filter((s) => s.src).map((s) => s.id!);
+  // if (!allIds.length) {
+  //   window.$message.warning($t("workbench.production.node.storyboard.noPreviewImages"));
+  //   LoadingPlugin(false);
+  //   return;
+  // }
+  // axios.post("/production/storyboard/batchGenerateImage", {
+  //   scriptId: allIds,
+  // });
 }
 function editStoryboaryImage(item: Storyboard, images: string[], id: number | null = null, insertAfterIndex: number | null = null) {
   currentRow.value = {

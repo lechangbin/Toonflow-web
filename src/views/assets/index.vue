@@ -76,13 +76,17 @@
                 @page-change="handlePageChange">
                 <template #expandedRow="{ row }">
                   <div class="expandedContent">
-                    <t-table :columns="subColumns" :data="row.sonAssets || []" row-key="id" hover size="small" table-layout="fixed">
-                      <template #preview="{ row: subRow }">
+                    <t-table :columns="subColumns" :data="row.sonAssets || []" :selected-row-keys="selectedSubRowKeys" row-key="id" hover size="small" table-layout="fixed" :select-on-row-click="false" @select-change="handleSubSelectChange">
+                      <template #previewWithLoading="{ row: subRow }">
                         <div class="previewCell">
-                          <t-image-viewer :images="[subRow.src]" :closeOnEscKeydown="true" :closeOnOverlay="true">
+                          <div v-if="subRow.state === '生成中'" class="imageTrigger generatingImage">
+                            <t-loading size="small" />
+                            <span class="generatingLabel">{{ $t("workbench.assets.generating") }}</span>
+                          </div>
+                          <t-image-viewer v-else :images="[subRow.src]" :closeOnEscKeydown="true" :closeOnOverlay="true">
                             <template #trigger="{ open }">
                               <div class="imageTrigger" @click="subRow.src && open()">
-                                <img v-if="subRow.src" :src="subRow.src" :alt="subRow.name" />
+                                <img v-if="subRow.src" :src="subRow.src" :alt="subRow.name" class="previewImage" />
                                 <div v-else class="noImage">
                                   <t-icon name="image" size="24px" />
                                 </div>
@@ -95,9 +99,15 @@
                           </t-image-viewer>
                         </div>
                       </template>
+                      <template #prompt="{ row: subRow }">
+                        <div class="promptCell">
+                          <t-loading v-if="subRow.promptState === '生成中'" size="small" style="margin-right: 4px" />
+                          <span :class="{ 'generating-text': subRow.promptState === '生成中' }">{{ subRow.prompt }}</span>
+                        </div>
+                      </template>
                       <template #operation="{ row: subRow }">
                         <t-space :size="0">
-                          <t-button theme="primary" variant="text" @click="generate(subRow)">
+                          <t-button theme="primary" variant="text" :disabled="isGenerating(subRow.id)" @click="generate(subRow)">
                             <template #icon>
                               <i-magic :size="18" />
                             </template>
@@ -109,7 +119,7 @@
                             </template>
                             {{ $t("workbench.assets.edit") }}
                           </t-button>
-                          <t-button theme="danger" variant="text" @click="handleDelete(subRow)">
+                          <t-button theme="danger" variant="text" :disabled="isGenerating(subRow.id)" @click="handleDelete(subRow)">
                             <template #icon>
                               <t-icon name="delete" />
                             </template>
@@ -392,11 +402,12 @@ const tabNameMap: Record<string, string> = {
   clip: $t("workbench.assets.clip"),
 };
 const selectedRowKeys = ref<Array<string | number>>([]);
+const selectedSubRowKeys = ref<Array<string | number>>([]);
 const expandedRowKeys = ref<Array<string | number>>([]);
 const loading = ref(false);
 // 是否正在处于任意生成中（提示词或图片），基于 item 的实际 state/promptState 判断
 const isGenerating = (id: number) => {
-  const item = tableData.value.find((row) => row.id === id);
+  const item = findAssetById(id);
   return item?.promptState === "生成中" || item?.state === "生成中";
 };
 //表格数据类型定义
@@ -466,6 +477,7 @@ async function loadCurrentTabData() {
 function selectAssetOptions(value: TabValue) {
   searchText.value = "";
   selectedRowKeys.value = [];
+  selectedSubRowKeys.value = [];
   expandedRowKeys.value = [];
   pagination.value.page = 1;
   loadCurrentTabData();
@@ -531,19 +543,42 @@ function keep() {
     handleBatchGenerateImage();
   }
 }
+// 获取所有选中的子资产
+function getSelectedSubAssets(): Asset[] {
+  const subAssets: Asset[] = [];
+  tableData.value.forEach((row) => {
+    if (row.sonAssets?.length) {
+      row.sonAssets.forEach((sub) => {
+        if (selectedSubRowKeys.value.includes(sub.id)) {
+          subAssets.push(sub);
+        }
+      });
+    }
+  });
+  return subAssets;
+}
 // 批量生成提示词
 async function handleBatchGeneratePrompt() {
-  const selectedAssets = tableData.value.filter((item: any) => selectedRowKeys.value.includes(item.id));
+  const selectedParentAssets = tableData.value.filter((item: any) => selectedRowKeys.value.includes(item.id));
+  const selectedSubAssets = getSelectedSubAssets();
+  const selectedAssets = [...selectedParentAssets, ...selectedSubAssets];
   if (selectedAssets.length === 0) {
     window.$message.warning($t("workbench.assets.selectAtLeastOne"));
     return;
   }
   // 设置 promptState 为 '生成中'，让轮询自动接管状态跟踪
-  selectedAssets.forEach((asset) => {
+  selectedParentAssets.forEach((asset) => {
     const target = tableData.value.find((row) => row.id === asset.id);
     if (target) target.promptState = "生成中";
   });
-  selectedRowKeys.value = selectedRowKeys.value.filter((key) => !selectedAssets.some((a) => a.id === key));
+  selectedSubAssets.forEach((asset) => {
+    tableData.value.forEach((row) => {
+      const target = row.sonAssets?.find((sub) => sub.id === asset.id);
+      if (target) target.promptState = "生成中";
+    });
+  });
+  selectedRowKeys.value = selectedRowKeys.value.filter((key) => !selectedParentAssets.some((a) => a.id === key));
+  selectedSubRowKeys.value = selectedSubRowKeys.value.filter((key) => !selectedSubAssets.some((a) => a.id === key));
   batchGenerationShow.value = false;
   try {
     await axios.post("/assetsGenerate/batchPolishAssetsPrompt", {
@@ -561,7 +596,9 @@ async function handleBatchGeneratePrompt() {
 }
 // 批量生成图片
 async function handleBatchGenerateImage() {
-  const selectedAssets = tableData.value.filter((item: any) => selectedRowKeys.value.includes(item.id));
+  const selectedParentAssets = tableData.value.filter((item: any) => selectedRowKeys.value.includes(item.id));
+  const selectedSubAssets = getSelectedSubAssets();
+  const selectedAssets = [...selectedParentAssets, ...selectedSubAssets];
   if (selectedAssets.length === 0) {
     window.$message.warning($t("workbench.assets.selectAtLeastOne"));
     return;
@@ -586,11 +623,20 @@ async function handleBatchGenerateImage() {
   if (validAssets.length === 0) return;
 
   // 设置 state 为 '生成中'，让轮询自动接管状态跟踪
-  validAssets.forEach((asset) => {
+  const validParentAssets = validAssets.filter((a) => selectedRowKeys.value.includes(a.id));
+  const validSubAssets = validAssets.filter((a) => selectedSubRowKeys.value.includes(a.id));
+  validParentAssets.forEach((asset) => {
     const target = tableData.value.find((row) => row.id === asset.id);
     if (target) target.state = "生成中";
   });
+  validSubAssets.forEach((asset) => {
+    tableData.value.forEach((row) => {
+      const target = row.sonAssets?.find((sub) => sub.id === asset.id);
+      if (target) target.state = "生成中";
+    });
+  });
   selectedRowKeys.value = selectedRowKeys.value.filter((key) => !validAssets.some((a) => a.id === key));
+  selectedSubRowKeys.value = selectedSubRowKeys.value.filter((key) => !validAssets.some((a) => a.id === key));
   batchGenerationShow.value = false;
 
   try {
@@ -609,8 +655,16 @@ async function handleBatchGenerateImage() {
   } catch (e: any) {
     window.$message.error($t("workbench.assets.imageGenFail", { name: "", error: e.message ?? "" }));
     validAssets.forEach((asset) => {
-      const target = tableData.value.find((row) => row.id === asset.id);
-      if (target) target.state = "生成失败";
+      // 在父级和子级中都查找
+      const parentTarget = tableData.value.find((row) => row.id === asset.id);
+      if (parentTarget) {
+        parentTarget.state = "生成失败";
+      } else {
+        tableData.value.forEach((row) => {
+          const subTarget = row.sonAssets?.find((sub) => sub.id === asset.id);
+          if (subTarget) subTarget.state = "生成失败";
+        });
+      }
     });
   }
 }
@@ -699,19 +753,26 @@ const columns: TableProps["columns"] = [
   },
 ];
 
-// 子资产表格列配置 - 不含勾选框和创建时间
+// 子资产表格列配置
 const subColumns: TableProps["columns"] = [
+  {
+    colKey: "row-select",
+    type: selectType,
+    width: 50,
+    align: "center",
+    fixed: "left",
+  },
   {
     colKey: "src",
     title: $t("workbench.assets.colPreview"),
     width: 100,
     align: "center",
-    cell: "preview",
+    cell: "previewWithLoading",
   },
   {
     colKey: "name",
     title: $t("workbench.assets.colName"),
-    width: 200,
+    width: 100,
     align: "left",
     ellipsis: true,
   },
@@ -721,25 +782,26 @@ const subColumns: TableProps["columns"] = [
     width: 200,
     align: "left",
     ellipsis: true,
+    cell: "prompt",
   },
   {
     colKey: "describe",
     title: $t("workbench.assets.colDescribe"),
-    width: 200,
+    width: 100,
     align: "left",
     ellipsis: true,
   },
   {
     colKey: "remark",
     title: $t("workbench.assets.colRemark"),
-    minWidth: 200,
+    minWidth: 150,
     align: "left",
     ellipsis: true,
   },
   {
     colKey: "operation",
     title: $t("workbench.assets.colOperation"),
-    width: 180,
+    width: 280,
     align: "center",
     fixed: "right",
     cell: "operation",
@@ -797,10 +859,39 @@ const clipColumns: TableProps["columns"] = [
 // 选择行（正在生成中的行不允许勾选）
 function handleSelectChange(value: Array<string | number>) {
   const filtered = value.filter((key) => !isGenerating(key as number));
+  const prevKeys = selectedRowKeys.value;
   if (!props.multiple) {
     selectedRowKeys.value = filtered.length > 0 ? [filtered[filtered.length - 1]] : [];
   } else {
     selectedRowKeys.value = filtered;
+  }
+  // 父资产勾选/取消时，同步子资产勾选状态
+  const newlySelected = selectedRowKeys.value.filter((k) => !prevKeys.includes(k));
+  const newlyDeselected = prevKeys.filter((k) => !selectedRowKeys.value.includes(k));
+  // 新勾选的父资产 → 其子资产全部勾选
+  newlySelected.forEach((parentId) => {
+    const parent = tableData.value.find((row) => row.id === parentId);
+    if (parent?.sonAssets?.length) {
+      const subIds = parent.sonAssets.map((sub) => sub.id);
+      const merged = new Set([...selectedSubRowKeys.value, ...subIds]);
+      selectedSubRowKeys.value = Array.from(merged);
+    }
+  });
+  // 取消勾选的父资产 → 其子资产全部取消
+  newlyDeselected.forEach((parentId) => {
+    const parent = tableData.value.find((row) => row.id === parentId);
+    if (parent?.sonAssets?.length) {
+      const subIds = new Set(parent.sonAssets.map((sub) => sub.id));
+      selectedSubRowKeys.value = selectedSubRowKeys.value.filter((k) => !subIds.has(k as number));
+    }
+  });
+}
+// 子资产选择行
+function handleSubSelectChange(value: Array<string | number>) {
+  if (!props.multiple) {
+    selectedSubRowKeys.value = value.length > 0 ? [value[value.length - 1]] : [];
+  } else {
+    selectedSubRowKeys.value = value;
   }
 }
 function handleExpandChange(value: Array<string | number>) {
@@ -877,6 +968,7 @@ function handleDelete(row: any) {
 
 defineExpose({
   selectedRowKeys,
+  selectedSubRowKeys,
   tableData,
 });
 
@@ -909,11 +1001,31 @@ function closeMediaPreview() {
   mediaPreviewSrc.value = "";
 }
 //轮询
+// 获取所有资产（包含父资产和子资产）的扁平列表
+function getAllAssetsFlat(): Asset[] {
+  const all: Asset[] = [];
+  tableData.value.forEach((row) => {
+    all.push(row);
+    if (row.sonAssets?.length) {
+      all.push(...row.sonAssets);
+    }
+  });
+  return all;
+}
+// 在父资产和子资产中查找指定 id 的资产
+function findAssetById(id: number): Asset | undefined {
+  for (const row of tableData.value) {
+    if (row.id === id) return row;
+    const sub = row.sonAssets?.find((s) => s.id === id);
+    if (sub) return sub;
+  }
+  return undefined;
+}
 const notCompultedData = computed(() => {
-  return tableData.value.filter((item) => item.promptState == "生成中");
+  return getAllAssetsFlat().filter((item) => item.promptState == "生成中");
 });
 const generatingData = computed(() => {
-  return tableData.value.filter((item) => item.state === "生成中");
+  return getAllAssetsFlat().filter((item) => item.state === "生成中");
 });
 // 轮询相关
 let pollingTimer: ReturnType<typeof setInterval> | null = null;
@@ -926,7 +1038,7 @@ async function pollingPromptAssets() {
     const { data } = await axios.post("/assets/pollingPromptAssets", { ids });
     if (Array.isArray(data) && data.length) {
       data.forEach((item: { id: number; promptState: string; prompt: string }) => {
-        const target = tableData.value.find((row) => row.id === item.id);
+        const target = findAssetById(item.id);
         if (target) {
           target.promptState = item.promptState;
           if (item.prompt !== undefined) target.prompt = item.prompt;
@@ -945,11 +1057,16 @@ async function pollingImageAssets() {
   try {
     const { data } = await axios.post("/assets/pollingImageAssets", { ids });
     if (Array.isArray(data) && data.length) {
-      data.forEach((item: { id: number; state: string; filePath: string }) => {
-        const target = tableData.value.find((row) => row.id === item.id);
+      data.forEach((item: { id: number; state: string; filePath: string; src?: string }) => {
+        const target = findAssetById(item.id);
         if (target) {
           target.state = item.state;
           if (item.filePath !== undefined) target.filePath = item.filePath;
+          if (item.src !== undefined) target.src = item.src;
+          // filePath 存在时也作为 src 使用，确保图片立即显示
+          if (!item.src && item.filePath && item.state !== '生成中') {
+            target.src = item.filePath;
+          }
         }
       });
       getFilteredData(assetOptions.value);
