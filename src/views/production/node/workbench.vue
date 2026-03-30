@@ -12,7 +12,7 @@
           <i-video theme="outline" size="48" />
         </div>
       </div>
-      <div class="videoInfo">
+      <!-- <div class="videoInfo">
         <div class="videoName">{{ workbenchData?.name }}</div>
         <div class="videoMeta">
           <span>{{ workbenchData?.duration }}</span>
@@ -21,7 +21,7 @@
           <span class="divider">|</span>
           <span>{{ workbenchData?.fps }}</span>
         </div>
-      </div>
+      </div> -->
     </div>
     <workbench v-model:visible="visible" v-if="visible" />
   </t-card>

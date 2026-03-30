@@ -1305,5 +1305,6 @@
   "workbench.project.msg.enterProjectQuality": "请选择图片质量",
   "promptManage": {
     "prompt": "提示词"
-  }
+  },
+  "workbench.production.node.storyboard.batchGenerateImage": "图片生成"
 }
