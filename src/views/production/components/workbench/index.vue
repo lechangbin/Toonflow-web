@@ -118,7 +118,6 @@ function editFootage() {
     })
     .then(({ data }) => {
       const videoList = data.data.filter((item: any) => getMediaType(item.filePath) === "video");
-      console.log("%c Line:121 🥒 videoList", "background:#33a5ff", videoList);
       const audioList = data.data.filter((item: any) => getMediaType(item.filePath) === "audio");
       const imageList = data.data.filter((item: any) => getMediaType(item.filePath) === "image");
 
@@ -247,10 +246,12 @@ function handleBatchDownload(value: any) {
     right: var(--td-comp-paddingLR-xxl);
     z-index: 9999;
     cursor: pointer;
+    margin-top: 10px;
   }
   .topMenu {
     padding-bottom: 16px;
     width: fit-content;
+    margin-top: 10px;
     .item {
       margin-right: 4px;
       cursor: pointer;
