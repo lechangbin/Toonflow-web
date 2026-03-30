@@ -1249,7 +1249,8 @@
       "guideSwitchEpisode": "Switch Episodes",
       "guideSwitchEpisodeBody": "Switching episodes has been moved here!",
       "autoLayoutLR": "Automatic typesetting-left and right layout",
-      "autoLayoutTB": "Automatic typesetting-top and bottom layout"
+      "autoLayoutTB": "Automatic typesetting-top and bottom layout",
+      "getFlowData": "Refresh workspace"
     },
     "task": {
       "title": "Task List",

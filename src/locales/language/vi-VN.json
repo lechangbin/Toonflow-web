@@ -1160,7 +1160,8 @@
       "guideSwitchEpisode": "Chuyển đổi tập",
       "guideSwitchEpisodeBody": "Tính năng chuyển đổi tập đã được chuyển đến đây nhé!",
       "autoLayoutLR": "Tự động sắp chữ-bố trí bên trái và bên phải",
-      "autoLayoutTB": "Tự động sắp chữ bố cục trên và dưới"
+      "autoLayoutTB": "Tự động sắp chữ bố cục trên và dưới",
+      "getFlowData": "Làm mới không gian làm việc"
     },
     "task": {
       "title": "Danh sách tác vụ",

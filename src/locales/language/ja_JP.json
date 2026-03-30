@@ -1169,7 +1169,8 @@
       "guideSwitchEpisode": "エピソードを切り替え",
       "guideSwitchEpisodeBody": "エピソードの切り替えはこちらに移動しました",
       "autoLayoutLR": "自動組版 - 左右レイアウト",
-      "autoLayoutTB": "自動写植上下レイアウト"
+      "autoLayoutTB": "自動写植上下レイアウト",
+      "getFlowData": "ワークスペースを更新する"
     },
     "task": {
       "title": "タスクリスト",

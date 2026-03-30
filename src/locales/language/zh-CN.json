@@ -1253,7 +1253,8 @@
       "guideSwitchEpisode": "切换剧集",
       "guideSwitchEpisodeBody": "切换剧集挪移到这里了哦",
       "autoLayoutLR": "自动排版-左右布局",
-      "autoLayoutTB": "自动排版-上下布局"
+      "autoLayoutTB": "自动排版-上下布局",
+      "getFlowData": "刷新工作区"
     },
     "task": {
       "title": "任务列表",

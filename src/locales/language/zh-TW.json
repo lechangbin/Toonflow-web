@@ -1175,7 +1175,8 @@
       "guideSwitchEpisode": "切換劇集",
       "guideSwitchEpisodeBody": "切換劇集移到這裡了喔",
       "autoLayoutLR": "自動排版-左右佈局",
-      "autoLayoutTB": "自動排版-上下佈局"
+      "autoLayoutTB": "自動排版-上下佈局",
+      "getFlowData": "刷新工作區"
     },
     "task": {
       "title": "任務列表",

@@ -38,7 +38,6 @@
             <i-document-folder size="24" />
           </template>
         </t-select>
-        <i-loading-four class="spin" size="16" style="margin-left: 0.5rem" v-show="loading"></i-loading-four>
         <t-tooltip placement="bottom" theme="primary" content="$t('workbench.production.autoLayoutLR')">
           <t-button @click="layoutGraph()" variant="outline">
             <template #icon>
@@ -46,6 +45,14 @@
             </template>
           </t-button>
         </t-tooltip>
+        <t-tooltip placement="bottom" theme="primary" content="$t('workbench.production.getFlowData')">
+          <t-button @click="refFlowData" variant="outline" style="margin-left: 8px">
+            <template #icon>
+              <i-refresh size="16" />
+            </template>
+          </t-button>
+        </t-tooltip>
+        <i-loading-four class="spin" size="16" style="margin-left: 0.5rem" v-show="loading"></i-loading-four>
         <!-- <t-tooltip theme="primary" content="$t('workbench.production.autoLayoutTB')">
           <div class="item c" @click="layoutGraph('TB')">
             <i-branch-one theme="outline" size="24" />
@@ -170,17 +177,14 @@ const title = computed(() => {
 watch(
   () => episodesId.value,
   async (newVal) => {
-    const { data } = await axios.post("/production/getFlowData", {
-      projectId: project.value?.id,
-      episodesId: episodesId.value,
-    });
-    flowData.value = data;
-    await nextTick();
-    await nextTick();
-    await nextTick();
-    layoutGraph();
+    refFlowData();
   },
 );
+
+async function refFlowData() {
+  await productionAgentStore().getFlowData();
+  layoutGraph();
+}
 </script>
 <style lang="scss" scoped>
 .flowMain {
