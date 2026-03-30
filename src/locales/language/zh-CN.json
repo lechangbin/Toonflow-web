@@ -935,8 +935,8 @@
           "editDialog": "编辑剧本"
         },
         "scriptPlan": {
-          "title": "拍摄计划",
-          "editDialog": "编辑拍摄计划"
+          "title": "导演计划",
+          "editDialog": "编辑导演计划"
         },
         "storyboard": {
           "title": "分镜面板",

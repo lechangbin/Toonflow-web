@@ -28,7 +28,7 @@ export default defineStore(
 
     const flowData = ref<FlowData>({
       script: "", // 剧本
-      scriptPlan: "", //拍摄计划
+      scriptPlan: "", //导演计划
       storyboardTable: "", //分镜表
       assets: [], // 衍生资产
       storyboard: [], //分镜面板
