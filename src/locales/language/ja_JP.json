@@ -164,7 +164,8 @@
         "deleteVendorBody": "削除すると、このプロバイダーのすべてのモデルも一緒に削除されます。続行しますか？",
         "vendorDeleted": "プロバイダーを削除しました",
         "deleteFailed": "削除に失敗しました"
-      }
+      },
+      "associationSkills": "関連スキル"
     },
     "agent": {
       "bannerDesc": "Toonflow公式中継サイトを使用すると、設定をワンクリックで入力でき、手動設定なしですぐに使用できます。",

@@ -172,7 +172,8 @@
         "deleteVendorBody": "刪除後該供應商下所有模型將一併刪除，是否繼續？",
         "vendorDeleted": "供應商已刪除",
         "deleteFailed": "刪除失敗"
-      }
+      },
+      "associationSkills": "關聯skills"
     },
     "agent": {
       "bannerDesc": "使用 Toonflow 官方中繼網站，支援一鍵帶入設定，開箱即用，無需手動設定。",

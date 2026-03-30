@@ -164,7 +164,8 @@
         "deleteVendorBody": "Deleting this provider will also delete all its associated models. Do you want to continue?",
         "vendorDeleted": "Provider deleted",
         "deleteFailed": "Deletion failed"
-      }
+      },
+      "associationSkills": "Associated skills"
     },
     "agent": {
       "bannerDesc": "Use the official Toonflow relay site for one-click configuration. Ready out-of-the-box, no manual setup needed.",
