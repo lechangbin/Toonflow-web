@@ -28,11 +28,13 @@ export default defineStore(
 
     const flowData = ref<FlowData>({
       script: "", // 剧本
-      scriptPlan: "", //拍摄计划
+      scriptPlan: "", //导演计划
       storyboardTable: "", //分镜表
       assets: [], // 衍生资产
       storyboard: [], //分镜面板
-      workbench: { name: "", duration: "", resolution: "", fps: "" }, // 工作台数据
+      workbench: {
+        videoList: [],
+      }, // 工作台数据
     });
 
     const episodesId = ref<number>(-1);
@@ -174,7 +176,7 @@ export default defineStore(
       });
       flowData.value = data;
     }
-    async function batchGenerateStoryboard(allIds: number[] = []) {
+    async function batchGenerateStoryboard(allIds: number[]) {
       flowData.value.storyboard.forEach((item) => {
         if (allIds.includes(item.id!)) {
           item.state = "生成中";
@@ -190,19 +192,12 @@ export default defineStore(
         assets: flowData.value.assets,
       });
       if (data) {
-        if (!allIds.length) {
+        if (flowData.value.storyboard.length === 0) {
           flowData.value.storyboard = data;
           return data;
         } else {
-          //更新数据
-          flowData.value.storyboard.forEach((item) => {
-            const updated = data.find((d: Storyboard) => d.id === item.id);
-            if (updated) {
-              item.state = updated.state;
-              item.src = updated.src;
-            }
-          });
-
+          const idSet = new Set(data.map((d: { id: number }) => d.id));
+          flowData.value.storyboard = flowData.value.storyboard.filter((s) => !idSet.has(s.id!)).concat(data);
           return flowData.value.storyboard;
         }
       }

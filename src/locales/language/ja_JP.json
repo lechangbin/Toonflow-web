@@ -621,7 +621,7 @@
       "resolutionPh": "解像度を選択してください",
       "concurrency": "同時実行数",
       "concurrencyPh": "同時実行数を入力してください",
-      "startBatch": "一括生成を開始",
+      "startBatch": "バッチでイメージの生成を開始する",
       "waitingGen": "生成待ち",
       "generating": "生成中",
       "genFailed": "生成失敗",
@@ -658,10 +658,15 @@
         "batchComplete": "一括生成が完了しました",
         "batchFailed": "バッチ生成に失敗しました",
         "replaceFailed": "交換に失敗しました",
-        "replaceSuccess": "交換に成功しました"
+        "replaceSuccess": "交換に成功しました",
+        "promptGenFail": "プロンプト単語の生成に失敗しました",
+        "saveSuccess": "プロンプトワードの変更が成功しました",
+        "saveFailed": "プロンプトワードの変更に失敗しました"
       },
       "history": "歴史的な写真",
-      "confirmReplace": "交換の確認"
+      "confirmReplace": "交換の確認",
+      "batchGenerationPrompt": "プロンプト単語をバッチで生成する",
+      "generatingPrompt": "生成中"
     },
     "script": {
       "searchPlaceholder": "シナリオ名を検索...",

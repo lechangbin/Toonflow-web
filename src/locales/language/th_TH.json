@@ -622,7 +622,7 @@
       "resolutionPh": "โปรดเลือกความละเอียด",
       "concurrency": "จำนวนที่สร้างพร้อมกัน",
       "concurrencyPh": "โปรดกรอกจำนวนที่สร้างพร้อมกัน",
-      "startBatch": "เริ่มการสร้างเป็นชุด",
+      "startBatch": "เริ่มสร้างภาพเป็นชุด",
       "waitingGen": "รอการสร้าง",
       "generating": "กำลังสร้าง",
       "genFailed": "สร้างล้มเหลว",
@@ -659,10 +659,15 @@
         "batchComplete": "การสร้างเป็นชุดเสร็จสมบูรณ์",
         "batchFailed": "การสร้างแบทช์ล้มเหลว",
         "replaceFailed": "การเปลี่ยนล้มเหลว",
-        "replaceSuccess": "การเปลี่ยนสำเร็จ"
+        "replaceSuccess": "การเปลี่ยนสำเร็จ",
+        "promptGenFail": "การสร้างคำพร้อมท์ล้มเหลว",
+        "saveSuccess": "การแก้ไขคำพร้อมท์สำเร็จ",
+        "saveFailed": "การแก้ไขคำพร้อมท์ล้มเหลว"
       },
       "history": "ภาพประวัติศาสตร์",
-      "confirmReplace": "ยืนยันการเปลี่ยน"
+      "confirmReplace": "ยืนยันการเปลี่ยน",
+      "batchGenerationPrompt": "สร้างคำพร้อมท์เป็นชุด",
+      "generatingPrompt": "กำลังสร้าง"
     },
     "script": {
       "searchPlaceholder": "ค้นหาชื่อบทภาพยนตร์...",

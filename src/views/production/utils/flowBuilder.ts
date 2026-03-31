@@ -53,13 +53,14 @@ export interface Storyboard {
   referenceIds?: number[];
 }
 
+interface VideoList {
+  id: number;
+  prompt: string;
+  filePath: string;
+  duration: number;
+}
 interface WorkbenchData {
-  name: string;
-  duration: string;
-  resolution: string;
-  fps: string;
-  cover?: string;
-  gradient?: string;
+  videoList: VideoList[];
 }
 
 interface PosterItem {

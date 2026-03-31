@@ -612,7 +612,7 @@
       "resolutionPh": "Vui lòng chọn độ phân giải",
       "concurrency": "Số lượng đồng thời",
       "concurrencyPh": "Vui lòng nhập số lượng đồng thời",
-      "startBatch": "Bắt đầu tạo hàng loạt",
+      "startBatch": "Bắt đầu tạo hình ảnh theo đợt",
       "waitingGen": "Đang chờ tạo",
       "generating": "Đang tạo",
       "genFailed": "Tạo thất bại",
@@ -649,10 +649,15 @@
         "batchComplete": "Tạo hàng loạt hoàn tất",
         "batchFailed": "Tạo hàng loạt không thành công",
         "replaceFailed": "Thay thế không thành công",
-        "replaceSuccess": "Thay thế thành công"
+        "replaceSuccess": "Thay thế thành công",
+        "promptGenFail": "Tạo từ nhắc nhở không thành công",
+        "saveSuccess": "Sửa đổi lời nhắc thành công",
+        "saveFailed": "Sửa đổi từ nhắc nhở không thành công"
       },
       "history": "hình ảnh lịch sử",
-      "confirmReplace": "Xác nhận thay thế"
+      "confirmReplace": "Xác nhận thay thế",
+      "batchGenerationPrompt": "Tạo các từ nhắc nhở theo đợt",
+      "generatingPrompt": "Đang tạo"
     },
     "script": {
       "searchPlaceholder": "Tìm kiếm tên kịch bản...",

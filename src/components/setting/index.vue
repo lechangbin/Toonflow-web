@@ -1,5 +1,5 @@
 <template>
-  <t-dialog :header="$t('settings.title')" :footer="false" placement="center" width="60vw" v-model:visible="showSetting" :z-index="6100">
+  <t-dialog :header="$t('settings.title')" :footer="false" placement="center" width="60vw" v-model:visible="showSetting">
     <div class="settingPanel">
       <t-menu class="settingMenu" v-model:value="activeMenu" :style="{ height: '70vh' }">
         <t-menu-item v-for="item in menuItems" :key="item.key" :value="item.key">

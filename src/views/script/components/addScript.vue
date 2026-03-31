@@ -178,7 +178,7 @@ function handleCancel(): void {
   fileList.value = [];
   selectedAssets.value = [];
 }
-function close(): void {
+function closeWin(): void {
   scriptData.value = "";
   content.value = "";
   fileList.value = [];
@@ -207,7 +207,7 @@ async function handleConfirm(): Promise<void> {
     console.error("添加剧本失败:", error);
     window.$message.error($t('workbench.script.add.msg.addFailed'));
   } finally {
-    close();
+    closeWin();
     emit("searchScripts");
   }
 }

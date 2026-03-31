@@ -627,7 +627,7 @@
       "resolutionPh": "請選擇解析度",
       "concurrency": "並發數量",
       "concurrencyPh": "請輸入並發數",
-      "startBatch": "開始批次生成",
+      "startBatch": "開始批量生成圖片",
       "waitingGen": "等待生成",
       "generating": "生成中",
       "genFailed": "生成失敗",
@@ -664,10 +664,15 @@
         "batchComplete": "批次生成完成",
         "batchFailed": "批量生成失敗",
         "replaceFailed": "替換失敗",
-        "replaceSuccess": "替換成功"
+        "replaceSuccess": "替換成功",
+        "promptGenFail": "提示詞生成失敗",
+        "saveSuccess": "修改提示詞成功",
+        "saveFailed": "提示詞修改失敗"
       },
       "history": "歷史圖片",
-      "confirmReplace": "確認替換"
+      "confirmReplace": "確認替換",
+      "batchGenerationPrompt": "大量生成提示詞",
+      "generatingPrompt": "生成中"
     },
     "script": {
       "searchPlaceholder": "搜尋劇本名稱...",

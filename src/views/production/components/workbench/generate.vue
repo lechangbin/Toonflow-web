@@ -427,7 +427,8 @@ import openAssetsSelector from "@/utils/assetsCheck";
 import storyboardImageCheck from "@/components/storyboardImageCheck.vue";
 import { createVideoPolling, type PollingVideoRecord } from "@/utils/videoPolling";
 const episodesId = inject<Ref<number>>("episodesId");
-
+import productionAgent from "@/stores/productionAgent";
+const { flowData } = storeToRefs(productionAgent());
 /**
  * 模块级别的提示词生成中 ID 集合，在组件卸载/重新挂载之间保持状态。
  * key 为 storyboardId，value 为 AbortController（用于取消请求）。
@@ -494,31 +495,14 @@ interface VideoRecord {
   state: string;
   errorReason?: string;
 }
-//分镜参数（后端返回的原始分镜数据）
+//分镜参数（后端只返回 videos 和 config，其余字段从 flowData.workbench.videoList 合并）
 interface StoryboardItem {
   id: number | string;
-  scriptId: number | string;
-  name: string;
-  detail?: string;
   prompt: string;
-  videoPrompt?: string;
-  seconds?: number;
-  duration?: string | number;
-  /** 分镜原图路径（始终不变，作为无 config.data 时的默认展示图） */
+  duration?: number;
   filePath: string;
-  frameType: string | null;
   config?: VideoGenerationConfig | null;
   videos?: VideoRecord[];
-  // 后端平铺字段
-  /** 后端直接返回的模型 */
-  model?: string;
-  /** 后端直接返回的分辨率 */
-  resolution?: string;
-  /** 后端直接返回的音频开关（0/1） */
-  sound?: string | number;
-  /** 后端直接返回的模式 */
-  mode?: string;
-  /** 当前选中展示的视频 id（对应 config.videoId） */
   selectedVideoId?: number | string;
 }
 type VideoMixedRef = "videoReference" | "imageReference" | "audioReference" | "textReference";
@@ -585,10 +569,10 @@ function handleStoryboardConfirm(rows: { id: number; src: string | null }[]) {
 // ---- 轮询实例 ----
 let poller: ReturnType<typeof createVideoPolling> | null = null;
 
-/** 初始化/重建轮询实例（scriptId 变化时需重建） */
-function ensurePoller(scriptId: number | string) {
+/** 初始化/重建轮询实例 */
+function ensurePoller() {
   if (poller) poller.destroy();
-  poller = createVideoPolling(scriptId, {
+  poller = createVideoPolling(episodesId?.value ?? 0, {
     interval: 5000,
     onData: handlePollingData,
     onComplete: () => getProductionData(),
@@ -657,7 +641,7 @@ function resumePollingIfNeeded(list: StoryboardItem[]) {
     });
   });
   if (pendingIds.length === 0) return;
-  if (list.length > 0) ensurePoller(list[0].scriptId);
+  ensurePoller();
   poller?.addIds(pendingIds);
   poller?.start(true);
 }
@@ -698,13 +682,25 @@ function initShotFields(item: StoryboardItem) {
 
 //查询分镜视频
 function getProductionData() {
+  const videoList = flowData.value.workbench.videoList;
   return axios
     .post("/production/getProductionData", {
-      scriptId: episodesId!.value,
-      projectId: project.value?.id,
+      ids: videoList.map((v) => v.id),
     })
     .then(({ data }) => {
-      const list: StoryboardItem[] = data || [];
+      const rawList: Array<{ id: number | string; videos?: VideoRecord[]; config?: VideoGenerationConfig | null }> = data || [];
+      // 将后端返回的 videos 和 config 与 flowData.workbench.videoList 合并
+      const list: StoryboardItem[] = videoList.map((vItem) => {
+        const remote = rawList.find((r) => r.id === vItem.id);
+        return {
+          id: vItem.id,
+          prompt: vItem.prompt,
+          filePath: vItem.filePath,
+          duration: vItem.duration,
+          videos: remote?.videos ?? [],
+          config: remote?.config ?? null,
+        };
+      });
       // 批量初始化所有分镜的回显字段，保证视频轨道卡片也能正确展示
       list.forEach((item) => initShotFields(item));
       shotList.value = list;
@@ -723,7 +719,7 @@ function getProductionData() {
             imageUrl: refreshed.config?.data?.[0]?.url || refreshed.filePath || "",
           };
           // 同步刷新提示词输入框
-          promptText.value = refreshed.config?.videoPrompt || refreshed.videoPrompt || "";
+          promptText.value = refreshed.config?.videoPrompt || refreshed.prompt || "";
         }
       } else if (list.length > 0) {
         // 初次加载：默认选中第一个分镜
@@ -778,17 +774,16 @@ function selectShot(id: number | string) {
   };
   // 如果分镜有保存的 config，回显相关参数；否则用后端平铺字段回显
   const configModel = item.config?.model;
-  const flatModel = item.model;
-  const echoModel = configModel || flatModel;
+  const echoModel = configModel;
   if (echoModel) {
     // 先把模型选中（更新下拉框显示）
     modelDd.value = echoModel;
     // 暂存待回显的值：config 优先，否则用平铺字段
     pendingEcho.value = {
-      resolution: item.config?.resolution ?? item.resolution ?? "",
+      resolution: item.config?.resolution ?? "",
       duration: item.config?.duration ?? Number(item.duration ?? 0),
-      audio: item.config?.audio ?? (item.sound != null ? Number(item.sound) : 0),
-      mode: item.config?.mode ?? item.mode ?? "",
+      audio: item.config?.audio ?? 0,
+      mode: item.config?.mode ?? "",
     };
     // 主动拉取模型详情，触发选项列表更新并回显已选值
     axios.post("/modelSelect/getModelDetail", { modelId: echoModel }).then(({ data }) => {
@@ -802,7 +797,7 @@ function selectShot(id: number | string) {
       // 设置待回显值：模式/音频/分辨率由模型详情返回后取第一个（传空让 handleModelChange 走默认逻辑），时长用分镜返回的时长
       pendingEcho.value = {
         resolution: "",
-        duration: Number(item.seconds ?? item.duration ?? 0),
+        duration: item.duration ?? 0,
         audio: 0,
         mode: "",
       };
@@ -816,7 +811,7 @@ function selectShot(id: number | string) {
     }
   }
   // 提示词：有 config.videoPrompt 用配置的，否则用分镜本身的 videoPrompt
-  promptText.value = item.config?.videoPrompt || item.videoPrompt || "";
+  promptText.value = item.config?.videoPrompt || item.prompt || "";
 }
 
 // 清空模型相关选项（等待用户选择模型）
@@ -1046,7 +1041,8 @@ function buildDataPayload(shot: StoryboardItem, mode: string): { id: string | nu
   const configData = shot.config?.data;
   if (configData !== undefined && configData !== null) {
     // config.data 存在（含空数组）时直接使用，空数组表示用户主动清除
-    return configData.map((d) => ({ id: d.id, type: d.type }));
+    // 过滤掉 null/undefined 的元素，避免访问 d.id 时抛出 TypeError
+    return configData.filter((d) => d != null).map((d) => ({ id: d.id, type: d.type }));
   }
   if (shot.filePath) {
     return [{ id: shot.id, type: "storyboard" }];
@@ -1324,7 +1320,7 @@ async function handleGenerate() {
   }
   const payload = {
     projectId: project.value?.id,
-    scriptId: shot.scriptId,
+    scriptId: episodesId?.value ?? 0,
     storyboardId: shot.id,
     prompt: promptText.value,
     model: modelDd.value,
@@ -1339,7 +1335,7 @@ async function handleGenerate() {
   // 刷新数据，让历史列表出现"生成中"状态
   await getProductionData();
   // 将新视频 ID 加入轮询
-  ensurePoller(shot.scriptId);
+  ensurePoller();
   poller!.addIds(newVideoIds);
   poller!.start(true);
 }
@@ -1360,7 +1356,7 @@ async function handleBatchGenerate() {
   // 批量生成逻辑：从每个分镜的 config.data 读取，只传 id 和 type
   const checkedShots = shotList.value.filter((item) => checkedIds.value.has(item.id));
   // 检查勾选的分镜是否有空的 videoPrompt
-  const emptyPromptShots = checkedShots.filter((shot) => !(shot.config?.prompt || shot.videoPrompt)?.trim());
+  const emptyPromptShots = checkedShots.filter((shot) => !(shot.config?.prompt || shot.prompt)?.trim());
   if (emptyPromptShots.length > 0) {
     const names = emptyPromptShots.map((s) => `#${shotList.value.findIndex((x) => x.id === s.id) + 1}`).join("、");
     window.$message.warning($t("workbench.production.generate.batchPromptEmpty", { names }));
@@ -1369,20 +1365,20 @@ async function handleBatchGenerate() {
   window.$message.success($t("workbench.production.generate.batchSubmitted"));
   for (const shot of checkedShots) {
     const list = {
-      scriptId: shot.scriptId,
+      scriptId: episodesId?.value ?? 0,
       projectId: project.value?.id,
       storyboardId: shot.id,
-      prompt: shot.config?.prompt || shot.videoPrompt || "",
-      model: shot.config?.model || shot.model || modelDd.value || "",
-      mode: shot.config?.mode || shot.mode || currentModeKey.value || "",
-      resolution: batchResolution.value || shot.config?.resolution || shot.resolution || "",
+      prompt: shot.config?.prompt || shot.prompt || "",
+      model: shot.config?.model || modelDd.value || "",
+      mode: shot.config?.mode || currentModeKey.value || "",
+      resolution: batchResolution.value || shot.config?.resolution || "",
       duration: shot.config?.duration ?? Number(shot.duration) ?? 0,
       audio: shot.config?.audio == 0 ? false : true,
-      data: buildDataPayload(shot, shot.config?.mode || shot.mode || currentModeKey.value || ""),
+      data: buildDataPayload(shot, shot.config?.mode || currentModeKey.value || ""),
     };
     const { data } = await axios.post("/production/workbench/generateVideo", list);
     const newVideoIds: Array<number | string> = Array.isArray(data) ? data : [data];
-    if (checkedShots.length > 0) ensurePoller(checkedShots[0].scriptId);
+    ensurePoller();
     poller?.addIds(newVideoIds);
   }
   // 所有请求发出后统一刷新一次，再启动轮询
@@ -1428,36 +1424,35 @@ function generateVideoPrompt() {
   if (!shot) return;
   // 如果已经在生成中则忽略重复点击
   if (_promptGeneratingMap.has(shot.id)) return;
-  const storyboardIds = [shot.id];
-  const controller = markPromptGenerating(storyboardIds);
+  const storyboardId = shot.id;
+  const controller = markPromptGenerating([storyboardId]);
   const payload = {
     projectId: project.value?.id,
-    storyboardIds,
+    storyboardId,
   };
   axios
     .post("/production/workbench/generateVideoPrompt", payload, { signal: controller.signal })
     .then(({ data }) => {
       // 用返回的 videoPrompt 直接更新当前输入框和分镜数据
-      // API 返回结构: { data: [{ storyboardId, videoPrompt }] }
-      const results: Array<{ storyboardId: number | string; videoPrompt: string }> = data?.data || [];
-      results.forEach((r) => {
+      const r = data?.data?.data || data?.data;
+      if (r && r.storyboardId != null && r.videoPrompt != null) {
         const target = shotList.value.find((s) => s.id === r.storyboardId);
         if (target) {
-          target.videoPrompt = r.videoPrompt;
+          target.prompt = r.videoPrompt;
           if (target.config) target.config.videoPrompt = r.videoPrompt;
         }
         // 如果是当前选中的分镜，直接更新输入框
         if (currentShot.value && currentShot.value.id === r.storyboardId) {
           promptText.value = r.videoPrompt;
         }
-      });
+      }
       getProductionData();
     })
     .catch(() => {
       // 生成失败也停止 loading
     })
     .finally(() => {
-      clearPromptGenerating(storyboardIds);
+      clearPromptGenerating([storyboardId]);
     });
 }
 
@@ -1491,7 +1486,7 @@ function batchGenerateVideoPrompt() {
         if (r && r.storyboardId != null && r.videoPrompt != null) {
           const target = shotList.value.find((s) => s.id === r.storyboardId);
           if (target) {
-            target.videoPrompt = r.videoPrompt;
+            target.prompt = r.videoPrompt;
             if (target.config) target.config.videoPrompt = r.videoPrompt;
           }
           // 如果是当前选中的分镜，直接更新输入框
@@ -1520,7 +1515,7 @@ watch(
       if (newVal) {
         pendingEcho.value = {
           resolution: "",
-          duration: Number(currentShot.value.seconds ?? currentShot.value.duration ?? 0),
+          duration: currentShot.value.duration ?? 0,
           audio: 0,
           mode: "",
         };

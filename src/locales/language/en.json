@@ -701,7 +701,7 @@
       "resolutionPh": "Please select a resolution",
       "concurrency": "Concurrency",
       "concurrencyPh": "Enter concurrency level",
-      "startBatch": "Start Batch Generation",
+      "startBatch": "Start generating images in batches",
       "waitingGen": "Waiting...",
       "generating": "Generating",
       "genFailed": "Generation failed",
@@ -738,10 +738,15 @@
         "batchComplete": "Batch generation completed",
         "batchFailed": "Batch generation failed",
         "replaceFailed": "Replacement failed",
-        "replaceSuccess": "Replacement successful"
+        "replaceSuccess": "Replacement successful",
+        "promptGenFail": "Prompt word generation failed",
+        "saveSuccess": "Modification of prompt word successful",
+        "saveFailed": "Prompt word modification failed"
       },
       "history": "historical pictures",
-      "confirmReplace": "Confirm replacement"
+      "confirmReplace": "Confirm replacement",
+      "batchGenerationPrompt": "Generate prompt words in batches",
+      "generatingPrompt": "Generating"
     },
     "script": {
       "searchPlaceholder": "Search script names...",
