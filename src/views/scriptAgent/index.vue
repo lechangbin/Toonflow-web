@@ -348,6 +348,7 @@ function onConfirm(value: string) {
       data: {
         storySkeleton: currentTable.value == 1 ? value : planData.value.storySkeleton,
         adaptationStrategy: currentTable.value == 2 ? value : planData.value.adaptationStrategy,
+        script: planData.value.script,
       },
     })
     .then(() => {
