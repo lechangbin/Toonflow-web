@@ -1232,7 +1232,27 @@
     "noVideo": "ยังไม่มีวิดีโอ",
     "prompt": "คำแจ้งวิดีโอ",
     "generateText": "AI สร้างคำที่รวดเร็ว",
-    "selectStoryboard": "เลือกกระดานเรื่องราว"
+    "selectStoryboard": "เลือกกระดานเรื่องราว",
+    "generate": {
+      "noVideo": "ยังไม่มีวิดีโอ",
+      "generateText": "AI สร้างคำที่รวดเร็ว",
+      "selectStoryboard": "เลือกกระดานเรื่องราว",
+      "generate": "สร้างวิดีโอ",
+      "history": "เวอร์ชันประวัติศาสตร์",
+      "generating": "กำลังสร้าง",
+      "generateFailed": "ล้มเหลว",
+      "selectAll": "เลือกทั้งหมด",
+      "selected": "เลือกแล้ว",
+      "batchGenerateText": "สร้างคำพร้อมท์เป็นชุด",
+      "batchGenerateVideo": "สร้างวิดีโอเป็นชุด",
+      "importVideo": "นำเข้าวิดีโอ",
+      "emptyTrack": "ย่อหน้า {ดัชนี 1}",
+      "del": "ลบ",
+      "delConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบย่อหน้านี้",
+      "selectSource": "เลือกแหล่งที่มา",
+      "confirm": "เลือกจากสินทรัพย์",
+      "cancel": "เลือกจากกระดานเรื่องราว"
+    }
   },
   "login": {
     "slogan": "แพลตฟอร์มสร้างละครสั้นอัจฉริยะ",

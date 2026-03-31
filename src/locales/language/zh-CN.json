@@ -1325,7 +1325,28 @@
     "noVideo": "暂无视频",
     "prompt": "视频提示词",
     "generateText": "AI生成提示词",
-    "selectStoryboard": "选择分镜"
+    "selectStoryboard": "选择分镜",
+    "generate": {
+      "noVideo": "暂无视频",
+      "prompt": "视频提示词",
+      "generateText": "AI生成提示词",
+      "selectStoryboard": "选择分镜",
+      "generate": "生成视频",
+      "history": "历史版本",
+      "generating": "生成中",
+      "generateFailed": "失败",
+      "selectAll": "全选",
+      "selected": "已选",
+      "batchGenerateText": "批量生成提示词",
+      "batchGenerateVideo": "批量生成视频",
+      "importVideo": "导入视频",
+      "emptyTrack": "第{index+1}段",
+      "del": "删除",
+      "delConfirm": "确认删除该段？",
+      "selectSource": "选择来源",
+      "confirm": "从资产选择",
+      "cancel": "从分镜选择"
+    }
   },
   "login": {
     "slogan": "智能短剧创作平台",
