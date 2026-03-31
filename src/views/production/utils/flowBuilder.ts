@@ -56,16 +56,9 @@ export interface Storyboard {
 interface VideoList {
   id: number;
   prompt: string;
-  filePath: string;
   duration: number;
-}
-interface WorkbenchData {
-  videoList: VideoList[];
-}
-
-interface PosterItem {
-  id: number;
-  image: string;
+  storyboardId: number;
+  trackId: number;
 }
 
 export interface FlowData {
@@ -74,10 +67,9 @@ export interface FlowData {
   assets: AssetItem[];
   storyboardTable: string;
   storyboard: Storyboard[];
-  workbench: WorkbenchData;
-  // poster: {
-  //   items: PosterItem[];
-  // };
+  workbench: {
+    videoList: VideoList[];
+  };
 }
 
 export type NodePositions = Record<string, { x: number; y: number }>;
