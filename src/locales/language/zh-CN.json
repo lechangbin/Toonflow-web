@@ -500,7 +500,7 @@
           "title": "提示词"
         },
         "basedOnScript": "基于剧本",
-        "mdFile": "视觉手册文件路径"
+        "mdFile": "视觉手册文件"
       },
       "msg": {
         "fetchFailed": "获取项目列表失败",

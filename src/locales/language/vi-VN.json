@@ -404,7 +404,7 @@
           "title": "lời nhắc"
         },
         "basedOnScript": "dựa trên kịch bản",
-        "mdFile": "Đường dẫn tệp hướng dẫn trực quan"
+        "mdFile": "tập tin hướng dẫn trực quan"
       },
       "msg": {
         "fetchFailed": "Lấy danh sách dự án thất bại",

@@ -112,11 +112,11 @@
             <div class="nameAndCoverRow">
               <div class="nameField">
                 <label class="fieldLabel">{{ $t("workbench.project.dialog.visualManualName") }}</label>
-                <t-input v-model="visualManualForm.name" :placeholder="$t('workbench.project.dialog.visualManualNamePh')" @keydown.stop />
+                <t-input v-model="visualManualForm.name" :placeholder="$t('workbench.project.dialog.visualManualNamePh')" />
               </div>
               <div class="mdFileLocation">
                 <label class="fieldLabel">{{ $t("workbench.project.dialog.mdFile") }}</label>
-                <t-input v-model="visualManualForm.stylePath" disabled />
+                <t-input v-model="visualManualForm.stylePath" :disabled="!!editingVisualManual" />
               </div>
               <div class="coverField">
                 <label class="fieldLabel">{{ $t("workbench.project.dialog.visualManualCover") }}</label>
@@ -177,8 +177,6 @@ import "md-editor-v3/lib/style.css";
 import modelSelect from "@/components/modelSelect.vue";
 import type { TabValue } from "tdesign-vue-next";
 import { DialogPlugin } from "tdesign-vue-next";
-
-const changeConfig = ref(false);
 
 const addProjectShow = defineModel<boolean>();
 const props = defineProps<{
@@ -484,21 +482,22 @@ async function handleVisualManualSubmit() {
   const emptyTab = visualManualTabData.value.find((tab) => !tab.data.trim());
   if (emptyTab) {
     window.$message.warning(`「${emptyTab.label}」${$t("workbench.project.msg.enterVisualManualTabData")}`);
-    return;
   }
   try {
     loading.value = true;
     if (editingVisualManual.value) {
       await axios.post("/project/editVisualManual", {
-        name: visualManualForm.value.stylePath,
+        name: visualManualForm.value.name,
         images: visualManualForm.value.images,
         data: visualManualTabData.value,
+        stylePath: visualManualForm.value.stylePath,
       });
     } else {
       await axios.post("/project/addVisualManual", {
         name: visualManualForm.value.name,
         images: visualManualForm.value.images,
         data: visualManualTabData.value,
+        stylePath: visualManualForm.value.stylePath,
       });
     }
 
@@ -518,12 +517,12 @@ async function handleVisualManualSubmit() {
 function deleteVisualManual(item: VisualManualItem) {
   const dialog = DialogPlugin.confirm({
     header: $t("workbench.project.msg.deleteVisualManualHeader"),
-    body: $t("workbench.project.msg.deleteVisualManualBody", { name: item.name }),
+    body: $t("workbench.project.msg.deleteVisualManualBody", { name: item.stylePath }),
     confirmBtn: $t("workbench.project.msg.deleteVisualManualConfirm"),
     cancelBtn: $t("workbench.project.msg.deleteVisualManualCancel"),
     onConfirm: () => {
       axios
-        .post("/project/deleteVisualManual", { name: item.name })
+        .post("/project/deleteVisualManual", { name: item.stylePath })
         .then(() => {
           fetchVisualManuals();
           resetVisualManualDialog();
