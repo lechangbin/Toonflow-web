@@ -38,9 +38,9 @@ export interface AssetItem {
 }
 
 export interface Storyboard {
-  id: number;
-  title: string;
-  description: string;
+  id?: number;
+  title?: string;
+  description?: string;
   camera?: string;
   duration?: number;
   frameMode?: "firstFrame" | "endFrame" | "linesSoundEffects";

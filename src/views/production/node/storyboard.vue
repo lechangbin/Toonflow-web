@@ -329,18 +329,6 @@ async function removeFn(id: number) {
       }
     },
   });
-  try {
-    await axios.post("/production/storyboard/removeFrame", {
-      id,
-      projectId: project.value?.id,
-    });
-    const index = storyboard.value.findIndex((s) => s.id === id);
-    if (index !== -1) {
-      storyboard.value.splice(index, 1);
-    }
-  } catch (e) {
-    window.$message.error((e as any)?.message || $t("workbench.production.node.storyboard.removeFailed"));
-  }
 }
 
 function editInfo(item: Storyboard) {
@@ -352,23 +340,6 @@ function editInfo(item: Storyboard) {
 
   const bodyVNode = () =>
     h("div", { class: "editInfoForm" }, [
-      h("div", { class: "editInfoField" }, [
-        h("label", { class: "editInfoLabel" }, "标题"),
-        h(resolveComponent("t-input"), {
-          value: formData.title,
-          placeholder: "请输入标题",
-          "onUpdate:value": (v: string) => (formData.title = v),
-        }),
-      ]),
-      h("div", { class: "editInfoField" }, [
-        h("label", { class: "editInfoLabel" }, "描述"),
-        h(resolveComponent("t-textarea"), {
-          value: formData.description,
-          placeholder: "请输入描述",
-          autosize: { minRows: 2, maxRows: 4 },
-          "onUpdate:value": (v: string) => (formData.description = v),
-        }),
-      ]),
       h("div", { class: "editInfoField" }, [
         h("label", { class: "editInfoLabel" }, "提示词"),
         h(resolveComponent("t-textarea"), {
@@ -394,8 +365,6 @@ function editInfo(item: Storyboard) {
       try {
         await axios.post("/production/storyboard/editStoryboardInfo", {
           id: item.id,
-          title: formData.title,
-          description: formData.description,
           prompt: formData.prompt,
         });
         item.prompt = formData.prompt;
