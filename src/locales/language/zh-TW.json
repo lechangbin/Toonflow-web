@@ -837,7 +837,8 @@
         "uploadOk": "上傳成功",
         "imageSelected": "已選擇該圖片",
         "imageDeleted": "已刪除該圖片",
-        "imageSaved": "圖片已儲存"
+        "imageSaved": "圖片已儲存",
+        "completed": "已完成"
       },
       "batch": {
         "header": "批次生成",
@@ -878,7 +879,10 @@
           "gridPreview": "九宮格預覽",
           "noPreviewImages": "暫無可預覽的圖片",
           "loadFailed": "載入失敗: {src}",
-          "imageLoadFailed": "圖片載入失敗"
+          "imageLoadFailed": "圖片載入失敗",
+          "promptPlaceholder": "請輸入提示詞",
+          "prompt": "提示詞",
+          "editInfo": "提示詞修改"
         },
         "storyboardTable": {
           "title": "分鏡表",
@@ -1195,7 +1199,9 @@
       "guideSwitchEpisodeBody": "切換劇集移到這裡了喔",
       "autoLayoutLR": "自動排版-左右佈局",
       "autoLayoutTB": "自動排版-上下佈局",
-      "getFlowData": "刷新工作區"
+      "getFlowData": "刷新工作區",
+      "confirm": "切換劇集確認",
+      "confirmEpisodesSwitch": "目前任務仍在進行中，切換劇集會重連會話，是否繼續切換？"
     },
     "task": {
       "title": "任務列表",
@@ -1270,7 +1276,11 @@
     }
   },
   "common": {
-    "save": "儲存"
+    "save": "儲存",
+    "submitting": "提交中",
+    "editSuccess": "修改成功",
+    "editFailed": "修改失敗",
+    "submit": "提交"
   },
   "storyboard": {
     "assets": {
@@ -1290,5 +1300,6 @@
   },
   "productionAgent": {
     "generating": "生成中"
-  }
+  },
+  "skillScan": "\"🔍 正在解析載入Skill\""
 }

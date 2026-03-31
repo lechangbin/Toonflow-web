@@ -15,7 +15,7 @@ export default async () => {
   const progressValue = ref(0);
   // 显示进度通知
   const notifyInstance = NotifyPlugin.info({
-    title: "🔍 正在解析加载Skill",
+    title: $t("skillScan"),
     content: () =>
       h("div", { style: "width: 100%; padding-top: 10px;" }, [
         h(Progress, {

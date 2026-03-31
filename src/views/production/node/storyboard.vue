@@ -338,10 +338,10 @@ function editInfo(item: Storyboard) {
   const bodyVNode = () =>
     h("div", { class: "editInfoForm" }, [
       h("div", { class: "editInfoField" }, [
-        h("label", { class: "editInfoLabel" }, "提示词"),
+        h("label", { class: "editInfoLabel" }, $t("workbench.production.node.storyboard.prompt")),
         h(resolveComponent("t-textarea"), {
           value: formData.prompt,
-          placeholder: "请输入提示词",
+          placeholder: $t("workbench.production.node.storyboard.promptPlaceholder"),
           autosize: { minRows: 3, maxRows: 6 },
           "onUpdate:value": (v: string) => (formData.prompt = v),
         }),
@@ -349,27 +349,27 @@ function editInfo(item: Storyboard) {
     ]);
 
   const confirmDialog = DialogPlugin.confirm({
-    header: "提示词修改",
+    header: $t("workbench.production.node.storyboard.editInfo"),
     body: bodyVNode,
     width: 480,
     confirmBtn: {
-      content: "提交",
+      content: $t("common.submit"),
       theme: "primary",
       loading: false,
     },
     onConfirm: async () => {
-      confirmDialog.update({ confirmBtn: { content: "提交中", loading: true } });
+      confirmDialog.update({ confirmBtn: { content: $t("common.submitting"), loading: true } });
       try {
         await axios.post("/production/storyboard/editStoryboardInfo", {
           id: item.id,
           prompt: formData.prompt,
         });
         item.prompt = formData.prompt;
-        window.$message.success("修改成功");
+        window.$message.success($t("common.editSuccess"));
       } catch (e) {
-        window.$message.error((e as any)?.message || "修改失败");
+        window.$message.error((e as any)?.message || $t("common.editFailed"));
       } finally {
-        confirmDialog.update({ confirmBtn: { content: "提交", loading: false } });
+        confirmDialog.update({ confirmBtn: { content: $t("common.submit"), loading: false } });
         confirmDialog.destroy();
       }
     },

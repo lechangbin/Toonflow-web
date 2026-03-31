@@ -822,7 +822,8 @@
         "uploadOk": "Tải lên thành công",
         "imageSelected": "Đã chọn hình ảnh này",
         "imageDeleted": "Đã xóa hình ảnh này",
-        "imageSaved": "Hình ảnh đã được lưu"
+        "imageSaved": "Hình ảnh đã được lưu",
+        "completed": "Hoàn thành"
       },
       "batch": {
         "header": "Tạo hàng loạt",
@@ -862,7 +863,10 @@
           "scaleRatio": "Tỷ lệ thu phóng",
           "gridPreview": "Xem trước dạng lưới",
           "noPreviewImages": "Không có ảnh để xem trước",
-          "imageLoadFailed": "Tải hình ảnh thất bại"
+          "imageLoadFailed": "Tải hình ảnh thất bại",
+          "promptPlaceholder": "Vui lòng nhập từ gợi ý",
+          "prompt": "lời nhắc",
+          "editInfo": "Sửa đổi từ nhanh chóng"
         },
         "storyboardTable": {
           "title": "Bảng danh sách phân cảnh",
@@ -1180,7 +1184,9 @@
       "guideSwitchEpisodeBody": "Tính năng chuyển đổi tập đã được chuyển đến đây nhé!",
       "autoLayoutLR": "Tự động sắp chữ-bố trí bên trái và bên phải",
       "autoLayoutTB": "Tự động sắp chữ bố cục trên và dưới",
-      "getFlowData": "Làm mới không gian làm việc"
+      "getFlowData": "Làm mới không gian làm việc",
+      "confirm": "Xác nhận chuyển tập",
+      "confirmEpisodesSwitch": "Nhiệm vụ hiện tại vẫn đang được tiến hành. Việc chuyển các tập sẽ kết nối lại phiên. Bạn có muốn tiếp tục chuyển đổi không?"
     },
     "task": {
       "title": "Danh sách tác vụ",
@@ -1227,7 +1233,11 @@
     "openSettings": "Mở cài đặt",
     "cancelled": "Đã hủy tạo",
     "defaultReel": "Tập chính",
-    "save": "cứu"
+    "save": "cứu",
+    "submitting": "Đang gửi",
+    "editSuccess": "Sửa đổi thành công",
+    "editFailed": "Sửa đổi không thành công",
+    "submit": "nộp"
   },
   "components.storyboardImageCheck.camera": "Máy quay",
   "components.storyboardImageCheck.dialogTitle": "Chọn hình storyboard",
@@ -1291,5 +1301,6 @@
   },
   "productionAgent": {
     "generating": "Đang tạo"
-  }
+  },
+  "skillScan": "\"🔍 Kỹ năng phân tích và tải\""
 }
