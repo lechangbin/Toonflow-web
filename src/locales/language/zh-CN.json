@@ -499,7 +499,8 @@
           "saveSuccess": "更新成功",
           "title": "提示词"
         },
-        "basedOnScript": "基于剧本"
+        "basedOnScript": "基于剧本",
+        "mdFile": "视觉手册文件路径"
       },
       "msg": {
         "fetchFailed": "获取项目列表失败",
@@ -696,7 +697,8 @@
         "scriptUpdated": "剧本更新成功",
         "scriptUpdateFailed": "更新剧本失败，请稍后再试",
         "searchScriptFailed": "搜索剧本失败",
-        "updated": "保存成功"
+        "updated": "保存成功",
+        "error": "保存失败"
       }
     },
     "cornerScape": {
@@ -1058,7 +1060,7 @@
         "exportFilename": "分镜图片.zip"
       },
       "generate": {
-        "noVideo": "暂无视频",
+        "noVideo": "暂无数据",
         "videoPrompt": "视频提示词",
         "promptPlaceholder": "输入提示词，描述你想要生成的视频内容...",
         "refImage": "参考图",

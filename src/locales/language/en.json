@@ -486,7 +486,8 @@
           "saveSuccess": "Update successful",
           "title": "prompt word"
         },
-        "basedOnScript": "based on script"
+        "basedOnScript": "based on script",
+        "mdFile": "Visual manual file path"
       },
       "msg": {
         "fetchFailed": "Failed to fetch project list",
@@ -683,7 +684,8 @@
         "scriptUpdated": "Script updated successfully",
         "scriptUpdateFailed": "Failed to update script, please try again later",
         "searchScriptFailed": "Failed to search scripts",
-        "updated": "Saved successfully"
+        "updated": "Saved successfully",
+        "error": "Save failed"
       }
     },
     "cornerScape": {

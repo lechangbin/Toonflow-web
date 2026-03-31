@@ -417,7 +417,8 @@
           "placeholder": "輸入提示詞",
           "saveSuccess": "更新成功",
           "title": "提示詞"
-        }
+        },
+        "mdFile": "視覺手冊文件路徑"
       },
       "msg": {
         "fetchFailed": "取得專案列表失敗",
@@ -609,7 +610,8 @@
         "scriptUpdated": "劇本更新成功",
         "scriptUpdateFailed": "更新劇本失敗，請稍後再試",
         "searchScriptFailed": "搜尋劇本失敗",
-        "updated": "保存成功"
+        "updated": "保存成功",
+        "error": "保存失敗"
       }
     },
     "cornerScape": {

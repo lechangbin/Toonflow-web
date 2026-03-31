@@ -354,6 +354,9 @@ function onConfirm(value: string) {
     .then(() => {
       window.$message.success($t("workbench.scriptAgent.msg.updated"));
       getPlanData();
+    })
+    .catch((err) => {
+      window.$message.success($t("workbench.scriptAgent.msg.error"));
     });
 }
 </script>

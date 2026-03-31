@@ -403,7 +403,8 @@
           "saveSuccess": "Cập nhật thành công",
           "title": "lời nhắc"
         },
-        "basedOnScript": "dựa trên kịch bản"
+        "basedOnScript": "dựa trên kịch bản",
+        "mdFile": "Đường dẫn tệp hướng dẫn trực quan"
       },
       "msg": {
         "fetchFailed": "Lấy danh sách dự án thất bại",
@@ -594,7 +595,8 @@
         "scriptUpdated": "Cập nhật kịch bản thành công",
         "scriptUpdateFailed": "Cập nhật kịch bản thất bại, vui lòng thử lại sau",
         "searchScriptFailed": "Tìm kiếm kịch bản thất bại",
-        "updated": "Đã lưu thành công"
+        "updated": "Đã lưu thành công",
+        "error": "Lưu không thành công"
       }
     },
     "cornerScape": {

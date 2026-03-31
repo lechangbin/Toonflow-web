@@ -412,7 +412,8 @@
           "saveSuccess": "更新に成功しました",
           "title": "即効性のある言葉"
         },
-        "basedOnScript": "脚本に基づいて"
+        "basedOnScript": "脚本に基づいて",
+        "mdFile": "ビジュアルマニュアルファイルパス"
       },
       "msg": {
         "fetchFailed": "プロジェクトリストの取得に失敗しました",
@@ -603,7 +604,8 @@
         "scriptUpdated": "シナリオの更新に成功しました",
         "scriptUpdateFailed": "シナリオの更新に失敗しました。後で再試行してください",
         "searchScriptFailed": "シナリオの検索に失敗しました",
-        "updated": "正常に保存されました"
+        "updated": "正常に保存されました",
+        "error": "保存に失敗しました"
       }
     },
     "cornerScape": {
