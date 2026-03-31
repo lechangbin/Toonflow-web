@@ -102,7 +102,7 @@ import projectStore from "@/stores/project";
 
 const { project } = storeToRefs(projectStore());
 const openShowVisible = ref(true);
-const { toObject, fromObject, fitView, findNode } = useVueFlow();
+const { toObject, fromObject, fitView, findNode, onNodeDragStop } = useVueFlow();
 const { layout } = useLayout();
 
 import productionAgentStore from "@/stores/productionAgent";
@@ -122,6 +122,13 @@ const nodePositions = ref<Record<string, { x: number; y: number }>>({
   // poster: { x: 4500, y: 0 },
 });
 const { nodes, edges } = useFlowBuilder(flowData, nodePositions);
+
+// 用户拖拽节点后，同步位置到 nodePositions，防止 flowData 更新时位置被复原
+onNodeDragStop(({ nodes: draggedNodes }) => {
+  for (const node of draggedNodes) {
+    nodePositions.value[node.id] = { x: node.position.x, y: node.position.y };
+  }
+});
 
 onMounted(() => {
   getScriptData();

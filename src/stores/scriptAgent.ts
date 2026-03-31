@@ -38,8 +38,6 @@ export default defineStore(
         } else if (tag === "adaptationStrategy") {
           planData.value.adaptationStrategy = value;
         } else if (tag === "scriptItem") {
-          // 流式场景：合并 children 到现有数据，保留已有项的 id，不删除 children 中不存在的条目
-
           const name = attrs.name ?? "";
           const content = value;
           if (name) {
