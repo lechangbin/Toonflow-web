@@ -112,14 +112,7 @@
         </div>
       </t-card>
       <t-empty v-if="dataList.length === 0" type="empty" :title="$t('workbench.cornerScape.operateScriptFirst')" />
-      <t-drawer
-        :closeBtn="true"
-        closeOnEscKeydown
-        :showOverlay="false"
-        :footer="false"
-        v-model:visible="drawerVisible"
-        size="480px"
-        style="top: 15px; bottom: 0px; height: auto">
+      <t-drawer :closeBtn="true" closeOnEscKeydown :showOverlay="false" :footer="false" v-model:visible="drawerVisible" size="480px">
         <template #header>
           <div class="drawerHeader">
             <span>{{ currentItem?.name }} - {{ $t("workbench.cornerScape.individualConfig") }}</span>

@@ -15,7 +15,7 @@ export default async () => {
   const progressValue = ref(0);
   // 显示进度通知
   const notifyInstance = NotifyPlugin.info({
-    title: $t("skillScan"),
+    title: $t("skillScan.scanning"),
     content: () =>
       h("div", { style: "width: 100%; padding-top: 10px;" }, [
         h(Progress, {
@@ -41,26 +41,26 @@ export default async () => {
     NotifyPlugin.close(notifyInstance);
     // 成功通知
     const changes = [
-      data.insertedCount && `✅ 新增${data.insertedCount}个Skill`,
-      data.updatedCount && `🔄 更新${data.updatedCount}个Skill`,
-      data.removedCount && `🗑️ 移除${data.removedCount}个Skill`,
+      data.insertedCount && $t("skillScan.inserted", { count: data.insertedCount }),
+      data.updatedCount && $t("skillScan.updated", { count: data.updatedCount }),
+      data.removedCount && $t("skillScan.removed", { count: data.removedCount }),
     ].filter(Boolean);
     NotifyPlugin.success({
-      title: "✨ Skill 扫描完成",
-      content: `📁 扫描 ${data.totalFiles} 个文件 | ${changes.join(" | ")}`,
+      title: $t("skillScan.scanComplete"),
+      content: `${$t("skillScan.scannedFiles", { count: data.totalFiles })} | ${changes.join(" | ")}`,
       closeBtn: true,
     });
     // 警告通知
     if (data.noDescriptionSkillCount > 0 || data.noAttributionSkillCount > 0) {
       const warnings = [];
       if (data.noDescriptionSkillCount > 0) {
-        warnings.push(`📝 ${data.noDescriptionSkillCount}个Skill缺少描述`);
+        warnings.push($t("skillScan.noDescription", { count: data.noDescriptionSkillCount }));
       }
       if (data.noAttributionSkillCount > 0) {
-        warnings.push(`👤 ${data.noAttributionSkillCount}个Skill缺少归属`);
+        warnings.push($t("skillScan.noAttribution", { count: data.noAttributionSkillCount }));
       }
       const warningNotifyInstance = NotifyPlugin.warning({
-        title: "⚠️ Skill 配置警告",
+        title: $t("skillScan.configWarning"),
         content: warnings.join(" | "),
         footer: () =>
           h(
@@ -76,7 +76,7 @@ export default async () => {
                   NotifyPlugin.close(warningNotifyInstance);
                 },
               },
-              "打开设置",
+              $t("skillScan.openSettings"),
             ),
           ),
         duration: 6000,
@@ -86,10 +86,10 @@ export default async () => {
   } catch (error) {
     NotifyPlugin.close(notifyInstance);
     NotifyPlugin.error({
-      title: "❌ 扫描失败",
-      content: "🔌 请检查网络连接或稍后重试",
+      title: $t("skillScan.scanFailed"),
+      content: $t("skillScan.checkNetwork"),
       footer: () =>
-        h("div", { style: "text-align: right; padding-top: 4px;" }, h("span", { style: "color: #e34d59; font-size: 12px;" }, "🔁 请稍后重试")),
+        h("div", { style: "text-align: right; padding-top: 4px;" }, h("span", { style: "color: #e34d59; font-size: 12px;" }, $t("skillScan.retryLater"))),
       duration: 3000,
       closeBtn: true,
     });

@@ -142,8 +142,8 @@ function confirmEpisodesSwitch() {
 
   return new Promise<boolean>((resolve) => {
     const dialog = DialogPlugin.confirm({
-      header: "切换剧集确认",
-      body: "当前任务仍在进行中，切换剧集会重连会话，是否继续切换？",
+      header: $t("workbench.production.confirm"),
+      body: $t("workbench.production.confirmEpisodesSwitch"),
       confirmBtn: $t("workbench.production.save"),
       cancelBtn: $t("workbench.production.cancel"),
       theme: "warning",
