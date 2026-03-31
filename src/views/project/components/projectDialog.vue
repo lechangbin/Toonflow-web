@@ -72,8 +72,8 @@
                         v-for="(item, index) in visualManualOptions"
                         :key="index"
                         class="gridItem"
-                        :class="{ active: formState.artStyle === item.name }"
-                        @click="formState.artStyle = item.name">
+                        :class="{ active: formState.artStyle === item.stylePath }"
+                        @click="formState.artStyle = item.stylePath">
                         <div class="imageWrapper">
                           <img :src="item.images && item.images[0]" :alt="item.name" class="artImage" loading="lazy" />
                           <div class="text">{{ item.name }}</div>
@@ -490,7 +490,7 @@ async function handleVisualManualSubmit() {
     loading.value = true;
     if (editingVisualManual.value) {
       await axios.post("/project/editVisualManual", {
-        name: visualManualForm.value.name,
+        name: visualManualForm.value.stylePath,
         images: visualManualForm.value.images,
         data: visualManualTabData.value,
       });
