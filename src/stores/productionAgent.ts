@@ -80,7 +80,7 @@ export default defineStore(
               });
               if (notExistItems.length > 0) {
                 addStoryboardInfo(notExistItems);
-                console.log("%c notExistItems", "background:#3b82f6", notExistItems);
+
                 flowData.value.storyboard = [...flowData.value.storyboard, ...notExistItems];
               }
             }
@@ -151,12 +151,10 @@ export default defineStore(
             }
           });
           s.on("generateDeriveAsset", async (data, callback) => {
-            console.log("%c Line:106 🍢 data", "background:#f5ce50", data);
             const assetsData = await batchGenerateAssets(data.ids);
             callback({ success: true, message: assetsData });
           });
           s.on("generateStoryboard", async (data, callback) => {
-            console.log("%c Line:109 🌮 data", "background:#7f2b82", data);
             const storyData = await batchGenerateStoryboard(data.ids);
             callback({ success: true, message: storyData });
           });
@@ -234,9 +232,7 @@ export default defineStore(
           });
         }
         return data;
-      } catch (e) {
-        console.log("%c Line:152 🥝 e", "background:#b03734", e);
-      }
+      } catch (e) {}
     }
     const assetsNotStateImageIds = computed(() => {
       const ids: number[] = [];
@@ -393,14 +389,10 @@ export default defineStore(
       socket.value!.emit("updateContext", ctx);
     }
     async function addStoryboardInfo(items: Storyboard[]) {
-      
-      console.log("%c Line:402 🍑", "background:#ffdd4d");
       const { data } = await axios.post("/production/storyboard/batchAddStoryboardInfo", {
         scriptId: episodesId.value,
         data: items,
       });
-
-      console.log("%c Line:409 🥃 flowData.value.storyboard", "background:#b03734", flowData.value.storyboard);
 
       flowData.value.storyboard.forEach((item) => {
         const updated = data.find((d: Storyboard) => d.prompt == item.prompt && d.duration == item.duration);
