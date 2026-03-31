@@ -85,6 +85,7 @@ const props = defineProps<{
   id: string;
   data: GeneratedNodeData;
   projectId: number;
+  imageDefaultModle: any;
 }>();
 
 function selectedFn() {
@@ -119,6 +120,14 @@ function handleKeep() {
   if (!props.data.generatedImage) return window.$message.error($t("workbench.production.editImage.generateFirst"));
   emit("keep", props.data.generatedImage);
 }
+onMounted(() => {
+  console.log("%c Line:125 🍊", "background:#4fff4B");
+  if (props.imageDefaultModle) {
+    props.data.model = props.imageDefaultModle?.imageModel ?? "";
+    props.data.quality = props.imageDefaultModle?.imageQuality ?? "";
+    props.data.ratio = "2K";
+  }
+});
 </script>
 
 <style lang="scss" scoped>

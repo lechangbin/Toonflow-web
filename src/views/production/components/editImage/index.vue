@@ -25,7 +25,7 @@
       </template>
 
       <template #node-generated="{ id, data }">
-        <generatedNode :id="id" :data="data" :projectId="projectId" @keep="sureNode" />
+        <generatedNode :id="id" :data="data" :projectId="projectId" :imageDefaultModle="imageDefaultModle" @keep="sureNode" />
       </template>
       <template #edge-removeLine="edgeProps">
         <removeLine v-bind="edgeProps" />
@@ -260,8 +260,18 @@ async function sureNode(imageUrl: string) {
     window.$message.error((e as any).message || $t("workbench.production.editImage.saveFailed"));
   }
 }
+const imageDefaultModle = ref({
+  imageModel: "",
+  imageQuality: "",
+});
 onMounted(async () => {
   try {
+    const { data: imageModel } = await axios.post("/production/editImage/getImageDefaultModle", {
+      projectId: projectId.value,
+    });
+    if (imageModel) {
+      imageDefaultModle.value = imageModel;
+    }
     if (!props.flowData.flowId) return buildFlow();
     const { data } = await axios.post("/production/editImage/getImageFlow", {
       id: props.flowData.flowId,

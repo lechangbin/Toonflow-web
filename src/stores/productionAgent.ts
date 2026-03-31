@@ -37,7 +37,7 @@ export default defineStore(
       }, // 工作台数据
     });
 
-    const episodesId = ref<number>(-1);
+    const episodesId = ref<number>();
 
     const { connected, messages, chat, stopGenerate, socket, status, reconnect, connect } = useChat({
       url: `${settingStore().baseUrl}/socket/productionAgent`,
@@ -147,11 +147,11 @@ export default defineStore(
       { immediate: true },
     );
 
-    async function setFlowData(episodesId: number) {
+    async function setFlowData(scriptId?: number) {
       await axios.post("/production/saveFlowData", {
         projectId: projectStore().project?.id,
         data: flowData.value,
-        episodesId,
+        episodesId: scriptId || episodesId.value,
       });
     }
 
@@ -367,7 +367,7 @@ export default defineStore(
     );
 
     function updateContext() {
-      if (episodesId.value < 0) return;
+      if (episodesId.value! < 0) return;
       const ctx = {
         isolationKey: `${projectStore().project?.id}:productionAgent:${episodesId.value}`,
         projectId: projectStore().project?.id,

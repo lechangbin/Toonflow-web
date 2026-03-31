@@ -97,7 +97,7 @@ import type { AssetItem, Storyboard } from "../utils/flowBuilder";
 import projectStore from "@/stores/project";
 import productionAgentStore from "@/stores/productionAgent";
 const { project } = storeToRefs(projectStore());
-const { batchGenerateStoryboard, episodesId } = storeToRefs(productionAgentStore());
+const { episodesId } = storeToRefs(productionAgentStore());
 
 const props = defineProps<{
   id: string;
@@ -274,7 +274,7 @@ async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) 
     });
 
     storyboard.value.splice(insertAfterIndex + 1, 0, { ...newFrame, id: data.id! });
-
+    productionAgentStore().setFlowData();
     return;
   }
 

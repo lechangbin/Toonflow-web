@@ -289,7 +289,7 @@ const title = computed(() => {
 watch(
   () => episodesId.value,
   async (newVal) => {
-    if (newVal < 0) return;
+    if (!newVal || newVal < 0) return;
     await refFlowData();
     productionAgentStore().updateContext();
     await productionAgentStore().getHistory();
