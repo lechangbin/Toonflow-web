@@ -1442,7 +1442,7 @@
   "batchGenerateText": "批量生成提示词",
   "batchGenerateVideo": "批量生成视频",
   "importVideo": "导入视频",
-  "emptyTrack": "第{index+1}段",
+  "emptyTrack": "123",
   "del": "确认删除",
   "delConfirm": "确认删除该段？",
   "selectSource": "选择来源",

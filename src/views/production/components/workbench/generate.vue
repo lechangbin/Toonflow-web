@@ -5,9 +5,12 @@
         <video v-if="videoUrl" :src="videoUrl" class="previewVideo" controls preload="metadata" />
         <div v-else class="emptyVideo c">{{ $t("workbench.noVideo") }}</div>
       </div>
-      <div class="configurationParameters">
+      <div class="configurationParameters" :class="{ hasActive: trackList.length > 0 }">
         <div class="promptsMenu f ac jb">
-          <div class="title">{{ $t("workbench.prompt") }}</div>
+          <div class="title">
+            <t-tag theme="primary" size="small" style="margin-right: 10px">{{ $t("workbench.track") }} {{ activeTrackIndex + 1 }}</t-tag>
+            {{ $t("workbench.prompt") }}
+          </div>
           <t-button size="small" class="genTextbtn">{{ $t("workbench.generateText") }}</t-button>
         </div>
         <div class="promptInput">
@@ -91,6 +94,7 @@
           :key="index"
           @click="activeTrackIndex = index">
           <t-checkbox class="trackCheck" :checked="checkedTracks.includes(index)" @click.stop @change="(val: boolean) => toggleCheck(index, val)" />
+          <t-tag class="indexTag" size="small">{{ index + 1 }}</t-tag>
           <div class="thumbGroup" v-if="track.medias.length">
             <template v-for="(m, i) in track.medias" :key="i">
               <img v-if="m.fileType === 'image'" :src="m.src" class="thumb" />
@@ -114,19 +118,27 @@
 </template>
 
 <script setup lang="ts">
+import type { Ref } from "vue";
 import assetsCheck, { type AssetType } from "@/utils/assetsCheck";
 import { DialogPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 
-const props = defineProps<{
-  episodesId?: number;
-}>();
+const episodesId = inject<Ref<number>>("episodesId")!;
 
 const { project } = storeToRefs(projectStore());
 
 const videoUrl = ref("");
-const promptText = ref("");
+const promptText = computed({
+  get: () => {
+    const track = trackList.value[activeTrackIndex.value];
+    return track?.prompt ?? "";
+  },
+  set: (val: string) => {
+    const track = trackList.value[activeTrackIndex.value];
+    if (track) track.prompt = val;
+  },
+});
 const selectedResolution = ref("480p");
 const selectedDuration = ref(8);
 const selectedAudio = ref(false);
@@ -197,25 +209,27 @@ interface TrackMedia {
 
 interface TrackItem {
   id?: number;
+  prompt: string;
+  state: "未生成" | "生成中" | "已完成" | "生成失败";
+  reason?: string;
   medias: TrackMedia[];
   videoList: VideoItem[];
 }
-
-const trackList = ref<TrackItem[]>([{ medias: [], videoList: [] }]);
+const trackList = ref<TrackItem[]>([{ prompt: "", state: "未生成", medias: [], videoList: [] }]);
 const activeTrackIndex = ref(0);
 
 async function addTrack() {
   const { data } = await axios.post("/production/workbench/addTrack", {
     projectId: project.value?.id,
-    scriptId: props.episodesId ?? 0,
+    scriptId: episodesId.value ?? 0,
   });
-  trackList.value.push({ id: data.id, medias: [], videoList: [] });
+  trackList.value.push({ id: data.id, prompt: "", state: "未生成", medias: [], videoList: [] });
   activeTrackIndex.value = trackList.value.length - 1;
 }
 
 function confirmDeleteTrack(index: number) {
   const dlg = DialogPlugin.confirm({
-    header:$t("del"),
+    header: $t("del"),
     body: $t("delConfirm"),
     onConfirm: () => {
       dlg.destroy();
@@ -234,7 +248,7 @@ async function deleteTrack(index: number) {
   // await axios.post("/production/workbench/deleteTrack", { index });
   trackList.value.splice(index, 1);
   if (trackList.value.length === 0) {
-    trackList.value.push({ medias: [], videoList: [] });
+    trackList.value.push({ prompt: "", state: "未生成", medias: [], videoList: [] });
   }
   if (activeTrackIndex.value >= trackList.value.length) {
     activeTrackIndex.value = trackList.value.length - 1;
@@ -307,6 +321,7 @@ function handleSelectSource(index: number) {
       dlg.destroy();
       const assets = await assetsCheck({ types: fileTypeMap[item.fileType], multiple: false });
       if (assets.length > 0) {
+        userEditedUploadBox.value = true;
         uploadBox.value[index] = { ...item, sources: "assets", src: assets[0].src, id: assets[0].id, prompt: assets[0].prompt };
       }
     },
@@ -321,6 +336,7 @@ function pickStoryboard(sb: StoryboardItem) {
   storyboardDialogVisible.value = false;
   const item = uploadBox.value[pendingIndex.value];
   if (!item) return;
+  userEditedUploadBox.value = true;
   uploadBox.value[pendingIndex.value] = { ...item, sources: "storyboard", src: sb.src, id: sb.id, prompt: sb.prompt };
 }
 
@@ -330,7 +346,7 @@ async function generateVideo() {
   try {
     const payload = {
       projectId: project.value?.id,
-      scriptId: props.episodesId ?? 0,
+      scriptId: episodesId.value,
       uploadData: uploadBox.value,
       prompt: promptText.value,
       model: tempModel.value,
@@ -378,13 +394,17 @@ watch(tempModel, (val) => {
   });
 });
 
+const userEditedUploadBox = ref(false);
+
 watch(tempMode, (val) => {
+  userEditedUploadBox.value = false;
   uploadBox.value = buildUploadBox(val);
 });
 
 watch(
   uploadBox,
   (items) => {
+    if (!userEditedUploadBox.value) return;
     const track = trackList.value[activeTrackIndex.value];
     if (!track) return;
     track.medias = items.filter((item) => item.src).map((item) => ({ src: item.src!, id: item.id, fileType: item.fileType }));
@@ -423,7 +443,7 @@ function importVideo() {
 async function getGenerateData() {
   const { data } = await axios.post("/production/workbench/getGenerateData", {
     projectId: project.value?.id,
-    scriptId: props.episodesId ?? 0,
+    scriptId: episodesId.value ?? 0,
   });
   trackList.value = data;
 }
@@ -483,6 +503,11 @@ watch(
       height: 100%;
       border-radius: 8px;
       padding: 16px;
+      .activeTrackInfo {
+        padding: 8px 0;
+        gap: 8px;
+        margin-bottom: 4px;
+      }
       .promptsMenu {
         .title {
           font-weight: bold;
@@ -641,9 +666,18 @@ watch(
         position: relative;
         &.active {
           border-color: var(--td-brand-color);
+          border-width: 2px;
+          box-shadow: 0 0 0 3px rgba(var(--td-brand-color-rgb, 0, 82, 217), 0.25);
+          background: linear-gradient(180deg, rgba(var(--td-brand-color-rgb, 0, 82, 217), 0.05) 0%, transparent 100%);
         }
         &:hover {
           filter: brightness(90%);
+        }
+        .indexTag {
+          position: absolute;
+          bottom: 4px;
+          left: 4px;
+          z-index: 1;
         }
         .thumbGroup {
           width: 100%;
