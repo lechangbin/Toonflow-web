@@ -27,88 +27,88 @@
         <span class="idBox">#{{ currentVendor.id }}</span>
         <span class="author">@{{ currentVendor.author }}</span>
       </div>
-      <t-form :data="currentVendor" labelAlign="top">
-        <t-form-item>
-          <MdPreview v-model="currentVendor.description" :theme="'light'" />
-        </t-form-item>
-        <t-form-item v-for="input in requiredInputs" :key="input.key" :name="input.key">
-          <template #label>
-            <span class="requiredLabel">
-              {{ input.label }}
-              <span class="requiredMark">*</span>
-              <span class="requiredText">{{ $t("settings.vendor.required") }}</span>
-            </span>
-          </template>
-          <t-input v-model="currentVendor.inputValues[input.key]" :type="input.type" clearable @blur="onBlurFn">
-            <template #prefix-icon>
-              <t-icon :name="getInputIcon(input.type)" />
+      <div class="configuration">
+        <t-form :data="currentVendor" labelAlign="top">
+          <t-form-item>
+            <MdPreview v-model="currentVendor.description" :theme="'light'" />
+          </t-form-item>
+          <t-form-item v-for="input in requiredInputs" :key="input.key" :name="input.key">
+            <template #label>
+              <span class="requiredLabel">
+                {{ input.label }}
+                <span class="requiredMark">*</span>
+                <span class="requiredText">{{ $t("settings.vendor.required") }}</span>
+              </span>
             </template>
-          </t-input>
-          <template #help v-if="getInputPlaceholder(input)">
-            <span class="inputHelp">{{ getInputPlaceholder(input) }}</span>
-          </template>
-        </t-form-item>
+            <t-input v-model="currentVendor.inputValues[input.key]" :type="input.type" clearable @blur="onBlurFn">
+              <template #prefix-icon>
+                <t-icon :name="getInputIcon(input.type)" />
+              </template>
+            </t-input>
+            <template #help v-if="getInputPlaceholder(input)">
+              <span class="inputHelp">{{ getInputPlaceholder(input) }}</span>
+            </template>
+          </t-form-item>
 
-        <div v-if="optionalInputs.length > 0" class="optionalSection">
-          <t-collapse>
-            <t-collapse-panel value="optional-inputs" :header="$t('settings.vendor.optionalSection')">
-              <t-form-item v-for="input in optionalInputs" :key="input.key" :name="input.key" :label="input.label">
-                <t-input v-model="currentVendor.inputValues[input.key]" :type="input.type" clearable @blur="onBlurFn">
-                  <template #prefix-icon>
-                    <t-icon :name="getInputIcon(input.type)" />
+          <div v-if="optionalInputs.length > 0" class="optionalSection">
+            <t-collapse>
+              <t-collapse-panel value="optional-inputs" :header="$t('settings.vendor.optionalSection')">
+                <t-form-item v-for="input in optionalInputs" :key="input.key" :name="input.key" :label="input.label">
+                  <t-input v-model="currentVendor.inputValues[input.key]" :type="input.type" clearable @blur="onBlurFn">
+                    <template #prefix-icon>
+                      <t-icon :name="getInputIcon(input.type)" />
+                    </template>
+                  </t-input>
+                  <template #help v-if="getInputPlaceholder(input)">
+                    <span class="inputHelp">{{ getInputPlaceholder(input) }}</span>
                   </template>
-                </t-input>
-                <template #help v-if="getInputPlaceholder(input)">
-                  <span class="inputHelp">{{ getInputPlaceholder(input) }}</span>
-                </template>
-              </t-form-item>
-            </t-collapse-panel>
-          </t-collapse>
-        </div>
+                </t-form-item>
+              </t-collapse-panel>
+            </t-collapse>
+          </div>
 
-        <div class="jb ac">
-          <h4 class="sectionTitle">{{ $t("settings.vendor.modelSettings") }}</h4>
-          <t-button variant="outline" size="small" @click="handleAddModel">
-            <template #icon><i-plus theme="outline" /></template>
-            {{ $t("settings.vendor.addManually") }}
-          </t-button>
-        </div>
-
-        <t-card v-for="(item, index) in vendorModels" :key="index" class="modelCard">
-          <div class="topInfo jb ac">
-            <span class="modelCardName">{{ item.name }}</span>
-            <div class="actionBtns">
-              <t-button size="small" variant="text" :loading="!!testingModels[item.modelName]" @click="handleTestModel(item)">
-                <template #icon><i-lightning theme="outline" /></template>
-                {{ $t("settings.vendor.test") }}
-              </t-button>
-              <t-button variant="text" size="small" @click="handleEditModel(item)">
-                <template #icon><i-pencil theme="outline" /></template>
-                {{ $t("settings.vendor.edit") }}
-              </t-button>
-              <t-button variant="text" size="small" theme="danger" @click="handleDeleteModel(item.modelName)">
-                <template #icon><i-delete theme="outline" /></template>
-                {{ $t("settings.vendor.delete") }}
-              </t-button>
+          <div class="jb ac">
+            <h4 class="sectionTitle">{{ $t("settings.vendor.modelSettings") }}</h4>
+            <t-button variant="outline" size="small" @click="handleAddModel">
+              <template #icon><i-plus theme="outline" /></template>
+              {{ $t("settings.vendor.addManually") }}
+            </t-button>
+          </div>
+          <t-card v-for="(item, index) in vendorModels" :key="index" class="modelCard">
+            <div class="topInfo jb ac">
+              <span class="modelCardName">{{ item.name }}</span>
+              <div class="actionBtns">
+                <t-button size="small" variant="text" :loading="!!testingModels[item.modelName]" @click="handleTestModel(item)">
+                  <template #icon><i-lightning theme="outline" /></template>
+                  {{ $t("settings.vendor.test") }}
+                </t-button>
+                <t-button variant="text" size="small" @click="handleEditModel(item)">
+                  <template #icon><i-pencil theme="outline" /></template>
+                  {{ $t("settings.vendor.edit") }}
+                </t-button>
+                <t-button variant="text" size="small" theme="danger" @click="handleDeleteModel(item.modelName)">
+                  <template #icon><i-delete theme="outline" /></template>
+                  {{ $t("settings.vendor.delete") }}
+                </t-button>
+              </div>
             </div>
-          </div>
-          <div class="tags">
-            <t-tag theme="primary">{{ $t(getTypeLabel(item.type)) }}</t-tag>
-            <template v-for="(mode, mIdx) in (item as any).mode" :key="mIdx">
-              <t-tag v-if="!Array.isArray(mode)" variant="light">{{ $t(getModeLabel(mode, item.type)) }}</t-tag>
-              <t-tag v-else variant="light" v-for="(m, mmIdx) in mode" :key="mmIdx">
-                {{ $t(getModeLabel(m, item.type)) }}
-              </t-tag>
-            </template>
-          </div>
-        </t-card>
-
-        <div class="updateAction">
-          <t-button theme="danger" :loading="updating" @click="handleDeleteVendor">{{ $t("settings.vendor.deleteVendor") }}</t-button>
-          <t-button theme="default" :loading="updating" @click="handleEditVendorCode">{{ $t("settings.vendor.editCode") }}</t-button>
-          <!-- <t-button theme="primary" :loading="updating" @click="handleUpdateVendor">{{ $t("settings.vendor.updateConfig") }}</t-button> -->
-        </div>
-      </t-form>
+            <div class="tags">
+              <t-tag theme="primary">{{ $t(getTypeLabel(item.type)) }}</t-tag>
+              <template v-for="(mode, mIdx) in (item as any).mode" :key="mIdx">
+                <t-tag v-if="!Array.isArray(mode)" variant="light">{{ $t(getModeLabel(mode, item.type)) }}</t-tag>
+                <t-tag v-else variant="light" v-for="(m, mmIdx) in mode" :key="mmIdx">
+                  {{ $t(getModeLabel(m, item.type)) }}
+                </t-tag>
+              </template>
+            </div>
+          </t-card>
+        </t-form>
+      </div>
+      <div class="updateAction">
+        <t-button theme="danger" :loading="updating" @click="handleDeleteVendor">{{ $t("settings.vendor.deleteVendor") }}</t-button>
+        <t-button theme="default" :loading="updating" @click="handleEditVendorCode">{{ $t("settings.vendor.editCode") }}</t-button>
+        <!-- <t-button theme="primary" :loading="updating" @click="handleUpdateVendor">{{ $t("settings.vendor.updateConfig") }}</t-button> -->
+      </div>
     </div>
 
     <!-- 添加模型弹窗 -->
@@ -1016,31 +1016,32 @@ function onBlurFn() {
     flex: 1;
     width: 100%;
     height: 100%;
-    min-height: 0;
-    overflow-y: auto;
     .infoBox {
       font-size: 12px;
       opacity: 0.6;
     }
-    .modelCard {
-      width: 100%;
-      margin-top: 10px;
-      .topInfo {
-        margin-left: 4px;
-        margin-right: 4px;
-      }
-      .tags {
-        margin-top: 16px;
-        & > * {
+    .configuration {
+      height: 80%;
+      overflow-y: auto;
+      .modelCard {
+        width: 100%;
+        margin-top: 10px;
+        .topInfo {
           margin-left: 4px;
           margin-right: 4px;
+          .modelCardName {
+            font-size: 15px;
+            font-weight: 900;
+          }
+        }
+        .tags {
+          margin-top: 16px;
+          & > * {
+            margin-left: 4px;
+            margin-right: 4px;
+          }
         }
       }
-    }
-
-    .modelCardName {
-      font-size: 15px;
-      font-weight: 900;
     }
 
     .updateAction {

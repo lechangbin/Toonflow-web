@@ -3,6 +3,8 @@ export default defineStore(
   () => {
     const showSetting = ref(false);
     const isElectron = ref(false);
+    const canvasZoom = ref(false); //画布缩放
+    const canvasScroll = ref(false); //画布滚动
     const activeMenu = ref("language");
 
     const baseUrl = ref<string>("http://localhost:10588/api");
@@ -20,7 +22,7 @@ export default defineStore(
 
     const language = ref<string>("zh-CN");
 
-    return { showSetting, baseUrl, otherSetting, themeSetting, language, activeMenu, isElectron };
+    return { showSetting, baseUrl, otherSetting, themeSetting, language, activeMenu, isElectron, canvasZoom, canvasScroll };
   },
   { persist: { pick: ["baseUrl", "otherSetting", "themeSetting", "language"] } },
 );

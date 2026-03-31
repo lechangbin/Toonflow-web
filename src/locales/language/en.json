@@ -336,7 +336,9 @@
       "restoreDefault": "Restore Defaults",
       "regexPlaceholder": "Please enter a regular expression",
       "showTitleBar": "show title bar",
-      "isElectron": "Switch to desktop mode"
+      "isElectron": "Switch to desktop mode",
+      "canvasScroll": "Canvas scroll",
+      "canvasIsDisabled": "Canvas zoom"
     },
     "request": {
       "warning": "Do not modify unless absolutely necessary",

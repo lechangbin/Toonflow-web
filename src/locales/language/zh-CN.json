@@ -345,7 +345,9 @@
       "inputCount": "请输入个数",
       "chapterRegex": "章节拆分正则",
       "restoreDefault": "恢复默认",
-      "regexPlaceholder": "请输入正则表达式"
+      "regexPlaceholder": "请输入正则表达式",
+      "canvasScroll": "画布滚动",
+      "canvasIsDisabled": "画布缩放"
     },
     "request": {
       "warning": "如非特殊情况，不需要修改或者配置",

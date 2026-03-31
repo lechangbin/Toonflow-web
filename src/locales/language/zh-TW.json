@@ -275,7 +275,9 @@
       "inputCount": "請輸入個數",
       "chapterRegex": "章節拆分正規表示式",
       "restoreDefault": "還原預設",
-      "regexPlaceholder": "請輸入正規表示式"
+      "regexPlaceholder": "請輸入正規表示式",
+      "canvasScroll": "畫布滾動",
+      "canvasIsDisabled": "畫布縮放"
     },
     "request": {
       "warning": "若非特殊情況，不需要修改或者設定",
