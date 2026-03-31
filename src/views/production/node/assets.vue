@@ -63,7 +63,7 @@
         </div>
       </div>
     </div>
-    <editImage v-model="visible" v-if="visible" :editData="currentRow" :type="currentRow.type" @save="save" />
+    <editImage v-model="visible" v-if="visible" :flowData="currentRow" @save="save" />
   </t-card>
 </template>
 
@@ -81,32 +81,40 @@ const props = defineProps<{
 
 const assets = defineModel<AssetItem[]>({ required: true });
 const currentRow = ref<{
-  id: null | number;
+  flowId?: number;
   resultImages: { src: string; prompt: string }[];
   referanceImages: string[];
-  type?: string;
 }>({
-  id: null,
   resultImages: [],
   referanceImages: [],
 });
 const visible = ref(false);
+const currentAssetsId = ref();
 function generateAssetsImage(row: DeriveAsset, referanceImageUrl: string) {
-  currentRow.value = { id: row.id, resultImages: [{ src: row.src, prompt: row.prompt }], referanceImages: [referanceImageUrl], type: row.type };
-
+  currentRow.value = {
+    flowId: row?.flowId,
+    resultImages: [{ src: row.src, prompt: row.prompt }],
+    referanceImages: [referanceImageUrl],
+  };
+  currentAssetsId.value = row.id;
   visible.value = true;
 }
 
-async function save({ imageUrl, insertId }: { imageUrl: string; insertId: number }) {
+async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) {
   // 更新对应分镜的 src
   if (!imageUrl) return;
   for (const i of assets.value) {
-    const target = i.derive.find((s) => s.id === currentRow.value.id);
+    const target = i.derive.find((s) => s.id === currentAssetsId.value);
     if (target) {
       target.src = imageUrl;
       return;
     }
   }
+  await axios.post("/production/assets/updateAssetsUrl", {
+    id: currentAssetsId.value,
+    url: imageUrl,
+    flowId,
+  });
 }
 </script>
 

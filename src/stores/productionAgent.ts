@@ -86,7 +86,7 @@ export default defineStore(
           }
         }
         if (status == "complete") {
-          setFlowData();
+          setFlowData(episodesId.value);
         }
       },
     });
@@ -147,8 +147,12 @@ export default defineStore(
       { immediate: true },
     );
 
-    async function setFlowData() {
-      await axios.post("/productionAgent/setFlowData", { projectId: projectStore().project?.id, agentType: "productionAgent", data: flowData.value });
+    async function setFlowData(episodesId: number) {
+      await axios.post("/production/saveFlowData", {
+        projectId: projectStore().project?.id,
+        data: flowData.value,
+        episodesId,
+      });
     }
 
     async function getFlowData() {

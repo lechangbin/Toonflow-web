@@ -85,7 +85,6 @@ const props = defineProps<{
   id: string;
   data: GeneratedNodeData;
   projectId: number;
-  type?: string;
 }>();
 
 function selectedFn() {
@@ -107,7 +106,6 @@ async function handleGenerate() {
       ratio: props.data.ratio,
       prompt: props.data.prompt,
       projectId: props.projectId,
-      type: props.type,
     });
     props.data.generatedImage = data.url;
   } catch (e) {
