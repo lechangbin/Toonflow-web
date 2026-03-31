@@ -2,7 +2,7 @@ import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 import { useChat } from "@/utils/useChat";
-import type { FlowData } from "@/views/production/utils/flowBuilder";
+import type { FlowData, Storyboard } from "@/views/production/utils/flowBuilder";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 
 export default defineStore(
@@ -31,17 +31,7 @@ export default defineStore(
       scriptPlan: "", //导演计划
       storyboardTable: "", //分镜表
       assets: [], // 衍生资产
-      storyboard: [
-        {
-          id: 1,
-          title: "123123123",
-          description: "123123123",
-          duration: 10,
-          prompt: "12312312",
-          src: "https://p2-kling.klingai.com/kcdn/cdn-kcdn112452/kling-web/dialog-weekly-exp3.png?x-oss-process=image%2Fresize%2Cw_740%2Ch_620%2Cm_mfit%2Fformat%2Cwebp",
-          state: "已完成",
-        },
-      ], //分镜面板
+      storyboard: [], //分镜面板
       workbench: {
         videoList: [],
       }, // 工作台数据
@@ -73,8 +63,28 @@ export default defineStore(
         } else if (tag === "storyboardTable") {
           flowData.value.storyboardTable = value ?? "";
         } else if (tag === "storyboard") {
-          console.log("%c Line:46 🍞 value", "background:#4fff4B", value);
-          flowData.value.storyboard = JSON.parse(value ?? "") ?? "";
+          if (status === "complete") {
+            const newItems = children.map((child) => {
+              return {
+                prompt: child.attrs.prompt || "",
+                duration: Number(child.attrs.duration) || 0,
+                group: Number(child.attrs.group) || 0,
+                state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
+                src: null,
+                associateAssetsIds: JSON.parse(child.attrs.associateAssetsIds) || [],
+              };
+            });
+            if (newItems.length > 0) {
+              const notExistItems = newItems.filter((newItem) => {
+                return !flowData.value.storyboard.some((story) => story.prompt === newItem.prompt && story.duration === newItem.duration);
+              });
+              if (notExistItems.length > 0) {
+                addStoryboardInfo(notExistItems);
+                console.log("%c notExistItems", "background:#3b82f6", notExistItems);
+                flowData.value.storyboard = [...flowData.value.storyboard, ...notExistItems];
+              }
+            }
+          }
         }
       },
     });
@@ -382,10 +392,21 @@ export default defineStore(
       if (!connected.value) connect();
       socket.value!.emit("updateContext", ctx);
     }
-    async function addStoryboardInfo(data: { prompt: string }[]) {
-      await axios.post("/production/storyboard/batchAddStoryboardInfo", {
+    async function addStoryboardInfo(items: Storyboard[]) {
+      
+      console.log("%c Line:402 🍑", "background:#ffdd4d");
+      const { data } = await axios.post("/production/storyboard/batchAddStoryboardInfo", {
         scriptId: episodesId.value,
-        data,
+        data: items,
+      });
+
+      console.log("%c Line:409 🥃 flowData.value.storyboard", "background:#b03734", flowData.value.storyboard);
+
+      flowData.value.storyboard.forEach((item) => {
+        const updated = data.find((d: Storyboard) => d.prompt == item.prompt && d.duration == item.duration);
+        if (updated) {
+          item.id = updated.id;
+        }
       });
     }
 
