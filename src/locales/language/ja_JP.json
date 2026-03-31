@@ -831,7 +831,8 @@
         "uploadOk": "アップロードに成功しました",
         "imageSelected": "この画像を選択しました",
         "imageDeleted": "この画像を削除しました",
-        "imageSaved": "画像を保存しました"
+        "imageSaved": "画像を保存しました",
+        "completed": "完了"
       },
       "batch": {
         "header": "一括生成",
@@ -871,7 +872,10 @@
           "scaleRatio": "ズーム倍率",
           "gridPreview": "グリッドプレビュー",
           "noPreviewImages": "プレビュー可能な画像がありません",
-          "imageLoadFailed": "画像の読み込みに失敗しました"
+          "imageLoadFailed": "画像の読み込みに失敗しました",
+          "promptPlaceholder": "プロンプトの単語を入力してください",
+          "prompt": "即効性のある言葉",
+          "editInfo": "即時の単語の修正"
         },
         "storyboardTable": {
           "title": "絵コンテ表",
@@ -1189,7 +1193,9 @@
       "guideSwitchEpisodeBody": "エピソードの切り替えはこちらに移動しました",
       "autoLayoutLR": "自動組版 - 左右レイアウト",
       "autoLayoutTB": "自動写植上下レイアウト",
-      "getFlowData": "ワークスペースを更新する"
+      "getFlowData": "ワークスペースを更新する",
+      "confirm": "エピソード切り替え確認",
+      "confirmEpisodesSwitch": "現在のタスクはまだ進行中です。エピソードを切り替えるとセッションが再接続されます。切り替えを続けますか?"
     },
     "task": {
       "title": "タスクリスト",
@@ -1236,7 +1242,11 @@
     "openSettings": "設定を開く",
     "cancelled": "生成がキャンセルされました",
     "defaultReel": "本文巻",
-    "save": "保存"
+    "save": "保存",
+    "submitting": "提出する",
+    "editSuccess": "変更が成功しました",
+    "editFailed": "変更に失敗しました",
+    "submit": "提出する"
   },
   "components.storyboardImageCheck.camera": "カメラ",
   "components.storyboardImageCheck.dialogTitle": "絵コンテ画像を選択",
@@ -1300,5 +1310,6 @@
   },
   "productionAgent": {
     "generating": "生成中"
-  }
+  },
+  "skillScan": "「🔍 解析と読み込みスキル」"
 }

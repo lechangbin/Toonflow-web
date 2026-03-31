@@ -913,7 +913,8 @@
         "uploadOk": "上传成功",
         "imageSelected": "已选择该图片",
         "imageDeleted": "已删除该图片",
-        "imageSaved": "图片已保存"
+        "imageSaved": "图片已保存",
+        "completed": "已完成"
       },
       "batch": {
         "header": "批量生成",
@@ -953,7 +954,10 @@
           "scaleRatio": "缩放比例",
           "gridPreview": "宫格预览",
           "noPreviewImages": "暂无可预览的图片",
-          "imageLoadFailed": "图片加载失败"
+          "imageLoadFailed": "图片加载失败",
+          "promptPlaceholder": "请输入提示词",
+          "prompt": "提示词",
+          "editInfo": "提示词修改"
         },
         "storyboardTable": {
           "title": "分镜表",
@@ -1283,7 +1287,9 @@
       "guideLayoutBtnBody": "点击此按钮可自动整理节点布局",
       "autoLayoutLR": "自动排版-左右布局",
       "autoLayoutTB": "自动排版-上下布局",
-      "getFlowData": "刷新工作区"
+      "getFlowData": "刷新工作区",
+      "confirm": "切换剧集确认",
+      "confirmEpisodesSwitch": "当前任务仍在进行中，切换剧集会重连会话，是否继续切换？"
     },
     "task": {
       "title": "任务列表",
@@ -1330,7 +1336,11 @@
     "openSettings": "打开设置",
     "cancelled": "已取消生成",
     "defaultReel": "正文卷",
-    "save": "保存"
+    "save": "保存",
+    "submitting": "提交中",
+    "editSuccess": "修改成功",
+    "editFailed": "修改失败",
+    "submit": "提交"
   },
   "workbench.project.msg.enterProjectQuality": "请选择图片质量",
   "promptManage": {
@@ -1394,5 +1404,6 @@
   },
   "productionAgent": {
     "generating": "生成中"
-  }
+  },
+  "skillScan": "\"🔍 正在解析加载Skill\""
 }

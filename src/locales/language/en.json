@@ -911,7 +911,8 @@
         "uploadOk": "Uploaded successfully",
         "imageSelected": "Image selected",
         "imageDeleted": "Image deleted",
-        "imageSaved": "Image saved"
+        "imageSaved": "Image saved",
+        "completed": "Completed"
       },
       "batch": {
         "header": "Batch Generation",
@@ -951,7 +952,10 @@
           "scaleRatio": "Zoom Ratio",
           "gridPreview": "Grid Preview",
           "noPreviewImages": "No images available to preview",
-          "imageLoadFailed": "Failed to load image"
+          "imageLoadFailed": "Failed to load image",
+          "promptPlaceholder": "Please enter the prompt word",
+          "prompt": "prompt word",
+          "editInfo": "Prompt word modification"
         },
         "storyboardTable": {
           "title": "Storyboard Table",
@@ -1279,7 +1283,9 @@
       "guideLayoutBtnBody": "Click this button to automatically arrange node layout",
       "autoLayoutLR": "Automatic typesetting-left and right layout",
       "autoLayoutTB": "Automatic typesetting-top and bottom layout",
-      "getFlowData": "Refresh workspace"
+      "getFlowData": "Refresh workspace",
+      "confirm": "Switch episode confirmation",
+      "confirmEpisodesSwitch": "The current task is still in progress. Switching episodes will reconnect the session. Do you want to continue switching?"
     },
     "task": {
       "title": "Task List",
@@ -1326,7 +1332,11 @@
     "openSettings": "Open Settings",
     "cancelled": "Generation cancelled",
     "defaultReel": "Main Volume",
-    "save": "save"
+    "save": "save",
+    "submitting": "Submitting",
+    "editSuccess": "Modification successful",
+    "editFailed": "Modification failed",
+    "submit": "submit"
   },
   "components.storyboardImageCheck.camera": "Camera",
   "components.storyboardImageCheck.dialogTitle": "Select Storyboard Image",
@@ -1390,5 +1400,6 @@
   },
   "productionAgent": {
     "generating": "Generating"
-  }
+  },
+  "skillScan": "\"🔍 Parsing and loading Skill\""
 }

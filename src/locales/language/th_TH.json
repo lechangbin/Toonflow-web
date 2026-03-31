@@ -832,7 +832,8 @@
         "uploadOk": "อัปโหลดสำเร็จ",
         "imageSelected": "เลือกรูปภาพนี้แล้ว",
         "imageDeleted": "ลบรูปภาพนี้แล้ว",
-        "imageSaved": "บันทึกรูปภาพแล้ว"
+        "imageSaved": "บันทึกรูปภาพแล้ว",
+        "completed": "สมบูรณ์"
       },
       "batch": {
         "header": "สร้างเป็นชุด",
@@ -872,7 +873,10 @@
           "scaleRatio": "อัตราส่วนการย่อ/ขยาย",
           "gridPreview": "ดูตัวอย่างแบบกริด",
           "noPreviewImages": "ไม่มีรูปภาพให้ดูตัวอย่าง",
-          "imageLoadFailed": "โหลดรูปภาพล้มเหลว"
+          "imageLoadFailed": "โหลดรูปภาพล้มเหลว",
+          "promptPlaceholder": "กรุณากรอกคำที่พร้อมท์",
+          "prompt": "คำพูดที่รวดเร็ว",
+          "editInfo": "การปรับเปลี่ยนคำทันที"
         },
         "storyboardTable": {
           "title": "ตารางสตอรี่บอร์ด",
@@ -1190,7 +1194,9 @@
       "guideSwitchEpisodeBody": "ฟีเจอร์การสลับตอนถูกย้ายมาที่นี่แล้วนะ!",
       "autoLayoutLR": "เรียงพิมพ์อัตโนมัติ - เค้าโครงซ้ายและขวา",
       "autoLayoutTB": "เค้าโครงเรียงพิมพ์อัตโนมัติบนและล่าง",
-      "getFlowData": "รีเฟรชพื้นที่ทำงาน"
+      "getFlowData": "รีเฟรชพื้นที่ทำงาน",
+      "confirm": "สลับการยืนยันตอน",
+      "confirmEpisodesSwitch": "งานปัจจุบันยังอยู่ในระหว่างดำเนินการ การเปลี่ยนตอนจะเชื่อมต่อเซสชันอีกครั้ง คุณต้องการเปลี่ยนต่อหรือไม่?"
     },
     "task": {
       "title": "รายการงาน",
@@ -1237,7 +1243,11 @@
     "openSettings": "เปิดการตั้งค่า",
     "cancelled": "ยกเลิกการสร้าง",
     "defaultReel": "เล่มหลัก",
-    "save": "บันทึก"
+    "save": "บันทึก",
+    "submitting": "กำลังส่ง",
+    "editSuccess": "การปรับเปลี่ยนสำเร็จ",
+    "editFailed": "การปรับเปลี่ยนล้มเหลว",
+    "submit": "ส่ง"
   },
   "components.storyboardImageCheck.camera": "กล้อง",
   "components.storyboardImageCheck.dialogTitle": "เลือกรูปสตอรี่บอร์ด",
@@ -1301,5 +1311,6 @@
   },
   "productionAgent": {
     "generating": "กำลังสร้าง"
-  }
+  },
+  "skillScan": "\"🔍 การแยกวิเคราะห์และการโหลดทักษะ\""
 }
