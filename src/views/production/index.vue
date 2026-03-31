@@ -187,8 +187,8 @@ function handleEpisodesChange(value: unknown) {
     if (!(await confirmEpisodesSwitch())) return;
 
     console.log("%c Line:174 🥛", "background:#ffdd4d");
-    await productionAgentStore().getFlowData();
     episodesId.value = nextEpisodesId;
+    await productionAgentStore().getFlowData();
   })();
 }
 
