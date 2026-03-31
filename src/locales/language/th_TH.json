@@ -269,7 +269,9 @@
       "restoreDefault": "กู้คืนค่าเริ่มต้น",
       "regexPlaceholder": "โปรดกรอกนิพจน์ปกติ (Regex)",
       "showTitleBar": "แสดงแถบชื่อเรื่อง",
-      "isElectron": "สลับไปที่โหมดเดสก์ท็อป"
+      "isElectron": "สลับไปที่โหมดเดสก์ท็อป",
+      "canvasScroll": "เลื่อนผ้าใบ",
+      "canvasIsDisabled": "แคนวาสซูม"
     },
     "request": {
       "warning": "หากไม่มีกรณีพิเศษ ไม่จำเป็นต้องแก้ไขหรือตั้งค่าใดๆ",
