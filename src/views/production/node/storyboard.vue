@@ -77,7 +77,7 @@
         </t-button> -->
       </div>
     </div>
-    <editImage v-model="visible" v-if="visible" :editData="currentRow" type="storyboard" @save="save" />
+    <editImage v-model="visible" v-if="visible" :flowData="currentRow" type="storyboard" @save="save" />
     <t-image-viewer
       v-model:visible="previewVisible"
       :images="previewImages"
@@ -97,7 +97,7 @@ import type { AssetItem, Storyboard } from "../utils/flowBuilder";
 import projectStore from "@/stores/project";
 import productionAgentStore from "@/stores/productionAgent";
 const { project } = storeToRefs(projectStore());
-const { batchGenerateStoryboard } = productionAgentStore();
+const { batchGenerateStoryboard, episodesId } = storeToRefs(productionAgentStore());
 
 const props = defineProps<{
   id: string;
@@ -122,13 +122,11 @@ function setHoveredFrame(index: number | null) {
 }
 
 const currentRow = ref<{
-  id: number | null;
+  flowId?: number | null;
   resultImages: { src: string; prompt: string }[];
   referanceImages: string[];
-  insertAfterIndex: number | null;
 }>({
-  id: null,
-  insertAfterIndex: null,
+  flowId: null,
   resultImages: [],
   referanceImages: [],
 });
@@ -188,6 +186,10 @@ async function previewAll() {
     LoadingPlugin(false);
   }
 }
+const currentRowStoryboardInfo = ref<{ id: number | null; insertAfterIndex: number | null }>({
+  id: null,
+  insertAfterIndex: null,
+});
 const generateLoading = ref(false);
 // async function batchGenerateImage() {
 // LoadingPlugin(true);
@@ -211,14 +213,16 @@ const generateLoading = ref(false);
 // });
 // }
 function editStoryboaryImage(item: Storyboard, images: string[], insertAfterIndex: number | null = null) {
-  const id = item.id;
-  currentRow.value = {
-    id,
+  currentRowStoryboardInfo.value = {
+    id: item?.id ?? null,
     insertAfterIndex,
-    resultImages: [],
-    // referanceImages: [],
   };
-  if (id) {
+  currentRow.value = {
+    flowId: item?.flowId ?? null,
+    resultImages: [],
+    referanceImages: [],
+  };
+  if (item.id) {
     let imagesPush: string[] = [];
 
     if (item.associateAssetsIds && item.associateAssetsIds.length > 0) {
@@ -250,29 +254,38 @@ function editStoryboaryImage(item: Storyboard, images: string[], insertAfterInde
   visible.value = true;
 }
 
-async function save({ imageUrl, insertId }: { imageUrl: string; insertId: number }) {
+async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) {
   if (!imageUrl) return;
 
-  const { id, insertAfterIndex } = currentRow.value;
+  const { id, insertAfterIndex } = currentRowStoryboardInfo.value;
 
   // 插入模式：在两张图之间新增一条分镜
   if (id === null && insertAfterIndex !== null) {
-    const newId = insertId;
     const newFrame: Storyboard = {
-      id: newId,
       duration: 0,
       prompt: "",
-      associateAssetsIds: [],
       src: imageUrl,
       state: "已完成",
     };
-    storyboard.value.splice(insertAfterIndex + 1, 0, newFrame);
+    const { data } = await axios.post("/production/storyboard/addStoryboard", {
+      ...newFrame,
+      projectId: project.value?.id,
+      scriptId: episodesId.value,
+    });
+
+    storyboard.value.splice(insertAfterIndex + 1, 0, { ...newFrame, id: data.id! });
+
     return;
   }
 
   // 更新模式：更新对应分镜的 src
   const target = storyboard.value.find((s) => s.id === id);
   if (target) target.src = imageUrl;
+  await axios.post("/production/storyboard/updateStoryboardUrl", {
+    id: id,
+    url: imageUrl,
+    flowId,
+  });
 }
 
 async function removeFn(id: number) {

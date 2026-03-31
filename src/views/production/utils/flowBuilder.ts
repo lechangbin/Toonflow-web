@@ -22,6 +22,7 @@ export interface DeriveAsset {
   prompt: string;
   desc: string;
   src: string;
+  flowId?: number;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
   type: "role" | "tool" | "scene" | "clip";
 }
@@ -34,6 +35,7 @@ export interface AssetItem {
   src: string;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
   type: "role" | "tool" | "scene" | "clip";
+  flowId?: number;
   derive: DeriveAsset[];
 }
 
@@ -45,6 +47,7 @@ export interface Storyboard {
   associateAssetsIds?: number[];
   src: string | null;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
+  flowId?: number;
 }
 
 interface VideoList {

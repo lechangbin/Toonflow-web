@@ -122,7 +122,7 @@ const { projectId } = storeToRefs(store());
 const props = withDefaults(
   defineProps<{
     flowData: {
-      flowId?: number;
+      flowId?: number | null;
       resultImages: { src: string; prompt: string }[]; // 结果图 url 和提示词
       referanceImages: string[]; // 参考图url
     };

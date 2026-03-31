@@ -89,9 +89,14 @@ const currentRow = ref<{
   referanceImages: [],
 });
 const visible = ref(false);
+const currentAssetsId = ref();
 function generateAssetsImage(row: DeriveAsset, referanceImageUrl: string) {
-  currentRow.value = { id: row.id, resultImages: [{ src: row.src, prompt: row.prompt }], referanceImages: [referanceImageUrl], type: row.type };
-
+  currentRow.value = {
+    flowId: row?.flowId,
+    resultImages: [{ src: row.src, prompt: row.prompt }],
+    referanceImages: [referanceImageUrl],
+  };
+  currentAssetsId.value = row.id;
   visible.value = true;
 }
 
@@ -99,12 +104,17 @@ async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) 
   // 更新对应分镜的 src
   if (!imageUrl) return;
   for (const i of assets.value) {
-    const target = i.derive.find((s) => s.id === currentRow.value.id);
+    const target = i.derive.find((s) => s.id === currentAssetsId.value);
     if (target) {
       target.src = imageUrl;
       return;
     }
   }
+  await axios.post("/production/assets/updateAssetsUrl", {
+    id: currentAssetsId.value,
+    url: imageUrl,
+    flowId,
+  });
 }
 </script>
 
