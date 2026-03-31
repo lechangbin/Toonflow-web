@@ -275,7 +275,9 @@
       "inputCount": "請輸入個數",
       "chapterRegex": "章節拆分正規表示式",
       "restoreDefault": "還原預設",
-      "regexPlaceholder": "請輸入正規表示式"
+      "regexPlaceholder": "請輸入正規表示式",
+      "canvasScroll": "畫布滾動",
+      "canvasIsDisabled": "畫布縮放"
     },
     "request": {
       "warning": "若非特殊情況，不需要修改或者設定",
@@ -418,7 +420,7 @@
           "saveSuccess": "更新成功",
           "title": "提示詞"
         },
-        "mdFile": "視覺手冊文件路徑"
+        "mdFile": "視覺手冊文件"
       },
       "msg": {
         "fetchFailed": "取得專案列表失敗",
@@ -1224,7 +1226,11 @@
         "startTime": "時間"
       },
       "project": "項目名稱:"
-    }
+    },
+    "noVideo": "暫無影片",
+    "prompt": "影片提示詞",
+    "generateText": "AI生成提示詞",
+    "selectStoryboard": "選擇分鏡"
   },
   "login": {
     "slogan": "智慧短劇創作平台",
@@ -1301,5 +1307,34 @@
   "productionAgent": {
     "generating": "生成中"
   },
-  "skillScan": "\"🔍 正在解析載入Skill\""
+  "skillScan": {
+    "scanning": "🔍 正在解析載入Skill",
+    "scanComplete": "✨ Skill 掃描完成",
+    "inserted": "✅ 新增{count}個Skill",
+    "updated": "🔄 更新{count}個Skill",
+    "removed": "🗑️ 移除{count}個Skill",
+    "scannedFiles": "📁 掃描 {count} 個檔案",
+    "noDescription": "📝 {count}個Skill缺少描述",
+    "noAttribution": "👤 {count}個Skill缺少歸屬",
+    "configWarning": "⚠️ Skill 配置警告",
+    "openSettings": "打開設定",
+    "scanFailed": "❌ 掃描失敗",
+    "checkNetwork": "🔌 請檢查網路連線或稍後重試",
+    "retryLater": "🔁 請稍後重試"
+  },
+  "generate": "產生影片",
+  "history": "歷史版本",
+  "generating": "生成中",
+  "generateFailed": "失敗",
+  "selectAll": "全選",
+  "selected": "已選",
+  "batchGenerateText": "大量生成提示詞",
+  "batchGenerateVideo": "大量生成視頻",
+  "importVideo": "導入影片",
+  "emptyTrack": "第{index 1}段",
+  "del": "確認刪除",
+  "delConfirm": "確認刪除該段？",
+  "selectSource": "選擇來源",
+  "confirm": "從資產選擇",
+  "cancel": "從分鏡選擇"
 }

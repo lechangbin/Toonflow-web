@@ -6,8 +6,8 @@
     :max-zoom="10"
     :min-zoom="0.1"
     fit-view-on-init
-    pan-on-scroll
-    :zoom-on-scroll="false"
+    :pan-on-scroll="canvasScroll"
+    :zoom-on-scroll="canvasZoom"
     :selection-key-code="null"
     :multi-selection-key-code="null">
     <template #node-script="props">
@@ -101,6 +101,8 @@ import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 
 const { project } = storeToRefs(projectStore());
+import settingStore from "@/stores/setting";
+const { canvasScroll, canvasZoom } = storeToRefs(settingStore());
 const openShowVisible = ref(true);
 const { toObject, fromObject, fitView, findNode, onNodeDragStop, updateNodeInternals, getNodes } = useVueFlow();
 const { layout } = useLayout();
@@ -115,10 +117,10 @@ const loading = ref(false);
 const nodePositions = ref<Record<string, { x: number; y: number }>>({
   script: { x: 0, y: 0 },
   scriptPlan: { x: 900, y: 0 },
-  assets: { x: 0, y: 4000 },
+  assets: { x: 1200, y: 4000 },
   storyboardTable: { x: 1800, y: 0 },
-  storyboard: { x: 2900, y: 0 },
-  workbench: { x: 5000, y: 0 },
+  storyboard: { x: 2500, y: 0 },
+  workbench: { x: 3000, y: 0 },
   // poster: { x: 4500, y: 0 },
 });
 const { nodes, edges } = useFlowBuilder(flowData, nodePositions);
@@ -143,6 +145,7 @@ watch(
 
 onMounted(() => {
   getScriptData();
+  productionAgentStore().getFlowData();
 });
 
 const episodesOptions = ref<{ label: string; value: number }[]>([]);
@@ -180,7 +183,11 @@ function handleEpisodesChange(value: unknown) {
   if (!Number.isFinite(nextEpisodesId) || nextEpisodesId === episodesId.value) return;
 
   void (async () => {
+    console.log("%c Line:173 🌶", "background:#33a5ff");
     if (!(await confirmEpisodesSwitch())) return;
+
+    console.log("%c Line:174 🥛", "background:#ffdd4d");
+    await productionAgentStore().getFlowData();
     episodesId.value = nextEpisodesId;
   })();
 }
