@@ -1209,7 +1209,11 @@
         "startTime": "Thời gian"
       },
       "project": "Tên dự án:"
-    }
+    },
+    "noVideo": "Chưa có video",
+    "prompt": "Lời nhắc video",
+    "generateText": "Lời nhắc do AI tạo ra",
+    "selectStoryboard": "Chọn bảng phân cảnh"
   },
   "login": {
     "slogan": "Nền tảng sáng tạo phim ngắn thông minh",
@@ -1302,5 +1306,34 @@
   "productionAgent": {
     "generating": "Đang tạo"
   },
-  "skillScan": "\"🔍 Kỹ năng phân tích và tải\""
+  "skillScan": {
+    "scanning": "🔍 Phân tích và tải Skill",
+    "scanComplete": "✨ Quét Skill hoàn tất",
+    "inserted": "✅ Đã thêm kỹ năng {count}",
+    "updated": "🔄 Cập nhật {count} kỹ năng",
+    "removed": "🗑️ Xóa {count} Skill",
+    "scannedFiles": "📁 Đã quét {count} tệp",
+    "noDescription": "📝 {count} Skill thiếu mô tả",
+    "noAttribution": "👤 {count} Skill thiếu thông tin tác giả",
+    "configWarning": "⚠️ Cảnh báo cấu hình Skill",
+    "openSettings": "Mở cài đặt",
+    "scanFailed": "❌ Quét thất bại",
+    "checkNetwork": "🔌 Vui lòng kiểm tra kết nối mạng hoặc thử lại sau",
+    "retryLater": "🔁 Vui lòng thử lại sau"
+  },
+  "generate": "Tạo video",
+  "history": "Phiên bản lịch sử",
+  "generating": "Đang tạo",
+  "generateFailed": "thất bại",
+  "selectAll": "Chọn tất cả",
+  "selected": "Đã chọn",
+  "batchGenerateText": "Tạo các từ nhắc nhở theo đợt",
+  "batchGenerateVideo": "Tạo video hàng loạt",
+  "importVideo": "Nhập video",
+  "emptyTrack": "Đoạn {chỉ mục 1}",
+  "del": "Xác nhận xóa",
+  "delConfirm": "Bạn có chắc chắn muốn xóa đoạn này?",
+  "selectSource": "Chọn nguồn",
+  "confirm": "Chọn từ nội dung",
+  "cancel": "Chọn từ bảng phân cảnh"
 }

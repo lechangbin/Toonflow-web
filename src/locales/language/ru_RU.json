@@ -1219,7 +1219,11 @@
         "startTime": "Время"
       },
       "project": "Название проекта:"
-    }
+    },
+    "noVideo": "Видео пока нет",
+    "prompt": "Видео слова-подсказки",
+    "generateText": "ИИ генерировал слова-подсказки",
+    "selectStoryboard": "Выберите раскадровку"
   },
   "login": {
     "slogan": "Умная платформа для создания коротких драм",
@@ -1312,5 +1316,34 @@
   "productionAgent": {
     "generating": "Создание"
   },
-  "skillScan": "«🔍Навыки парсинга и загрузки»"
+  "skillScan": {
+    "scanning": "🔍 Парсинг и загрузка навыков",
+    "scanComplete": "✨ Сканирование Skill завершено",
+    "inserted": "✅ Добавлено {count} навыков",
+    "updated": "🔄 Обновлено {count} Skill",
+    "removed": "🗑️ Удалено {count} Skill",
+    "scannedFiles": "📁 Просканировано {count} файлов",
+    "noDescription": "📝 {count} Skill без описания",
+    "noAttribution": "👤 {count} Skill без атрибуции",
+    "configWarning": "⚠️ Предупреждение конфигурации Skill",
+    "openSettings": "Открыть настройки",
+    "scanFailed": "❌ Сканирование не удалось",
+    "checkNetwork": "🔌 Проверьте сетевое подключение или повторите попытку позже",
+    "retryLater": "🔁 Повторите попытку позже"
+  },
+  "generate": "Создать видео",
+  "history": "Историческая версия",
+  "generating": "Создание",
+  "generateFailed": "неудача",
+  "selectAll": "Выбрать все",
+  "selected": "Выбрано",
+  "batchGenerateText": "Генерируйте подсказки в пакетном режиме",
+  "batchGenerateVideo": "Генерируйте видео в пакетном режиме",
+  "importVideo": "Импортировать видео",
+  "emptyTrack": "Абзац {индекс 1}",
+  "del": "Подтвердить удаление",
+  "delConfirm": "Вы уверены, что хотите удалить этот абзац?",
+  "selectSource": "Выберите источник",
+  "confirm": "Выбрать из активов",
+  "cancel": "Выбрать из раскадровки"
 }

@@ -1308,7 +1308,11 @@
         "startTime": "Time"
       },
       "project": "Project name:"
-    }
+    },
+    "noVideo": "No video yet",
+    "prompt": "Video prompt words",
+    "generateText": "AI generated prompt words",
+    "selectStoryboard": "Select storyboard"
   },
   "login": {
     "slogan": "Intelligent Short Drama Creation Platform",
@@ -1401,5 +1405,34 @@
   "productionAgent": {
     "generating": "Generating"
   },
-  "skillScan": "\"🔍 Parsing and loading Skill\""
+  "skillScan": {
+    "scanning": "🔍 Parsing and loading Skill",
+    "scanComplete": "✨ Skill Scan Complete",
+    "inserted": "✅ Added {count} Skills",
+    "updated": "🔄 {count} Skill(s) updated",
+    "removed": "🗑️ {count} Skill(s) removed",
+    "scannedFiles": "📁 Scanned {count} files",
+    "noDescription": "📝 {count} Skill(s) missing description",
+    "noAttribution": "👤 {count} Skill(s) missing attribution",
+    "configWarning": "⚠️ Skill Config Warning",
+    "openSettings": "Open Settings",
+    "scanFailed": "❌ Scan Failed",
+    "checkNetwork": "🔌 Please check network connection or try again later",
+    "retryLater": "🔁 Please try again later"
+  },
+  "generate": "Generate video",
+  "history": "Historical version",
+  "generating": "Generating",
+  "generateFailed": "fail",
+  "selectAll": "Select all",
+  "selected": "Selected",
+  "batchGenerateText": "Generate prompt words in batches",
+  "batchGenerateVideo": "Generate videos in batches",
+  "importVideo": "Import video",
+  "emptyTrack": "Paragraph {index 1}",
+  "del": "Confirm deletion",
+  "delConfirm": "Are you sure you want to delete this paragraph?",
+  "selectSource": "Select source",
+  "confirm": "Select from assets",
+  "cancel": "Select from storyboard"
 }
