@@ -620,7 +620,11 @@
         "error": "保存失敗",
         "reconnect": "重新連接",
         "notReconnect": "重新連結對話會被切斷是否確認",
-        "keepReconnect": "確認"
+        "keepReconnect": "確認",
+        "deleteConfirm": "刪除確認",
+        "deleteBody": "刪除正文",
+        "confirmDelete": "確認刪除",
+        "scriptDeleted": "腳本已刪除"
       },
       "reconnect": "重新連接"
     },
@@ -707,7 +711,9 @@
         "selectDelScript": "請選擇刪除劇本",
         "batchDeleteHeader": "批量刪除",
         "batchDeleteBody": "確定要刪除選中的 {count} 個劇本嗎？此操作無法復原。",
-        "batchDeleteSuccess": "批量刪除成功"
+        "batchDeleteSuccess": "批量刪除成功",
+        "extractingInProgress": "正在提取中",
+        "projectNotFound": "項目未找到"
       },
       "add": {
         "title": "新增劇本",
@@ -1355,8 +1361,6 @@
   "generateFailed": "失敗",
   "selectAll": "全選",
   "selected": "已選",
-  "batchGenerateText": "大量生成提示詞",
-  "batchGenerateVideo": "大量生成視頻",
   "importVideo": "導入影片",
   "emptyTrack": "第{index 1}段",
   "del": "確認刪除",

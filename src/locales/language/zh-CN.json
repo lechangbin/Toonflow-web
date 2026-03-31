@@ -707,7 +707,11 @@
         "error": "保存失败",
         "reconnect": "重新连接",
         "notReconnect": "重新连接对话会被切断是否确认",
-        "keepReconnect": "确认"
+        "keepReconnect": "确认",
+        "deleteConfirm": "删除确认",
+        "deleteBody": "删除正文",
+        "confirmDelete": "确认删除",
+        "scriptDeleted": "脚本已删除"
       },
       "reconnect": "重新连接"
     },
@@ -783,7 +787,9 @@
       "exportScript": "导出剧本",
       "msg": {
         "extracting": "资产提取中",
-        "extractFailed": "资产提取失败"
+        "extractFailed": "资产提取失败",
+        "extractingInProgress": "正在提取中",
+        "projectNotFound": "项目未找到"
       },
       "add": {
         "title": "新增剧本",
@@ -1460,8 +1466,6 @@
   "generateFailed": "失败",
   "selectAll": "全选",
   "selected": "已选 ",
-  "batchGenerateText": "批量生成提示词",
-  "batchGenerateVideo": "批量生成视频",
   "importVideo": "导入视频",
   "emptyTrack": "第{index+1}段",
   "del": "确认删除",
