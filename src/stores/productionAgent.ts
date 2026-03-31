@@ -84,6 +84,8 @@ export default defineStore(
                 flowData.value.storyboard = [...flowData.value.storyboard, ...notExistItems];
               }
             }
+
+            setFlowData();
           }
         }
       },
@@ -370,7 +372,7 @@ export default defineStore(
       if (!connected.value) connect();
       socket.value!.emit("updateContext", ctx);
     }
-    async function addStoryboardInfo(items: Storyboard[]) {
+    async function addStoryboardInfo(items: any[]) {
       const { data } = await axios.post("/production/storyboard/batchAddStoryboardInfo", {
         scriptId: episodesId.value,
         data: items,
