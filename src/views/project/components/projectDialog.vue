@@ -110,8 +110,8 @@
                 <t-input v-model="visualManualForm.name" :placeholder="$t('workbench.project.dialog.visualManualNamePh')" @keydown.stop />
               </div>
               <div class="mdFileLocation">
-                <label class="fieldLabel">{{ $t("workbench.project.dialog.visualManualName") }}</label>
-                <t-input v-model="visualManualForm.name" :placeholder="$t('workbench.project.dialog.visualManualNamePh')" @keydown.stop />
+                <label class="fieldLabel">{{ $t("workbench.project.dialog.mdFile") }}</label>
+                <t-input v-model="visualManualForm.stylePath" disabled />
               </div>
               <div class="coverField">
                 <label class="fieldLabel">{{ $t("workbench.project.dialog.visualManualCover") }}</label>
@@ -149,7 +149,7 @@
                         :toolbars="promptToolbars"
                         :footers="[]"
                         :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
-                        style="height: 38vh; margin-top: 5px"
+                        style="height: 30vh; margin-top: 5px"
                         @onUploadImg="() => {}" />
                     </t-tab-panel>
                   </t-tabs>
@@ -226,6 +226,7 @@ interface VisualManualItem {
   name: string;
   images?: string[];
   data?: Data[];
+  stylePath: string;
 }
 interface Data {
   label: string;
@@ -367,7 +368,7 @@ const visualManualOptions = ref<VisualManualItem[]>([]);
 const visualManualLoading = ref(false);
 const visualManualDialogVisible = ref(false);
 const editingVisualManual = ref<VisualManualItem | null>(null);
-const visualManualForm = ref({ name: "", images: [] as string[] });
+const visualManualForm = ref({ name: "", images: [] as string[], stylePath: "" });
 const visualManualCoverInputRef = ref<HTMLInputElement>();
 const visualManualTabValue = ref<TabValue>("README");
 const visualManualTabData = ref<Data[]>(DEFAULT_TAB_DATA());
@@ -378,9 +379,10 @@ function fetchVisualManuals() {
     .post("/project/getVisualManual")
     .then(({ data }) => {
       visualManualOptions.value = data.map(
-        (item: { id?: string | number; name: string; image?: string | string[]; images?: string[]; data?: Data[] }) => ({
+        (item: { id?: string | number; name: string; image?: string | string[]; images?: string[]; data?: Data[]; stylePath: string }) => ({
           id: item.id,
           name: item.name,
+          stylePath: item.stylePath,
           images: item.images ?? (Array.isArray(item.image) ? item.image : item.image ? [item.image] : []),
           data: item.data,
         }),
@@ -395,6 +397,7 @@ function openVisualManualDialog(item?: VisualManualItem) {
   editingVisualManual.value = item ?? null;
   if (item) {
     visualManualForm.value.name = item.name;
+    visualManualForm.value.stylePath = item.stylePath;
     visualManualForm.value.images = item.images ? [...item.images] : [];
     const existingData: Data[] = Array.isArray(item.data) ? item.data : [];
     visualManualTabData.value = DEFAULT_TAB_DATA().map((tab) => {
@@ -402,7 +405,7 @@ function openVisualManualDialog(item?: VisualManualItem) {
       return found ? { ...tab, data: found.data } : { ...tab };
     });
   } else {
-    visualManualForm.value = { name: "", images: [] };
+    visualManualForm.value = { name: "", images: [], stylePath: "" };
     visualManualTabData.value = DEFAULT_TAB_DATA();
   }
   visualManualTabValue.value = "README";
@@ -412,7 +415,7 @@ function openVisualManualDialog(item?: VisualManualItem) {
 function resetVisualManualDialog() {
   visualManualDialogVisible.value = false;
   editingVisualManual.value = null;
-  visualManualForm.value = { name: "", images: [] };
+  visualManualForm.value = { name: "", images: [], stylePath: "" };
   visualManualTabData.value = DEFAULT_TAB_DATA();
   visualManualTabValue.value = "README";
 }
@@ -663,6 +666,10 @@ function deleteVisualManual(item: VisualManualItem) {
     gap: 6px;
   }
   .mdFileLocation {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     margin-top: 10px;
   }
 

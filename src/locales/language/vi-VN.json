@@ -403,7 +403,8 @@
           "saveSuccess": "Cập nhật thành công",
           "title": "lời nhắc"
         },
-        "basedOnScript": "dựa trên kịch bản"
+        "basedOnScript": "dựa trên kịch bản",
+        "mdFile": "Đường dẫn tệp hướng dẫn trực quan"
       },
       "msg": {
         "fetchFailed": "Lấy danh sách dự án thất bại",

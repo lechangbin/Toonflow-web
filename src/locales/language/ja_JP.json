@@ -412,7 +412,8 @@
           "saveSuccess": "更新に成功しました",
           "title": "即効性のある言葉"
         },
-        "basedOnScript": "脚本に基づいて"
+        "basedOnScript": "脚本に基づいて",
+        "mdFile": "ビジュアルマニュアルファイルパス"
       },
       "msg": {
         "fetchFailed": "プロジェクトリストの取得に失敗しました",

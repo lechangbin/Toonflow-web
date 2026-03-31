@@ -486,7 +486,8 @@
           "saveSuccess": "Update successful",
           "title": "prompt word"
         },
-        "basedOnScript": "based on script"
+        "basedOnScript": "based on script",
+        "mdFile": "Visual manual file path"
       },
       "msg": {
         "fetchFailed": "Failed to fetch project list",
