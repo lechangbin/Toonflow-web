@@ -6,8 +6,8 @@
     :max-zoom="10"
     :min-zoom="0.1"
     fit-view-on-init
-    :pan-on-scroll="canvasScroll"
-    :zoom-on-scroll="canvasZoom"
+    :pan-on-scroll="canvasWheelEvent == 'scroll' ? true : false"
+    :zoom-on-scroll="canvasWheelEvent == 'zoom' ? true : false"
     :selection-key-code="null"
     :multi-selection-key-code="null">
     <template #node-script="props">
@@ -102,7 +102,7 @@ import projectStore from "@/stores/project";
 
 const { project } = storeToRefs(projectStore());
 import settingStore from "@/stores/setting";
-const { canvasScroll, canvasZoom } = storeToRefs(settingStore());
+const { canvasWheelEvent } = storeToRefs(settingStore());
 const openShowVisible = ref(true);
 const { toObject, fromObject, fitView, findNode, onNodeDragStop } = useVueFlow();
 const { layout } = useLayout();
