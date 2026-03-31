@@ -65,7 +65,9 @@
               {{ item.promptState === "生成中" ? $t("workbench.cornerScape.generatingPrompt") : $t("workbench.cornerScape.generating") }}
             </span>
           </div>
-          <t-empty v-else-if="item.state === '生成失败'" type="fail" :title="$t('workbench.cornerScape.genFailed')" />
+          <t-popup :content="item.errorReason" v-else-if="item.state === '生成失败'">
+            <t-empty type="fail" :title="$t('workbench.cornerScape.genFailed')" />
+          </t-popup>
           <t-image v-else class="image" :src="item.filePath ?? undefined" fit="contain" :preview="true" :lazy="true">
             <template #error>
               <t-empty type="fail" :title="$t('workbench.cornerScape.imageError')" />
@@ -213,6 +215,8 @@ interface DataItem {
   describe: string;
   promptState: string;
   historyImages: Image[];
+  errorReason: string;
+  promptErrorReason: string;
 }
 
 const checkboxValue = ref<string[]>([]);
