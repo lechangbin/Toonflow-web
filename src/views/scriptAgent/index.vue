@@ -214,6 +214,8 @@ onMounted(() => {
   if (messages.value.length <= 0) messages.value = [...defMsg, ...messages.value];
   getPlanData();
   getNovel();
+
+  if (messages.value.length <= 1) getHistory();
 });
 const agentWorkDataId = ref<number>();
 async function getPlanData() {

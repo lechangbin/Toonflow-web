@@ -28,25 +28,30 @@ export default defineStore(
       xmlTags: [
         { tag: "storySkeleton", keepInMessage: false },
         { tag: "adaptationStrategy", keepInMessage: false },
-        { tag: "script", keepInMessage: false },
+        { tag: "scriptItem", keepInMessage: false },
       ],
       onXmlTag: (data) => {
-        const { tag, value, children, status } = data;
+        const { tag, value, children, status, attrs } = data;
+
         if (tag === "storySkeleton") {
           planData.value.storySkeleton = value;
         } else if (tag === "adaptationStrategy") {
           planData.value.adaptationStrategy = value;
-        } else if (tag === "script") {
-          // 流式场景：用 children 完整重建，保留已有项的 id
-          const newItems = children.map((child) => {
-            const existing = planData.value.script.find((s) => s.name === (child.attrs.name ?? ""));
-            return {
-              id: existing?.id,
-              name: child.attrs.name ?? "",
-              content: child.value,
-            };
-          });
-          planData.value.script = newItems;
+        } else if (tag === "scriptItem") {
+          // 流式场景：合并 children 到现有数据，保留已有项的 id，不删除 children 中不存在的条目
+
+          const name = attrs.name ?? "";
+          const content = value;
+          if (name) {
+            const existingIndex = planData.value.script.findIndex((s) => s.name === name);
+            if (existingIndex !== -1) {
+              // 已存在则更新 content，保留 id
+              planData.value.script[existingIndex].content = content;
+            } else {
+              // 不存在则追加新条目
+              planData.value.script.push({ name, content });
+            }
+          }
         }
         if (status === "complete") {
           setPlanData();
