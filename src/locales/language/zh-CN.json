@@ -1405,5 +1405,6 @@
   "productionAgent": {
     "generating": "生成中"
   },
-  "skillScan": "\"🔍 正在解析加载Skill\""
+  "skillScan": "\"🔍 正在解析加载Skill\"",
+  "components.storyboardImageCheck.src": ""
 }

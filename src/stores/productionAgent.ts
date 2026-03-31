@@ -68,7 +68,7 @@ export default defineStore(
               return {
                 prompt: child.attrs.prompt || "",
                 duration: Number(child.attrs.duration) || 0,
-                group: Number(child.attrs.group) || 0,
+                track: child.attrs.track || "",
                 state: $t("storyboard.assets.notGenerated") as "未生成" | "生成中" | "已完成" | "生成失败",
                 src: null,
                 associateAssetsIds: JSON.parse(child.attrs.associateAssetsIds) || [],
@@ -131,24 +131,6 @@ export default defineStore(
             if (index === -1) return callback({ success: false, message: $t("storyboard.assets.notDerivativeExist") });
             deriveAssetList.splice(index, 1);
             callback({ success: true, message: $t("storyboard.assets.derivativeDelSuccess") });
-          });
-          s.on("addStoryboard", async (data, callback) => {
-            const storyboard = flowData.value.storyboard.find((a) => a.id === data.id);
-            if (storyboard) {
-              storyboard.title = data.title;
-              storyboard.description = data.description;
-              callback({ success: true, message: $t("storyboard.addSuccess") });
-            } else {
-              flowData.value.storyboard.push({
-                id: data.id ?? undefined,
-                title: data.title,
-                description: data.description,
-                prompt: "",
-                state: $t("storyboard.state.unused") as "未生成" | "生成中" | "已完成" | "生成失败",
-                src: "",
-              });
-              callback({ success: true, message: $t("storyboard.saveSuccess") });
-            }
           });
           s.on("generateDeriveAsset", async (data, callback) => {
             const assetsData = await batchGenerateAssets(data.ids);
@@ -392,12 +374,17 @@ export default defineStore(
       const { data } = await axios.post("/production/storyboard/batchAddStoryboardInfo", {
         scriptId: episodesId.value,
         data: items,
+        projectId: projectStore().project?.id,
       });
 
       flowData.value.storyboard.forEach((item) => {
         const updated = data.find((d: Storyboard) => d.prompt == item.prompt && d.duration == item.duration);
         if (updated) {
           item.id = updated.id;
+          item.trackId = updated.trackId;
+          item.src = updated.src;
+          item.state = updated.state;
+          item.associateAssetsIds = updated.associateAssetsIds;
         }
       });
     }
