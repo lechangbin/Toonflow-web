@@ -26,7 +26,7 @@
               <t-input v-model="formState.type" :placeholder="$t('workbench.project.dialog.novelTypePh')" />
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.modelData')">
-              <div class="ac" style="gap: 5px">
+              <div class="ac" style="gap: 5px; width: 100%">
                 <modelSelect v-model="formState.imageModel" type="image" />
                 <t-select v-model="formState.imageQuality" class="paramSelect ml-5" :placeholder="$t('workbench.production.editImage.quality')">
                   <t-option value="1K" label="1K" />
@@ -36,7 +36,7 @@
               </div>
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.videoModelData')">
-              <div class="ac" style="gap: 5px">
+              <div class="ac" style="gap: 5px; width: 100%">
                 <modelSelect v-model="formState.videoModel" type="video" @change="changeFn" :changeConfig="true" />
                 <t-select v-model="formState.mode" class="paramSelect ml-5" :placeholder="$t('workbench.production.editImage.mode')">
                   <t-option v-for="value in mode" :key="value.value" :value="value.value" :label="value.label" />
