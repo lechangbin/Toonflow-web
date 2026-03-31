@@ -63,7 +63,7 @@
         </div>
       </div>
     </div>
-    <editImage v-model="visible" v-if="visible" :editData="currentRow" :type="currentRow.type" @save="save" />
+    <editImage v-model="visible" v-if="visible" :flowData="currentRow" @save="save" />
   </t-card>
 </template>
 
@@ -81,12 +81,10 @@ const props = defineProps<{
 
 const assets = defineModel<AssetItem[]>({ required: true });
 const currentRow = ref<{
-  id: null | number;
+  flowId?: number;
   resultImages: { src: string; prompt: string }[];
   referanceImages: string[];
-  type?: string;
 }>({
-  id: null,
   resultImages: [],
   referanceImages: [],
 });
@@ -97,7 +95,7 @@ function generateAssetsImage(row: DeriveAsset, referanceImageUrl: string) {
   visible.value = true;
 }
 
-async function save({ imageUrl, insertId }: { imageUrl: string; insertId: number }) {
+async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) {
   // 更新对应分镜的 src
   if (!imageUrl) return;
   for (const i of assets.value) {

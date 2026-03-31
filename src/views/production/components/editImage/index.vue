@@ -25,7 +25,7 @@
       </template>
 
       <template #node-generated="{ id, data }">
-        <generatedNode :id="id" :data="data" :projectId="projectId" :type="props.type" @keep="sureNode" />
+        <generatedNode :id="id" :data="data" :projectId="projectId" @keep="sureNode" />
       </template>
       <template #edge-removeLine="edgeProps">
         <removeLine v-bind="edgeProps" />
@@ -41,7 +41,7 @@
             </div>
           </t-tooltip>
           <t-tooltip theme="primary" content="$t('workbench.production.autoLayoutTB')">
-             <div class="item c" @click="layoutGraph('TB')">
+            <div class="item c" @click="layoutGraph('TB')">
               <i-branch-one theme="outline" size="24" />
             </div>
           </t-tooltip>
@@ -119,18 +119,26 @@ const { toObject, fromObject, fitView } = useVueFlow({ id: "editImage" });
 const { layout } = useLayout("editImage");
 
 const { projectId } = storeToRefs(store());
-const props = defineProps<{
-  editData: {
-    resultImages: { src: string; prompt: string }[];
-    referanceImages: string[];
-    id?: number | null;
-  };
-  type?: string;
-}>();
+const props = withDefaults(
+  defineProps<{
+    flowData: {
+      flowId?: number;
+      resultImages: { src: string; prompt: string }[]; // 结果图 url 和提示词
+      referanceImages: string[]; // 参考图url
+    };
+    type?: string;
+  }>(),
+  {
+    flowData: () => ({
+      resultImages: [],
+      referanceImages: [],
+    }),
+  },
+);
 
 const emit = defineEmits(["save"]);
 
-const visible = defineModel("visible", {
+const visible = defineModel({
   type: Boolean,
   default: false,
 });
@@ -138,8 +146,6 @@ const { addEdges, getNodes, getEdges, updateNodeData } = useVueFlow({ id: "editI
 
 const nodes = ref<NodeType[]>([]);
 const edges = ref<Edge<any, any, string>[]>([]);
-
-const flowId = ref<number | null>(null);
 
 // 防抖定时器
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
@@ -235,26 +241,20 @@ const addUploadNode = (type: string, image: string = "", prompt: string = "") =>
   return newNodeId;
 };
 //保存节点
-async function sureNode(imageUrl: string = "") {
+async function sureNode(imageUrl: string) {
   try {
-    const id = props.editData?.id;
     const payload = {
-      id,
       nodes: cleanNodes(getNodes.value as NodeType[]),
       edges: cleanEdges(getEdges.value),
-      imageUrl,
-      type: props.type,
-      episodesId: episodesId!.value,
     };
 
-    let insertId = "";
-    if (flowId.value) {
-      await axios.post("/production/editImage/updateImageFlow", { ...payload, flowId: flowId.value });
+    if (props.flowData.flowId) {
+      await axios.post("/production/editImage/updateImageFlow", { ...payload, flowId: props.flowData.flowId });
+      emit("save");
     } else {
-      const { data } = await axios.post("/production/editImage/saveImageFlow", payload);
-      insertId = data?.id || null;
+      const { data } = await axios.post("/production/editImage/saveImageFlow", { ...payload });
+      emit("save", { imageUrl, flowId: data?.id });
     }
-    emit("save", { imageUrl, insertId });
     visible.value = false;
   } catch (e) {
     window.$message.error((e as any).message || $t("workbench.production.editImage.saveFailed"));
@@ -262,15 +262,13 @@ async function sureNode(imageUrl: string = "") {
 }
 onMounted(async () => {
   try {
-    if (!props.editData?.id) return buildFlow();
+    if (!props.flowData.flowId) return buildFlow();
     const { data } = await axios.post("/production/editImage/getImageFlow", {
-      id: props.editData?.id,
-      type: props.type,
+      id: props.flowData.flowId,
     });
     if (!data) return buildFlow();
     edges.value = data.edges;
     nodes.value = data.nodes;
-    flowId.value = data.id;
   } catch (e) {
     window.$message.error((e as any).message || $t("workbench.production.editImage.fetchFailed"));
   }
@@ -279,10 +277,10 @@ onMounted(async () => {
 function buildFlow() {
   const uploadIds: string[] = [];
   const generatedIds: string[] = [];
-  props.editData.referanceImages.forEach((i) => {
+  props.flowData.referanceImages.forEach((i: string) => {
     uploadIds.push(addUploadNode("upload", i));
   });
-  props.editData.resultImages.forEach((i) => {
+  props.flowData.resultImages.forEach((i: { src: string; prompt: string }) => {
     generatedIds.push(addUploadNode("generated", i.src, i.prompt));
   });
   // 将每个 upload 节点连接到每个 generated 节点
@@ -300,9 +298,15 @@ function buildFlow() {
 }
 
 function closeFn() {
-  sureNode("").finally(() => {
-    visible.value = false;
-  });
+  if (props.flowData.flowId) {
+    const payload = {
+      flowId: props.flowData.flowId,
+      nodes: cleanNodes(getNodes.value as NodeType[]),
+      edges: cleanEdges(getEdges.value),
+    };
+    axios.post("/production/editImage/updateImageFlow", { ...payload });
+  }
+  visible.value = false;
 }
 async function layoutGraph(direction: "LR" | "TB") {
   const oldData = toObject();
