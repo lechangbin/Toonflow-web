@@ -535,7 +535,7 @@
         },
         "msg": {
           "parseFailed": "檔案解析失敗，請重新上傳",
-          "selectFile": "請先選擇檔案",
+          "selectFile": "選擇文件",
           "docNotSupported": ".doc檔案不支援解析，請轉換為.ts文件",
           "unsupportedType": "不支援的檔案類型",
           "fileTooLarge": "檔案大小超過 10MB，請上傳更小的檔案",

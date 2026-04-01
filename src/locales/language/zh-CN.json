@@ -617,7 +617,7 @@
         },
         "msg": {
           "parseFailed": "文件解析失败，请重新上传",
-          "selectFile": "请先选择文件",
+          "selectFile": "选择文件",
           "docNotSupported": ".doc文件不支持解析，请转换为.ts文件",
           "unsupportedType": "不支持的文件类型",
           "fileTooLarge": "文件大小超过10MB，请上传更小的文件",

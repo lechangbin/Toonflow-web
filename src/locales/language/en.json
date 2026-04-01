@@ -603,7 +603,7 @@
         },
         "msg": {
           "parseFailed": "Failed to parse file. Please re-upload",
-          "selectFile": "Please select a file first",
+          "selectFile": "Select file",
           "docNotSupported": ".doc files do not support parsing, please convert to .ts files",
           "unsupportedType": "Unsupported file type",
           "fileTooLarge": "File exceeds 10MB. Please upload a smaller file",
