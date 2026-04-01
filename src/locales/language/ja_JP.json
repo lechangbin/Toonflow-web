@@ -163,10 +163,18 @@
         "deleteVendorConfirm": "プロバイダーの削除確認",
         "deleteVendorBody": "削除すると、このプロバイダーのすべてのモデルも一緒に削除されます。続行しますか？",
         "vendorDeleted": "プロバイダーを削除しました",
-        "deleteFailed": "削除に失敗しました"
+        "deleteFailed": "削除に失敗しました",
+        "enabled": "有効",
+        "disabled": "無効",
+        "linkAddVendorRiskBody": "新しい AI ベンダーを追加すると、システム API にアクセスできるようになります。ベンダーのリンク ソースが信頼できることを確認してください。",
+        "importAdd": "新しい AI ベンダーを追加すると、システム API にアクセスできるようになります。ベンダーのドキュメント ソースが信頼できることを確認してください。"
       },
       "associationSkills": "関連スキル",
-      "think": "深い考え"
+      "think": "深い考え",
+      "code": "コード",
+      "linkAddPlaceholder": "追加するリンクを入力してください",
+      "noFileSelected": "ファイルは正常にインポートされました",
+      "linkAdd": "確認する"
     },
     "agent": {
       "bannerDesc": "Toonflow公式中継サイトを使用すると、設定をワンクリックで入力でき、手動設定なしですぐに使用できます。",
@@ -519,12 +527,14 @@
         "msg": {
           "parseFailed": "ファイルの解析に失敗しました。再アップロードしてください",
           "selectFile": "先にファイルを選択してください",
-          "docNotSupported": ".docファイルの解析は未対応です。.txtまたは.docx形式に変換してください",
+          "docNotSupported": ".doc ファイルは解析をサポートしていません。.ts ファイルに変換してください。",
           "unsupportedType": "未対応のファイル形式です",
           "fileTooLarge": "ファイルサイズが10MBを超えています。より小さなファイルをアップロードしてください",
           "selectChapters": "先に章を選択してください",
           "saveSuccess": "小説の原文を保存しました"
-        }
+        },
+        "importAdd": "ここにファイルをドラッグ アンド ドロップするか、クリックしてアップロードします",
+        "limit": ".ts形式をサポート"
       },
       "editDialog": {
         "title": "小説の原文を編集",
@@ -963,8 +973,8 @@
       },
       "wb": {
         "quickPreview": "クイックプレビュー",
-        "videoGeneration": "動画生成",
-        "videoEditing": "動画編集",
+        "videoGeneration": "絵コンテ",
+        "videoEditing": "編集デスク",
         "hint": "ヒント",
         "extractLines": "動画からセリフを抽出しますか？",
         "no": "いいえ",
@@ -1250,13 +1260,16 @@
       "selected": "選択済み",
       "batchGenerateText": "プロンプト単語をバッチで生成する",
       "batchGenerateVideo": "バッチでビデオを生成する",
-      "importVideo": "ビデオをインポートする",
+      "importVideo": "編集デスクにインポートする",
       "emptyTrack": "段落 {インデックス 1}",
       "del": "消去",
       "delConfirm": "この段落を削除してもよろしいですか?",
       "selectSource": "ソースを選択",
       "confirm": "アセットから選択",
-      "cancel": "ストーリーボードから選択"
+      "cancel": "ストーリーボードから選択",
+      "selectVideoFailed": "ビデオの選択に失敗しました",
+      "selectVideoSuccess": "ビデオの選択が成功しました",
+      "selectTrackFirst": "最初にストーリーボードを選択してください"
     }
   },
   "login": {

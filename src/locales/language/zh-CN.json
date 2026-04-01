@@ -176,10 +176,16 @@
         "vendorDeleted": "供应商已删除",
         "deleteFailed": "删除失败",
         "enabled": "已启用",
-        "disabled": "已禁用"
+        "disabled": "已禁用",
+        "linkAddVendorRiskBody": "添加新的 AI 供应商将赋予其访问系统 API 的权限，请确认您信任该供应商的链接来源！",
+        "importAdd": "添加新的 AI 供应商将赋予其访问系统 API 的权限，请确认您信任该供应商的文件来源！"
       },
       "associationSkills": "关联skills",
-      "think": "深度思考"
+      "think": "深度思考",
+      "code": "代码",
+      "linkAddPlaceholder": "输入链接添加",
+      "noFileSelected": "成功导入文件",
+      "linkAdd": "确认"
     },
     "agent": {
       "bannerDesc": "使用 Toonflow 官方中转站点，支持一键填入配置，开箱即用，无需手动配置。",
@@ -608,12 +614,14 @@
         "msg": {
           "parseFailed": "文件解析失败，请重新上传",
           "selectFile": "请先选择文件",
-          "docNotSupported": ".doc文件不支持解析，请转换为.txt或.docx文件",
+          "docNotSupported": ".doc文件不支持解析，请转换为.ts文件",
           "unsupportedType": "不支持的文件类型",
           "fileTooLarge": "文件大小超过10MB，请上传更小的文件",
           "selectChapters": "请先勾选章节",
           "saveSuccess": "小说原文保存成功"
-        }
+        },
+        "importAdd": "拖拽文件到此处或点击上传",
+        "limit": "支持 .ts格式"
       },
       "editDialog": {
         "title": "编辑小说原文",
@@ -1047,8 +1055,8 @@
       },
       "wb": {
         "quickPreview": "快速预览",
-        "videoGeneration": "视频生成",
-        "videoEditing": "视频剪辑",
+        "videoGeneration": "分镜台",
+        "videoEditing": "剪辑台",
         "hint": "提示",
         "extractLines": "是否从视频中提取台词？",
         "no": "否",
@@ -1347,14 +1355,17 @@
       "selected": "已选",
       "batchGenerateText": "批量生成提示词",
       "batchGenerateVideo": "批量生成视频",
-      "importVideo": "导入视频",
+      "importVideo": "导入剪辑台",
       "emptyTrack": "第{index}段",
       "del": "删除",
       "delConfirm": "确认删除该段？",
       "selectSource": "选择来源",
       "confirm": "从资产选择",
       "cancel": "从分镜选择",
-      "generateSuccess": "视频生成成功"
+      "generateSuccess": "视频生成成功",
+      "selectVideoFailed": "视频选择失败",
+      "selectVideoSuccess": "视频选择成功",
+      "selectTrackFirst": "请先选择分镜"
     }
   },
   "login": {

@@ -237,32 +237,57 @@
 
     <!-- 添加供应商弹窗 -->
     <t-dialog
-      width="70vw"
+      width="30vw"
       placement="center"
+      top="10vh"
+      :footer="false"
       v-model:visible="vendorDialogVisible"
       :header="$t('settings.vendor.addVendorDialog')"
+      :maskClosable="false">
+      <div class="data">
+        <t-radio-group variant="default-filled" v-model="addMode">
+          <t-radio-button value="linkAdd">链接添加</t-radio-button>
+          <t-radio-button value="importAdd">导入添加</t-radio-button>
+          <t-radio-button value="codeAdd">代码添加</t-radio-button>
+        </t-radio-group>
+        <div class="linkAdd" v-if="addMode == 'linkAdd'">
+          <t-input v-model="link" :placeholder="$t('settings.vendor.linkAddPlaceholder')"></t-input>
+          <div style="margin-top: 10px; text-align: right; width: 100%">
+            <t-button @click="linkRead">{{ $t("settings.vendor.linkAdd") }}</t-button>
+          </div>
+        </div>
+        <div class="importAdd" v-if="addMode == 'importAdd'">
+          <div class="uploadArea" @click="triggerUpload" @dragover.prevent @drop.prevent="handleDrop">
+            <t-upload
+              ref="uploadRef"
+              v-model="fileList"
+              theme="file"
+              :multiple="false"
+              :max="1"
+              accept=".ts"
+              :before-upload="handleBeforeUpload"
+              :request-method="requestMethod"
+              style="display: none" />
+            <div class="dragIcon">
+              <i-upload-one theme="outline" size="32" fill="var(--td-brand-color)" />
+            </div>
+            <p class="uploadText">{{ $t("workbench.novel.import.importAdd") }}</p>
+            <p class="uploadHint">{{ $t("workbench.novel.import.limit") }}</p>
+          </div>
+        </div>
+        <div class="codeAdd" v-if="addMode == 'codeAdd'"></div>
+      </div>
+    </t-dialog>
+    <t-dialog
+      width="70vw"
+      placement="center"
+      top="10vh"
+      @close="addMode = 'linkAdd'"
+      v-model:visible="codeDialogVisible"
+      :header="$t('settings.vendor.code')"
       :maskClosable="false"
       @confirm="handleConfirmVendor">
-      <div class="editorToolbar">
-        <div class="editorInfo">
-          <t-icon name="info-circle" size="16px" />
-          <span>{{ $t("settings.vendor.codeEditorInfo") }}</span>
-        </div>
-        <div class="editorActions">
-          <t-button variant="text" size="small" @click="vendorCode = VENDOR_CODE_TEMPLATE">
-            <template #icon><t-icon name="rollback" /></template>
-            {{ $t("settings.vendor.reset") }}
-          </t-button>
-          <t-button variant="outline" size="small" @click="fileInputRef?.click()">
-            <template #icon><t-icon name="upload" /></template>
-            {{ $t("settings.vendor.importFile") }}
-          </t-button>
-          <input ref="fileInputRef" type="file" accept=".ts,.js,.txt,.json" style="display: none" @change="handleFileChange" />
-        </div>
-      </div>
-      <div class="editorWrapper">
-        <CodeEditor v-model:value="vendorCode" language="typescript" theme="vs-dark" :height="600" :options="editorOptions" />
-      </div>
+      <CodeEditor v-model:value="vendorCode" language="typescript" theme="vs-dark" :height="600" :options="editorOptions" />
     </t-dialog>
   </div>
 </template>
@@ -273,7 +298,9 @@ import { CodeEditor } from "monaco-editor-vue3";
 import { DialogPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
 import VENDOR_CODE_TEMPLATE from "@/lib/vendorTemplate.ts?raw";
-
+import type { UploadFile, PrimaryTableCol, TableRowData } from "tdesign-vue-next";
+import { LoadingPlugin } from "tdesign-vue-next";
+import mammoth from "mammoth";
 // ── 类型 ──
 interface TextModel {
   name: string;
@@ -443,6 +470,7 @@ const optionalInputs = computed(() => currentVendor.value?.inputs?.filter((input
 
 // ── 供应商弹窗 ──
 const vendorDialogVisible = ref(false);
+const codeDialogVisible = ref(false);
 const vendorCode = ref(VENDOR_CODE_TEMPLATE);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const updating = ref(false);
@@ -555,21 +583,6 @@ watch(
   },
   { flush: "post" },
 );
-
-async function handleUpdateVendor() {
-  if (!currentVendor.value) return;
-  updating.value = true;
-  try {
-    await axios.post("/setting/vendorConfig/updateVendor", buildVendorUpdatePayload(currentVendor.value));
-    lastSavedSnapshot.value = currentVendorSnapshot.value;
-    window.$message.success($t("settings.vendor.msg.vendorConfigUpdated"));
-    getVendorList();
-  } catch (err: any) {
-    window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
-  } finally {
-    updating.value = false;
-  }
-}
 const id = ref<string>();
 function handleAddVendor() {
   id.value = undefined;
@@ -598,6 +611,7 @@ function handleConfirmVendor() {
               .then((res) => {
                 window.$message.success($t("settings.vendor.msg.vendorAdded"));
                 vendorDialogVisible.value = false;
+                codeDialogVisible.value = false;
                 getVendorList();
               })
               .catch((err) => {
@@ -636,6 +650,7 @@ function handleConfirmVendor() {
               .then((res) => {
                 window.$message.success($t("settings.vendor.msg.updateSuccess"));
                 vendorDialogVisible.value = false;
+                codeDialogVisible.value = false;
                 getVendorList();
               })
               .catch((err) => {
@@ -652,19 +667,6 @@ function handleConfirmVendor() {
     });
   }
 }
-
-function handleFileChange(e: Event) {
-  const input = e.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    vendorCode.value = (ev.target?.result as string) || "";
-  };
-  reader.readAsText(file);
-  input.value = "";
-}
-
 // ── 模型弹窗 ──
 const modelDialogVisible = ref(false);
 const editingModelIndex = ref<number | null>(null);
@@ -707,20 +709,6 @@ function ensureVendorModels(): VendorModel[] {
   currentVendor.value.model = currentVendor.value.models;
   return currentVendor.value.models;
 }
-
-function parseTextList(value: string) {
-  return value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
-}
-
-function parseNumberList(value: string) {
-  return parseTextList(value)
-    .map((item) => Number(item))
-    .filter((item) => Number.isFinite(item) && item > 0);
-}
-
 function buildModelFromForm(): VendorModel | null {
   const name = modelFormData.value.name.trim();
   const modelName = modelFormData.value.modelName.trim();
@@ -955,7 +943,7 @@ function handleEditVendorCode() {
   if (!currentVendor.value) return;
   id.value = currentVendor.value.id;
   vendorCode.value = currentVendor.value.code;
-  vendorDialogVisible.value = true;
+  codeDialogVisible.value = true;
 }
 function handleDeleteVendor() {
   if (!currentVendor.value) return;
@@ -1014,6 +1002,128 @@ function onChange(val: any) {
     .catch((err) => {
       window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
     });
+}
+const addMode = ref("linkAdd");
+const link = ref("");
+
+watch(addMode, (val) => {
+  if (val == "codeAdd") codeDialogVisible.value = true;
+  else codeDialogVisible.value = false;
+});
+
+//链接读取
+function linkRead() {
+  const firstConfirm = DialogPlugin.confirm({
+    theme: "danger",
+    header: $t("settings.vendor.msg.highRiskConfirm"),
+    body: $t("settings.vendor.msg.linkAddVendorRiskBody"),
+    confirmBtn: { content: $t("settings.vendor.msg.iKnowRisk"), theme: "danger" },
+    cancelBtn: $t("settings.vendor.msg.cancel"),
+    onConfirm: () => {
+      firstConfirm.destroy();
+      const secondConfirm = DialogPlugin.confirm({
+        theme: "danger",
+        header: $t("settings.vendor.msg.confirmAgain"),
+        body: $t("settings.vendor.msg.addVendorConfirmBody"),
+        confirmBtn: { content: $t("settings.vendor.msg.confirmAndAdd"), theme: "danger" },
+        cancelBtn: $t("settings.vendor.msg.goBackCheck"),
+        onConfirm: async () => {
+          console.log("%c Line:1044 🍡 link.value", "background:#465975", link.value);
+          vendorDialogVisible.value = false;
+          codeDialogVisible.value = false;
+          secondConfirm.destroy();
+        },
+        onClose: () => secondConfirm.hide(),
+      });
+    },
+    onClose: () => firstConfirm.hide(),
+  });
+}
+const uploadRef = ref();
+const content = ref("");
+// 上传前校验并解析
+async function handleBeforeUpload(file: UploadFile) {
+  const rawFile = file.raw;
+  if (!rawFile) {
+    window.$message.error($t("workbench.novel.import.msg.selectFile"));
+    return false;
+  }
+  LoadingPlugin(true);
+  try {
+    const firstConfirm = DialogPlugin.confirm({
+      theme: "danger",
+      header: $t("settings.vendor.msg.highRiskConfirm"),
+      body: $t("settings.vendor.msg.importAdd"),
+      confirmBtn: { content: $t("settings.vendor.msg.iKnowRisk"), theme: "danger" },
+      cancelBtn: $t("settings.vendor.msg.cancel"),
+      onConfirm: () => {
+        firstConfirm.destroy();
+        const secondConfirm = DialogPlugin.confirm({
+          theme: "danger",
+          header: $t("settings.vendor.msg.confirmAgain"),
+          body: $t("settings.vendor.msg.addVendorConfirmBody"),
+          confirmBtn: { content: $t("settings.vendor.msg.confirmAndAdd"), theme: "danger" },
+          cancelBtn: $t("settings.vendor.msg.goBackCheck"),
+          onConfirm: async () => {
+            //拿到上传的数据
+            const fileReader = new FileReader();
+            fileReader.readAsText(rawFile);
+            fileReader.onload = () => {
+              const content = fileReader.result;
+              axios
+                .post("/setting/vendorConfig/addVendor", { tsCode: content })
+                .then((res) => {
+                  window.$message.success($t("settings.vendor.msg.vendorAdded"));
+                  vendorDialogVisible.value = false;
+                  codeDialogVisible.value = false;
+                  getVendorList();
+                })
+                .catch((err) => {
+                  window.$message.error(`${$t("settings.vendor.msg.addFailed")}${err.message}`);
+                })
+                .finally(() => {
+                  secondConfirm.destroy();
+                });
+            };
+          },
+          onClose: () => secondConfirm.hide(),
+        });
+      },
+      onClose: () => firstConfirm.hide(),
+    });
+  } catch {
+    window.$message.error($t("workbench.novel.import.msg.parseFailed"));
+  } finally {
+    LoadingPlugin(false);
+  }
+  return false;
+}
+const fileList = ref<any[]>([]);
+// 触发上传
+function triggerUpload() {
+  uploadRef.value?.triggerUpload();
+}
+function requestMethod() {
+  return Promise.resolve({
+    response: {},
+    status: "success",
+  } as const);
+}
+// 读取文件内容
+async function readFile(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  if (file.type === "text/plain") {
+    return new TextDecoder().decode(buffer);
+  }
+  const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+  return result.value;
+}
+// 处理拖拽上传
+async function handleDrop(e: DragEvent) {
+  const files = e.dataTransfer?.files;
+  if (files && files.length > 0) {
+    await handleBeforeUpload({ raw: files[0] });
+  }
 }
 </script>
 
@@ -1156,6 +1266,37 @@ function onChange(val: any) {
         max-height: 70vh;
         border-radius: 8px;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+  .linkAdd,
+  .importAdd,
+  .codeAdd {
+    margin-top: 20px;
+    .uploadArea {
+      margin-top: 20px;
+      padding: 42px 20px;
+      border: 2px dashed #969494;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      &:hover {
+        border-color: #000000;
+      }
+
+      .dragIcon {
+        margin-bottom: 12px;
+      }
+
+      .uploadText {
+        font-size: 14px;
+        margin: 0 0 8px;
+      }
+
+      .uploadHint {
+        font-size: 12px;
+        margin: 0;
       }
     }
   }
