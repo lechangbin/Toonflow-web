@@ -974,8 +974,8 @@
       },
       "wb": {
         "quickPreview": "ดูตัวอย่างแบบเร็ว",
-        "videoGeneration": "สร้างวิดีโอ",
-        "videoEditing": "ตัดต่อวิดีโอ",
+        "videoGeneration": "สตอรี่บอร์ด",
+        "videoEditing": "โต๊ะบรรณาธิการ",
         "hint": "ข้อแนะนำ",
         "extractLines": "ต้องการแยกบทสนทนาจากวิดีโอหรือไม่?",
         "no": "ไม่",
@@ -1261,13 +1261,16 @@
       "selected": "เลือกแล้ว",
       "batchGenerateText": "สร้างคำพร้อมท์เป็นชุด",
       "batchGenerateVideo": "สร้างวิดีโอเป็นชุด",
-      "importVideo": "นำเข้าวิดีโอ",
+      "importVideo": "นำเข้าไปยังโต๊ะแก้ไข",
       "emptyTrack": "ย่อหน้า {ดัชนี 1}",
       "del": "ลบ",
       "delConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบย่อหน้านี้",
       "selectSource": "เลือกแหล่งที่มา",
       "confirm": "เลือกจากสินทรัพย์",
-      "cancel": "เลือกจากกระดานเรื่องราว"
+      "cancel": "เลือกจากกระดานเรื่องราว",
+      "selectVideoFailed": "การเลือกวิดีโอล้มเหลว",
+      "selectVideoSuccess": "การเลือกวิดีโอสำเร็จ",
+      "selectTrackFirst": "โปรดเลือกกระดานเรื่องราวก่อน"
     }
   },
   "login": {

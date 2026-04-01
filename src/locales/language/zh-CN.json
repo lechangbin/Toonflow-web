@@ -1055,8 +1055,8 @@
       },
       "wb": {
         "quickPreview": "快速预览",
-        "videoGeneration": "视频生成",
-        "videoEditing": "视频剪辑",
+        "videoGeneration": "分镜台",
+        "videoEditing": "剪辑台",
         "hint": "提示",
         "extractLines": "是否从视频中提取台词？",
         "no": "否",
@@ -1355,14 +1355,17 @@
       "selected": "已选",
       "batchGenerateText": "批量生成提示词",
       "batchGenerateVideo": "批量生成视频",
-      "importVideo": "导入视频",
+      "importVideo": "导入剪辑台",
       "emptyTrack": "第{index}段",
       "del": "删除",
       "delConfirm": "确认删除该段？",
       "selectSource": "选择来源",
       "confirm": "从资产选择",
       "cancel": "从分镜选择",
-      "generateSuccess": "视频生成成功"
+      "generateSuccess": "视频生成成功",
+      "selectVideoFailed": "视频选择失败",
+      "selectVideoSuccess": "视频选择成功",
+      "selectTrackFirst": "请先选择分镜"
     }
   },
   "login": {

@@ -11,10 +11,12 @@
             <t-tag theme="primary" size="small" style="margin-right: 10px">#{{ activeTrackIndex + 1 }}</t-tag>
             {{ $t("workbench.generate.prompt") }}
           </div>
-          <t-button size="small" class="genTextbtn" :loading="genTextLoading" @click="genText">{{ $t("workbench.generate.generateText") }}</t-button>
+          <t-button size="small" class="genTextbtn" :loading="activeTrackGenTextLoading" @click="genText">
+            {{ $t("workbench.generate.generateText") }}
+          </t-button>
         </div>
         <div class="promptInput">
-          <t-textarea class="input" v-model="promptText" :autosize="{ minRows: 4, maxRows: 12 }" :disabled="genTextLoading" />
+          <t-textarea class="input" v-model="promptText" :autosize="{ minRows: 4, maxRows: 8 }" :disabled="activeTrackGenTextLoading" />
         </div>
         <div class="modeOpt f">
           <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="handleSelectSource(index)">
@@ -52,7 +54,12 @@
             <t-select size="small" class="mode" v-model="selectMode">
               <t-option v-for="(item, index) in modeList" :key="index" :value="item.value" :label="item.label"></t-option>
             </t-select>
-            <t-button size="small" variant="outline" class="audio" @click="selectedAudio = !selectedAudio">
+            <t-button
+              size="small"
+              variant="outline"
+              :theme="selectedAudio ? 'success' : 'danger'"
+              class="audio"
+              @click="selectedAudio = !selectedAudio">
               <template #icon>
                 <i-volume-notice v-if="selectedAudio" size="16" />
                 <i-volume-mute v-else size="16" />
@@ -121,10 +128,10 @@
             <i-time />
             <span class="title">{{ $t("workbench.generate.history") }}（{{ activeTrackVideos.length }}）</span>
           </div>
-          <div class="itemBox">
+          <div class="historyItemBox">
             <div
-              class="item"
-              :class="{ active: v.id === selectedVideoId, generating: v.state === '生成中', failed: v.state === '生成失败' }"
+              class="historyItem"
+              :class="{ active: v.id === selectVideoId, generating: v.state === '生成中', failed: v.state === '生成失败' }"
               v-for="v in activeTrackVideos"
               :key="v.id"
               @click="previewVideo(v)">
@@ -133,12 +140,14 @@
                 <t-loading size="24px" />
                 <span class="loadingText">{{ $t("workbench.generate.generating") }}</span>
               </div>
-              <t-tag v-else-if="v.state === '生成失败'" class="stateTag" theme="danger" size="small">
-                {{ $t("workbench.generate.generateFailed") }}
-              </t-tag>
+              <t-tooltip v-else-if="v.state === '生成失败'" placement="top" :content="v.errorReason!" theme="light">
+                <t-tag class="stateTag" theme="danger" size="small">
+                  {{ $t("workbench.generate.generateFailed") }}
+                </t-tag>
+              </t-tooltip>
+
               <div v-if="v.state !== '生成中'" class="selectBtn" @click.stop="selectVideo(v)">
-                <i-check-one v-if="v.id === selectedVideoId" size="16" />
-                <i-check size="16" v-else />
+                <i-check size="16" />
               </div>
             </div>
           </div>
@@ -149,12 +158,12 @@
       <div class="trackMenu f ac jb">
         <div class="left f ac">
           <t-checkbox v-model="checkAll" @change="handleCheckAll">{{ $t("workbench.generate.selectAll") }}</t-checkbox>
-          <span class="selectedCount" v-if="checkedTracks.length">{{ $t("workbench.generate.selected") }} {{ checkedTracks.length }} 段</span>
+          <span class="selectedCount" v-if="checkedTrackIds.length">{{ $t("workbench.generate.selected") }} {{ checkedTrackIds.length }} 段</span>
         </div>
         <div class="right f ac">
           <t-button size="small" variant="outline" @click="batchGenText">{{ $t("workbench.generate.batchGenerateText") }}</t-button>
           <t-button size="small" variant="outline" @click="batchGenVideo">{{ $t("workbench.generate.batchGenerateVideo") }}</t-button>
-          <t-button size="small" variant="outline" @click="importVideo">{{ $t("workbench.generate.importVideo") }}</t-button>
+          <!-- <t-button size="small" variant="outline" @click="importVideo">{{ $t("workbench.generate.importVideo") }}</t-button> -->
         </div>
       </div>
       <div class="itemBox">
@@ -164,8 +173,13 @@
           v-for="(track, index) in trackList"
           :key="index"
           @click="activeTrackIndex = index">
-          <t-checkbox class="trackCheck" :checked="checkedTracks.includes(index)" @click.stop @change="(val: boolean) => toggleCheck(index, val)" />
+          <t-checkbox
+            class="trackCheck"
+            :checked="track.id != null && checkedTrackIds.includes(track.id)"
+            @click.stop
+            @change="(val: boolean) => toggleCheck(track.id, val)" />
           <t-tag class="indexTag" size="small">#{{ index + 1 }}</t-tag>
+          <t-tag class="selectTag" theme="success" size="small" v-if="track.selectVideoId">已选择</t-tag>
           <div class="thumbGroup" v-if="track.medias.length">
             <template v-for="(m, i) in track.medias" :key="i">
               <img v-if="m.fileType === 'image'" :src="m.src" class="thumb" />
@@ -214,22 +228,31 @@ const selectedResolution = ref("480p");
 const selectedDuration = ref(8);
 const selectedAudio = ref(false);
 const generating = ref(false);
-const genTextLoading = ref(false);
+const genTextLoadingMap = ref<Record<number, boolean>>({});
+const activeTrackGenTextLoading = computed(() => {
+  const trackId = trackList.value[activeTrackIndex.value]?.id;
+  return trackId != null ? !!genTextLoadingMap.value[trackId] : false;
+});
 
 async function genText() {
-  if (genTextLoading.value) return;
+  const track = trackList.value[activeTrackIndex.value];
+  const trackId = track?.id;
+  if (trackId == null || genTextLoadingMap.value[trackId]) return;
   const prompts = uploadBox.value.filter((item) => item.prompt).map((item) => item.prompt!);
-  genTextLoading.value = true;
+  genTextLoadingMap.value[trackId] = true;
   try {
     const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
       projectId: project.value?.id,
-      trackId: trackList.value[activeTrackIndex.value]?.id,
+      trackId,
       prompt: prompts,
       model: selectModel.value,
     });
-    promptText.value = data;
+    const targetTrack = trackList.value.find((item) => item.id === trackId);
+    if (targetTrack) {
+      targetTrack.prompt = data;
+    }
   } finally {
-    genTextLoading.value = false;
+    genTextLoadingMap.value[trackId] = false;
   }
 }
 
@@ -239,12 +262,13 @@ interface VideoItem {
   state: "未生成" | "生成中" | "已完成" | "生成失败";
 }
 
-const selectedVideoId = ref<number | null>(null);
+const selectVideoId = ref<number | null>(null);
 
 interface HistoryVideoItem {
   errorReason?: string | null;
   src: string;
   id?: number;
+  duration?: number | string | null;
   projectId?: number | null;
   scriptId?: number | null;
   state?: string | null;
@@ -265,30 +289,27 @@ function previewVideo(v: HistoryVideoItem) {
   videoUrl.value = v.src;
 }
 
-function selectVideo(v: HistoryVideoItem) {
+async function selectVideo(v: HistoryVideoItem) {
   if (v.state === "生成中" || v.state === "生成失败") return;
-  const dlg = DialogPlugin.confirm({
-    header: $t("workbench.generate.selectVideoConfirm"),
-    body: $t("workbench.generate.selectVideoConfirmBody"),
-    onConfirm: async () => {
-      dlg.destroy();
-      if (v.id != null) selectedVideoId.value = v.id;
-      videoUrl.value = v.src;
-      try {
-        await axios.post("/production/workbench/selectVideo", {
-          projectId: project.value?.id,
-          scriptId: episodesId.value ?? 0,
-          videoId: v.id,
-          trackId: trackList.value[activeTrackIndex.value]?.id,
-        });
-      } catch (e) {
-        console.error("selectVideo failed", e);
-      }
-    },
-    onCancel: () => {
-      dlg.destroy();
-    },
-  });
+  const activeTrack = trackList.value[activeTrackIndex.value];
+  if (v.id != null) {
+    selectVideoId.value = v.id;
+    if (activeTrack?.id != null) {
+      trackSelectedVideoMap.value[activeTrack.id] = v.id;
+    }
+  }
+  videoUrl.value = v.src;
+  try {
+    await axios.post("/production/workbench/selectVideo", {
+      projectId: project.value?.id,
+      scriptId: episodesId.value ?? 0,
+      videoId: v.id,
+      trackId: trackList.value[activeTrackIndex.value]?.id,
+    });
+    window.$message.success($t("workbench.generate.selectVideoSuccess"));
+  } catch (error) {
+    window.$message.error($t("workbench.generate.selectVideoFailed"));
+  }
 }
 
 type ReferenceType = "videoReference" | "imageReference" | "audioReference" | "textReference";
@@ -298,7 +319,7 @@ type VideoMode = "singleImage" | "startEndRequired" | "endFrameOptional" | "star
 interface UploadItem {
   fileType: "image" | "video" | "audio";
   type: Type;
-  sources?: "assets" | "storyboard";
+  sources: "assets" | "storyboard";
   id?: number;
   src?: string;
   label?: string;
@@ -375,15 +396,17 @@ interface TrackMedia {
 }
 
 interface TrackItem {
-  id?: number;
+  id: number;
   prompt: string;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
   reason?: string;
+  selectVideoId?: number | null;
   medias: TrackMedia[];
   videoList: VideoItem[];
 }
-const trackList = ref<TrackItem[]>([{ prompt: "", state: "未生成", medias: [], videoList: [] }]);
+const trackList = ref<TrackItem[]>([]);
 const activeTrackIndex = ref(0);
+const trackSelectedVideoMap = ref<Record<number, number>>({});
 
 async function addTrack() {
   const { data } = await axios.post("/production/workbench/addTrack", {
@@ -411,12 +434,10 @@ function confirmDeleteTrack(index: number) {
 async function deleteTrack(index: number) {
   const track = trackList.value[index];
   if (!track) return;
+  delete genTextLoadingMap.value[track.id];
   // TODO: 接口请求
   // await axios.post("/production/workbench/deleteTrack", { index });
   trackList.value.splice(index, 1);
-  if (trackList.value.length === 0) {
-    trackList.value.push({ prompt: "", state: "未生成", medias: [], videoList: [] });
-  }
   if (activeTrackIndex.value >= trackList.value.length) {
     activeTrackIndex.value = trackList.value.length - 1;
   }
@@ -446,24 +467,24 @@ function buildUploadBox(value: string): UploadItem[] {
   const currentMode = parseMode(value);
   if (!currentMode) return [];
   const referenceUploadMap: Record<Exclude<ReferenceType, "textReference">, UploadItem> = {
-    videoReference: { fileType: "video", type: "videoReference", label: "参考视频" },
-    imageReference: { fileType: "image", type: "imageReference", label: "参考图片" },
-    audioReference: { fileType: "audio", type: "audioReference", label: "参考音频" },
+    videoReference: { fileType: "video", type: "videoReference", sources: "storyboard", label: "参考视频" },
+    imageReference: { fileType: "image", type: "imageReference", sources: "storyboard", label: "参考图片" },
+    audioReference: { fileType: "audio", type: "audioReference", sources: "storyboard", label: "参考音频" },
   };
 
   const modeUploadMap: Record<Exclude<VideoMode, ReferenceType[]>, UploadItem[]> = {
-    singleImage: [{ fileType: "image", type: "imageReference", label: "参考图片" }],
+    singleImage: [{ fileType: "image", type: "imageReference", sources: "storyboard", label: "参考图片" }],
     startEndRequired: [
-      { fileType: "image", type: "startImage", label: "首帧" },
-      { fileType: "image", type: "endImage", label: "末帧" },
+      { fileType: "image", type: "startImage", sources: "storyboard", label: "首帧" },
+      { fileType: "image", type: "endImage", sources: "storyboard", label: "末帧" },
     ],
     endFrameOptional: [
-      { fileType: "image", type: "startImage", label: "首帧" },
-      { fileType: "image", type: "endImage", label: "末帧(可选)" },
+      { fileType: "image", type: "startImage", sources: "storyboard", label: "首帧" },
+      { fileType: "image", type: "endImage", sources: "storyboard", label: "末帧(可选)" },
     ],
     startFrameOptional: [
-      { fileType: "image", type: "startImage", label: "首帧(可选)" },
-      { fileType: "image", type: "endImage", label: "末帧" },
+      { fileType: "image", type: "startImage", sources: "storyboard", label: "首帧(可选)" },
+      { fileType: "image", type: "endImage", sources: "storyboard", label: "末帧" },
     ],
     text: [],
   };
@@ -519,7 +540,7 @@ function clearUpload(index: number) {
   const item = uploadBox.value[index];
   if (!item) return;
   userEditedUploadBox.value = true;
-  uploadBox.value[index] = { ...item, sources: undefined, src: undefined, id: undefined, prompt: undefined };
+  uploadBox.value[index] = { ...item, sources: "storyboard", src: undefined, id: undefined, prompt: undefined };
 }
 
 async function generateVideo() {
@@ -534,7 +555,7 @@ async function generateVideo() {
         const payload = {
           projectId: project.value?.id,
           scriptId: episodesId.value,
-          uploadData: uploadBox.value,
+          uploadData: uploadBox.value.filter((item) => Boolean(item.src)),
           prompt: promptText.value,
           model: selectModel.value,
           mode: selectMode.value,
@@ -586,21 +607,43 @@ watch(
   { deep: true },
 );
 
-const checkedTracks = ref<number[]>([]);
+const checkedTrackIds = ref<number[]>([]);
 const checkAll = ref(false);
 
 function handleCheckAll(val: boolean) {
-  checkedTracks.value = val ? trackList.value.map((_, i) => i) : [];
+  const allTrackIds = trackList.value.map((track) => track.id).filter((id): id is number => id != null);
+  checkedTrackIds.value = val ? allTrackIds : [];
 }
 
-function toggleCheck(index: number, val: boolean) {
-  if (val) {
-    checkedTracks.value.push(index);
-  } else {
-    checkedTracks.value = checkedTracks.value.filter((i) => i !== index);
-  }
-  checkAll.value = checkedTracks.value.length === trackList.value.length;
+function checkTrack(id: number) {
+  if (id == null) return;
+  const isChecked = checkedTrackIds.value.includes(id);
+  toggleCheck(id, !isChecked);
 }
+
+function toggleCheck(trackId: number | undefined, val: boolean) {
+  if (trackId == null) return;
+  if (val) {
+    if (!checkedTrackIds.value.includes(trackId)) {
+      checkedTrackIds.value.push(trackId);
+    }
+  } else {
+    checkedTrackIds.value = checkedTrackIds.value.filter((id) => id !== trackId);
+  }
+  const allTrackIds = trackList.value.map((track) => track.id).filter((id): id is number => id != null);
+  checkAll.value = allTrackIds.length > 0 && allTrackIds.every((id) => checkedTrackIds.value.includes(id));
+}
+
+watch(
+  trackList,
+  (list) => {
+    const validIds = list.map((track) => track.id).filter((id): id is number => id != null);
+    checkedTrackIds.value = checkedTrackIds.value.filter((id) => validIds.includes(id));
+    checkAll.value = validIds.length > 0 && validIds.every((id) => checkedTrackIds.value.includes(id));
+    genTextLoadingMap.value = Object.fromEntries(Object.entries(genTextLoadingMap.value).filter(([id]) => validIds.includes(Number(id))));
+  },
+  { deep: true },
+);
 
 function batchGenText() {
   // TODO
@@ -610,8 +653,32 @@ function batchGenVideo() {
   // TODO
 }
 
+type ImportVideoItem = { trackId: number; videoId: number; src: string; duration: number };
+const emit = defineEmits<{
+  importVideo: [videoList: ImportVideoItem[]];
+}>();
 function importVideo() {
-  // TODO
+  if (checkedTrackIds.value.length === 0) {
+    return window.$message.warning($t("workbench.generate.selectTrackFirst"));
+  }
+  const videoList: ImportVideoItem[] = trackList.value
+    .filter((track) => track.id != null && checkedTrackIds.value.includes(track.id))
+    .map((track) => {
+      const trackId = track.id!;
+      const selectedVid = trackSelectedVideoMap.value[trackId] ?? track.selectVideoId;
+      if (!selectedVid) return null;
+      const video = historyVideo.value.find((v) => v.id === selectedVid && v.videoTrackId === trackId);
+      if (!video || video.state === "生成中" || video.state === "生成失败" || video.id == null) {
+        return null;
+      }
+      const duration = Number(video.duration ?? video.time ?? selectedDuration.value);
+      return { trackId, videoId: video.id, src: video.src, duration: Number.isFinite(duration) && duration > 0 ? duration : selectedDuration.value };
+    })
+    .filter((i): i is ImportVideoItem => i !== null);
+  if (videoList.length === 0) {
+    return window.$message.warning($t("workbench.generate.noSelectedVideo"));
+  }
+  emit("importVideo", videoList);
 }
 
 async function getGenerateData() {
@@ -620,6 +687,12 @@ async function getGenerateData() {
     scriptId: episodesId.value ?? 0,
   });
   trackList.value = data.trackList;
+  trackSelectedVideoMap.value = {};
+  for (const track of trackList.value) {
+    if (track.id != null && track.selectVideoId != null) {
+      trackSelectedVideoMap.value[track.id] = track.selectVideoId;
+    }
+  }
   storyboardList.value = data.storyboardList;
   syncMediasToUploadBox();
   getVideoList();
@@ -636,6 +709,31 @@ function syncMediasToUploadBox() {
     }
     return { ...item, src: undefined, id: undefined, prompt: undefined };
   });
+}
+
+function restoreActiveTrackSelection() {
+  const track = trackList.value[activeTrackIndex.value];
+  if (!track?.id) {
+    selectVideoId.value = null;
+    videoUrl.value = "";
+    return;
+  }
+
+  const selectedId = trackSelectedVideoMap.value[track.id] ?? track.selectVideoId ?? null;
+  selectVideoId.value = selectedId;
+
+  if (selectedId == null) {
+    videoUrl.value = "";
+    return;
+  }
+
+  const selectedVideo = historyVideo.value.find((v) => v.videoTrackId === track.id && v.id === selectedId);
+  if (selectedVideo && selectedVideo.state !== "生成中" && selectedVideo.state !== "生成失败") {
+    videoUrl.value = selectedVideo.src;
+    return;
+  }
+
+  videoUrl.value = "";
 }
 
 onMounted(() => {
@@ -672,6 +770,7 @@ async function getVideoList() {
   });
   const oldList = historyVideo.value;
   historyVideo.value = data;
+  restoreActiveTrackSelection();
   // 检测生成完成的视频并提醒用户
   for (const item of data as HistoryVideoItem[]) {
     const old = oldList.find((o) => o.id === item.id);
@@ -686,6 +785,7 @@ async function getVideoList() {
 
 watch(activeTrackIndex, () => {
   syncMediasToUploadBox();
+  restoreActiveTrackSelection();
 });
 function handleResolutionChange(res: string) {
   selectedResolution.value = res;
@@ -708,6 +808,7 @@ function handleDurationChange(dur: number) {
     gap: 10px;
     min-height: 0;
     .videoToImage {
+      background: var(--td-bg-color-secondarycontainer);
       width: 100%;
       height: 100%;
       display: flex;
@@ -722,7 +823,6 @@ function handleDurationChange(dur: number) {
       .emptyVideo {
         width: 100%;
         height: 100%;
-        background: var(--td-bg-color-secondarycontainer);
         color: var(--td-text-color-placeholder);
       }
     }
@@ -846,13 +946,13 @@ function handleDurationChange(dur: number) {
           padding-top: 10px;
           padding-bottom: 10px;
         }
-        .itemBox {
+        .historyItemBox {
           height: 100%;
           overflow: hidden;
           display: grid;
           grid-template-columns: repeat(6, 1fr);
           gap: 8px;
-          .item {
+          .historyItem {
             width: 100%;
             aspect-ratio: 1/1;
             border-radius: 8px;
@@ -898,13 +998,13 @@ function handleDurationChange(dur: number) {
             .selectBtn {
               position: absolute;
               bottom: 4px;
-              left: 4px;
+              right: 4px;
               width: 24px;
               height: 24px;
               border-radius: 50%;
               background: rgba(0, 0, 0, 0.5);
               color: #fff;
-              display: flex;
+              display: none;
               align-items: center;
               justify-content: center;
               cursor: pointer;
@@ -913,7 +1013,11 @@ function handleDurationChange(dur: number) {
                 background: var(--td-brand-color);
               }
             }
+            &:hover .selectBtn {
+              display: flex;
+            }
             &.active .selectBtn {
+              display: flex;
               background: var(--td-brand-color);
             }
             .stateTag {
@@ -980,6 +1084,12 @@ function handleDurationChange(dur: number) {
           position: absolute;
           bottom: 4px;
           left: 4px;
+          z-index: 1;
+        }
+        .selectTag {
+          position: absolute;
+          bottom: 4px;
+          right: 4px;
           z-index: 1;
         }
         .thumbGroup {

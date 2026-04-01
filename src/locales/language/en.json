@@ -1053,8 +1053,8 @@
       },
       "wb": {
         "quickPreview": "Quick Preview",
-        "videoGeneration": "Video Generation",
-        "videoEditing": "Video Editing",
+        "videoGeneration": "Storyboard",
+        "videoEditing": "editing desk",
         "hint": "Hint",
         "extractLines": "Extract lines from video?",
         "no": "No",
@@ -1350,13 +1350,16 @@
       "selected": "Selected",
       "batchGenerateText": "Generate prompt words in batches",
       "batchGenerateVideo": "Generate videos in batches",
-      "importVideo": "Import video",
+      "importVideo": "Import to editing desk",
       "emptyTrack": "Paragraph {index 1}",
       "del": "delete",
       "delConfirm": "Are you sure you want to delete this paragraph?",
       "selectSource": "Select source",
       "confirm": "Select from assets",
-      "cancel": "Select from storyboard"
+      "cancel": "Select from storyboard",
+      "selectVideoFailed": "Video selection failed",
+      "selectVideoSuccess": "Video selection successful",
+      "selectTrackFirst": "Please select the storyboard first"
     }
   },
   "login": {

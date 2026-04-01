@@ -973,8 +973,8 @@
       },
       "wb": {
         "quickPreview": "クイックプレビュー",
-        "videoGeneration": "動画生成",
-        "videoEditing": "動画編集",
+        "videoGeneration": "絵コンテ",
+        "videoEditing": "編集デスク",
         "hint": "ヒント",
         "extractLines": "動画からセリフを抽出しますか？",
         "no": "いいえ",
@@ -1260,13 +1260,16 @@
       "selected": "選択済み",
       "batchGenerateText": "プロンプト単語をバッチで生成する",
       "batchGenerateVideo": "バッチでビデオを生成する",
-      "importVideo": "ビデオをインポートする",
+      "importVideo": "編集デスクにインポートする",
       "emptyTrack": "段落 {インデックス 1}",
       "del": "消去",
       "delConfirm": "この段落を削除してもよろしいですか?",
       "selectSource": "ソースを選択",
       "confirm": "アセットから選択",
-      "cancel": "ストーリーボードから選択"
+      "cancel": "ストーリーボードから選択",
+      "selectVideoFailed": "ビデオの選択に失敗しました",
+      "selectVideoSuccess": "ビデオの選択が成功しました",
+      "selectTrackFirst": "最初にストーリーボードを選択してください"
     }
   },
   "login": {

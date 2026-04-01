@@ -29,7 +29,12 @@
                 <t-tag class="frameTypeTag" :style="{ backgroundColor: tagColors[index % tagColors.length], transform: `scale(${styleMaxSize})` }">
                   S{{ String(index + 1).padStart(2, "0") }}
                 </t-tag>
-                <t-image v-if="item.src" :src="item.src" fit="contain" class="frameImg" @click="editStoryboaryImage(item, [item.src])">
+                <t-image
+                  v-if="item.src && item.state == '已完成'"
+                  :src="item.src"
+                  fit="contain"
+                  class="frameImg"
+                  @click="editStoryboaryImage(item, [item.src])">
                   <template #overlayContent>
                     <div class="imageToolsWrap show">
                       <t-tooltip theme="primary" :content="$t('workbench.production.node.storyboard.deleteNode')">
@@ -190,7 +195,6 @@ const currentRowStoryboardInfo = ref<{ id: number | null; insertAfterIndex: numb
   id: null,
   insertAfterIndex: null,
 });
-const generateLoading = ref(false);
 const styleMaxSize = computed(() => {
   if (gridScale.value <= 1) return gridScale.value;
   else 1;
@@ -226,9 +230,6 @@ function editStoryboaryImage(item: Storyboard, images: string[], insertAfterInde
     resultImages: [],
     referanceImages: [],
   };
-  console.log("%c Line:221 🍢 currentRow.value", "background:#fca650", currentRow.value);
-
-  console.log("%c Line:217 🍡 currentRowStoryboardInfo.value", "background:#e41a6a", currentRowStoryboardInfo.value);
 
   if (currentRowStoryboardInfo.value.id) {
     let imagesPush: string[] = [];
@@ -289,7 +290,10 @@ async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) 
 
   // 更新模式：更新对应分镜的 src
   const target = storyboard.value.find((s) => s.id === id);
-  if (target) target.src = imageUrl;
+  if (target) {
+    target.src = imageUrl;
+    target.state = "已完成";
+  }
   await axios.post("/production/storyboard/updateStoryboardUrl", {
     id: id,
     url: imageUrl,

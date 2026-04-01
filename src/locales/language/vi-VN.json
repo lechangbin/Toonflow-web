@@ -964,8 +964,8 @@
       },
       "wb": {
         "quickPreview": "Xem trước nhanh",
-        "videoGeneration": "Tạo video",
-        "videoEditing": "Dựng video",
+        "videoGeneration": "Bảng phân cảnh",
+        "videoEditing": "bàn biên tập",
         "hint": "Gợi ý",
         "extractLines": "Bạn có muốn trích xuất lời thoại từ video không?",
         "no": "Không",
@@ -1251,13 +1251,16 @@
       "selected": "Đã chọn",
       "batchGenerateText": "Tạo các từ nhắc nhở theo đợt",
       "batchGenerateVideo": "Tạo video hàng loạt",
-      "importVideo": "Nhập video",
+      "importVideo": "Nhập vào bàn chỉnh sửa",
       "emptyTrack": "Đoạn {chỉ mục 1}",
       "del": "xóa bỏ",
       "delConfirm": "Bạn có chắc chắn muốn xóa đoạn này?",
       "selectSource": "Chọn nguồn",
       "confirm": "Chọn từ nội dung",
-      "cancel": "Chọn từ bảng phân cảnh"
+      "cancel": "Chọn từ bảng phân cảnh",
+      "selectVideoFailed": "Lựa chọn video không thành công",
+      "selectVideoSuccess": "Lựa chọn video thành công",
+      "selectTrackFirst": "Vui lòng chọn bảng phân cảnh trước"
     }
   },
   "login": {
