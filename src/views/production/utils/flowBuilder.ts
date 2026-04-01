@@ -25,6 +25,7 @@ export interface DeriveAsset {
   flowId?: number;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
   type: "role" | "tool" | "scene" | "clip";
+  errorReason?: string;
 }
 
 export interface AssetItem {
@@ -37,6 +38,7 @@ export interface AssetItem {
   type: "role" | "tool" | "scene" | "clip";
   flowId?: number;
   derive: DeriveAsset[];
+  errorReason?: string;
 }
 
 export interface Storyboard {
@@ -48,6 +50,7 @@ export interface Storyboard {
   src: string | null;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
   flowId?: number;
+  errorReason?: string;
 }
 
 interface VideoList {

@@ -53,7 +53,9 @@
                 </t-image>
                 <div v-else class="generatingPlaceholder" @click="editStoryboaryImage(item, [])">
                   <t-loading v-if="item.state === '生成中'" size="small" />
-                  <span v-else-if="item.state === '生成失败'" style="color: #ff4d4f">生成失败</span>
+                  <t-tooltip v-else-if="item.state == '生成失败'" :content="item?.errorReason">
+                    <span style="color: #ff4d4f">生成失败</span>
+                  </t-tooltip>
                   <t-empty v-else size="small" :title="$t('workbench.production.node.storyboard.notGenerated')" />
                 </div>
               </div>

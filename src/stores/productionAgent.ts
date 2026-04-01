@@ -64,13 +64,11 @@ export default defineStore(
           flowData.value.storyboardTable = value ?? "";
         } else if (tag === "storyboardItem") {
           if (status === "complete") {
-            console.log("%c Line:59 🍓 attrs", "background:#ea7e5c", attrs);
-
             const prompt = attrs.prompt ?? "";
             const duration = Number(attrs.duration) || 0;
             const track = attrs.track || "";
             const shouldGenerateImage = attrs.shouldGenerateImage == "true" ? 1 : 0;
-            console.log("%c Line:73 🍕 shouldGenerateImage", "background:#6ec1c2", shouldGenerateImage);
+
             // if (name) {
             const existingIndex = flowData.value.storyboard.findIndex((s) => s.prompt === prompt);
             if (existingIndex !== -1) {
@@ -216,7 +214,7 @@ export default defineStore(
           return data;
         } else {
           flowData.value.storyboard.forEach((item) => {
-            const findData = data.find((i) => i.id == item.id);
+            const findData = data.find((i: any) => i.id == item.id);
             if (findData) {
               item.state = findData.state;
               item.src = findData.src;
