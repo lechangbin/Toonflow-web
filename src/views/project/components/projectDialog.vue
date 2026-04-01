@@ -480,9 +480,7 @@ async function handleVisualManualSubmit() {
     return;
   }
   const emptyTab = visualManualTabData.value.find((tab) => !tab.data.trim());
-  if (emptyTab) {
-    window.$message.warning(`「${emptyTab.label}」${$t("workbench.project.msg.enterVisualManualTabData")}`);
-  }
+  if (emptyTab) return window.$message.warning(`「${emptyTab.label}」${$t("workbench.project.msg.enterVisualManualTabData")}`);
   try {
     loading.value = true;
     if (editingVisualManual.value) {

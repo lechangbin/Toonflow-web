@@ -1365,7 +1365,11 @@
       "generateConfirmBody": "Confirm to generate video",
       "generateVideosInBatches": "Generate videos in batches",
       "generateStarted": "Build starts",
-      "skipDataWithEmptyVideoPromptWords": "The video data that needs to be generated exists and the prompt word is empty."
+      "skipDataWithEmptyVideoPromptWords": "The video data that needs to be generated exists and the prompt word is empty.",
+      "duration": "duration",
+      "resolution": "resolution",
+      "delVideo": "Confirm to delete this video?",
+      "delSuccess": "Delete successfully"
     }
   },
   "login": {

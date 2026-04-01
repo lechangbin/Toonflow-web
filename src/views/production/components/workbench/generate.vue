@@ -82,7 +82,7 @@
                         modeOptions.durationResolutionMap[0].resolution.length > 0
                       "
                       class="pickerSection">
-                      <div class="pickerLabel">分辨率</div>
+                      <div class="pickerLabel">{{ $t("workbench.generate.resolution") }}</div>
                       <div class="pickerOptions">
                         <div
                           v-for="res in modeOptions.durationResolutionMap[0].resolution"
@@ -102,7 +102,7 @@
                         modeOptions.durationResolutionMap[0].duration.length > 0
                       "
                       class="pickerSection">
-                      <div class="pickerLabel">时长</div>
+                      <div class="pickerLabel">{{ $t("workbench.generate.duration") }}</div>
                       <div class="pickerOptions">
                         <div
                           v-for="dur in modeOptions.durationResolutionMap[0].duration"
@@ -148,6 +148,9 @@
 
               <div v-if="v.state !== '生成中'" class="selectBtn" @click.stop="selectVideo(v)">
                 <i-check size="16" />
+              </div>
+              <div class="delBtn" @click.stop="handleDeleteVideo(v)">
+                <i-delete size="16" />
               </div>
             </div>
           </div>
@@ -404,6 +407,7 @@ interface TrackItem {
   selectVideoId?: number | null;
   medias: TrackMedia[];
   videoList: VideoItem[];
+  duration: number;
 }
 const trackList = ref<TrackItem[]>([]);
 const activeTrackIndex = ref(0);
@@ -415,7 +419,7 @@ async function addTrack() {
     scriptId: episodesId.value ?? 0,
   });
   const trackId = typeof data === "object" && data !== null ? data.id : data;
-  trackList.value.push({ id: trackId, prompt: "", state: "未生成", medias: [], videoList: [] });
+  trackList.value.push({ id: trackId, prompt: "", state: "未生成", medias: [], videoList: [], duration: 0 });
   activeTrackIndex.value = trackList.value.length - 1;
 }
 
@@ -426,6 +430,8 @@ function confirmDeleteTrack(index: number) {
     onConfirm: () => {
       dlg.destroy();
       deleteTrack(index);
+      window.$message.success($t("workbench.generate.delSuccess"));
+      getGenerateData();
     },
     onCancel: () => {
       dlg.destroy();
@@ -436,10 +442,7 @@ function confirmDeleteTrack(index: number) {
 async function deleteTrack(index: number) {
   const track = trackList.value[index];
   if (!track) return;
-  delete genTextLoadingMap.value[track.id];
-  // TODO: 接口请求
-  // await axios.post("/production/workbench/deleteTrack", { index });
-  trackList.value.splice(index, 1);
+  await axios.post("/production/workbench/deleteTrack", { id: track.id });
   if (activeTrackIndex.value >= trackList.value.length) {
     activeTrackIndex.value = trackList.value.length - 1;
   }
@@ -691,6 +694,7 @@ function batchGenVideo() {
             const uploadData = modeTemplate.map((_, i) => track.medias[i]).filter((item) => item && Boolean(item.src));
             const payload = {
               projectId: project.value?.id,
+              duration: track.duration,
               scriptId: episodesId.value,
               uploadData: uploadData.map((item) => {
                 return {
@@ -702,7 +706,6 @@ function batchGenVideo() {
               model: selectModel.value,
               mode: selectMode.value,
               resolution: selectedResolution.value,
-              duration: selectedDuration.value,
               audio: selectedAudio.value,
               trackId: track.id,
             };
@@ -861,6 +864,27 @@ function handleResolutionChange(res: string) {
 
 function handleDurationChange(dur: number) {
   selectedDuration.value = dur;
+}
+//删除视频
+function handleDeleteVideo(value: HistoryVideoItem) {
+  const dlg = DialogPlugin.confirm({
+    header: $t("workbench.generate.del"),
+    body: $t("workbench.generate.delVideo"),
+    onConfirm: () => {
+      axios
+        .post(`/production/workbench/delVideo`, {
+          id: value.id,
+        })
+        .then(() => {
+          window.$message.success($t("workbench.generate.delSuccess"));
+          dlg.destroy();
+          getVideoList();
+        });
+    },
+    onCancel: () => {
+      dlg.destroy();
+    },
+  });
 }
 </script>
 
@@ -1087,6 +1111,24 @@ function handleDurationChange(dur: number) {
             &.active .selectBtn {
               display: flex;
               background: var(--td-brand-color);
+            }
+            .delBtn {
+              position: absolute;
+              top: 4px;
+              right: 4px;
+              width: 24px;
+              height: 24px;
+              border-radius: 50%;
+              background: rgba(0, 0, 0, 0.5);
+              color: #fff;
+              display: none;
+              align-items: center;
+              justify-content: center;
+              cursor: pointer;
+              transition: background 0.2s;
+            }
+            &:hover .delBtn {
+              display: flex;
             }
             .stateTag {
               position: absolute;

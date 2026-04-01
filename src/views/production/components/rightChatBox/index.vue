@@ -207,6 +207,13 @@ watchEffect(() => {
     flex-shrink: 0;
     .text {
       font-size: 18px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
     }
     .close {
       cursor: pointer;
