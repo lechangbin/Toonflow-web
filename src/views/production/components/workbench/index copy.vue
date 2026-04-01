@@ -35,7 +35,6 @@
       <generate v-if="activeMenu === 'generate'" @importVideo="handleBatchDownload" v-model="extractLines" />
       <editVideo
         v-show="activeMenu === 'editVideo'"
-        :initial-tracks="mockTracks"
         :initial-video-items="initialVideoItems"
         :initial-media-items="mockMediaItems"
         :initial-audio-items="mockAudioItems"
@@ -57,7 +56,7 @@ import axios from "@/utils/axios";
 import preview from "./preview.vue";
 import generate from "./generate.vue";
 import editVideo from "./editVideo/index.vue";
-import { generateId, type Track } from "vue-clip-track";
+import { generateId, useTracksStore, type MediaClip, type SubtitleClip, type Clip } from "vue-clip-track";
 import type { MediaItem, AudioItem } from "./editVideo/utils/mediaData";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -67,6 +66,7 @@ const visible = defineModel("visible", {
   default: false,
 });
 const activeMenu = ref("preview");
+const tracksStore = useTracksStore();
 
 // 画布尺寸配置
 const canvasWidth = ref(1920);
@@ -166,29 +166,55 @@ function editFootage() {
     });
 }
 
-function createDemoTracks(): Track[] {
-  const createTrack = (type: Track["type"], name: string, order: number, isMain: boolean = false): Track => ({
-    id: generateId("track-"),
-    type,
-    name,
-    visible: true,
-    locked: false,
-    clips: [],
-    order,
-    ...(isMain && { isMain }),
+/** 追加视频片段（以及可选的字幕）到 tracksStore 对应轨道末尾 */
+function appendClipsToStore(videoList: ImportVideoItem[]) {
+  if (!videoList || videoList.length === 0) return;
+  let videoTrack = tracksStore.tracks.find((t) => t.type === "video" && t.isMain);
+  if (!videoTrack) {
+    videoTrack = {
+      id: generateId("track-"),
+      type: "video",
+      name: $t("workbench.production.wb.mainTrackVideo"),
+      visible: true,
+      locked: false,
+      clips: [],
+      order: 0,
+      isMain: true,
+    };
+    tracksStore.addTrack(videoTrack);
+    videoTrack = tracksStore.tracks.find((t) => t.type === "video" && t.isMain)!;
+  }
+  // 计算视频轨道末尾时间
+  const existingVideoClips = videoTrack!.clips.filter((c) => c.type !== "transition");
+  let currentTime = existingVideoClips.reduce((max, c) => Math.max(max, c.endTime), 0);
+
+  // 追加视频片段
+  videoList.forEach((item) => {
+    const duration = item.duration;
+    const clip: MediaClip = {
+      id: generateId("clip-"),
+      trackId: videoTrack!.id,
+      type: "video",
+      startTime: currentTime,
+      endTime: currentTime + duration,
+      selected: false,
+      sourceUrl: item.src,
+      originalDuration: duration,
+      trimStart: 0,
+      trimEnd: duration,
+      playbackRate: 1,
+      thumbnails: [],
+    };
+    tracksStore.addClip(videoTrack!.id, clip as Clip);
+    currentTime += duration;
   });
-  return [
-    createTrack("video", "主轨道", 0, true),
-    createTrack("audio", "音频", 2),
-    createTrack("subtitle", "字幕", 3),
-    createTrack("filter", "滤镜", 4),
-  ];
+  activeMenu.value = "editVideo";
 }
 
-const mockTracks = createDemoTracks();
-
 //导入到剪辑台
-function handleBatchDownload(value: ImportVideoItem[]) {}
+function handleBatchDownload(value: ImportVideoItem[]) {
+  appendClipsToStore(value);
+}
 </script>
 
 <style lang="scss" scoped>
