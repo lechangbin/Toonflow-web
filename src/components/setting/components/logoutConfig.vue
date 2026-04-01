@@ -2,14 +2,12 @@
   <div class="logout-config">
     <t-space direction="vertical" size="medium">
       <t-alert theme="warning" :message="$t('settings.logout.warning')" />
-      <t-popconfirm :content="$t('settings.logout.confirmLogout')" @confirm="handleLogout">
-        <t-button theme="danger" :loading="loading">
-          <template #icon>
-            <t-icon name="logout" />
-          </template>
-          {{ $t("settings.logout.logout") }}
-        </t-button>
-      </t-popconfirm>
+      <t-button theme="danger" :loading="loading" @click="openLogoutDialog">
+        <template #icon>
+          <t-icon name="logout" />
+        </template>
+        {{ $t("settings.logout.logout") }}
+      </t-button>
     </t-space>
   </div>
 </template>
@@ -17,9 +15,27 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { DialogPlugin } from "tdesign-vue-next";
 
 const router = useRouter();
 const loading = ref(false);
+
+function openLogoutDialog() {
+  const dialog = DialogPlugin.confirm({
+    header: $t("settings.logout.logout"),
+    body: $t("settings.logout.confirmLogout"),
+    confirmBtn: {
+      content: $t("settings.logout.logout"),
+      theme: "danger",
+    },
+    cancelBtn: $t("common.cancel"),
+    onConfirm: async () => {
+      dialog.destroy();
+      await handleLogout();
+    },
+    onClose: () => dialog.destroy(),
+  });
+}
 
 async function handleLogout() {
   loading.value = true;
