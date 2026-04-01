@@ -52,7 +52,7 @@ export default defineStore(
         { tag: "script", keepInMessage: false },
         { tag: "scriptPlan", keepInMessage: false },
         { tag: "storyboardTable", keepInMessage: false },
-        { tag: "storyboard", keepInMessage: false },
+        { tag: "storyboardItem", keepInMessage: false },
       ],
       onXmlTag: (data) => {
         const { tag, value, children, attrs, status } = data;
@@ -62,27 +62,60 @@ export default defineStore(
           flowData.value.scriptPlan = value ?? "";
         } else if (tag === "storyboardTable") {
           flowData.value.storyboardTable = value ?? "";
-        } else if (tag === "storyboard") {
+        } else if (tag === "storyboardItem") {
           if (status === "complete") {
-            const newItems = children.map((child) => {
-              return {
-                prompt: child.attrs.prompt || "",
-                duration: Number(child.attrs.duration) || 0,
-                track: child.attrs.track || "",
-                state: $t("storyboard.assets.notGenerated") as "未生成" | "生成中" | "已完成" | "生成失败",
+            console.log("%c Line:59 🍓 attrs", "background:#ea7e5c", attrs);
+
+            const prompt = attrs.prompt ?? "";
+            const duration = Number(attrs.duration) || 0;
+            const track = attrs.track || "";
+            const shouldGenerateImage = attrs.shouldGenerateImage == "true" ? 1 : 0;
+            console.log("%c Line:73 🍕 shouldGenerateImage", "background:#6ec1c2", shouldGenerateImage);
+            // if (name) {
+            const existingIndex = flowData.value.storyboard.findIndex((s) => s.prompt === prompt);
+            if (existingIndex !== -1) {
+              // 已存在则更新 content，保留 id
+              flowData.value.storyboard[existingIndex].prompt = prompt;
+            } else {
+              // 不存在则追加新条目
+              flowData.value.storyboard.push({
+                prompt: prompt || "",
+                duration: Number(duration) || 0,
+                state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
                 src: null,
-                associateAssetsIds: JSON.parse(child.attrs.associateAssetsIds) || [],
-              };
-            });
-            if (newItems.length > 0) {
-              const notExistItems = newItems.filter((newItem) => {
-                return !flowData.value.storyboard.some((story) => story.prompt === newItem.prompt && story.duration === newItem.duration);
+                associateAssetsIds: JSON.parse(attrs.associateAssetsIds) || [],
               });
-              if (notExistItems.length > 0) {
-                addStoryboardInfo(notExistItems);
-                flowData.value.storyboard = [...flowData.value.storyboard, ...notExistItems];
-              }
+              addStoryboardInfo([
+                {
+                  prompt: prompt || "",
+                  duration: Number(duration) || 0,
+                  track: track || "",
+                  state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
+                  src: null,
+                  associateAssetsIds: JSON.parse(attrs.associateAssetsIds) || [],
+                },
+              ]);
             }
+            // }
+            // const newItems = children.map((child) => {
+            //   return {
+            //     prompt: child.attrs.prompt || "",
+            //     duration: Number(child.attrs.duration) || 0,
+            //     track: child.attrs.track || "",
+            //     state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
+            //     src: null,
+            //     associateAssetsIds: JSON.parse(child.attrs.associateAssetsIds) || [],
+            //   };
+            // });
+            // if (newItems.length > 0) {
+            //   const notExistItems = newItems.filter((newItem) => {
+            //     return !flowData.value.storyboard.some((story) => story.prompt === newItem.prompt && story.duration === newItem.duration);
+            //   });
+            //   if (notExistItems.length > 0) {
+            //     addStoryboardInfo(notExistItems);
+            //     flowData.value.storyboard = [...flowData.value.storyboard, ...notExistItems];
+            //   }
+            // }
           }
         }
         if (status == "complete") {
@@ -119,7 +152,7 @@ export default defineStore(
                 type: assets.type,
                 desc: data.describe,
                 prompt: "",
-                state: $t("storyboard.assets.derivativeState") as "未生成" | "生成中" | "已完成" | "生成失败",
+                state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
                 src: "",
               });
               callback({ success: true, message: $t("storyboard.assets.derivativeAddSuccess") });
@@ -165,7 +198,7 @@ export default defineStore(
     async function batchGenerateStoryboard(allIds: number[]) {
       flowData.value.storyboard.forEach((item) => {
         if (allIds.includes(item.id!)) {
-          item.state = $t("productionAgent.generating") as "未生成" | "生成中" | "已完成" | "生成失败";
+          item.state = "生成中" as "未生成" | "生成中" | "已完成" | "生成失败";
         }
       });
       const { data } = await axios.post("/production/storyboard/batchGenerateImage", {
@@ -182,9 +215,13 @@ export default defineStore(
           flowData.value.storyboard = data;
           return data;
         } else {
-          const idSet = new Set(data.map((d: { id: number }) => d.id));
-          flowData.value.storyboard = flowData.value.storyboard.filter((s) => !idSet.has(s.id!)).concat(data);
-          return flowData.value.storyboard;
+          flowData.value.storyboard.forEach((item) => {
+            const findData = data.find((i) => i.id == item.id);
+            if (findData) {
+              item.state = findData.state;
+              item.src = findData.src;
+            }
+          });
         }
       }
       return data;
@@ -194,7 +231,7 @@ export default defineStore(
         if (asset.derive) {
           asset.derive.forEach((derive) => {
             if (allIds.includes(derive.id)) {
-              derive.state = $t("productionAgent.generating") as "未生成" | "生成中" | "已完成" | "生成失败";
+              derive.state = "生成中" as "未生成" | "生成中" | "已完成" | "生成失败";
             }
           });
         }
@@ -204,6 +241,7 @@ export default defineStore(
           assetIds: allIds,
           projectId: projectStore().project?.id,
           scriptId: episodesId.value,
+          concurrentCount: settingStore().otherSetting.assetsBatchGenereateSize,
         });
         if (data) {
           data.forEach((record: { id: number; state: "未生成" | "生成中" | "已完成" | "生成失败"; src: string }) => {
@@ -227,7 +265,7 @@ export default defineStore(
       flowData.value.assets.forEach((asset) => {
         if (asset.derive) {
           asset.derive.forEach((derive) => {
-            if (derive.state == ($t("productionAgent.generating") as "未生成" | "生成中" | "已完成" | "生成失败")) {
+            if (derive.state == ("生成中" as "未生成" | "生成中" | "已完成" | "生成失败")) {
               ids.push(derive.id);
             }
           });
