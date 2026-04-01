@@ -34,7 +34,8 @@
                   :src="item.src"
                   fit="contain"
                   class="frameImg"
-                  @click="editStoryboaryImage(item, [item.src])">
+                  @click="editStoryboaryImage(item, [item.src])"
+                  lazy>
                   <template #overlayContent>
                     <div class="imageToolsWrap show">
                       <t-tooltip theme="primary" :content="$t('workbench.production.node.storyboard.deleteNode')">
