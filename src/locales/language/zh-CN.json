@@ -1365,7 +1365,14 @@
       "generateSuccess": "视频生成成功",
       "selectVideoFailed": "视频选择失败",
       "selectVideoSuccess": "视频选择成功",
-      "selectTrackFirst": "请先选择分镜"
+      "selectTrackFirst": "请先选择分镜",
+      "noSelectedVideo": "没有选择的视频",
+      "generateConfirm": "确认生成",
+      "generateConfirmBody": "是否确认生成视频",
+      "generateVideosInBatches": "批量生成视频",
+      "generateStarted": "生成开始",
+      "promptEmpty": "勾选需要生成视频的数据有提示词为空，是否继续生成",
+      "skipDataWithEmptyVideoPromptWords": "需要生成的视频数据存在提示词为空"
     }
   },
   "login": {

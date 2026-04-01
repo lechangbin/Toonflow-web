@@ -1359,7 +1359,13 @@
       "cancel": "Select from storyboard",
       "selectVideoFailed": "Video selection failed",
       "selectVideoSuccess": "Video selection successful",
-      "selectTrackFirst": "Please select the storyboard first"
+      "selectTrackFirst": "Please select the storyboard first",
+      "noSelectedVideo": "No videos selected",
+      "generateConfirm": "Confirm generation",
+      "generateConfirmBody": "Confirm to generate video",
+      "generateVideosInBatches": "Generate videos in batches",
+      "generateStarted": "Build starts",
+      "skipDataWithEmptyVideoPromptWords": "The video data that needs to be generated exists and the prompt word is empty."
     }
   },
   "login": {

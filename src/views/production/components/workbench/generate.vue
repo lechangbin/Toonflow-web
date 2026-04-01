@@ -393,6 +393,7 @@ interface TrackMedia {
   id?: number;
   prompt?: string;
   fileType: "image" | "video" | "audio";
+  sources?: "assets" | "storyboard";
 }
 
 interface TrackItem {
@@ -413,7 +414,8 @@ async function addTrack() {
     projectId: project.value?.id,
     scriptId: episodesId.value ?? 0,
   });
-  trackList.value.push({ id: data.id, prompt: "", state: "未生成", medias: [], videoList: [] });
+  const trackId = typeof data === "object" && data !== null ? data.id : data;
+  trackList.value.push({ id: trackId, prompt: "", state: "未生成", medias: [], videoList: [] });
   activeTrackIndex.value = trackList.value.length - 1;
 }
 
@@ -602,7 +604,9 @@ watch(
     if (!userEditedUploadBox.value) return;
     const track = trackList.value[activeTrackIndex.value];
     if (!track) return;
-    track.medias = items.filter((item) => item.src).map((item) => ({ src: item.src!, id: item.id, prompt: item.prompt, fileType: item.fileType }));
+    track.medias = items
+      .filter((item) => item.src)
+      .map((item) => ({ src: item.src!, id: item.id, prompt: item.prompt, fileType: item.fileType, sources: item.sources }));
   },
   { deep: true },
 );
@@ -646,40 +650,104 @@ watch(
 );
 
 function batchGenText() {
-  // TODO
+  trackList.value
+    .filter((track) => checkedTrackIds.value.includes(track.id))
+    .forEach(async (track) => {
+      const trackId = track.id;
+      if (trackId == null || genTextLoadingMap.value[trackId]) return;
+      const prompts = track.medias.filter((m) => m.prompt).map((m) => m.prompt!);
+      genTextLoadingMap.value[trackId] = true;
+      try {
+        const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
+          projectId: project.value?.id,
+          trackId,
+          prompt: prompts,
+          model: selectModel.value,
+        });
+        const targetTrack = trackList.value.find((item) => item.id === trackId);
+        if (targetTrack) {
+          targetTrack.prompt = data;
+        }
+      } finally {
+        genTextLoadingMap.value[trackId] = false;
+      }
+    });
 }
 
 function batchGenVideo() {
-  // TODO
+  if (generating.value) return;
+  const dlg = DialogPlugin.confirm({
+    header: $t("workbench.generate.generateConfirm"),
+    body: $t("workbench.generate.generateVideosInBatches"),
+    onConfirm: async () => {
+      dlg.destroy();
+      generating.value = true;
+      const modeTemplate = selectMode.value ? buildUploadBox(selectMode.value) : [];
+      trackList.value
+        .filter((track) => checkedTrackIds.value.includes(track.id))
+        .forEach(async (track) => {
+          try {
+            // 根据当前 mode 的槽位数量，按位置取对应的 media，只取有 src 的
+            const uploadData = modeTemplate.map((_, i) => track.medias[i]).filter((item) => item && Boolean(item.src));
+            const payload = {
+              projectId: project.value?.id,
+              scriptId: episodesId.value,
+              uploadData: uploadData.map((item) => {
+                return {
+                  id: item.id,
+                  sources: item.sources ? item.sources : "storyboard",
+                };
+              }),
+              prompt: track.prompt,
+              model: selectModel.value,
+              mode: selectMode.value,
+              resolution: selectedResolution.value,
+              duration: selectedDuration.value,
+              audio: selectedAudio.value,
+              trackId: track.id,
+            };
+            if (payload.prompt === "") return window.$message.warning($t("workbench.generate.skipDataWithEmptyVideoPromptWords"));
+            const { data } = await axios.post("/production/workbench/generateVideo", payload);
+            window.$message.success($t("workbench.generate.generateStarted"));
+            getVideoList();
+          } finally {
+            generating.value = false;
+          }
+        });
+    },
+    onCancel: () => {
+      dlg.destroy();
+    },
+  });
 }
 
 type ImportVideoItem = { trackId: number; videoId: number; src: string; duration: number };
 const emit = defineEmits<{
   importVideo: [videoList: ImportVideoItem[]];
 }>();
-function importVideo() {
-  if (checkedTrackIds.value.length === 0) {
-    return window.$message.warning($t("workbench.generate.selectTrackFirst"));
-  }
-  const videoList: ImportVideoItem[] = trackList.value
-    .filter((track) => track.id != null && checkedTrackIds.value.includes(track.id))
-    .map((track) => {
-      const trackId = track.id!;
-      const selectedVid = trackSelectedVideoMap.value[trackId] ?? track.selectVideoId;
-      if (!selectedVid) return null;
-      const video = historyVideo.value.find((v) => v.id === selectedVid && v.videoTrackId === trackId);
-      if (!video || video.state === "生成中" || video.state === "生成失败" || video.id == null) {
-        return null;
-      }
-      const duration = Number(video.duration ?? video.time ?? selectedDuration.value);
-      return { trackId, videoId: video.id, src: video.src, duration: Number.isFinite(duration) && duration > 0 ? duration : selectedDuration.value };
-    })
-    .filter((i): i is ImportVideoItem => i !== null);
-  if (videoList.length === 0) {
-    return window.$message.warning($t("workbench.generate.noSelectedVideo"));
-  }
-  emit("importVideo", videoList);
-}
+// function importVideo() {
+//   if (checkedTrackIds.value.length === 0) {
+//     return window.$message.warning($t("workbench.generate.selectTrackFirst"));
+//   }
+//   const videoList: ImportVideoItem[] = trackList.value
+//     .filter((track) => track.id != null && checkedTrackIds.value.includes(track.id))
+//     .map((track) => {
+//       const trackId = track.id!;
+//       const selectedVid = trackSelectedVideoMap.value[trackId] ?? track.selectVideoId;
+//       if (!selectedVid) return null;
+//       const video = historyVideo.value.find((v) => v.id === selectedVid && v.videoTrackId === trackId);
+//       if (!video || video.state === "生成中" || video.state === "生成失败" || video.id == null) {
+//         return null;
+//       }
+//       const duration = Number(video.duration ?? video.time ?? selectedDuration.value);
+//       return { trackId, videoId: video.id, src: video.src, duration: Number.isFinite(duration) && duration > 0 ? duration : selectedDuration.value };
+//     })
+//     .filter((i): i is ImportVideoItem => i !== null);
+//   if (videoList.length === 0) {
+//     return window.$message.warning($t("workbench.generate.noSelectedVideo"));
+//   }
+//   emit("importVideo", videoList);
+// }
 
 async function getGenerateData() {
   const { data } = await axios.post("/production/workbench/getGenerateData", {
@@ -705,7 +773,7 @@ function syncMediasToUploadBox() {
   uploadBox.value = uploadBox.value.map((item, i) => {
     const media = medias[i];
     if (media?.src) {
-      return { ...item, src: media.src, id: media.id, prompt: media.prompt };
+      return { ...item, src: media.src, id: media.id, prompt: media.prompt, sources: media.sources ?? item.sources };
     }
     return { ...item, src: undefined, id: undefined, prompt: undefined };
   });
