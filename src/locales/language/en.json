@@ -1032,7 +1032,9 @@
         "uploadAssetImage": "Upload Asset Image",
         "uploadStoryboardImage": "Upload Storyboard Image",
         "uploadImage": "Asset image upload",
-        "mode": "model"
+        "mode": "model",
+        "closeConfirmTitle": "Close the editing panel?",
+        "closeConfirmBody": "Unsaved data will be lost after closing"
       },
       "save": "Select",
       "cancel": "Cancel",

@@ -1035,7 +1035,9 @@
         "uploadAssetImage": "资产图片上传",
         "uploadStoryboardImage": "分镜图片上传",
         "uploadImage": "资产图片上传",
-        "mode": "模式"
+        "mode": "模式",
+        "closeConfirmTitle": "是否关闭编辑面板？",
+        "closeConfirmBody": "关闭之后未保存的数据会丢失"
       },
       "save": "选取",
       "cancel": "取消",
