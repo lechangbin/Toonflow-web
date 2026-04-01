@@ -404,6 +404,7 @@ interface TrackItem {
   selectVideoId?: number | null;
   medias: TrackMedia[];
   videoList: VideoItem[];
+  duration: number;
 }
 const trackList = ref<TrackItem[]>([]);
 const activeTrackIndex = ref(0);
@@ -415,7 +416,7 @@ async function addTrack() {
     scriptId: episodesId.value ?? 0,
   });
   const trackId = typeof data === "object" && data !== null ? data.id : data;
-  trackList.value.push({ id: trackId, prompt: "", state: "未生成", medias: [], videoList: [] });
+  trackList.value.push({ id: trackId, prompt: "", state: "未生成", medias: [], videoList: [], duration: 0 });
   activeTrackIndex.value = trackList.value.length - 1;
 }
 
@@ -691,6 +692,7 @@ function batchGenVideo() {
             const uploadData = modeTemplate.map((_, i) => track.medias[i]).filter((item) => item && Boolean(item.src));
             const payload = {
               projectId: project.value?.id,
+              duration: track.duration,
               scriptId: episodesId.value,
               uploadData: uploadData.map((item) => {
                 return {
@@ -702,7 +704,6 @@ function batchGenVideo() {
               model: selectModel.value,
               mode: selectMode.value,
               resolution: selectedResolution.value,
-              duration: selectedDuration.value,
               audio: selectedAudio.value,
               trackId: track.id,
             };
