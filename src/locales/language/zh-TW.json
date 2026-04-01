@@ -1275,7 +1275,14 @@
       "cancel": "從分鏡選擇",
       "selectVideoFailed": "視訊選擇失敗",
       "selectVideoSuccess": "影片選擇成功",
-      "selectTrackFirst": "請先選擇分鏡"
+      "selectTrackFirst": "請先選擇分鏡",
+      "noSelectedVideo": "沒有選擇的視頻",
+      "generateConfirm": "確認生成",
+      "generateConfirmBody": "是否確認生成視頻",
+      "generateVideosInBatches": "大量生成視頻",
+      "generateStarted": "生成開始",
+      "promptEmpty": "勾選需要產生影片的資料有提示詞為空，是否繼續生成",
+      "skipDataWithEmptyVideoPromptWords": "需要產生的影片資料存在提示詞為空"
     }
   },
   "login": {
