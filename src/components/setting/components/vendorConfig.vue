@@ -10,17 +10,21 @@
       </div>
       <div class="listContent" v-loading="loading">
         <t-menu v-model="activeVendorId" theme="light" v-if="vendorList.length > 0">
-          <t-menu-item v-for="(item, index) in vendorList" :key="index" :value="item.id" @click="activeVendorId = item.id">
+          <t-menu-item v-for="(item, index) in vendorList" :key="index" :value="item.id" @click="activeVendorId = item.id" style="position: relative">
             <template #icon v-if="isValidBase64(item.icon)">
               <t-avatar size="24px" shape="round" :image="item.icon" />
             </template>
-            {{ item.name }}
+            <span>{{ item.name }}</span>
+            <t-switch
+              v-model="item.enableEnglish"
+              @change="onChange"
+              style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 10"></t-switch>
           </t-menu-item>
         </t-menu>
+
         <t-empty v-else :title="$t('settings.vendor.noVendor')" style="margin-top: 16px"></t-empty>
       </div>
     </div>
-
     <!-- 右侧配置面板 -->
     <div v-if="currentVendor" class="modelParameter">
       <div class="infoBox ac jb">
@@ -322,6 +326,7 @@ interface VendorItem {
   modelName?: string;
   model?: VendorModel[];
   models?: VendorModel[];
+  enableEnglish: number; //1启用 0禁用
 }
 
 // ── 常量 ──
@@ -405,7 +410,12 @@ async function getVendorList() {
   loading.value = true;
   try {
     const res = await axios.post("/setting/vendorConfig/getVendorList");
-    vendorList.value = res.data;
+    vendorList.value = res.data.map((item: any) => {
+      return {
+        ...item,
+        enableEnglish: item.enableEnglish == 1 ? true : false,
+      };
+    });
 
     if (vendorList.value.length && !vendorList.value.some((v) => v.id === activeVendorId.value)) {
       activeVendorId.value = vendorList.value[0].id;
@@ -982,6 +992,23 @@ function onBlurFn() {
     })
     .then(() => {
       window.$message.success($t("settings.vendor.msg.vendorConfigUpdated"));
+      getVendorList();
+    })
+    .catch((err) => {
+      window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
+    });
+}
+//是否启用供应商
+function onChange(val: any) {
+  const id = currentVendor.value?.id;
+  axios
+    .post("/setting/vendorConfig/enableEnglishVendor", {
+      id: id,
+      enableEnglish: val == true ? 1 : 0,
+    })
+    .then(() => {
+      if (val == true) window.$message.success($t("settings.vendor.msg.enabled"));
+      else window.$message.warning($t("settings.vendor.msg.disabled"));
       getVendorList();
     })
     .catch((err) => {

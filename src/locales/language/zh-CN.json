@@ -174,7 +174,9 @@
         "deleteVendorConfirm": "确认删除供应商",
         "deleteVendorBody": "删除后该供应商下所有模型将一并删除，是否继续？",
         "vendorDeleted": "供应商已删除",
-        "deleteFailed": "删除失败"
+        "deleteFailed": "删除失败",
+        "enabled": "已启用",
+        "disabled": "已禁用"
       },
       "associationSkills": "关联skills",
       "think": "深度思考"
