@@ -163,10 +163,18 @@
         "deleteVendorConfirm": "Confirm Provider Deletion",
         "deleteVendorBody": "Deleting this provider will also delete all its associated models. Do you want to continue?",
         "vendorDeleted": "Provider deleted",
-        "deleteFailed": "Deletion failed"
+        "deleteFailed": "Deletion failed",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "linkAddVendorRiskBody": "Adding a new AI vendor will give it access to the system API, please make sure you trust the vendor's link source!",
+        "importAdd": "Adding a new AI vendor will give it access to the system API, please make sure you trust the vendor's documentation source!"
       },
       "associationSkills": "Associated skills",
-      "think": "deep thinking"
+      "think": "deep thinking",
+      "code": "code",
+      "linkAddPlaceholder": "Enter link to add",
+      "noFileSelected": "File imported successfully",
+      "linkAdd": "confirm"
     },
     "agent": {
       "bannerDesc": "Use the official Toonflow relay site for one-click configuration. Ready out-of-the-box, no manual setup needed.",
@@ -593,12 +601,14 @@
         "msg": {
           "parseFailed": "Failed to parse file. Please re-upload",
           "selectFile": "Please select a file first",
-          "docNotSupported": ".doc parsing is not supported. Please convert to .txt or .docx",
+          "docNotSupported": ".doc files do not support parsing, please convert to .ts files",
           "unsupportedType": "Unsupported file type",
           "fileTooLarge": "File exceeds 10MB. Please upload a smaller file",
           "selectChapters": "Please select chapters first",
           "saveSuccess": "Novel text saved successfully"
-        }
+        },
+        "importAdd": "Drag and drop files here or click to upload",
+        "limit": "Support .ts format"
       },
       "editDialog": {
         "title": "Edit Novel Text",

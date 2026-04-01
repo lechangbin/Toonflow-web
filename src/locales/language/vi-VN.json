@@ -162,10 +162,18 @@
         "deleteVendorConfirm": "Xác nhận xóa nhà cung cấp",
         "deleteVendorBody": "Sau khi xóa, tất cả các mô hình thuộc nhà cung cấp này cũng sẽ bị xóa, bạn có muốn tiếp tục?",
         "vendorDeleted": "Nhà cung cấp đã bị xóa",
-        "deleteFailed": "Xóa thất bại"
+        "deleteFailed": "Xóa thất bại",
+        "enabled": "Đã bật",
+        "disabled": "Tàn tật",
+        "linkAddVendorRiskBody": "Việc thêm nhà cung cấp AI mới sẽ cấp cho nhà cung cấp đó quyền truy cập vào API hệ thống, vui lòng đảm bảo rằng bạn tin cậy nguồn liên kết của nhà cung cấp đó!",
+        "importAdd": "Việc thêm nhà cung cấp AI mới sẽ cấp cho nhà cung cấp đó quyền truy cập vào API hệ thống, vui lòng đảm bảo rằng bạn tin cậy vào nguồn tài liệu của nhà cung cấp đó!"
       },
       "associationSkills": "Kỹ năng liên quan",
-      "think": "suy nghĩ sâu sắc"
+      "think": "suy nghĩ sâu sắc",
+      "code": "mã số",
+      "linkAddPlaceholder": "Nhập liên kết để thêm",
+      "noFileSelected": "Đã nhập tệp thành công",
+      "linkAdd": "xác nhận"
     },
     "agent": {
       "bannerDesc": "Sử dụng máy chủ trung gian chính thức của Toonflow, hỗ trợ điền cấu hình bằng 1 cú nhấp chuột, sẵn sàng sử dụng ngay mà không cần thiết lập thủ công.",
@@ -510,12 +518,14 @@
         "msg": {
           "parseFailed": "Phân tích tệp thất bại, vui lòng tải lên lại",
           "selectFile": "Vui lòng chọn tệp trước",
-          "docNotSupported": "Không hỗ trợ phân tích tệp .doc, vui lòng chuyển đổi sang .txt hoặc .docx",
+          "docNotSupported": "File .doc không hỗ trợ phân tích cú pháp, vui lòng chuyển đổi sang file .ts",
           "unsupportedType": "Loại tệp không được hỗ trợ",
           "fileTooLarge": "Dung lượng tệp vượt quá 10MB, vui lòng tải lên tệp nhỏ hơn",
           "selectChapters": "Vui lòng đánh dấu chọn chương trước",
           "saveSuccess": "Lưu bản gốc tiểu thuyết thành công"
-        }
+        },
+        "importAdd": "Kéo và thả file vào đây hoặc bấm vào để tải lên",
+        "limit": "Hỗ trợ định dạng .ts"
       },
       "editDialog": {
         "title": "Chỉnh sửa bản gốc tiểu thuyết",
