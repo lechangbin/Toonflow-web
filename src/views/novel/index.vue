@@ -88,6 +88,8 @@ import axios from "@/utils/axios";
 import importNovel from "./components/importNovel.vue";
 import editNodel from "./components/editNodel.vue";
 import projectStore from "@/stores/project";
+import settingStore from "@/stores/setting";
+const { otherSetting } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
 
 // 搜索文本
@@ -235,6 +237,7 @@ function startEventAnalysis() {
         .post("/novel/event/generateEvents", {
           projectId: project.value?.id!,
           novelIds: selectedRowKeys.value,
+          concurrentCount: otherSetting.value.assetsBatchGenereateSize,
         })
         .then((res) => {
           selectedRowKeys.value.length = 0;
