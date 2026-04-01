@@ -37,14 +37,14 @@
                 { label: '4K', value: '4K' },
               ]"></t-select>
           </t-form-item>
-          <t-form-item :label="$t('workbench.cornerScape.concurrency')">
+          <!-- <t-form-item :label="$t('workbench.cornerScape.concurrency')">
             <t-input-number
               v-model="concurrentCount"
               :min="1"
               :allowInputOverLimit="false"
               autoWidth
               :placeholder="$t('workbench.cornerScape.concurrencyPh')"></t-input-number>
-          </t-form-item>
+          </t-form-item> -->
           <t-form-item>
             <t-button theme="primary" block @click="batchGenerationPrompt">{{ $t("workbench.cornerScape.batchGenerationPrompt") }}</t-button>
             <t-button theme="primary" block @click="batchGenerationImage" style="margin-left: 10px">
@@ -199,6 +199,8 @@
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import modelSelect from "@/components/modelSelect.vue";
+import settingStore from "@/stores/setting";
+const { otherSetting } = storeToRefs(settingStore());
 interface Image {
   filePath: string;
   id: number;
@@ -223,7 +225,6 @@ const checkboxValue = ref<string[]>([]);
 const { project } = storeToRefs(projectStore());
 const selectValue = ref(project.value?.imageModel ?? "");
 const resolution = ref("1K");
-const concurrentCount = ref(5);
 const resolutionOptions = [
   { label: "1K", value: "1K" },
   { label: "2K", value: "2K" },
@@ -514,7 +515,6 @@ async function batchGenerationPrompt() {
 
   // 清除已选中的项
   selectedIds.value = [];
-  const concurrent = Math.max(1, concurrentCount.value || 1);
 
   try {
     await axios.post("/assetsGenerate/batchPolishAssetsPrompt", {
@@ -525,7 +525,7 @@ async function batchGenerationPrompt() {
         name: item.name,
         describe: item.describe,
       })),
-      concurrentCount: concurrent,
+      concurrentCount: otherSetting.value.assetsBatchGenereateSize,
     });
   } catch (e: any) {
     window.$message.error(e.message ?? $t("workbench.cornerScape.msg.promptGenFail"));
@@ -563,19 +563,20 @@ async function batchGenerationImage() {
     );
     return;
   }
-  const concurrent = Math.max(1, concurrentCount.value || 1);
 
   // 前端先将所有选中项标记为"生成中"
   items.forEach((item) => setItemState(item.id, "生成中"));
 
-  window.$message.success($t("workbench.cornerScape.msg.batchStarted", { count: items.length, concurrent }));
+  window.$message.success(
+    $t("workbench.cornerScape.msg.batchStarted", { count: items.length, concurrent: otherSetting.value.assetsBatchGenereateSize }),
+  );
 
   try {
     await axios.post("/assetsGenerate/batchGenerateImageAssets", {
       projectId: project.value?.id,
       model: selectValue.value,
       resolution: resolution.value,
-      concurrentCount: concurrent,
+      concurrentCount: otherSetting.value.assetsBatchGenereateSize,
       items: items.map((item) => ({
         id: item.id,
         type: item.type ?? "props",
