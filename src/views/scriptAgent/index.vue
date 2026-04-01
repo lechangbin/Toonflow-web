@@ -267,7 +267,17 @@ function handleClearMemory(type: "message" | "summary" | "all" | "reconnect") {
   });
 }
 function handleReconnect() {
-  productionAgentStore().reconnect();
+   const dialog = DialogPlugin.confirm({
+    header: $t("workbench.scriptAgent.msg.reconnect"),
+    body: $t("workbench.scriptAgent.msg.notReconnect"),
+    confirmBtn: $t("workbench.scriptAgent.msg.keepReconnect"),
+    cancelBtn: $t("workbench.scriptAgent.msg.cancel"),
+    theme: "warning",
+    onConfirm: async () => {
+      productionAgentStore().reconnect();
+      dialog.destroy();
+    },
+  });
 }
 
 const loadingHistory = ref(false);

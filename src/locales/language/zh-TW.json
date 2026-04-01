@@ -1284,7 +1284,11 @@
       "generateVideosInBatches": "大量生成視頻",
       "generateStarted": "生成開始",
       "promptEmpty": "勾選需要產生影片的資料有提示詞為空，是否繼續生成",
-      "skipDataWithEmptyVideoPromptWords": "需要產生的影片資料存在提示詞為空"
+      "skipDataWithEmptyVideoPromptWords": "需要產生的影片資料存在提示詞為空",
+      "duration": "時長",
+      "resolution": "解析度",
+      "delVideo": "確認刪除此影片？",
+      "delSuccess": "刪除成功"
     }
   },
   "login": {

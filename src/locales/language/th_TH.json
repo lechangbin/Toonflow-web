@@ -1279,7 +1279,11 @@
       "generateVideosInBatches": "สร้างวิดีโอเป็นชุด",
       "generateStarted": "เริ่มสร้าง",
       "promptEmpty": "ตรวจสอบข้อมูลที่จำเป็นในการสร้างวิดีโอและคำแจ้งว่างเปล่า คุณต้องการสร้างมันต่อไปหรือไม่?",
-      "skipDataWithEmptyVideoPromptWords": "มีข้อมูลวิดีโอที่ต้องสร้างและคำแจ้งว่างเปล่า"
+      "skipDataWithEmptyVideoPromptWords": "มีข้อมูลวิดีโอที่ต้องสร้างและคำแจ้งว่างเปล่า",
+      "duration": "ระยะเวลา",
+      "resolution": "ปณิธาน",
+      "delVideo": "ยืนยันการลบวิดีโอนี้หรือไม่",
+      "delSuccess": "ลบสำเร็จ"
     }
   },
   "login": {

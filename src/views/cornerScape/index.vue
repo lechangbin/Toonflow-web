@@ -170,20 +170,27 @@
             <t-select v-model="editForm.resolution" :placeholder="$t('workbench.cornerScape.resolutionPh')" :options="resolutionOptions" />
           </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.promptLabel')">
-            <t-textarea
-              v-model="editForm.prompt"
-              :placeholder="$t('workbench.cornerScape.promptPh')"
-              :autosize="{ minRows: 4, maxRows: 10 }"
-              :disabled="polishing"
-              @blur="savePromptOnBlur" />
+            <t-loading style="width: 100%" :loading="currentItem.promptState == '生成中'">
+              <t-textarea
+                v-model="editForm.prompt"
+                :placeholder="$t('workbench.cornerScape.promptPh')"
+                :autosize="{ minRows: 4, maxRows: 10 }"
+                :disabled="polishing"
+                @blur="savePromptOnBlur" />
+            </t-loading>
           </t-form-item>
           <t-form-item>
             <div class="drawerActions">
-              <t-button theme="default" variant="outline" :loading="polishing" @click="polishPrompts">
+              <t-button
+                theme="default"
+                variant="outline"
+                :loading="polishing"
+                @click="polishPrompts"
+                :disabled="currentItem.promptState == '生成中' ? true : false">
                 <template #icon><t-icon name="edit" /></template>
                 {{ $t("workbench.cornerScape.aiPolish") }}
               </t-button>
-              <t-button theme="primary" @click="regenerateItem">
+              <t-button theme="primary" @click="regenerateItem" :disabled="currentItem.state == '生成中' ? true : false">
                 <template #icon><t-icon name="refresh" /></template>
                 {{ $t("workbench.cornerScape.regenerate") }}
               </t-button>
@@ -364,6 +371,7 @@ const editForm = reactive({
   prompt: "",
   name: "",
   describe: "",
+  promptState: "",
 });
 
 async function openDrawer(item: DataItem) {
@@ -377,6 +385,7 @@ async function openDrawer(item: DataItem) {
   editForm.resolution = item.resolution || "";
   editForm.prompt = item.prompt || "";
   editForm.describe = item.describe || "";
+  editForm.promptState = item.promptState;
   drawerVisible.value = true;
   // 重新获取最新数据（含历史图片）
   try {
@@ -584,7 +593,6 @@ async function batchGenerationImage() {
         prompt: item.prompt,
       })),
     });
-    window.$message.success($t("workbench.cornerScape.msg.batchComplete"));
   } catch (e: any) {
     if (e.name === "CanceledError" || e.code === "ERR_CANCELED") return;
     window.$message.error(e.message ?? $t("workbench.cornerScape.msg.batchFailed"));
@@ -606,14 +614,36 @@ async function pollingPromptAssets() {
   const ids = notCompultedData.value.map((item) => item.id);
   try {
     const { data } = await axios.post("/assets/pollingPromptAssets", { ids });
+    let hasCompleted = false;
     if (Array.isArray(data) && data.length) {
       data.forEach((item: { id: number; promptState: string; prompt: string }) => {
         const target = dataList.value.find((row) => row.id === item.id);
         if (target) {
+          if (target.promptState === "生成中" && item.promptState !== "生成中") hasCompleted = true;
           target.promptState = item.promptState;
           if (item.prompt !== undefined) target.prompt = item.prompt;
         }
       });
+    }
+    // 有提示词生成完成时，重新获取完整数据以刷新 historyImages
+    if (hasCompleted) {
+      try {
+        const { data: freshData } = await axios.post("/cornerScape/getAllAssets", {
+          projectId: project.value?.id,
+          type: checkboxValue.value,
+        });
+        (freshData as DataItem[]).forEach((fresh) => {
+          const target = dataList.value.find((row) => row.id === fresh.id);
+          if (target) target.historyImages = fresh.historyImages;
+        });
+        // 同步更新抽屉中的当前项
+        if (currentItem.value) {
+          const freshCurrent = (freshData as DataItem[]).find((d) => d.id === currentItem.value!.id);
+          if (freshCurrent) currentItem.value.historyImages = freshCurrent.historyImages;
+        }
+      } catch (e) {
+        console.error("刷新历史图片失败:", e);
+      }
     }
   } catch (e) {
     console.error("轮询提示词状态失败:", e);

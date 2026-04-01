@@ -1269,7 +1269,11 @@
       "generateVideosInBatches": "Tạo video hàng loạt",
       "generateStarted": "Bắt đầu xây dựng",
       "promptEmpty": "Kiểm tra dữ liệu cần tạo video và từ nhắc trống. Bạn có muốn tiếp tục tạo nó không?",
-      "skipDataWithEmptyVideoPromptWords": "Dữ liệu video cần được tạo đã tồn tại và từ nhắc trống."
+      "skipDataWithEmptyVideoPromptWords": "Dữ liệu video cần được tạo đã tồn tại và từ nhắc trống.",
+      "duration": "khoảng thời gian",
+      "resolution": "nghị quyết",
+      "delVideo": "Xác nhận xóa video này?",
+      "delSuccess": "Xóa thành công"
     }
   },
   "login": {
