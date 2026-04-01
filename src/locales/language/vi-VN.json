@@ -943,7 +943,9 @@
         "uploadAssetImage": "Tải lên hình ảnh tài sản",
         "uploadStoryboardImage": "Tải lên hình ảnh storyboard",
         "uploadImage": "Tải lên hình ảnh nội dung",
-        "mode": "người mẫu"
+        "mode": "người mẫu",
+        "closeConfirmTitle": "Đóng bảng chỉnh sửa?",
+        "closeConfirmBody": "Dữ liệu chưa lưu sẽ bị mất sau khi đóng"
       },
       "save": "Lựa chọn",
       "cancel": "Hủy",

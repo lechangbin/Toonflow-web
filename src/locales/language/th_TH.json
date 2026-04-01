@@ -953,7 +953,9 @@
         "uploadAssetImage": "อัปโหลดรูปทรัพยากร",
         "uploadStoryboardImage": "อัปโหลดรูปสตอรี่บอร์ด",
         "uploadImage": "การอัพโหลดรูปภาพสินทรัพย์",
-        "mode": "แบบอย่าง"
+        "mode": "แบบอย่าง",
+        "closeConfirmTitle": "ปิดแผงแก้ไขใช่ไหม",
+        "closeConfirmBody": "ข้อมูลที่ไม่ได้บันทึกจะสูญหายไปหลังจากการปิด"
       },
       "save": "เลือก",
       "cancel": "ยกเลิก",
