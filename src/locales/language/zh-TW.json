@@ -171,10 +171,18 @@
         "deleteVendorConfirm": "確認刪除供應商",
         "deleteVendorBody": "刪除後該供應商下所有模型將一併刪除，是否繼續？",
         "vendorDeleted": "供應商已刪除",
-        "deleteFailed": "刪除失敗"
+        "deleteFailed": "刪除失敗",
+        "enabled": "已啟用",
+        "disabled": "已停用",
+        "linkAddVendorRiskBody": "新增新的 AI 供應商將賦予其存取系統 ​​API 的權限，請確認您信任該供應商的連結來源！",
+        "importAdd": "新增新的 AI 供應商將賦予其存取系統 ​​API 的權限，請確認您信任該供應商的文件來源！"
       },
       "associationSkills": "關聯skills",
-      "think": "深度思考"
+      "think": "深度思考",
+      "code": "程式碼",
+      "linkAddPlaceholder": "輸入連結添加",
+      "noFileSelected": "成功導入文件",
+      "linkAdd": "確認"
     },
     "agent": {
       "bannerDesc": "使用 Toonflow 官方中繼網站，支援一鍵帶入設定，開箱即用，無需手動設定。",
@@ -525,12 +533,14 @@
         "msg": {
           "parseFailed": "檔案解析失敗，請重新上傳",
           "selectFile": "請先選擇檔案",
-          "docNotSupported": ".doc 檔案不支援解析，請轉換為 .txt 或 .docx 檔案",
+          "docNotSupported": ".doc檔案不支援解析，請轉換為.ts文件",
           "unsupportedType": "不支援的檔案類型",
           "fileTooLarge": "檔案大小超過 10MB，請上傳更小的檔案",
           "selectChapters": "請先勾選章節",
           "saveSuccess": "小說原文儲存成功"
-        }
+        },
+        "importAdd": "拖曳文件到此處或點擊上傳",
+        "limit": "支援 .ts格式"
       },
       "editDialog": {
         "title": "編輯小說原文",
@@ -1370,5 +1380,6 @@
   "delConfirm": "確認刪除該段？",
   "selectSource": "選擇來源",
   "confirm": "從資產選擇",
-  "cancel": "從分鏡選擇"
+  "cancel": "從分鏡選擇",
+  "workbench.script.msg.exportFailed": "匯出失敗"
 }
