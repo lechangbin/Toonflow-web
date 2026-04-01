@@ -76,7 +76,16 @@
                 @page-change="handlePageChange">
                 <template #expandedRow="{ row }">
                   <div class="expandedContent">
-                    <t-table :columns="subColumns" :data="row.sonAssets || []" :selected-row-keys="selectedSubRowKeys" row-key="id" hover size="small" table-layout="fixed" :select-on-row-click="false" @select-change="handleSubSelectChange">
+                    <t-table
+                      :columns="subColumns"
+                      :data="row.sonAssets || []"
+                      :selected-row-keys="selectedSubRowKeys"
+                      row-key="id"
+                      hover
+                      size="small"
+                      table-layout="fixed"
+                      :select-on-row-click="false"
+                      @select-change="handleSubSelectChange">
                       <template #previewWithLoading="{ row: subRow }">
                         <div class="previewCell">
                           <div v-if="subRow.state === '生成中'" class="imageTrigger generatingImage">
@@ -340,6 +349,8 @@ import type { TabValue, TableProps } from "tdesign-vue-next";
 import addAssets from "./components/addAssets.vue";
 import generateImage from "./components/generateImage.vue";
 import projectStore from "@/stores/project";
+import settingStore from "@/stores/setting";
+const { otherSetting } = storeToRefs(settingStore());
 
 const props = withDefaults(
   defineProps<{
@@ -583,6 +594,7 @@ async function handleBatchGeneratePrompt() {
   try {
     await axios.post("/assetsGenerate/batchPolishAssetsPrompt", {
       projectId: project.value?.id,
+      concurrentCount: otherSetting.value.assetsBatchGenereateSize,
       items: selectedAssets.map((item: { id: number; name: string; type: string; describe: string }) => ({
         assetsId: item.id,
         type: item.type ?? "props",
@@ -644,7 +656,7 @@ async function handleBatchGenerateImage() {
       projectId: project.value?.id,
       model: selectValue.value,
       resolution: resolution.value,
-      concurrentCount: 5,
+      concurrentCount: otherSetting.value.assetsBatchGenereateSize,
       items: validAssets.map((item) => ({
         id: item.id,
         type: item.type ?? "props",
@@ -1064,7 +1076,7 @@ async function pollingImageAssets() {
           if (item.filePath !== undefined) target.filePath = item.filePath;
           if (item.src !== undefined) target.src = item.src;
           // filePath 存在时也作为 src 使用，确保图片立即显示
-          if (!item.src && item.filePath && item.state !== '生成中') {
+          if (!item.src && item.filePath && item.state !== "生成中") {
             target.src = item.filePath;
           }
         }

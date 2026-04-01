@@ -23,7 +23,7 @@
           <t-radio-button value="scroll">{{ $t("settings.other.scroll") }}</t-radio-button>
         </t-radio-group>
       </t-form-item>
-      <!-- <t-form-item :label="$t('settings.other.assetConcurrency')" name="assetsBatchGenereateSize">
+      <t-form-item :label="$t('settings.other.assetConcurrency')" name="assetsBatchGenereateSize">
         <t-input-number
           auto-width
           :suffix="$t('settings.other.count')"
@@ -31,7 +31,7 @@
           v-model="otherSetting.assetsBatchGenereateSize"
           :allowInputOverLimit="false"
           :placeholder="$t('settings.other.inputCount')" />
-      </t-form-item> -->
+      </t-form-item>
     </t-form>
   </div>
 </template>
