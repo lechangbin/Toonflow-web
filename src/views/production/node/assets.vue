@@ -46,6 +46,9 @@
               </div>
               <div v-else class="assetImageWrap assetImagePlaceholder">
                 <t-loading v-if="item.state == '生成中'" size="small" />
+                <t-tooltip v-else-if="item.state == '生成失败'" :content="item?.errorReason">
+                  <div style="color: red; cursor: pointer">{{ $t("workbench.novel.genFailed") }}</div>
+                </t-tooltip>
                 <t-empty v-else size="small" :title="$t('workbench.production.node.assets.notGenerated')" />
               </div>
               <div class="cardInfo">

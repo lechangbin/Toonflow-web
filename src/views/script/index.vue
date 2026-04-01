@@ -88,7 +88,7 @@ interface Script {
   name: string;
   content: string;
   createTime?: number;
-  extractState?: -1 | 0 | 1 | 2; // -1 失败 0 正在提取 1 成功 2 未提取
+  extractState?: -1 | 0 | 1 | 2; // -1 失败 0 正在提取 1 成功 等待提取
   errorReason?: string;
   relatedAssets?: ScriptAsset[];
 }
