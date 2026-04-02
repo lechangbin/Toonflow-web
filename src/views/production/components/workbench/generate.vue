@@ -92,7 +92,7 @@
                 placement="top"
                 overlay-class-name="resDurPickerPopup"
                 :overlay-inner-style="{ padding: '16px', borderRadius: '8px' }">
-                <t-tag class="btn" variant="outline">{{ selectedResolution }}·{{ selectedDuration }}s</t-tag>
+                <t-tag class="btn" variant="outline">{{ selectedResolution }}·{{ effectiveDuration }}s</t-tag>
                 <template #content>
                   <div class="resolutionDurationPicker">
                     <div
@@ -251,6 +251,16 @@ const promptText = computed({
 });
 const selectedResolution = ref("480p");
 const selectedDuration = ref(8);
+
+const effectiveDuration = computed(() => {
+  const trackDuration = trackList.value[activeTrackIndex.value]?.duration || selectedDuration.value;
+  const drMap = modeOptions.value.durationResolutionMap;
+  if (Array.isArray(drMap) && drMap.length > 0 && drMap[0].duration?.length) {
+    const maxDuration = Math.max(...drMap[0].duration);
+    return Math.min(trackDuration, maxDuration);
+  }
+  return trackDuration;
+});
 const selectedAudio = ref(false);
 const generating = ref(false);
 const genTextLoadingMap = ref<Record<number, boolean>>({});
@@ -682,7 +692,7 @@ async function generateVideo() {
           model: selectModel.value,
           mode: selectMode.value,
           resolution: selectedResolution.value,
-          duration: selectedDuration.value,
+          duration: effectiveDuration.value,
           audio: selectedAudio.value,
           trackId: trackList.value[activeTrackIndex.value]?.id,
         };
@@ -730,7 +740,6 @@ watch(selectModel, (val) => {
 const userEditedUploadBox = ref(false);
 
 watch(selectMode, (val) => {
-  console.log("%c Line:616 🍢 val", "background:#ed9ec7", val);
   if (!val) return (uploadBox.value = []);
   userEditedUploadBox.value = false;
   uploadBox.value = buildUploadBox(val);
