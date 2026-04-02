@@ -66,9 +66,18 @@ export default function openAssetsSelector(options: AssetsSelectOptions = {}): P
           cancelBtn: window.$t("common.cancel"),
           onConfirm: () => {
             const selectedKeys = assetsRef.value?.selectedRowKeys || [];
+            const selectedSubKeys = assetsRef.value?.selectedSubRowKeys || [];
             const data = assetsRef.value?.tableData || [];
-            const selected = data.filter((item) => selectedKeys.includes(item.id));
-            finish(selected);
+            // 选中的父资产
+            const selectedParents = data.filter((item) => selectedKeys.includes(item.id));
+            // 选中的子资产
+            const selectedSubs: Asset[] = [];
+            data.forEach((item) => {
+              item.sonAssets?.forEach((sub: any) => {
+                if (selectedSubKeys.includes(sub.id)) selectedSubs.push(sub);
+              });
+            });
+            finish([...selectedParents, ...selectedSubs] as any[]);
           },
           onClose: () => finish([]),
           onCancel: () => finish([]),
