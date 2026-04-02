@@ -27,8 +27,8 @@ interface VideoModel {
     | "endFrameOptional" // 首尾帧（尾帧可选）
     | "startFrameOptional" // 首尾帧（首帧可选）
     | "text" // 文本生视频
-    | ("videoReference" | "imageReference" | "audioReference" | "textReference")[] // 混合参考
-  )[];
+    | ("videoReference" | "imageReference" | "audioReference" | "textReference")[]
+  )[]; // 混合参考
   associationSkills?: string; // 关联技能，多个技能用逗号分隔
   audio: "optional" | false | true; // 音频配置
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
@@ -91,17 +91,27 @@ declare const jsonwebtoken: any;
 
 // ==================== 供应商数据 ====================
 const vendor: VendorConfig = {
-  id: "toonflow",
+  id: "openai",
   author: "Toonflow",
-  description:
-    "Toonflow官方中转平台，提供文本、图像、视频、音频等多模态生成能力的中转服务，支持接入多个大模型供应商，方便用户统一管理和调用不同供应商的生成能力。",
-  name: "Toonflow官方中转平台",
+  description: "OpenAI标准格式接口，您可以修改请求地址并手动添加缺失的模型。",
+  name: "OpenAI标准接口",
   icon: "",
-  inputs: [{ key: "apiKey", label: "API密钥", type: "password", required: true }],
+  inputs: [
+    { key: "apiKey", label: "API密钥", type: "password", required: true },
+    { key: "baseUrl", label: "请求地址", type: "url", required: true, placeholder: "以v1结束，示例：https://api.openai.com/v1" },
+  ],
   inputValues: {
     apiKey: "",
+    baseUrl: "https://api.openai.com/v1",
   },
-  models: [],
+  models: [
+    {
+      name: "GPT-4o",
+      modelName: "gpt-4o",
+      type: "text",
+      think: false,
+    },
+  ],
 };
 exports.vendor = vendor;
 
@@ -113,7 +123,7 @@ const textRequest: (textModel: TextModel) => { url: string; model: string } = (t
   const apiKey = vendor.inputValues.apiKey.replace("Bearer ", "");
 
   return createOpenAI({
-    baseURL: vendor.inputValues.text,
+    baseURL: vendor.inputValues.baseUrl,
     apiKey: apiKey,
   }).chat(textModel.modelName);
 };
@@ -127,16 +137,16 @@ interface ImageConfig {
   aspectRatio: `${number}:${number}`; // 长宽比
 }
 const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) => {
-  return "Base64图片数据/url地址";
+  return null;
 };
 exports.imageRequest = imageRequest;
 
 interface VideoConfig {
-  duration: number; //视频时长，单位秒
-  resolution: string; //视频分辨率，如"720p"、"1080p"
-  aspectRatio: "16:9" | "9:16"; //视频长宽比
-  prompt: string; //视频提示词
-  fileBase64?: string[]; // 文件base64 包含图片base64、视频base64、音频base64
+  duration: number;
+  resolution: string;
+  aspectRatio: "16:9" | "9:16";
+  prompt: string;
+  imageBase64?: string[];
   audio?: boolean;
   mode:
     | "singleImage" // 单图
@@ -146,11 +156,11 @@ interface VideoConfig {
     | "endFrameOptional" // 首尾帧（尾帧可选）
     | "startFrameOptional" // 首尾帧（首帧可选）
     | "text" // 文本生视频
-    | ("videoReference" | "imageReference" | "audioReference" | "textReference")[]; // 混合参考
+    | ("video" | "image" | "audio" | "text")[]; // 混合参考
 }
 
 const videoRequest = async (videoConfig: VideoConfig, videoModel: VideoModel) => {
-  return "Base64图片数据/url地址";
+  return null;
 };
 exports.videoRequest = videoRequest;
 

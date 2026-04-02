@@ -17,7 +17,9 @@
             <span>{{ item.name }}</span>
             <t-switch
               v-model="item.enable"
-              @change="onChange"
+              :customValue="[1, 0]"
+              @click.stop
+              @change="onChange(item)"
               style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 10"></t-switch>
           </t-menu-item>
         </t-menu>
@@ -290,7 +292,7 @@
       :header="$t('settings.vendor.code')"
       :maskClosable="false"
       @confirm="handleConfirmVendor">
-       <div class="editorToolbar">
+      <div class="editorToolbar">
         <div class="editorInfo">
           <t-icon name="info-circle" size="16px" />
           <span>{{ $t("settings.vendor.codeEditorInfo") }}</span>
@@ -322,7 +324,7 @@ import axios from "@/utils/axios";
 import VENDOR_CODE_TEMPLATE from "@/lib/vendorTemplate.ts?raw";
 import type { UploadFile } from "tdesign-vue-next";
 import { LoadingPlugin } from "tdesign-vue-next";
-import mammoth from "mammoth";
+
 // ── 类型 ──
 interface TextModel {
   name: string;
@@ -462,7 +464,7 @@ async function getVendorList() {
     vendorList.value = res.data.map((item: any) => {
       return {
         ...item,
-        enable: item.enable == 1 ? true : false,
+        enable: item.enable,
       };
     });
 
@@ -607,6 +609,7 @@ watch(
 );
 const id = ref<string>();
 function handleAddVendor() {
+  addMode.value = "linkAdd";
   id.value = undefined;
   vendorCode.value = VENDOR_CODE_TEMPLATE;
   vendorDialogVisible.value = true;
@@ -1009,19 +1012,20 @@ function onBlurFn() {
     });
 }
 //是否启用供应商
-function onChange(val: any) {
-  const id = currentVendor.value?.id;
+function onChange(item: any) {
+  const prevEnable = item.enable;
   axios
     .post("/setting/vendorConfig/enableVendor", {
-      id: id,
-      enable: val == true ? 1 : 0,
+      id: item.id,
+      enable: item.enable,
     })
     .then(() => {
-      if (val == true) window.$message.success($t("settings.vendor.msg.enabled"));
+      if (item.enable == 1) window.$message.success($t("settings.vendor.msg.enabled"));
       else window.$message.warning($t("settings.vendor.msg.disabled"));
-      getVendorList();
     })
     .catch((err) => {
+      // 请求失败时回滚状态
+      item.enable = prevEnable === 1 ? 0 : 1;
       window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
     });
 }

@@ -367,6 +367,7 @@ async function selectVideo(v: HistoryVideoItem) {
       trackId: trackList.value[activeTrackIndex.value]?.id,
     });
     window.$message.success($t("workbench.generate.selectVideoSuccess"));
+    getGenerateData();
   } catch (error) {
     window.$message.error($t("workbench.generate.selectVideoFailed"));
   }
