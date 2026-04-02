@@ -34,7 +34,7 @@
       <preview v-if="activeMenu === 'preview'" />
       <generate v-if="activeMenu === 'generate'" @importVideo="handleBatchDownload" v-model="extractLines" />
       <editVideo
-        v-show="activeMenu === 'editVideo'"
+        v-if="activeMenu === 'editVideo'"
         :initial-tracks="mockTracks"
         :initial-video-items="initialVideoItems"
         :initial-media-items="mockMediaItems"
