@@ -129,7 +129,7 @@
                           v-for="dur in modeOptions.durationResolutionMap[0].duration"
                           :key="dur"
                           class="pickerOption"
-                          :class="{ active: selectedDuration === dur }"
+                          :class="{ active: effectiveDuration === dur }"
                           @click="handleDurationChange(dur)">
                           {{ dur }}s
                         </div>
@@ -251,23 +251,34 @@ const promptText = computed({
 });
 const selectedResolution = ref("480p");
 const selectedDuration = ref(8);
+// 用户是否手动选择过时长，手动选择后不再被 track.duration 覆盖
+const userSelectedDuration = ref(false);
 
 //仅批量生成视频，如果单个生成视频切换模型需要选择时长
 function clampDuration(trackDuration: number): number {
   const drMap = modeOptions.value.durationResolutionMap;
   if (Array.isArray(drMap) && drMap.length > 0 && drMap[0].duration?.length) {
-    const maxDuration = Math.max(...drMap[0].duration);
-    return Math.min(trackDuration, maxDuration);
+    const durations = drMap[0].duration;
+    const minDuration = Math.min(...durations);
+    const maxDuration = Math.max(...durations);
+    return Math.max(minDuration, Math.min(trackDuration, maxDuration));
   }
   return trackDuration;
 }
 
 const effectiveDuration = computed(() => {
+  // 用户手动选择过时长，直接用 selectedDuration
+  if (userSelectedDuration.value) return selectedDuration.value;
+  // 否则用 track 的 duration（约束到模型支持范围）
   const trackDuration = trackList.value[activeTrackIndex.value]?.duration || selectedDuration.value;
   return clampDuration(trackDuration);
 });
 const selectedAudio = ref(false);
-const generating = ref(false);
+const generatingMap = ref<Record<number, boolean>>({});
+const generating = computed(() => {
+  const trackId = trackList.value[activeTrackIndex.value]?.id;
+  return trackId != null ? !!generatingMap.value[trackId] : false;
+});
 const genTextLoadingMap = ref<Record<number, boolean>>({});
 const activeTrackGenTextLoading = computed(() => {
   const trackId = trackList.value[activeTrackIndex.value]?.id;
@@ -681,13 +692,14 @@ function clearUpload(index: number) {
 }
 
 async function generateVideo() {
-  if (generating.value) return;
+  const trackId = trackList.value[activeTrackIndex.value]?.id;
+  if (trackId == null || generatingMap.value[trackId]) return;
   const dlg = DialogPlugin.confirm({
     header: $t("workbench.generate.generateConfirm"),
     body: $t("workbench.generate.generateConfirmBody"),
     onConfirm: async () => {
       dlg.destroy();
-      generating.value = true;
+      generatingMap.value[trackId] = true;
       try {
         const payload = {
           projectId: project.value?.id,
@@ -699,13 +711,13 @@ async function generateVideo() {
           resolution: selectedResolution.value,
           duration: effectiveDuration.value,
           audio: selectedAudio.value,
-          trackId: trackList.value[activeTrackIndex.value]?.id,
+          trackId,
         };
         const { data } = await axios.post("/production/workbench/generateVideo", payload);
         window.$message.success($t("workbench.generate.generateStarted"));
         getVideoList();
       } finally {
-        generating.value = false;
+        generatingMap.value[trackId] = false;
       }
     },
     onCancel: () => {
@@ -739,6 +751,8 @@ watch(selectModel, (val) => {
         selectedDuration.value = drMap[0].duration[0];
       }
     }
+    // 切换模型时重置手动选择标记
+    userSelectedDuration.value = false;
   });
 });
 
@@ -797,6 +811,7 @@ watch(
     checkedTrackIds.value = checkedTrackIds.value.filter((id) => validIds.includes(id));
     checkAll.value = validIds.length > 0 && validIds.every((id) => checkedTrackIds.value.includes(id));
     genTextLoadingMap.value = Object.fromEntries(Object.entries(genTextLoadingMap.value).filter(([id]) => validIds.includes(Number(id))));
+    generatingMap.value = Object.fromEntries(Object.entries(generatingMap.value).filter(([id]) => validIds.includes(Number(id))));
   },
   { deep: true },
 );
@@ -834,17 +849,18 @@ function batchGenText() {
 }
 
 function batchGenVideo() {
-  if (generating.value) return;
   const dlg = DialogPlugin.confirm({
     header: $t("workbench.generate.generateConfirm"),
     body: $t("workbench.generate.generateVideosInBatches"),
     onConfirm: async () => {
       dlg.destroy();
-      generating.value = true;
       const modeTemplate = selectMode.value ? buildUploadBox(selectMode.value) : [];
       trackList.value
         .filter((track) => checkedTrackIds.value.includes(track.id))
         .forEach(async (track) => {
+          const trackId = track.id;
+          if (trackId == null || generatingMap.value[trackId]) return;
+          generatingMap.value[trackId] = true;
           try {
             const uploadData = modeTemplate.map((_, i) => track.medias[i]).filter((item) => item && Boolean(item.src));
             const payload = {
@@ -862,14 +878,14 @@ function batchGenVideo() {
               mode: selectMode.value,
               resolution: selectedResolution.value,
               audio: selectedAudio.value,
-              trackId: track.id,
+              trackId,
             };
             if (payload.prompt === "") return window.$message.warning($t("workbench.generate.skipDataWithEmptyVideoPromptWords"));
             const { data } = await axios.post("/production/workbench/generateVideo", payload);
             window.$message.success($t("workbench.generate.generateStarted"));
             getVideoList();
           } finally {
-            generating.value = false;
+            generatingMap.value[trackId] = false;
           }
         });
     },
@@ -1024,6 +1040,8 @@ async function getVideoList() {
 }
 
 watch(activeTrackIndex, () => {
+  // 切换 track 时重置手动选择标记，让新 track 的 duration 自动生效
+  userSelectedDuration.value = false;
   syncMediasToUploadBox();
   restoreActiveTrackSelection();
 });
@@ -1033,6 +1051,7 @@ function handleResolutionChange(res: string) {
 
 function handleDurationChange(dur: number) {
   selectedDuration.value = dur;
+  userSelectedDuration.value = true;
 }
 //删除视频
 function handleDeleteVideo(value: HistoryVideoItem) {
