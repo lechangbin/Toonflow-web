@@ -1,6 +1,5 @@
 <template>
   <div class="textareaWrapper">
-    {{ prompt }}
     <div
       ref="editorRef"
       class="promptEditor"
