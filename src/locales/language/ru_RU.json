@@ -1423,5 +1423,7 @@
   "selectSource": "Выберите источник",
   "confirm": "Выбрать из активов",
   "cancel": "Выбрать из раскадровки",
-  "workbench.script.msg.exportFailed": "Экспорт не удался"
+  "workbench.script.msg.exportFailed": "Экспорт не удался",
+  "workbench.production.node.assets.confirmDeleteBody": "Подтвердите, следует ли удалить объект",
+  "workbench.production.node.assets.removeFailed": "Не удалось удалить объект."
 }

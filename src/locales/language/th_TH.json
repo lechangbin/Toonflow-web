@@ -1410,5 +1410,7 @@
   "selectSource": "เลือกแหล่งที่มา",
   "confirm": "เลือกจากสินทรัพย์",
   "cancel": "เลือกจากกระดานเรื่องราว",
-  "workbench.script.msg.exportFailed": "การส่งออกล้มเหลว"
+  "workbench.script.msg.exportFailed": "การส่งออกล้มเหลว",
+  "workbench.production.node.assets.confirmDeleteBody": "ยืนยันว่าจะลบเนื้อหาหรือไม่",
+  "workbench.production.node.assets.removeFailed": "ลบเนื้อหาไม่สำเร็จ"
 }

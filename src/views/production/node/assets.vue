@@ -51,6 +51,11 @@
                 </t-tooltip>
                 <t-empty v-else size="small" :title="$t('workbench.production.node.assets.notGenerated')" />
               </div>
+              <t-tooltip theme="primary" :content="$t('workbench.production.node.storyboard.deleteNode')">
+                <div class="remove ac" @click.stop="removeFn(item.id!)">
+                  <i-delete theme="outline" size="18" fill="#fff" />
+                </div>
+              </t-tooltip>
               <div class="cardInfo">
                 <div class="cardName">
                   <span class="nameText">{{ item.name }}</span>
@@ -75,6 +80,8 @@ import { Handle, Position, type Edge } from "@vue-flow/core";
 import editImage from "../components/editImage/index.vue";
 import { type AssetItem, type DeriveAsset } from "../utils/flowBuilder";
 import axios from "@/utils/axios";
+import useProjectStore from "@/stores/project";
+const { project } = storeToRefs(useProjectStore());
 const props = defineProps<{
   id: string;
   handleIds: {
@@ -118,6 +125,35 @@ async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) 
     id: currentAssetsId.value,
     url: imageUrl,
     flowId,
+  });
+}
+
+async function removeFn(id: number) {
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.assets.confirmDeleteHeader"),
+    body: $t("workbench.production.node.assets.confirmDeleteBody"),
+    confirmBtn: $t("workbench.assets.deleteBtn"),
+    cancelBtn: $t("workbench.assets.cancelBtn"),
+    theme: "warning",
+    onConfirm: async () => {
+      try {
+        await axios.post("/production/assets/deleteAssetsDireve", {
+          id,
+          projectId: project.value?.id,
+        });
+        //找到对应子资产删除
+        assets.value.forEach((item) => {
+          const targetIndex = item.derive.findIndex((s) => s.id === id);
+          if (targetIndex !== -1) {
+            item.derive.splice(targetIndex, 1);
+          }
+        });
+      } catch (e) {
+        window.$message.error((e as any)?.message || $t("workbench.production.node.assets.removeFailed"));
+      } finally {
+        dialog.destroy();
+      }
+    },
   });
 }
 </script>
@@ -166,7 +202,11 @@ async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) 
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-
+          &:hover {
+            .remove {
+              opacity: 1;
+            }
+          }
           .assetImageWrap {
             width: 100%;
             aspect-ratio: 1 / 1;
@@ -238,6 +278,20 @@ async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) 
           align-items: stretch;
           gap: 12px;
 
+          .remove {
+            position: absolute;
+            top: 3px;
+            right: 3px;
+            z-index: 9999;
+            padding: 5px;
+            border-radius: 10px;
+            background-color: rgba(220, 50, 50, 0.7);
+            cursor: pointer;
+            opacity: 0;
+            &:hover {
+              background-color: rgba(220, 50, 50, 1);
+            }
+          }
           .emptyCard {
             display: flex;
             align-items: center;

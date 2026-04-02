@@ -1412,5 +1412,7 @@
   "selectSource": "選擇來源",
   "confirm": "從資產選擇",
   "cancel": "從分鏡選擇",
-  "workbench.script.msg.exportFailed": "匯出失敗"
+  "workbench.script.msg.exportFailed": "匯出失敗",
+  "workbench.production.node.assets.confirmDeleteBody": "確認是否刪除該資產",
+  "workbench.production.node.assets.removeFailed": "刪除資產失敗"
 }

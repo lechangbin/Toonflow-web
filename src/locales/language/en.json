@@ -1502,5 +1502,7 @@
   "confirm": "Select from assets",
   "cancel": "Select from storyboard",
   "workbench.script.msg.selectExport": "",
-  "workbench.script.msg.exportFailed": "Export failed"
+  "workbench.script.msg.exportFailed": "Export failed",
+  "workbench.production.node.assets.confirmDeleteBody": "Confirm whether to delete the asset",
+  "workbench.production.node.assets.removeFailed": "Failed to delete asset"
 }

@@ -1422,5 +1422,7 @@
   "selectSource": "ソースを選択",
   "confirm": "アセットから選択",
   "cancel": "ストーリーボードから選択",
-  "workbench.script.msg.exportFailed": "エクスポートに失敗しました"
+  "workbench.script.msg.exportFailed": "エクスポートに失敗しました",
+  "workbench.production.node.assets.confirmDeleteBody": "アセットを削除するかどうかの確認",
+  "workbench.production.node.assets.removeFailed": "アセットの削除に失敗しました"
 }
