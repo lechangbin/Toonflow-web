@@ -74,6 +74,7 @@ const editProjectData = ref<{
   projectType: string;
   imageQuality: "1K" | "2K" | "4K" | "";
   mode: string;
+  directorManual: string;
 } | null>(null);
 
 function getAllProject() {
@@ -108,6 +109,7 @@ function openEdit(item: {
   intro: string;
   type: string;
   artStyle: string | null;
+  directorManual: string;
   videoRatio: string | null;
   imageModel: string;
   videoModel: string;
@@ -127,6 +129,7 @@ function editProjectFn(data: {
   intro: string;
   type: string;
   artStyle: string;
+  directorManual: string;
   videoRatio: string;
   imageModel: string;
   videoModel: string;
@@ -150,6 +153,7 @@ function addProjectFn(data: {
   intro: string;
   type: string;
   artStyle: string;
+  directorManual: string;
   videoRatio: string;
   imageModel: string;
   videoModel: string;

@@ -12,6 +12,7 @@ interface Project {
   projectType: string;
   imageQuality: "1K" | "2K" | "4K" | "";
   mode: string;
+  directorManual: string;
 }
 
 export default defineStore(

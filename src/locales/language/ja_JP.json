@@ -429,7 +429,16 @@
           "title": "即効性のある言葉"
         },
         "basedOnScript": "脚本に基づいて",
-        "mdFile": "ビジュアルマニュアルファイル"
+        "mdFile": "ビジュアルマニュアルファイル",
+        "directorManual": "ディレクターズハンドブック",
+        "addDirectorManual": "新しいディレクターマニュアル",
+        "editingDirectorManual": "ディレクターズマニュアルを編集する",
+        "newDirecorManualTitle": "新しいディレクターマニュアル",
+        "directorManualPrompt": "ディレクターズマニュアル プロンプトワード",
+        "directorManualName": "ディレクターズマニュアル名",
+        "directorManualNamePh": "ディレクターズマニュアル名を入力してください",
+        "directorFile": "ディレクターズマニュアル文書",
+        "directorManualCover": "ディレクターズマニュアルの表紙"
       },
       "msg": {
         "fetchFailed": "プロジェクトリストの取得に失敗しました",
@@ -467,7 +476,12 @@
         "enterImageModel": "画像モデルを選択してください",
         "enterVideoModel": "ビデオモデルを選択してください",
         "visualManualDeleted": "正常に削除されました",
-        "selectMode": "モードを選択してください"
+        "selectMode": "モードを選択してください",
+        "deleteDirectorManualHeader": "ディレクターズマニュアルの削除",
+        "deleteDirectorManualBody": "ディレクターズマニュアル「{名前}」を削除してもよろしいですか?",
+        "directorManualUpdated": "ディレクターズマニュアルを更新しました",
+        "directorManualAdded": "ディレクターズマニュアルを追加しました",
+        "directorManual": "プロジェクトディレクターズマニュアルを選択してください"
       },
       "type": {
         "novel": "原作小説に基づいて",

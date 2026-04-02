@@ -503,7 +503,16 @@
           "title": "prompt word"
         },
         "basedOnScript": "based on script",
-        "mdFile": "visual manual file"
+        "mdFile": "visual manual file",
+        "directorManual": "Director's Handbook",
+        "addDirectorManual": "New director manual",
+        "editingDirectorManual": "Edit Director's Manual",
+        "newDirecorManualTitle": "New director manual",
+        "directorManualPrompt": "Director's Manual Prompt Words",
+        "directorManualName": "Director's Manual Name",
+        "directorManualNamePh": "Enter Director's Manual name",
+        "directorFile": "Director's Manual Document",
+        "directorManualCover": "Director's Manual Cover"
       },
       "msg": {
         "fetchFailed": "Failed to fetch project list",
@@ -541,7 +550,12 @@
         "enterImageModel": "Please select a picture model",
         "enterVideoModel": "Please select a video model",
         "visualManualDeleted": "Delete successfully",
-        "selectMode": "Please select mode"
+        "selectMode": "Please select mode",
+        "deleteDirectorManualHeader": "Delete Director's Manual",
+        "deleteDirectorManualBody": "Are you sure you want to delete Director's Manual \"{name}\"?",
+        "directorManualUpdated": "Director's Manual updated",
+        "directorManualAdded": "Director's Manual added",
+        "directorManual": "Please select Project Director's Manual"
       },
       "type": {
         "novel": "Based on the original novel",

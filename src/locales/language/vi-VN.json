@@ -420,7 +420,16 @@
           "title": "lời nhắc"
         },
         "basedOnScript": "dựa trên kịch bản",
-        "mdFile": "tập tin hướng dẫn trực quan"
+        "mdFile": "tập tin hướng dẫn trực quan",
+        "directorManual": "Sổ tay Giám đốc",
+        "addDirectorManual": "Hướng dẫn đạo diễn mới",
+        "editingDirectorManual": "Chỉnh sửa Sổ tay Giám đốc",
+        "newDirecorManualTitle": "Hướng dẫn đạo diễn mới",
+        "directorManualPrompt": "Hướng dẫn sử dụng lời nhắc của đạo diễn",
+        "directorManualName": "Tên sổ tay giám đốc",
+        "directorManualNamePh": "Nhập tên Sổ tay Giám đốc",
+        "directorFile": "Tài liệu hướng dẫn của Giám đốc",
+        "directorManualCover": "Bìa sách hướng dẫn của giám đốc"
       },
       "msg": {
         "fetchFailed": "Lấy danh sách dự án thất bại",
@@ -458,7 +467,12 @@
         "enterImageModel": "Vui lòng chọn mẫu hình ảnh",
         "enterVideoModel": "Vui lòng chọn một mẫu video",
         "visualManualDeleted": "Xóa thành công",
-        "selectMode": "Vui lòng chọn chế độ"
+        "selectMode": "Vui lòng chọn chế độ",
+        "deleteDirectorManualHeader": "Xóa sổ tay giám đốc",
+        "deleteDirectorManualBody": "Bạn có chắc chắn muốn xóa Sổ tay Giám đốc \"{name}\" không?",
+        "directorManualUpdated": "Sổ tay Giám đốc được cập nhật",
+        "directorManualAdded": "Đã thêm hướng dẫn sử dụng của Giám đốc",
+        "directorManual": "Vui lòng chọn Sổ tay Giám đốc Dự án"
       },
       "type": {
         "novel": "Dựa trên tiểu thuyết gốc",
