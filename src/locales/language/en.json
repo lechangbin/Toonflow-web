@@ -397,7 +397,8 @@
       "updating": "Updating...",
       "updateSuccess": "Update successful, please restart the app",
       "updateFailed": "Update failed, please try again",
-      "noUpdate": "You are already on the latest version"
+      "noUpdate": "You are already on the latest version",
+      "upToDate": "New version detected"
     },
     "logout": {
       "warning": "After logging out, you will need to log in again to access the system.",

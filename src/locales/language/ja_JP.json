@@ -319,7 +319,8 @@
       "getFromGitee": "Gitee Releaseから最新版を取得",
       "license": "ライセンス",
       "licenseDesc": "オープンソースライセンス・クリックして詳細を確認",
-      "updateAvailable": "新しいバージョンが見つかりました"
+      "updateAvailable": "新しいバージョンが見つかりました",
+      "upToDate": "新しいバージョンが検出されました"
     },
     "logout": {
       "warning": "ログアウト後、システムを継続して使用するには再ログインが必要です。",

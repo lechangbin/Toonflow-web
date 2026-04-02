@@ -11,12 +11,14 @@
           </div>
         </div>
         <div class="renew ac">
-          <t-button theme="primary" @click="checkUpdate">
-            <template #icon>
-              <i-refresh theme="outline" size="18" />
-            </template>
-            <span style="margin-left: 5px">{{ $t("settings.about.checkUpdate") }}</span>
-          </t-button>
+          <t-badge :count="needUpdate ? 1 : 0" dot :offset="[-4, -4]">
+            <t-button theme="primary" @click="checkUpdate">
+              <template #icon>
+                <i-refresh theme="outline" size="18" />
+              </template>
+              <span style="margin-left: 5px">{{ needUpdate ? $t("settings.about.upToDate") : $t("settings.about.checkUpdate") }}</span>
+            </t-button>
+          </t-badge>
         </div>
       </div>
     </t-card>
@@ -175,7 +177,7 @@ const { t } = useI18n();
 const { version } = storeToRefs(store());
 
 import settingStore from "@/stores/setting";
-const { isElectron } = storeToRefs(settingStore());
+const { isElectron, needUpdate } = storeToRefs(settingStore());
 
 type UpdateSource = "github" | "gitee" | "toonflow" | "atomgit";
 
