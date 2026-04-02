@@ -263,13 +263,20 @@ async function genText() {
   const track = trackList.value[activeTrackIndex.value];
   const trackId = track?.id;
   if (trackId == null || genTextLoadingMap.value[trackId]) return;
-  const prompts = uploadBox.value.filter((item) => item.prompt).map((item) => item.prompt!);
+  const info = uploadBox.value
+    .filter((item) => item.prompt)
+    .map((item) => {
+      return {
+        id: item.id,
+        sources: item.sources ? item.sources : "storyboard",
+      };
+    });
   genTextLoadingMap.value[trackId] = true;
   try {
     const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
       projectId: project.value?.id,
       trackId,
-      prompt: prompts,
+      info: info,
       model: selectModel.value,
     });
     const targetTrack = trackList.value.find((item) => item.id === trackId);
