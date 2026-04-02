@@ -22,7 +22,9 @@
       <div class="footItem fc ac">
         <t-tooltip :content="$t('workbench.menu.settings')" placement="right" theme="light" destroyOnClose :showArrow="false">
           <div class="item c" @click="showSetting = true">
-            <i-setting-one class="icon" />
+            <t-badge :count="needUpdate ? 1 : 0" dot>
+              <i-setting-one class="icon" />
+            </t-badge>
           </div>
         </t-tooltip>
         <t-tooltip :content="$t('workbench.menu.jumpGithub')" placement="right" theme="light" destroyOnClose :showArrow="false">
@@ -70,6 +72,7 @@
 </template>
 
 <script setup lang="ts">
+import axios from "@/utils/axios";
 import setting from "@/components/setting/index.vue";
 import migrateShow from "@/components/migrateShow.vue";
 import hello from "@/components/hello.vue";
@@ -77,7 +80,7 @@ import hello from "@/components/hello.vue";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import settingStore from "@/stores/setting";
-const { showSetting, isElectron } = storeToRefs(settingStore());
+const { showSetting, isElectron, needUpdate } = storeToRefs(settingStore());
 
 const menuList = ref([
   { type: "btn", path: "/project", labelKey: "workbench.menu.myProject", icon: "i-folder-close" },
@@ -119,6 +122,17 @@ async function jumpGithub() {
     window.open("https://github.com/HBAI-Ltd/Toonflow-app");
   }
 }
+
+onMounted(async () => {
+  const { data } = await axios.post("/setting/about/checkUpdate", {
+    source: "toonflow",
+  });
+  if (data.needUpdate) {
+    needUpdate.value = true;
+  } else {
+    needUpdate.value = false;
+  }
+});
 </script>
 
 <style lang="scss" scoped>

@@ -246,7 +246,6 @@ async function getScriptData() {
     episodesId.value = episodesOptions.value[0].value;
   }
 
-  console.log("%c Line:206 🍊", "background:#e41a6a");
   await productionAgentStore().getHistory();
 }
 

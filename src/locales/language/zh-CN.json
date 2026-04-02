@@ -408,7 +408,8 @@
       "updating": "正在更新...",
       "updateSuccess": "更新成功，请重启应用",
       "updateFailed": "更新失败，请重试",
-      "noUpdate": "当前已是最新版本"
+      "noUpdate": "当前已是最新版本",
+      "upToDate": "检测到新版本"
     },
     "logout": {
       "warning": "退出登录后，您需要重新登录才能继续使用系统。",

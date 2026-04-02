@@ -314,7 +314,8 @@
       "getFromGitee": "Lấy phiên bản mới nhất từ Gitee Release",
       "license": "Giấy phép",
       "licenseDesc": "Thỏa thuận giấy phép mã nguồn mở · Nhấn để xem chi tiết",
-      "updateAvailable": "phiên bản mới được tìm thấy"
+      "updateAvailable": "phiên bản mới được tìm thấy",
+      "upToDate": "Đã phát hiện phiên bản mới"
     },
     "logout": {
       "warning": "Sau khi đăng xuất, bạn cần đăng nhập lại để tiếp tục sử dụng hệ thống.",

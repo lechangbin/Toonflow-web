@@ -4,7 +4,9 @@
       <t-menu class="settingMenu" v-model:value="activeMenu" :style="{ height: '70vh' }">
         <t-menu-item v-for="item in menuItems" :key="item.key" :value="item.key">
           <template #icon>
-            <component :is="item.icon" class="icon" />
+            <t-badge :count="needUpdate && item.key === 'about' ? 1 : 0" dot>
+              <component :is="item.icon" class="icon" />
+            </t-badge>
           </template>
           {{ $t(item.label) }}
         </t-menu-item>
@@ -33,9 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
 import settingStore from "@/stores/setting";
-const { showSetting, activeMenu } = storeToRefs(settingStore());
+const { showSetting, activeMenu, needUpdate } = storeToRefs(settingStore());
 
 import languageConfig from "./components/languageConfig.vue";
 import requestConfig from "./components/requestConfig.vue";

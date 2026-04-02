@@ -325,7 +325,8 @@
       "getFromGitee": "從 Gitee Release 取得最新版本",
       "license": "授權條款",
       "licenseDesc": "開源授權條款·點擊查看詳情",
-      "updateAvailable": "發現新版本"
+      "updateAvailable": "發現新版本",
+      "upToDate": "偵測到新版本"
     },
     "logout": {
       "warning": "登出後，您需要重新登入才能繼續使用系統。",
