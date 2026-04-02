@@ -252,6 +252,7 @@ const promptText = computed({
 const selectedResolution = ref("480p");
 const selectedDuration = ref(8);
 
+//仅批量生成视频，如果单个生成视频切换模型需要选择时长
 const effectiveDuration = computed(() => {
   const trackDuration = trackList.value[activeTrackIndex.value]?.duration || selectedDuration.value;
   const drMap = modeOptions.value.durationResolutionMap;
