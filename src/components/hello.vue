@@ -142,7 +142,7 @@ function handleFinish() {
 
 async function jumpGithub() {
   if (isElectron.value) {
-    await fetch("toonflow://getPort?url=https://github.com/HBAI-Ltd/Toonflow-app");
+    await fetch("toonflow://openurlwithbrowser?url=https://github.com/HBAI-Ltd/Toonflow-app");
   } else {
     window.open("https://github.com/HBAI-Ltd/Toonflow-app");
   }

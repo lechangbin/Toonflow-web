@@ -46,15 +46,19 @@ onMounted(() => {
 
 async function handleLinkClick(event: MouseEvent) {
   event.preventDefault();
+  event.stopPropagation();
+
   const target = event.currentTarget as HTMLAnchorElement | null;
   const url = target?.getAttribute("data-link") || target?.getAttribute("href");
-  if (!url) return;
+  if (!url) return false;
 
   if (isElectron.value) {
-    await fetch(`toonflow://openurlwithbrowser?url=${url}`);
+    await fetch(`toonflow://openurlwithbrowser?url=${encodeURIComponent(url)}`);
   } else {
-    window.open(url, "_blank");
+    window.open(url, "_blank", "noopener,noreferrer");
   }
+
+  return false;
 }
 
 onMounted(() => {
@@ -89,12 +93,12 @@ async function getPort() {
 
         if (href) {
           // 添加 target="_blank" 在新窗口打开
-          token.attrPush(["target", "_blank"]);
-          token.attrPush(["rel", "noopener noreferrer"]);
+          token.attrSet("target", "_blank");
+          token.attrSet("rel", "noopener noreferrer");
 
           // 或者添加自定义点击事件的标识
-          token.attrPush(["data-link", href]);
-          token.attrPush(["onclick", "handleLinkClick(event)"]);
+          token.attrSet("data-link", href);
+          token.attrSet("onclick", "return handleLinkClick(event)");
         }
 
         return defaultRender(tokens, idx, options, env, self);
