@@ -973,21 +973,35 @@ const hasGeneratedVideo = computed(() => {
 });
 
 let pollTimer: number | null = null;
+
+function startPoll() {
+  if (pollTimer !== null) return;
+  pollTimer = window.setInterval(() => {
+    getVideoList();
+  }, 3000);
+}
+
+function stopPoll() {
+  if (pollTimer !== null) {
+    window.clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+
 watch(
   () => hasGeneratedVideo.value,
   (newValue) => {
     if (newValue) {
-      pollTimer = window.setInterval(() => {
-        getVideoList();
-      }, 3000);
+      startPoll();
     } else {
-      if (pollTimer !== null) {
-        window.clearInterval(pollTimer);
-        pollTimer = null;
-      }
+      stopPoll();
     }
   },
 );
+
+onUnmounted(() => {
+  stopPoll();
+});
 
 async function getVideoList() {
   const { data } = await axios.post("/production/workbench/getVideoList", {

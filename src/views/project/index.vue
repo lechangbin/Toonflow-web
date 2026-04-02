@@ -83,7 +83,7 @@ function getAllProject() {
     .then(({ data }) => {
       allProject.value = data;
     })
-    .catch(() => {
+    .catch((err) => {
       window.$message.error($t("workbench.project.msg.fetchFailed"));
     });
 }
