@@ -237,7 +237,7 @@ function handleBatchDownload(value: ImportVideoItem[]) {}
     right: var(--td-comp-paddingLR-xxl);
     z-index: 9999;
     cursor: pointer;
-    margin-top: 10px;
+    margin-top: 20px;
   }
   .topMenu {
     padding-bottom: 16px;
