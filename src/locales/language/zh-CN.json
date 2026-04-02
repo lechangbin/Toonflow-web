@@ -517,7 +517,16 @@
           "title": "提示词"
         },
         "basedOnScript": "基于剧本",
-        "mdFile": "视觉手册文件"
+        "mdFile": "视觉手册文件",
+        "directorManual": "导演手册",
+        "addDirectorManual": "新建导演手册",
+        "editingDirectorManual": "编辑导演手册",
+        "newDirecorManualTitle": "新建导演手册",
+        "directorManualPrompt": "导演手册提示词",
+        "directorManualName": "导演手册名称",
+        "directorManualNamePh": "输入导演手册名称",
+        "directorFile": "导演手册文件",
+        "directorManualCover": "导演手册封面"
       },
       "msg": {
         "fetchFailed": "获取项目列表失败",
@@ -555,7 +564,12 @@
         "enterImageModel": "请选择图片模型",
         "enterVideoModel": "请选择视频模型",
         "visualManualDeleted": "删除成功",
-        "selectMode": "请选择模式"
+        "selectMode": "请选择模式",
+        "deleteDirectorManualHeader": "删除导演手册",
+        "deleteDirectorManualBody": "确定要删除导演手册「{name}」吗？",
+        "directorManualUpdated": "导演手册已更新",
+        "directorManualAdded": "导演手册已添加",
+        "directorManual": "请选择项目导演手册"
       },
       "type": {
         "novel": "基于小说原文",
@@ -1022,7 +1036,10 @@
         "imageGeneration": "图片生成",
         "promptPlaceholder": "描述你想要生成的图片...",
         "imageRef": "图{index}",
-        "noReferences": "暂无可引用的参考图",
+        "videoRef": "视频{index}",
+        "audioRef": "音频{index}",
+        "reference": "参考{index}",
+        "noReferences": "暂无可引用的参考文件",
         "selectModel": "请先选择模型",
         "selectQuality": "请选择画质",
         "selectRatio": "请选择比例",
@@ -1382,7 +1399,9 @@
       "duration": "时长",
       "resolution": "分辨率",
       "delVideo": "确认删除此视频？",
-      "delSuccess": "删除成功"
+      "delSuccess": "删除成功",
+      "addReference": "添加参考",
+      "promptPlaceholder": "请输入视频提示词"
     }
   },
   "login": {

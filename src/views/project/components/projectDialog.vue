@@ -90,6 +90,40 @@
                 </div>
               </div>
             </t-form-item>
+            <t-form-item>
+              <div class="directorManual">
+                <div class="directorManualHeader">
+                  <span>{{ $t("workbench.project.dialog.directorManual") }}</span>
+                  <t-button size="small" variant="outline" @click="openDirectorManualDialog()">
+                    <template #icon><i-plus size="14" /></template>
+                    {{ $t("workbench.project.dialog.addDirectorManual") }}
+                  </t-button>
+                </div>
+                <div class="artStyleContent">
+                  <t-loading :loading="directorManualLoading" :text="$t('workbench.project.dialog.loading')">
+                    <div class="gridContainer">
+                      <div
+                        v-for="(item, index) in directorManualOptions"
+                        :key="index"
+                        class="gridItem"
+                        :class="{ active: formState.directorManual === item.directorManual }"
+                        @click="formState.directorManual = item.directorManual">
+                        <div class="imageWrapper">
+                          <img :src="item.images && item.images[0]" :alt="item.name" class="artImage" loading="lazy" />
+                          <div class="text">{{ item.name }}</div>
+                        </div>
+                        <div class="editBtn" @click.stop="openDirectorManualDialog(item)">
+                          <i-edit theme="outline" size="14" />
+                        </div>
+                        <div class="delBtn" @click.stop="deleteDirectorManual(item)">
+                          <i-delete theme="outline" size="14" />
+                        </div>
+                      </div>
+                    </div>
+                  </t-loading>
+                </div>
+              </div>
+            </t-form-item>
           </t-form>
         </div>
       </div>
@@ -102,8 +136,8 @@
       width="90vw"
       placement="center"
       @confirm="handleVisualManualSubmit"
-      @close-btn-click="resetVisualManualDialog"
-      @cancel="resetVisualManualDialog"
+      @close-btn-click="resetDirectorManualDialog"
+      @cancel="resetDirectorManualDialog"
       :confirm-btn="$t('workbench.project.dialog.ok')"
       :cancel-btn="$t('workbench.project.dialog.cancel')">
       <t-loading :loading="loading">
@@ -165,6 +199,77 @@
         </t-form>
       </t-loading>
     </t-dialog>
+    <!-- 新建/编辑导演手册弹窗 -->
+    <t-dialog
+      class="artStyleDialog"
+      v-model:visible="directorDialogVisible"
+      :header="editingDirectorManual ? $t('workbench.project.dialog.editingDirectorManual') : $t('workbench.project.dialog.newDirecorManualTitle')"
+      width="90vw"
+      placement="center"
+      @confirm="handleDirectorManualSubmit"
+      @close-btn-click="resetVisualManualDialog"
+      @cancel="resetVisualManualDialog"
+      :confirm-btn="$t('workbench.project.dialog.ok')"
+      :cancel-btn="$t('workbench.project.dialog.cancel')">
+      <t-loading :loading="loading">
+        <t-form label-align="top">
+          <t-form-item>
+            <div class="nameAndCoverRow">
+              <div class="nameField">
+                <label class="fieldLabel">{{ $t("workbench.project.dialog.directorManualName") }}</label>
+                <t-input v-model="directorManualForm.name" :placeholder="$t('workbench.project.dialog.directorManualNamePh')" />
+              </div>
+              <div class="mdFileLocation">
+                <label class="fieldLabel">{{ $t("workbench.project.dialog.directorFile") }}</label>
+                <t-input v-model="directorManualForm.directorManual" :disabled="!!editingDirectorManual" />
+              </div>
+              <div class="coverField">
+                <label class="fieldLabel">{{ $t("workbench.project.dialog.directorManualCover") }}</label>
+                <div class="coverUploadArea multiCoverUploadArea">
+                  <div v-for="(img, idx) in directorManualForm.images" :key="idx" class="coverPreview">
+                    <img :src="img" class="coverImg" />
+                    <div class="coverImgRemove" @click="removeVisualManualCover(idx)">
+                      <i-close size="10" />
+                    </div>
+                  </div>
+                  <div class="coverUploadTrigger" @click="triggerDirectorManualCoverUpload">
+                    <input
+                      ref="visualManualCoverInputRef"
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      style="display: none"
+                      @change="handleDirectorManualCoverFileChange" />
+                    <i-plus size="24" />
+                    <span>{{ $t("workbench.project.dialog.uploadCover") }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </t-form-item>
+          <t-form-item :label="$t('workbench.project.dialog.directorManualPrompt')">
+            <div class="promptEditorWrapper">
+              <div class="promptEditorHeader">
+                <div class="aiExtractInline">
+                  <t-tabs :value="directorManualTabValue" size="medium" @change="(v) => (directorManualTabValue = v)">
+                    <t-tab-panel v-for="tab in directorManualTabData" :key="tab.value" :value="tab.value" :label="tab.label">
+                      <MdEditor
+                        v-model="tab.data"
+                        :theme="'light'"
+                        :toolbars="promptToolbars"
+                        :footers="[]"
+                        :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
+                        style="height: 30vh; margin-top: 5px"
+                        @onUploadImg="() => {}" />
+                    </t-tab-panel>
+                  </t-tabs>
+                </div>
+              </div>
+            </div>
+          </t-form-item>
+        </t-form>
+      </t-loading>
+    </t-dialog>
   </div>
 </template>
 
@@ -192,6 +297,7 @@ const emit = defineEmits<{
       intro: string;
       type: string;
       artStyle: string;
+      directorManual: string;
       videoRatio: string;
       imageModel: string;
       videoModel: string;
@@ -209,6 +315,7 @@ interface ProjectData {
   intro: string;
   type: string;
   artStyle: string | null;
+  directorManual: string | null;
   videoRatio: string | null;
   imageModel: string;
   videoModel: string;
@@ -224,6 +331,7 @@ interface ProjectFormData {
   intro: string;
   type: string;
   artStyle: string;
+  directorManual: string;
   videoRatio: string;
   imageModel: string;
   videoModel: string;
@@ -280,6 +388,7 @@ const DEFAULT_FORM: () => ProjectFormData & { id: number; era: string; createTim
   videoModel: "",
   imageQuality: "",
   mode: "",
+  directorManual: "",
 });
 
 // ===== 表单 =====
@@ -300,6 +409,7 @@ function handleOk() {
   if (!formState.value.imageModel) return window.$message.warning($t("workbench.project.msg.enterImageModel"));
   if (!formState.value.videoModel) return window.$message.warning($t("workbench.project.msg.enterVideoModel"));
   if (!formState.value.artStyle) return window.$message.warning($t("workbench.project.msg.enterArtStyle"));
+  if (!formState.value.directorManual) return window.$message.warning($t("workbench.project.msg.directorManual"));
   if (!formState.value.videoRatio) return window.$message.warning($t("workbench.project.msg.enterVideoRatio"));
   if (!formState.value.intro) return window.$message.warning($t("workbench.project.msg.enterProjectIntro"));
   if (!formState.value.imageQuality) return window.$message.warning($t("workbench.project.msg.enterProjectQuality"));
@@ -315,6 +425,7 @@ function handleOk() {
       imageModel: formState.value.imageModel,
       videoModel: formState.value.videoModel,
       projectType: formState.value.projectType || "novel",
+      directorManual: formState.value.directorManual,
       imageQuality: formState.value.imageQuality,
       mode: formState.value.mode,
     });
@@ -329,6 +440,7 @@ function handleOk() {
       imageModel: formState.value.imageModel,
       videoModel: formState.value.videoModel,
       imageQuality: formState.value.imageQuality,
+      directorManual: formState.value.directorManual,
       mode: formState.value.mode,
     });
   }
@@ -368,6 +480,7 @@ watch(addProjectShow, async (visible) => {
         imageQuality: props.projectData.imageQuality || "",
         projectType: props.projectData.projectType || "novel",
         mode: props.projectData.mode || "text",
+        directorManual: props.projectData.directorManual || "",
       };
       // 编辑模式下主动获取视频模型详情，填充 mode 列表以回显 label
       if (props.projectData.videoModel) {
@@ -389,6 +502,7 @@ watch(addProjectShow, async (visible) => {
       resetForm();
     }
     fetchVisualManuals();
+    queryDirectorManual();
   }
 });
 
@@ -578,6 +692,154 @@ function changeFn(val: string, data: any) {
     value: modeToKey(item),
   }));
 }
+//导演手册
+interface DirectorManualItem {
+  name: string;
+  images?: string[];
+  data?: Data[];
+  directorManual: string;
+}
+const DIRECTOR_DEFAULT_TAB_DATA: () => Data[] = () => [
+  { label: "README", value: "README", data: "" },
+  { label: "导演规划", value: "narrative_sweet_romance", data: "" },
+  { label: "分镜表", value: "storyboard_table_narrative", data: "" },
+];
+const directorManualForm = ref({ name: "", images: [] as string[], directorManual: "" });
+const directorManualLoading = ref(false);
+const editingDirectorManual = ref<DirectorManualItem | null>(null);
+const directorDialogVisible = ref(false);
+const directorManualOptions = ref<DirectorManualItem[]>([]);
+const directorManualTabValue = ref<TabValue>("README");
+const directorManualTabData = ref<Data[]>(DIRECTOR_DEFAULT_TAB_DATA());
+//查询导演手册
+function queryDirectorManual() {
+  directorManualLoading.value = true;
+  axios
+    .post("/project/queryDirectorManual")
+    .then(({ data }) => {
+      directorManualOptions.value = data.map(
+        (item: { id?: string | number; name: string; image?: string | string[]; images?: string[]; data?: Data[]; directorManual: string }) => ({
+          id: item.id,
+          name: item.name,
+          directorManual: item.directorManual,
+          images: item.images ?? (Array.isArray(item.image) ? item.image : item.image ? [item.image] : []),
+          data: item.data,
+        }),
+      );
+    })
+    .finally(() => {
+      directorManualLoading.value = false;
+    });
+}
+//新建导演手册
+function openDirectorManualDialog(item?: DirectorManualItem) {
+  editingDirectorManual.value = item ?? null;
+  if (item) {
+    directorManualForm.value.name = item.name;
+    directorManualForm.value.directorManual = item.directorManual;
+    directorManualForm.value.images = item.images ? [...item.images] : [];
+    const existingData: Data[] = Array.isArray(item.data) ? item.data : [];
+    directorManualTabData.value = DIRECTOR_DEFAULT_TAB_DATA().map((tab) => {
+      const found = existingData.find((d) => d.value === tab.value);
+      return found ? { ...tab, data: found.data } : { ...tab };
+    });
+  } else {
+    directorManualForm.value = { name: "", images: [], directorManual: "" };
+    directorManualTabData.value = DIRECTOR_DEFAULT_TAB_DATA();
+  }
+  directorManualTabValue.value = "README";
+  directorDialogVisible.value = true;
+}
+function resetDirectorManualDialog() {
+  directorDialogVisible.value = false;
+  editingDirectorManual.value = null;
+  directorManualForm.value = { name: "", images: [], directorManual: "" };
+  directorManualTabData.value = DIRECTOR_DEFAULT_TAB_DATA();
+  directorManualTabValue.value = "README";
+}
+function deleteDirectorManual(item: DirectorManualItem) {
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.project.msg.deleteDirectorManualHeader"),
+    body: $t("workbench.project.msg.deleteDirectorManualBody", { name: item.directorManual }),
+    confirmBtn: $t("workbench.project.msg.deleteVisualManualConfirm"),
+    cancelBtn: $t("workbench.project.msg.deleteVisualManualCancel"),
+    onConfirm: () => {
+      axios
+        .post("/project/deleteDirectorManual", { name: item.directorManual })
+        .then(() => {
+          queryDirectorManual();
+          resetDirectorManualDialog();
+          window.$message.success($t("workbench.project.msg.visualManualDeleted"));
+        })
+        .catch((e) => {
+          window.$message.error(e.message ?? $t("workbench.project.msg.operationFailed"));
+        })
+        .finally(() => {
+          queryDirectorManual();
+          dialog.destroy();
+        });
+    },
+  });
+}
+//导演手册编辑和新增保存
+async function handleDirectorManualSubmit() {
+  if (!directorManualForm.value.name.trim()) {
+    window.$message.warning($t("workbench.project.msg.enterVisualManualName"));
+    return;
+  }
+  if (!directorManualForm.value.images.length) {
+    window.$message.warning($t("workbench.project.msg.enterVisualManualImage"));
+    return;
+  }
+  const emptyTab = directorManualTabData.value.find((tab) => !tab.data.trim());
+  if (emptyTab) return window.$message.warning(`「${emptyTab.label}」${$t("workbench.project.msg.enterVisualManualTabData")}`);
+  try {
+    loading.value = true;
+    if (editingDirectorManual.value) {
+      await axios.post("/project/editDirectorlManual", {
+        name: directorManualForm.value.name,
+        images: directorManualForm.value.images,
+        data: directorManualTabData.value,
+        directorManual: directorManualForm.value.directorManual,
+      });
+    } else {
+      await axios.post("/project/addDirectorManual", {
+        name: directorManualForm.value.name,
+        images: directorManualForm.value.images,
+        data: directorManualTabData.value,
+        directorManual: directorManualForm.value.directorManual,
+      });
+    }
+
+    loading.value = false;
+    if (editingDirectorManual.value) {
+      window.$message.success($t("workbench.project.msg.directorManualUpdated"));
+    } else {
+      window.$message.success($t("workbench.project.msg.directorManualAdded"));
+    }
+    resetDirectorManualDialog();
+    queryDirectorManual();
+  } catch (e: any) {
+    loading.value = false;
+    window.$message.error(e.message ?? $t("workbench.project.msg.operationFailed"));
+  }
+}
+function triggerDirectorManualCoverUpload() {
+  visualManualCoverInputRef.value?.click();
+}
+
+function handleDirectorManualCoverFileChange(e: Event) {
+  const files = (e.target as HTMLInputElement).files;
+  if (!files || files.length === 0) return;
+  Array.from(files).forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      directorManualForm.value.images.push(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  });
+  (e.target as HTMLInputElement).value = "";
+}
 </script>
 
 <style lang="scss" scoped>
@@ -595,33 +857,31 @@ function changeFn(val: string, data: any) {
     min-width: 0;
   }
 }
-
+.directorManual {
+  width: 100%;
+  height: 50%;
+  .directorManualHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .artStyleContent {
+    height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 4px;
+  }
+}
 .artStylePicker {
   width: 100%;
-
+  height: 50%;
   .artStyleHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
     margin-bottom: 8px;
-
-    .headerLeft {
-      display: flex;
-      align-items: center;
-    }
-
-    .selectedLabel {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-    }
-
-    .selectedHint {
-      font-size: 13px;
-    }
   }
-
   .artStyleContent {
     height: 300px;
     overflow-y: auto;

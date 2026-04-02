@@ -434,7 +434,15 @@
           "saveSuccess": "更新成功",
           "title": "提示詞"
         },
-        "mdFile": "視覺手冊文件"
+        "mdFile": "視覺手冊文件",
+        "directorManual": "導演手冊",
+        "addDirectorManual": "新導演手冊",
+        "editingDirectorManual": "編輯導演手冊",
+        "newDirecorManualTitle": "新導演手冊",
+        "directorManualPrompt": "導演手冊提示詞",
+        "directorManualName": "導演手冊名稱",
+        "directorFile": "導演手冊文件",
+        "directorManualCover": "導演手冊封面"
       },
       "msg": {
         "fetchFailed": "取得專案列表失敗",
@@ -473,7 +481,12 @@
         "enterImageModel": "請選擇圖片模型",
         "enterVideoModel": "請選擇視訊模型",
         "visualManualDeleted": "刪除成功",
-        "selectMode": "請選擇模式"
+        "selectMode": "請選擇模式",
+        "deleteDirectorManualHeader": "刪除導演手冊",
+        "deleteDirectorManualBody": "確定要刪除導演手冊「{name}」嗎？",
+        "directorManualUpdated": "導演手冊已更新",
+        "directorManualAdded": "導演手冊已添加",
+        "directorManual": "請選擇項目導演手冊"
       },
       "type": {
         "novel": "基於小說原文",
@@ -1291,7 +1304,9 @@
       "duration": "時長",
       "resolution": "解析度",
       "delVideo": "確認刪除此影片？",
-      "delSuccess": "刪除成功"
+      "delSuccess": "刪除成功",
+      "addReference": "新增參考",
+      "promptPlaceholder": "請輸入影片提示詞"
     }
   },
   "login": {

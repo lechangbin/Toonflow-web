@@ -430,7 +430,16 @@
           "title": "คำพูดที่รวดเร็ว"
         },
         "basedOnScript": "ขึ้นอยู่กับสคริปต์",
-        "mdFile": "ไฟล์คู่มือภาพ"
+        "mdFile": "ไฟล์คู่มือภาพ",
+        "directorManual": "คู่มือกรรมการ",
+        "addDirectorManual": "คู่มือกรรมการใหม่",
+        "editingDirectorManual": "แก้ไขคู่มือกรรมการ",
+        "newDirecorManualTitle": "คู่มือกรรมการใหม่",
+        "directorManualPrompt": "คำพร้อมท์คู่มือผู้อำนวยการ",
+        "directorManualName": "ชื่อคู่มือผู้อำนวยการ",
+        "directorManualNamePh": "กรอกชื่อคู่มือผู้อำนวยการ",
+        "directorFile": "เอกสารคู่มือผู้อำนวยการ",
+        "directorManualCover": "ปกคู่มือผู้อำนวยการ"
       },
       "msg": {
         "fetchFailed": "ดึงรายการโปรเจกต์ล้มเหลว",
@@ -468,7 +477,12 @@
         "enterImageModel": "กรุณาเลือกรุ่นรูปภาพ",
         "enterVideoModel": "โปรดเลือกรุ่นวิดีโอ",
         "visualManualDeleted": "ลบสำเร็จ",
-        "selectMode": "กรุณาเลือกโหมด"
+        "selectMode": "กรุณาเลือกโหมด",
+        "deleteDirectorManualHeader": "ลบคู่มือผู้อำนวยการ",
+        "deleteDirectorManualBody": "คุณแน่ใจหรือไม่ว่าต้องการลบคู่มือผู้อำนวยการ \"{name}\"?",
+        "directorManualUpdated": "ปรับปรุงคู่มือผู้อำนวยการแล้ว",
+        "directorManualAdded": "เพิ่มคู่มือผู้อำนวยการ",
+        "directorManual": "กรุณาเลือกคู่มือผู้อำนวยการโครงการ"
       },
       "type": {
         "novel": "อิงจากนวนิยายต้นฉบับ",
@@ -1286,7 +1300,9 @@
       "duration": "ระยะเวลา",
       "resolution": "ปณิธาน",
       "delVideo": "ยืนยันการลบวิดีโอนี้หรือไม่",
-      "delSuccess": "ลบสำเร็จ"
+      "delSuccess": "ลบสำเร็จ",
+      "addReference": "เพิ่มการอ้างอิง",
+      "promptPlaceholder": "โปรดป้อนคำแจ้งของวิดีโอ"
     }
   },
   "login": {
