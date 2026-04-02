@@ -479,7 +479,6 @@ function editInfo(item: Storyboard) {
     flex-shrink: 0;
     transition: opacity 0.2s ease;
     &:hover {
-      background-color: rgba(220, 50, 50, 1);
       .remove,
       .editNode {
         opacity: 1;
