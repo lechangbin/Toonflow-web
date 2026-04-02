@@ -286,7 +286,6 @@
       width="70vw"
       placement="center"
       top="10vh"
-      @close="addMode = 'linkAdd'"
       v-model:visible="codeDialogVisible"
       :header="$t('settings.vendor.code')"
       :maskClosable="false"
