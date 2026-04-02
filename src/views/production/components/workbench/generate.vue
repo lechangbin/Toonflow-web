@@ -172,7 +172,7 @@
               <div class="delBtn" @click.stop="handleDeleteVideo(v)">
                 <i-delete size="16" />
               </div>
-              <div class="download" @click.stop="downloadVideo(v)">
+              <div v-if="v.state !== '生成中' && v.state !== '生成失败'" class="download" @click.stop="downloadVideo(v)">
                 <i-to-bottom size="16" />
               </div>
             </div>
