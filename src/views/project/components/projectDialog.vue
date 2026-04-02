@@ -480,6 +480,7 @@ watch(addProjectShow, async (visible) => {
         imageQuality: props.projectData.imageQuality || "",
         projectType: props.projectData.projectType || "novel",
         mode: props.projectData.mode || "text",
+        directorManual: props.projectData.directorManual || "",
       };
       // 编辑模式下主动获取视频模型详情，填充 mode 列表以回显 label
       if (props.projectData.videoModel) {
@@ -501,6 +502,7 @@ watch(addProjectShow, async (visible) => {
       resetForm();
     }
     fetchVisualManuals();
+    queryDirectorManual();
   }
 });
 
