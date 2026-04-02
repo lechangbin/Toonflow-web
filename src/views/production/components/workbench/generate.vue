@@ -793,13 +793,20 @@ function batchGenText() {
     .forEach(async (track) => {
       const trackId = track.id;
       if (trackId == null || genTextLoadingMap.value[trackId]) return;
-      const prompts = track.medias.filter((m) => m.prompt).map((m) => m.prompt!);
+      const info = track.medias
+        .filter((m) => m.prompt)
+        .map((m) => {
+          return {
+            id: m.id,
+            sources: m.sources ? m.sources : "storyboard",
+          };
+        });
       genTextLoadingMap.value[trackId] = true;
       try {
         const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
           projectId: project.value?.id,
           trackId,
-          prompt: prompts,
+          info: info,
           model: selectModel.value,
         });
         const targetTrack = trackList.value.find((item) => item.id === trackId);
@@ -824,33 +831,34 @@ function batchGenVideo() {
       trackList.value
         .filter((track) => checkedTrackIds.value.includes(track.id))
         .forEach(async (track) => {
-          try {
-            // 根据当前 mode 的槽位数量，按位置取对应的 media，只取有 src 的
-            const uploadData = modeTemplate.map((_, i) => track.medias[i]).filter((item) => item && Boolean(item.src));
-            const payload = {
-              projectId: project.value?.id,
-              duration: track.duration,
-              scriptId: episodesId.value,
-              uploadData: uploadData.map((item) => {
-                return {
-                  id: item.id,
-                  sources: item.sources ? item.sources : "storyboard",
-                };
-              }),
-              prompt: track.prompt,
-              model: selectModel.value,
-              mode: selectMode.value,
-              resolution: selectedResolution.value,
-              audio: selectedAudio.value,
-              trackId: track.id,
-            };
-            if (payload.prompt === "") return window.$message.warning($t("workbench.generate.skipDataWithEmptyVideoPromptWords"));
-            const { data } = await axios.post("/production/workbench/generateVideo", payload);
-            window.$message.success($t("workbench.generate.generateStarted"));
-            getVideoList();
-          } finally {
-            generating.value = false;
-          }
+          console.log("%c Line:834 🌭 track", "background:#ed9ec7", track);
+          // try {
+          //   // 根据当前 mode 的槽位数量，按位置取对应的 media，只取有 src 的
+          //   const uploadData = modeTemplate.map((_, i) => track.medias[i]).filter((item) => item && Boolean(item.src));
+          //   const payload = {
+          //     projectId: project.value?.id,
+          //     duration: track.duration,
+          //     scriptId: episodesId.value,
+          //     uploadData: uploadData.map((item) => {
+          //       return {
+          //         id: item.id,
+          //         sources: item.sources ? item.sources : "storyboard",
+          //       };
+          //     }),
+          //     prompt: track.prompt,
+          //     model: selectModel.value,
+          //     mode: selectMode.value,
+          //     resolution: selectedResolution.value,
+          //     audio: selectedAudio.value,
+          //     trackId: track.id,
+          //   };
+          //   if (payload.prompt === "") return window.$message.warning($t("workbench.generate.skipDataWithEmptyVideoPromptWords"));
+          //   const { data } = await axios.post("/production/workbench/generateVideo", payload);
+          //   window.$message.success($t("workbench.generate.generateStarted"));
+          //   getVideoList();
+          // } finally {
+          //   generating.value = false;
+          // }
         });
     },
     onCancel: () => {
