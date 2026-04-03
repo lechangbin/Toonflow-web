@@ -218,6 +218,7 @@ onMounted(() => {
   if (messages.value.length <= 0) messages.value = [...defMsg, ...messages.value];
   getPlanData();
   getNovel();
+  scriptAgentStore().connect();
 
   if (messages.value.length <= 1) getHistory();
 });

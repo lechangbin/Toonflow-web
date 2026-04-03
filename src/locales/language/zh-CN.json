@@ -468,7 +468,8 @@
       "production": "视频生产",
       "assetCenter": "资产中心",
       "settings": "设置",
-      "jumpGithub": "跳转Github"
+      "jumpGithub": "跳转Github",
+      "feedbackQuestions": "反馈问题"
     },
     "project": {
       "title": "我的项目",
@@ -1550,5 +1551,8 @@
   "workbench.production.node.storyboard.videoDescPlaceholder": "请输入视频描述",
   "workbench.production.node.storyboard.videoDesc": "视频描述",
   "workbench.production.node.assets.confirmDeleteBody": "确认是否删除该资产",
-  "workbench.production.node.assets.removeFailed": "删除资产失败"
+  "workbench.production.node.assets.removeFailed": "删除资产失败",
+  "version": {
+    "newVersion": "有新版本，是否更新？"
+  }
 }

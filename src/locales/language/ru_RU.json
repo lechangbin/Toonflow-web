@@ -380,7 +380,8 @@
       "production": "Создание видео",
       "assetCenter": "Центр ассетов",
       "settings": "Настройки",
-      "jumpGithub": "Перейти на Гитхаб"
+      "jumpGithub": "Перейти на Гитхаб",
+      "feedbackQuestions": "Вопрос обратной связи"
     },
     "project": {
       "title": "Мои проекты",
@@ -1433,5 +1434,8 @@
   "cancel": "Выбрать из раскадровки",
   "workbench.script.msg.exportFailed": "Экспорт не удался",
   "workbench.production.node.assets.confirmDeleteBody": "Подтвердите, следует ли удалить объект",
-  "workbench.production.node.assets.removeFailed": "Не удалось удалить объект."
+  "workbench.production.node.assets.removeFailed": "Не удалось удалить объект.",
+  "version": {
+    "newVersion": "Вышла новая версия, хотите ее обновить?"
+  }
 }

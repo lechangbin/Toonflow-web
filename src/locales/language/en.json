@@ -454,7 +454,8 @@
       "production": "Video Production",
       "assetCenter": "Asset Center",
       "settings": "Settings",
-      "jumpGithub": "Jump to Github"
+      "jumpGithub": "Jump to Github",
+      "feedbackQuestions": "Feedback question"
     },
     "project": {
       "title": "My Projects",
@@ -1513,5 +1514,8 @@
   "workbench.script.msg.selectExport": "",
   "workbench.script.msg.exportFailed": "Export failed",
   "workbench.production.node.assets.confirmDeleteBody": "Confirm whether to delete the asset",
-  "workbench.production.node.assets.removeFailed": "Failed to delete asset"
+  "workbench.production.node.assets.removeFailed": "Failed to delete asset",
+  "version": {
+    "newVersion": "There is a new version, do you want to update it?"
+  }
 }

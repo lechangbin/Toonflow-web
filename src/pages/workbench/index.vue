@@ -20,6 +20,13 @@
         </t-tooltip>
       </div>
       <div class="footItem fc ac">
+        <t-tooltip :content="$t('workbench.menu.feedbackQuestions')" placement="right" theme="light" destroyOnClose :showArrow="false">
+          <div class="item c" @click="openFeedback">
+            <t-badge :count="needUpdate ? 1 : 0" dot>
+              <i-bill class="icon" />
+            </t-badge>
+          </div>
+        </t-tooltip>
         <t-tooltip :content="$t('workbench.menu.settings')" placement="right" theme="light" destroyOnClose :showArrow="false">
           <div class="item c" @click="showSetting = true">
             <t-badge :count="needUpdate ? 1 : 0" dot>
@@ -76,12 +83,11 @@ import axios from "@/utils/axios";
 import setting from "@/components/setting/index.vue";
 import migrateShow from "@/components/migrateShow.vue";
 import hello from "@/components/hello.vue";
-import productionAgentStore from "@/stores/productionAgent";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import settingStore from "@/stores/setting";
+import { NotifyPlugin } from "tdesign-vue-next";
 const { showSetting, isElectron, needUpdate } = storeToRefs(settingStore());
-const { flowData } = storeToRefs(productionAgentStore());
 const menuList = ref([
   { type: "btn", path: "/project", labelKey: "workbench.menu.myProject", icon: "i-folder-close" },
   { type: "btn", path: "/task", labelKey: "workbench.menu.taskCenter", icon: "i-view-list" },
@@ -113,16 +119,6 @@ function handleClick(menu: any) {
   if (menu.needProject && !project.value) return;
   router.push(menu.path);
   activeMenu.value = menu.path;
-  (flowData.value as any) = ref({
-    script: "", // 剧本
-    scriptPlan: "", //导演计划
-    storyboardTable: "", //分镜表
-    assets: [], // 衍生资产
-    storyboard: [], //分镜面板
-    workbench: {
-      videoList: [],
-    }, // 工作台数据
-  });
 }
 
 async function jumpGithub() {
@@ -133,12 +129,43 @@ async function jumpGithub() {
   }
 }
 
+async function openFeedback() {
+  if (isElectron.value) {
+    await fetch("toonflow://openurlwithbrowser?url=https://docs.qq.com/smartsheet/form/EmvmQBrmlPmr%2Fss_vsqk2v%2FvhiGzE?tab=ss_vsqk2v");
+  } else {
+    window.open("https://docs.qq.com/smartsheet/form/EmvmQBrmlPmr%2Fss_vsqk2v%2FvhiGzE?tab=ss_vsqk2v");
+  }
+}
+
 onMounted(async () => {
   const { data } = await axios.post("/setting/about/checkUpdate", {
     source: "toonflow",
   });
   if (data.needUpdate) {
     needUpdate.value = true;
+    const { activeMenu: settingActiveMenu } = storeToRefs(settingStore());
+    const notifyInstance = NotifyPlugin.success({
+      title: $t("version.newVersion") as string,
+      content: () =>
+        h(
+          "div",
+          { style: "text-align: right; padding-top: 4px;" },
+          h(
+            "span",
+            {
+              style: "color: #ed7b2f; font-size: 12px; cursor: pointer;",
+              onClick: () => {
+                settingActiveMenu.value = "about";
+                showSetting.value = true;
+                NotifyPlugin.close(notifyInstance);
+              },
+            },
+            $t("skillScan.openSettings"),
+          ),
+        ),
+      closeBtn: true,
+      placement: "bottom-right",
+    });
   } else {
     needUpdate.value = false;
   }

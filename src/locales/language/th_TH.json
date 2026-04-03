@@ -381,7 +381,8 @@
       "production": "ผลิตวิดีโอ",
       "assetCenter": "ศูนย์สินทรัพย์",
       "settings": "การตั้งค่า",
-      "jumpGithub": "ข้ามไปที่ Github"
+      "jumpGithub": "ข้ามไปที่ Github",
+      "feedbackQuestions": "คำถามคำติชม"
     },
     "project": {
       "title": "โปรเจกต์ของฉัน",
@@ -1421,5 +1422,8 @@
   "cancel": "เลือกจากกระดานเรื่องราว",
   "workbench.script.msg.exportFailed": "การส่งออกล้มเหลว",
   "workbench.production.node.assets.confirmDeleteBody": "ยืนยันว่าจะลบเนื้อหาหรือไม่",
-  "workbench.production.node.assets.removeFailed": "ลบเนื้อหาไม่สำเร็จ"
+  "workbench.production.node.assets.removeFailed": "ลบเนื้อหาไม่สำเร็จ",
+  "version": {
+    "newVersion": "มีเวอร์ชั่นใหม่แล้ว คุณต้องการอัปเดตหรือไม่?"
+  }
 }
