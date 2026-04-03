@@ -738,7 +738,8 @@
         "batchDeleteBody": "選択した {count} 件のシナリオを削除してもよろしいですか？この操作は取り消せません。",
         "batchDeleteSuccess": "一括削除に成功しました",
         "extractingInProgress": "抽出中",
-        "projectNotFound": "アイテムが見つかりません"
+        "projectNotFound": "アイテムが見つかりません",
+        "selectsExport": "スクリプトをエクスポートすることを選択してください"
       },
       "add": {
         "title": "シナリオの追加",

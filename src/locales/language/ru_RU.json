@@ -738,7 +738,8 @@
         "batchDeleteBody": "Вы уверены, что хотите удалить выбранные {count} сценариев? Это действие необратимо.",
         "batchDeleteSuccess": "Массовое удаление выполнено успешно",
         "extractingInProgress": "Извлечение",
-        "projectNotFound": "Товар не найден"
+        "projectNotFound": "Товар не найден",
+        "selectsExport": "Пожалуйста, выберите экспорт скрипта"
       },
       "add": {
         "title": "Добавить сценарий",

@@ -139,7 +139,7 @@ function handleAddScript() {
 //导出剧本
 async function handleExportScript() {
   if (!selectedIds.value.length) {
-    window.$message.warning($t("workbench.script.msg.selectExport"));
+    window.$message.warning($t("workbench.script.msg.selectsExport"));
     return;
   }
   try {

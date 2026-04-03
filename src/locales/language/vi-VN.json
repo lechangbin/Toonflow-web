@@ -729,7 +729,8 @@
         "batchDeleteBody": "Bạn có chắc chắn muốn xóa {count} kịch bản đã chọn không? Không thể hoàn tác thao tác này.",
         "batchDeleteSuccess": "Xóa hàng loạt thành công",
         "extractingInProgress": "Giải nén",
-        "projectNotFound": "Không tìm thấy mục"
+        "projectNotFound": "Không tìm thấy mục",
+        "selectsExport": "Vui lòng chọn xuất tập lệnh"
       },
       "add": {
         "title": "Thêm kịch bản mới",

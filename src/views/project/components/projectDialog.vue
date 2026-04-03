@@ -359,10 +359,10 @@ const DEFAULT_TAB_DATA: () => Data[] = () => [
   { label: "道具衍生", value: "art_prop_derivative", data: "" },
   { label: "场景", value: "art_scene", data: "" },
   { label: "场景衍生", value: "art_scene_derivative", data: "" },
-  { label: "分镜", value: "art_storyboard", data: "" },
+  { label: "分镜", value: "director_storyboard", data: "" },
   { label: "分镜视频", value: "art_storyboard_video", data: "" },
-  { label: "技法-导演规划", value: "director_planning", data: "" },
-  { label: "技法-分镜表设计", value: "director_storyboard_table", data: "" },
+  { label: "技法-导演规划", value: "director_planning_style", data: "" },
+  { label: "技法-分镜表设计", value: "director_storyboard_table_style", data: "" },
 ];
 
 const isEdit = computed(() => !!props.projectData);
@@ -701,8 +701,8 @@ interface DirectorManualItem {
 }
 const DIRECTOR_DEFAULT_TAB_DATA: () => Data[] = () => [
   { label: "README", value: "README", data: "" },
-  { label: "导演规划", value: "narrative_sweet_romance", data: "" },
-  { label: "分镜表", value: "storyboard_table_narrative", data: "" },
+  { label: "导演规划", value: "director_planning_narrative", data: "" },
+  { label: "分镜表", value: "director_storyboard_table_narrative", data: "" },
 ];
 const directorManualForm = ref({ name: "", images: [] as string[], directorManual: "" });
 const directorManualLoading = ref(false);

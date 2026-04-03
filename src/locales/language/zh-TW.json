@@ -742,7 +742,8 @@
         "batchDeleteBody": "確定要刪除選中的 {count} 個劇本嗎？此操作無法復原。",
         "batchDeleteSuccess": "批量刪除成功",
         "extractingInProgress": "正在提取中",
-        "projectNotFound": "項目未找到"
+        "projectNotFound": "項目未找到",
+        "selectsExport": "請選擇匯出劇本"
       },
       "add": {
         "title": "新增劇本",

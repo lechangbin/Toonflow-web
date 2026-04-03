@@ -818,7 +818,8 @@
         "batchDeleteBody": "Are you sure you want to delete the selected {count} scripts? This cannot be undone.",
         "batchDeleteSuccess": "Batch deletion successful",
         "extractingInProgress": "Extracting",
-        "projectNotFound": "Item not found"
+        "projectNotFound": "Item not found",
+        "selectsExport": "Please choose to export the script"
       },
       "add": {
         "title": "Add Script",

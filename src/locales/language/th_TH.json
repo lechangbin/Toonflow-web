@@ -739,7 +739,8 @@
         "batchDeleteBody": "แน่ใจหรือไม่ว่าต้องการลบบทภาพยนตร์ที่เลือก {count} รายการ? การดำเนินการนี้ไม่สามารถยกเลิกได้",
         "batchDeleteSuccess": "ลบเป็นกลุ่มสำเร็จ",
         "extractingInProgress": "การสกัด",
-        "projectNotFound": "ไม่พบรายการ"
+        "projectNotFound": "ไม่พบรายการ",
+        "selectsExport": "โปรดเลือกส่งออกสคริปต์"
       },
       "add": {
         "title": "เพิ่มบทภาพยนตร์",
