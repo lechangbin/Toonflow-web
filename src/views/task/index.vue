@@ -80,6 +80,7 @@ const columns = [
   { colKey: "relatedObjects", title: $t("workbench.task.col.relatedObjects"), width: 120, ellipsis: true },
   { colKey: "model", title: $t("workbench.task.col.model"), width: 280, ellipsis: true },
   { colKey: "describe", title: $t("workbench.task.col.describe"), ellipsis: true },
+  { colKey: "reason", title: $t("workbench.task.col.reason"), ellipsis: true },
   { colKey: "state", title: $t("workbench.task.col.state"), width: 100, cell: "state" },
   { colKey: "startTime", title: $t("workbench.task.col.startTime"), width: 200, cell: "startTime" },
 ];

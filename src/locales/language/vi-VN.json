@@ -1256,7 +1256,8 @@
         "model": "Mô hình",
         "describe": "Mô tả",
         "state": "Trạng thái",
-        "startTime": "Thời gian"
+        "startTime": "Thời gian",
+        "reason": "Lý do thất bại"
       },
       "project": "Tên dự án:"
     },

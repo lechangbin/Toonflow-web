@@ -1265,7 +1265,8 @@
         "model": "モデル",
         "describe": "説明",
         "state": "ステータス",
-        "startTime": "時間"
+        "startTime": "時間",
+        "reason": "失敗の理由"
       },
       "project": "プロジェクト名:"
     },

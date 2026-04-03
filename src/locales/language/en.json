@@ -1358,7 +1358,8 @@
         "model": "Model",
         "describe": "Description",
         "state": "Status",
-        "startTime": "Time"
+        "startTime": "Time",
+        "reason": "Reason for failure"
       },
       "project": "Project name:"
     },
