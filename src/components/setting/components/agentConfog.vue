@@ -60,9 +60,6 @@
 </template>
 
 <script setup lang="ts">
-import { h, resolveComponent } from "vue";
-``;
-import { DialogPlugin } from "tdesign-vue-next";
 import modelSelect from "@/components/modelSelect.vue";
 import providersLogo from "@/utils/ai/providersLogo";
 import axios from "@/utils/axios";

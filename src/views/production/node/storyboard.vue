@@ -34,8 +34,7 @@
                   :src="item.src"
                   fit="contain"
                   class="frameImg"
-                  @click="editStoryboaryImage(item, [item.src])"
-                  lazy>
+                  @click="editStoryboaryImage(item, [item.src])">
                   <template #overlayContent>
                     <div class="imageToolsWrap show">
                       <ImageTools :style="{ transform: `scale(${styleMaxSize})` }" :src="item.src" position="br" />

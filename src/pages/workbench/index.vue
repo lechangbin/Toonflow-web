@@ -76,12 +76,12 @@ import axios from "@/utils/axios";
 import setting from "@/components/setting/index.vue";
 import migrateShow from "@/components/migrateShow.vue";
 import hello from "@/components/hello.vue";
-
+import productionAgentStore from "@/stores/productionAgent";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import settingStore from "@/stores/setting";
 const { showSetting, isElectron, needUpdate } = storeToRefs(settingStore());
-
+const { flowData } = storeToRefs(productionAgentStore());
 const menuList = ref([
   { type: "btn", path: "/project", labelKey: "workbench.menu.myProject", icon: "i-folder-close" },
   { type: "btn", path: "/task", labelKey: "workbench.menu.taskCenter", icon: "i-view-list" },
@@ -113,6 +113,16 @@ function handleClick(menu: any) {
   if (menu.needProject && !project.value) return;
   router.push(menu.path);
   activeMenu.value = menu.path;
+  (flowData.value as any) = ref({
+    script: "", // 剧本
+    scriptPlan: "", //导演计划
+    storyboardTable: "", //分镜表
+    assets: [], // 衍生资产
+    storyboard: [], //分镜面板
+    workbench: {
+      videoList: [],
+    }, // 工作台数据
+  });
 }
 
 async function jumpGithub() {

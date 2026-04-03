@@ -9,7 +9,7 @@
         <div v-for="asset in assets" :key="asset.id" class="assetItemBox">
           <t-card class="assetCard">
             <div v-if="asset.src" class="assetImageWrap">
-              <t-image :src="asset.src" fit="contain" class="assetImage" :preview="true" :lazy="true">
+              <t-image :src="asset.src" fit="contain" class="assetImage" :preview="true">
                 <template #overlayContent>
                   <div class="imageToolsWrap show">
                     <ImageTools :src="asset.src" position="br" />
@@ -36,7 +36,7 @@
           <div class="deriveAssets">
             <t-card v-for="(item, index) in asset.derive" :key="index" class="assetCard" @click="generateAssetsImage(item, asset.src)">
               <div v-if="item.src && item.state == '已完成'" class="assetImageWrap">
-                <t-image :src="item.src" fit="contain" class="assetImage" :preview="true" :lazy="true">
+                <t-image :src="item.src" fit="contain" class="assetImage" :preview="true">
                   <template #overlayContent>
                     <div class="imageToolsWrap show">
                       <ImageTools :src="item.src" position="br" />

@@ -97,7 +97,7 @@ import workbench from "./node/workbench.vue";
 import poster from "./node/poster.vue";
 import rightChatBox from "./components/rightChatBox/index.vue";
 import { useLayout } from "./utils/dagre";
-import { useFlowBuilder, type FlowData } from "./utils/flowBuilder";
+import { useFlowBuilder } from "./utils/flowBuilder";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 
