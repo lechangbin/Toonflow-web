@@ -1426,5 +1426,8 @@
   "cancel": "Chọn từ bảng phân cảnh",
   "workbench.script.msg.exportFailed": "Xuất không thành công",
   "workbench.production.node.assets.confirmDeleteBody": "Xác nhận xem có xóa nội dung hay không",
-  "workbench.production.node.assets.removeFailed": "Không thể xóa nội dung"
+  "workbench.production.node.assets.removeFailed": "Không thể xóa nội dung",
+  "version": {
+    "newVersion": "Có phiên bản mới, bạn có muốn cập nhật không?"
+  }
 }

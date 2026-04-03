@@ -1423,5 +1423,8 @@
   "cancel": "從分鏡選擇",
   "workbench.script.msg.exportFailed": "匯出失敗",
   "workbench.production.node.assets.confirmDeleteBody": "確認是否刪除該資產",
-  "workbench.production.node.assets.removeFailed": "刪除資產失敗"
+  "workbench.production.node.assets.removeFailed": "刪除資產失敗",
+  "version": {
+    "newVersion": "有新版本，是否更新？"
+  }
 }

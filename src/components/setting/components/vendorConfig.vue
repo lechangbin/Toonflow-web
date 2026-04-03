@@ -1063,8 +1063,30 @@ function linkRead() {
           linkReading.value = true;
           try {
             const { data } = await axios.post("/setting/vendorConfig/getCodeByLink", { link: link.value });
+            if (!data.includes("vendor")) {
+              let alertBox: any = null;
+              if (data.includes("<html>")) {
+                alertBox = DialogPlugin.alert({
+                  theme: "danger",
+                  header: "链接返回了一个网页，添加供应商需要返回TS代码，请确认链接是否正确",
+                  body: "请勿输入中转站地址，如需使用中转站请修改OpenAI标准接口的baseUrl使用中转站地址",
+                  onConfirm: ({ e }) => {
+                    alertBox.hide();
+                  },
+                });
+              } else {
+                DialogPlugin.alert({
+                  theme: "danger",
+                  header: "链接返回的内容不正确，添加供应商需要返回TS代码，请确认链接是否正确",
+                  onConfirm: ({ e }) => {
+                    alertBox.hide();
+                  },
+                });
+              }
+              return;
+            }
             if (data) {
-              await axios.post("/setting/vendorConfig/addVendor", { tsCode: data });
+              axios.post("/setting/vendorConfig/addVendor", { tsCode: data });
               window.$message.success($t("settings.vendor.msg.vendorAdded"));
               vendorDialogVisible.value = false;
               codeDialogVisible.value = false;

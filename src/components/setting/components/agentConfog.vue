@@ -198,40 +198,39 @@ async function oneClickToFillIn() {
     loading.value = false;
     return;
   }
-  submitAgentSetKey("")
-  return
-  // if (!toonflow.inputValues.apiKey) {
-  //   // key 不存在，弹窗让用户填入
-  //   loading.value = false;
-  //   const inputKey = ref("");
-  //   const dialogInstance = DialogPlugin({
-  //     header: $t("settings.agent.fillKeyHeader"),
-  //     body: () =>
-  //       h("div", { style: "padding: 8px 0" }, [
-  //         h(resolveComponent("t-input") as any, {
-  //           modelValue: inputKey.value,
-  //           "onUpdate:modelValue": (val: string) => (inputKey.value = val),
-  //           placeholder: $t("settings.agent.keyPlaceholder"),
-  //           type: "password",
-  //         }),
-  //       ]),
-  //     confirmBtn: $t("settings.agent.confirm"),
-  //     cancelBtn: $t("settings.agent.cancel"),
-  //     onConfirm: () => {
-  //       if (!inputKey.value) {
-  //         window.$message.warning($t("settings.agent.msg.enterKey"));
-  //         return;
-  //       }
-  //       dialogInstance.hide();
-  //       submitAgentSetKey(inputKey.value);
-  //     },
-  //     onClose: () => {
-  //       dialogInstance.hide();
-  //     },
-  //   });
-  //   return;
-  // }
-  // submitAgentSetKey(toonflow.inputValues.apiKey);
+  if (!toonflow.inputValues.apiKey) {
+    // key 不存在，弹窗让用户填入
+    loading.value = false;
+    const inputKey = ref("");
+    const dialogInstance = DialogPlugin({
+      theme: "warning",
+      header: $t("settings.agent.fillKeyHeader"),
+      body: () =>
+        h("div", { style: "padding: 8px 0" }, [
+          h(resolveComponent("t-input") as any, {
+            modelValue: inputKey.value,
+            "onUpdate:modelValue": (val: string) => (inputKey.value = val),
+            placeholder: $t("settings.agent.keyPlaceholder"),
+            type: "password",
+          }),
+        ]),
+      confirmBtn: $t("settings.agent.confirm"),
+      cancelBtn: $t("settings.agent.cancel"),
+      onConfirm: () => {
+        if (!inputKey.value) {
+          window.$message.warning($t("settings.agent.msg.enterKey"));
+          return;
+        }
+        dialogInstance.hide();
+        submitAgentSetKey(inputKey.value);
+      },
+      onClose: () => {
+        dialogInstance.hide();
+      },
+    });
+    return;
+  }
+  submitAgentSetKey(toonflow.inputValues.apiKey);
 }
 
 function submitAgentSetKey(key: string) {
@@ -244,7 +243,6 @@ function submitAgentSetKey(key: string) {
     })
     .catch((err) => {
       window.$message.error(`${$t("settings.agent.msg.updateConfigFailed")}${err.message}`);
-
     })
     .finally(() => {
       modelDataShow.value = false;

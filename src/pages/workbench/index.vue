@@ -86,7 +86,7 @@ import hello from "@/components/hello.vue";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import settingStore from "@/stores/setting";
-import { open } from "fs";
+import { NotifyPlugin } from "tdesign-vue-next";
 const { showSetting, isElectron, needUpdate } = storeToRefs(settingStore());
 const menuList = ref([
   { type: "btn", path: "/project", labelKey: "workbench.menu.myProject", icon: "i-folder-close" },
@@ -143,6 +143,29 @@ onMounted(async () => {
   });
   if (data.needUpdate) {
     needUpdate.value = true;
+    const { activeMenu: settingActiveMenu } = storeToRefs(settingStore());
+    const notifyInstance = NotifyPlugin.success({
+      title: $t("version.newVersion") as string,
+      content: () =>
+        h(
+          "div",
+          { style: "text-align: right; padding-top: 4px;" },
+          h(
+            "span",
+            {
+              style: "color: #ed7b2f; font-size: 12px; cursor: pointer;",
+              onClick: () => {
+                settingActiveMenu.value = "about";
+                showSetting.value = true;
+                NotifyPlugin.close(notifyInstance);
+              },
+            },
+            $t("skillScan.openSettings"),
+          ),
+        ),
+      closeBtn: true,
+      placement: "bottom-right",
+    });
   } else {
     needUpdate.value = false;
   }
