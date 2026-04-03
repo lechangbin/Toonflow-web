@@ -4,7 +4,7 @@
       <div class="fc">
         <span class="title">{{ $t("workbench.project.title") }}</span>
         <span class="sub">{{ $t("workbench.project.subtitle") }}</span>
-      </div>
+      </div>123123
       <t-button
         class="addBtn"
         @click="
@@ -58,8 +58,7 @@
 import projectDialog from "./components/projectDialog.vue";
 import dayjs from "dayjs";
 import axios from "@/utils/axios";
-import productionAgent from "@/stores/productionAgent";
-import scriptAgent from "@/stores/scriptAgent";
+import addProject from "./components/addProject.vue";
 import projectStore from "@/stores/project";
 const { allProject, project } = storeToRefs(projectStore());
 
