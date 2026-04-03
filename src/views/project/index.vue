@@ -58,14 +58,10 @@
 import projectDialog from "./components/projectDialog.vue";
 import dayjs from "dayjs";
 import axios from "@/utils/axios";
-<<<<<<< HEAD
-import store from "@/stores";
-import addProject from "./components/addProject.vue";
-const { project } = storeToRefs(store());
-=======
+import productionAgent from "@/stores/productionAgent";
+import scriptAgent from "@/stores/scriptAgent";
 import projectStore from "@/stores/project";
 const { allProject, project } = storeToRefs(projectStore());
->>>>>>> master
 
 const dialogShow = ref(false);
 const editProjectData = ref<{
@@ -89,13 +85,8 @@ function getAllProject() {
     .then(({ data }) => {
       allProject.value = data;
     })
-<<<<<<< HEAD
-    .catch(() => {
-      window.$message.error("获取项目列表失败");
-=======
     .catch((err) => {
       window.$message.error($t("workbench.project.msg.fetchFailed"));
->>>>>>> master
     });
 }
 
@@ -109,14 +100,9 @@ const router = useRouter();
 function openProject(projectId: string | undefined) {
   const item = allProject.value.find((p) => p.id === projectId);
   if (item) project.value = item;
-<<<<<<< HEAD
-  else return window.$message.error("未找到该项目!");
-  router.push(`/projectDetail?id=${projectId}`);
-=======
   else return window.$message.error($t("workbench.project.msg.notFound"));
   if (item.projectType === "novel") router.push(`/novel`);
   else if (item.projectType === "script") router.push(`/script`);
->>>>>>> master
 }
 
 function openEdit(item: {
@@ -155,19 +141,11 @@ function editProjectFn(data: {
   axios
     .post("/project/editProject", data)
     .then(() => {
-<<<<<<< HEAD
-      window.$message.success("项目删除成功");
-      getProjects();
-    })
-    .catch(() => {
-      window.$message.error("项目删除失败");
-=======
       window.$message.success($t("workbench.project.msg.editSuccess"));
       getAllProject();
     })
     .catch((e) => {
       window.$message.error(e.message ?? $t("workbench.project.msg.editFailed"));
->>>>>>> master
     });
 }
 

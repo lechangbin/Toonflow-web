@@ -25,11 +25,7 @@ instance.interceptors.response.use(
     if (error.status === 401) {
       localStorage.removeItem("token");
       router.push("/login");
-<<<<<<< HEAD
       window.$message.error("登录已过期，请重新登录");
-=======
-      MessagePlugin.error(window.$t("common.sessionExpired"));
->>>>>>> master
     }
     return Promise.reject(error?.response?.data ?? error);
   }
