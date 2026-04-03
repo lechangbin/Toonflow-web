@@ -142,8 +142,7 @@
       @close="scriptEditVisible = false">
       <div class="scriptEditForm">
         <div class="scriptEditField">
-          <label>{{ $t("workbench.scriptAgent.scriptTitle") }}</label>
-          <t-input v-model="scriptEditData.name" :placeholder="$t('workbench.scriptAgent.titlePlaceholder')" />
+          <strong>{{ scriptEditData.name }}</strong>
         </div>
         <div class="scriptEditField">
           <label>{{ $t("workbench.scriptAgent.content") }}</label>
@@ -267,7 +266,7 @@ function handleClearMemory(type: "message" | "summary" | "all" | "reconnect") {
   });
 }
 function handleReconnect() {
-   const dialog = DialogPlugin.confirm({
+  const dialog = DialogPlugin.confirm({
     header: $t("workbench.scriptAgent.msg.reconnect"),
     body: $t("workbench.scriptAgent.msg.notReconnect"),
     confirmBtn: $t("workbench.scriptAgent.msg.keepReconnect"),
