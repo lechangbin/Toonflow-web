@@ -219,6 +219,7 @@ onMounted(() => {
   if (messages.value.length <= 0) messages.value = [...defMsg, ...messages.value];
   getPlanData();
   getNovel();
+  scriptAgentStore().connect();
 
   if (messages.value.length <= 1) getHistory();
 });
@@ -267,7 +268,7 @@ function handleClearMemory(type: "message" | "summary" | "all" | "reconnect") {
   });
 }
 function handleReconnect() {
-   const dialog = DialogPlugin.confirm({
+  const dialog = DialogPlugin.confirm({
     header: $t("workbench.scriptAgent.msg.reconnect"),
     body: $t("workbench.scriptAgent.msg.notReconnect"),
     confirmBtn: $t("workbench.scriptAgent.msg.keepReconnect"),

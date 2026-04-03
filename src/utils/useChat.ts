@@ -72,7 +72,7 @@ export interface ChatSocketEvents {
 
 export interface UseChatOptions {
   url: string;
-  auth?: Record<string, any>;
+  auth?: Record<string, any> | (() => Record<string, any>);
   autoConnect?: boolean;
   xmlTags?: Array<string | XmlTagOption>;
   keepXmlInMessage?: boolean;
@@ -544,7 +544,7 @@ export function useChat(options: UseChatOptions) {
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
         timeout: 10000,
-        auth: { token: localStorage.getItem("token"), ...auth },
+        auth: { token: localStorage.getItem("token"), ...(typeof auth === 'function' ? auth() : auth) },
       });
 
       setupHandlers();

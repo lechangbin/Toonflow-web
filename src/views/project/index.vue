@@ -58,7 +58,6 @@
 import projectDialog from "./components/projectDialog.vue";
 import dayjs from "dayjs";
 import axios from "@/utils/axios";
-import addProject from "./components/addProject.vue";
 import projectStore from "@/stores/project";
 const { allProject, project } = storeToRefs(projectStore());
 
@@ -84,9 +83,6 @@ function getAllProject() {
     .then(({ data }) => {
       allProject.value = data;
     })
-    .catch((err) => {
-      window.$message.error($t("workbench.project.msg.fetchFailed"));
-    });
 }
 
 onMounted(() => {
@@ -98,7 +94,9 @@ const router = useRouter();
 
 function openProject(projectId: string | undefined) {
   const item = allProject.value.find((p) => p.id === projectId);
-  if (item) project.value = item;
+  if (item) {
+    project.value = item;
+  }
   else return window.$message.error($t("workbench.project.msg.notFound"));
   if (item.projectType === "novel") router.push(`/novel`);
   else if (item.projectType === "script") router.push(`/script`);
