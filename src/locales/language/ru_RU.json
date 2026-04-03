@@ -380,7 +380,8 @@
       "production": "Создание видео",
       "assetCenter": "Центр ассетов",
       "settings": "Настройки",
-      "jumpGithub": "Перейти на Гитхаб"
+      "jumpGithub": "Перейти на Гитхаб",
+      "feedbackQuestions": "Вопрос обратной связи"
     },
     "project": {
       "title": "Мои проекты",

@@ -381,7 +381,8 @@
       "production": "ผลิตวิดีโอ",
       "assetCenter": "ศูนย์สินทรัพย์",
       "settings": "การตั้งค่า",
-      "jumpGithub": "ข้ามไปที่ Github"
+      "jumpGithub": "ข้ามไปที่ Github",
+      "feedbackQuestions": "คำถามคำติชม"
     },
     "project": {
       "title": "โปรเจกต์ของฉัน",

@@ -454,7 +454,8 @@
       "production": "Video Production",
       "assetCenter": "Asset Center",
       "settings": "Settings",
-      "jumpGithub": "Jump to Github"
+      "jumpGithub": "Jump to Github",
+      "feedbackQuestions": "Feedback question"
     },
     "project": {
       "title": "My Projects",

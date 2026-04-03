@@ -20,6 +20,13 @@
         </t-tooltip>
       </div>
       <div class="footItem fc ac">
+        <t-tooltip :content="$t('workbench.menu.feedbackQuestions')" placement="right" theme="light" destroyOnClose :showArrow="false">
+          <div class="item c" @click="openFeedback">
+            <t-badge :count="needUpdate ? 1 : 0" dot>
+              <i-bill class="icon" />
+            </t-badge>
+          </div>
+        </t-tooltip>
         <t-tooltip :content="$t('workbench.menu.settings')" placement="right" theme="light" destroyOnClose :showArrow="false">
           <div class="item c" @click="showSetting = true">
             <t-badge :count="needUpdate ? 1 : 0" dot>
@@ -79,11 +86,12 @@ import hello from "@/components/hello.vue";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import settingStore from "@/stores/setting";
+import { open } from "fs";
 const { showSetting, isElectron, needUpdate } = storeToRefs(settingStore());
 const menuList = ref([
   { type: "btn", path: "/project", labelKey: "workbench.menu.myProject", icon: "i-folder-close" },
   { type: "btn", path: "/task", labelKey: "workbench.menu.taskCenter", icon: "i-view-list" },
-  // { type: "divider" },
+  { type: "divider" },
 ]);
 
 const rightBtnList = ref([
@@ -118,6 +126,14 @@ async function jumpGithub() {
     await fetch("toonflow://openurlwithbrowser?url=https://github.com/HBAI-Ltd/Toonflow-app");
   } else {
     window.open("https://github.com/HBAI-Ltd/Toonflow-app");
+  }
+}
+
+async function openFeedback() {
+  if (isElectron.value) {
+    await fetch("toonflow://openurlwithbrowser?url=https://docs.qq.com/smartsheet/form/EmvmQBrmlPmr%2Fss_vsqk2v%2FvhiGzE?tab=ss_vsqk2v");
+  } else {
+    window.open("https://docs.qq.com/smartsheet/form/EmvmQBrmlPmr%2Fss_vsqk2v%2FvhiGzE?tab=ss_vsqk2v");
   }
 }
 
