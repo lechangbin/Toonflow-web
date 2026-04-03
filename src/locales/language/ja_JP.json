@@ -714,7 +714,8 @@
       "history": "歴史的な写真",
       "confirmReplace": "交換の確認",
       "batchGenerationPrompt": "プロンプト単語をバッチで生成する",
-      "generatingPrompt": "生成中"
+      "generatingPrompt": "生成中",
+      "selectPromptEmpty": "プロンプトの単語が空であることをすべて選択してください"
     },
     "script": {
       "searchPlaceholder": "シナリオ名を検索...",
@@ -739,7 +740,8 @@
         "batchDeleteBody": "選択した {count} 件のシナリオを削除してもよろしいですか？この操作は取り消せません。",
         "batchDeleteSuccess": "一括削除に成功しました",
         "extractingInProgress": "抽出中",
-        "projectNotFound": "アイテムが見つかりません"
+        "projectNotFound": "アイテムが見つかりません",
+        "selectsExport": "スクリプトをエクスポートすることを選択してください"
       },
       "add": {
         "title": "シナリオの追加",
@@ -1264,7 +1266,8 @@
         "model": "モデル",
         "describe": "説明",
         "state": "ステータス",
-        "startTime": "時間"
+        "startTime": "時間",
+        "reason": "失敗の理由"
       },
       "project": "プロジェクト名:"
     },

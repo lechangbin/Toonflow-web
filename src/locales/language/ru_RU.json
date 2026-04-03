@@ -714,7 +714,8 @@
       "history": "исторические фотографии",
       "confirmReplace": "Подтвердить замену",
       "batchGenerationPrompt": "Генерируйте подсказки в пакетном режиме",
-      "generatingPrompt": "Создание"
+      "generatingPrompt": "Создание",
+      "selectPromptEmpty": "Выбрать все подсказки. Слово пусто."
     },
     "script": {
       "searchPlaceholder": "Поиск по названию сценария...",
@@ -739,7 +740,8 @@
         "batchDeleteBody": "Вы уверены, что хотите удалить выбранные {count} сценариев? Это действие необратимо.",
         "batchDeleteSuccess": "Массовое удаление выполнено успешно",
         "extractingInProgress": "Извлечение",
-        "projectNotFound": "Товар не найден"
+        "projectNotFound": "Товар не найден",
+        "selectsExport": "Пожалуйста, выберите экспорт скрипта"
       },
       "add": {
         "title": "Добавить сценарий",
@@ -1264,7 +1266,8 @@
         "model": "Модель",
         "describe": "Описание",
         "state": "Статус",
-        "startTime": "Время"
+        "startTime": "Время",
+        "reason": "Причина неудачи"
       },
       "project": "Название проекта:"
     },

@@ -705,7 +705,8 @@
       "history": "hình ảnh lịch sử",
       "confirmReplace": "Xác nhận thay thế",
       "batchGenerationPrompt": "Tạo các từ nhắc nhở theo đợt",
-      "generatingPrompt": "Đang tạo"
+      "generatingPrompt": "Đang tạo",
+      "selectPromptEmpty": "Chọn tất cả từ nhắc trống"
     },
     "script": {
       "searchPlaceholder": "Tìm kiếm tên kịch bản...",
@@ -730,7 +731,8 @@
         "batchDeleteBody": "Bạn có chắc chắn muốn xóa {count} kịch bản đã chọn không? Không thể hoàn tác thao tác này.",
         "batchDeleteSuccess": "Xóa hàng loạt thành công",
         "extractingInProgress": "Giải nén",
-        "projectNotFound": "Không tìm thấy mục"
+        "projectNotFound": "Không tìm thấy mục",
+        "selectsExport": "Vui lòng chọn xuất tập lệnh"
       },
       "add": {
         "title": "Thêm kịch bản mới",
@@ -1255,7 +1257,8 @@
         "model": "Mô hình",
         "describe": "Mô tả",
         "state": "Trạng thái",
-        "startTime": "Thời gian"
+        "startTime": "Thời gian",
+        "reason": "Lý do thất bại"
       },
       "project": "Tên dự án:"
     },

@@ -715,7 +715,8 @@
       "history": "ภาพประวัติศาสตร์",
       "confirmReplace": "ยืนยันการเปลี่ยน",
       "batchGenerationPrompt": "สร้างคำพร้อมท์เป็นชุด",
-      "generatingPrompt": "กำลังสร้าง"
+      "generatingPrompt": "กำลังสร้าง",
+      "selectPromptEmpty": "เลือกทั้งหมด คำที่แจ้งว่างเปล่า"
     },
     "script": {
       "searchPlaceholder": "ค้นหาชื่อบทภาพยนตร์...",
@@ -740,7 +741,8 @@
         "batchDeleteBody": "แน่ใจหรือไม่ว่าต้องการลบบทภาพยนตร์ที่เลือก {count} รายการ? การดำเนินการนี้ไม่สามารถยกเลิกได้",
         "batchDeleteSuccess": "ลบเป็นกลุ่มสำเร็จ",
         "extractingInProgress": "การสกัด",
-        "projectNotFound": "ไม่พบรายการ"
+        "projectNotFound": "ไม่พบรายการ",
+        "selectsExport": "โปรดเลือกส่งออกสคริปต์"
       },
       "add": {
         "title": "เพิ่มบทภาพยนตร์",
@@ -1265,7 +1267,8 @@
         "model": "โมเดล",
         "describe": "คำอธิบาย",
         "state": "สถานะ",
-        "startTime": "เวลา"
+        "startTime": "เวลา",
+        "reason": "สาเหตุของความล้มเหลว"
       },
       "project": "ชื่อโครงการ:"
     },

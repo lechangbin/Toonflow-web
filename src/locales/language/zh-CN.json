@@ -809,7 +809,8 @@
       "history": "历史图片",
       "confirmReplace": "确认替换",
       "batchGenerationPrompt": "批量生成提示词",
-      "generatingPrompt": "生成中"
+      "generatingPrompt": "生成中",
+      "selectPromptEmpty": "全选提示词为空"
     },
     "script": {
       "searchPlaceholder": "搜索剧本名称...",
@@ -822,7 +823,20 @@
         "extracting": "资产提取中",
         "extractFailed": "资产提取失败",
         "extractingInProgress": "正在提取中",
-        "projectNotFound": "项目未找到"
+        "projectNotFound": "项目未找到",
+        "selectExport": "请选择导出剧本",
+        "deleteHeader": "确认删除",
+        "deleteBody": "确认要删除这个剧本吗？次操作无法复原",
+        "deleteConfirm": "删除",
+        "cancel": "取消",
+        "deleteSuccess": "删除成功",
+        "deleteFailed": "删除失败",
+        "selectDelScript": "请选择删除剧本",
+        "batchDeleteHeader": "批量删除",
+        "batchDeleteBody": "确定要删除选中的{count}个剧本吗？此操作无法复原",
+        "batchDeleteSuccess": "批量删除成功",
+        "searchFailed": "搜索剧本失败",
+        "selectsExport": "请选择导出剧本"
       },
       "add": {
         "title": "新增剧本",
@@ -1362,7 +1376,8 @@
         "model": "模型",
         "describe": "描述",
         "state": "状态",
-        "startTime": "时间"
+        "startTime": "时间",
+        "reason": "失败原因"
       },
       "project": "项目名称:"
     },

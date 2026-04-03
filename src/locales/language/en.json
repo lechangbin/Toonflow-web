@@ -794,7 +794,8 @@
       "history": "historical pictures",
       "confirmReplace": "Confirm replacement",
       "batchGenerationPrompt": "Generate prompt words in batches",
-      "generatingPrompt": "Generating"
+      "generatingPrompt": "Generating",
+      "selectPromptEmpty": "Select all prompt word is empty"
     },
     "script": {
       "searchPlaceholder": "Search script names...",
@@ -819,7 +820,8 @@
         "batchDeleteBody": "Are you sure you want to delete the selected {count} scripts? This cannot be undone.",
         "batchDeleteSuccess": "Batch deletion successful",
         "extractingInProgress": "Extracting",
-        "projectNotFound": "Item not found"
+        "projectNotFound": "Item not found",
+        "selectsExport": "Please choose to export the script"
       },
       "add": {
         "title": "Add Script",
@@ -1357,7 +1359,8 @@
         "model": "Model",
         "describe": "Description",
         "state": "Status",
-        "startTime": "Time"
+        "startTime": "Time",
+        "reason": "Reason for failure"
       },
       "project": "Project name:"
     },
