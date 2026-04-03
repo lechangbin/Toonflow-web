@@ -299,6 +299,9 @@ watch(notCompultedData, (val) => {
     stopPolling();
   }
 });
+onUnmounted(() => {
+  stopPolling();
+});
 </script>
 
 <style lang="scss" scoped>

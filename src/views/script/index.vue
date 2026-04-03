@@ -305,6 +305,9 @@ watch(
     }
   },
 );
+onUnmounted(() => {
+  stopPolling();
+});
 </script>
 
 <style lang="scss" scoped>
