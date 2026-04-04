@@ -268,7 +268,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (abortController) {
-    abortController.abort();
+    abortController.abort();dataList.value
     abortController = null;
   }
   stopPolling();
@@ -324,7 +324,7 @@ const selectByState = (state: string) => {
 };
 //全选提示词为空的
 function selectPromptEmpty() {
-  selectedIds.value = dataList.value.filter((item) => item.prompt === "").map((item) => item.id);
+  selectedIds.value = dataList.value.filter((item) => !item.prompt || item.prompt.trim() === "").map((item) => item.id);
 }
 
 function toggleSelectAll() {
