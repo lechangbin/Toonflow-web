@@ -1,9 +1,13 @@
 <template>
   <VueFlow
     class="flowMain"
-    :class="{ 'is-interacting': isInteracting && otherSetting.interacting }"
+    :class="{ 'is-interacting': isInteracting && otherSetting.interacting, 'space-dragging': isSpacePressed }"
+    @mousedown="onSpaceMouseDown"
     :nodes="episodesId ? nodes : []"
     :edges="episodesId ? edges : []"
+    :nodes-draggable="!isSpacePressed"
+    :nodes-connectable="!isSpacePressed"
+    :elements-selectable="!isSpacePressed"
     :max-zoom="10"
     :min-zoom="0.1"
     fit-view-on-init
@@ -80,7 +84,7 @@
 </template>
 
 <script setup lang="ts">
-import { useLocalStorage } from "@vueuse/core";
+import { useLocalStorage, useEventListener } from "@vueuse/core";
 import { VueFlow, useVueFlow } from "@vue-flow/core";
 import { Background } from "@vue-flow/background";
 import { Controls } from "@vue-flow/controls";
@@ -105,8 +109,50 @@ const { project } = storeToRefs(projectStore());
 import settingStore from "@/stores/setting";
 const { canvasWheelEvent, otherSetting } = storeToRefs(settingStore());
 const openShowVisible = ref(true);
-const { toObject, fromObject, fitView, findNode, onNodeDragStart, onNodeDragStop, onMoveStart, onMoveEnd, updateNodeInternals, getNodes } =
-  useVueFlow();
+const {
+  toObject,
+  fromObject,
+  fitView,
+  findNode,
+  onNodeDragStart,
+  onNodeDragStop,
+  onMoveStart,
+  onMoveEnd,
+  updateNodeInternals,
+  getNodes,
+  getViewport,
+  setViewport,
+} = useVueFlow();
+
+// 按住空格+左键拖拽画布（即使在节点上）
+const isSpacePressed = ref(false);
+let dragOrigin = { x: 0, y: 0, vx: 0, vy: 0 };
+
+function onSpaceMouseDown(e: MouseEvent) {
+  if (!isSpacePressed.value || e.button !== 0) return;
+  e.stopPropagation();
+  e.preventDefault();
+  const vp = getViewport();
+  dragOrigin = { x: e.clientX, y: e.clientY, vx: vp.x, vy: vp.y };
+  document.addEventListener("mousemove", onSpaceMouseMove);
+  document.addEventListener("mouseup", onSpaceMouseUp, { once: true });
+}
+function onSpaceMouseMove(e: MouseEvent) {
+  setViewport({ x: dragOrigin.vx + e.clientX - dragOrigin.x, y: dragOrigin.vy + e.clientY - dragOrigin.y, zoom: getViewport().zoom });
+}
+function onSpaceMouseUp() {
+  document.removeEventListener("mousemove", onSpaceMouseMove);
+}
+
+useEventListener(document, "keydown", (e: KeyboardEvent) => {
+  if (e.code === "Space" && !e.repeat) {
+    e.preventDefault();
+    isSpacePressed.value = true;
+  }
+});
+useEventListener(document, "keyup", (e: KeyboardEvent) => {
+  if (e.code === "Space") isSpacePressed.value = false;
+});
 
 // 拖拽/平移期间降低渲染复杂度，优化性能
 const isInteracting = ref(false);
@@ -427,6 +473,12 @@ const steps = [
 <style lang="scss" scoped>
 .flowMain {
   height: 100%;
+  &.space-dragging {
+    cursor: grab !important;
+    :deep(*) {
+      cursor: grab !important;
+    }
+  }
   .floatingWindow {
     width: 100%;
     height: 100%;
