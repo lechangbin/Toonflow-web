@@ -1032,7 +1032,7 @@
         "restoreSortConfirm": "初期の並び順にリセットしてもよろしいですか？",
         "tip": "ヒント",
         "selectAtLeastOne": "エクスポートする絵コンテを少なくとも1つ選択してください",
-        "exportFilename": "絵コンテ画像.zip"
+        "exportFilename": "絵コンテの絵"
       },
       "generate": {
         "noVideo": "動画なし",
