@@ -102,7 +102,7 @@
                   <i-check-one theme="filled" size="25" fill="#000" />
                 </div>
                 <div class="delImage" v-show="hoveredImageIndex === index">
-                  <i-delete theme="outline" size="20" fill="#d0021b" @click.stop="deleteImage(index)" />
+                  <i-delete theme="outline" size="20" fill="#d0021b" @click.stop="deleteImage(img.id, index)" />
                 </div>
               </div>
               <div class="customUpload">
@@ -339,14 +339,31 @@ function selectImage(index: number) {
 }
 
 //删除图片
-function deleteImage(index: number) {
-  resultImages.value.splice(index, 1);
-  if (selectedImageIndex.value === index) {
-    selectedImageIndex.value = null;
-  } else if (selectedImageIndex.value !== null && selectedImageIndex.value > index) {
-    selectedImageIndex.value--;
-  }
-  window.$message.success($t("workbench.assets.gen.imageDeleted"));
+function deleteImage(id: string | number, index: number) {
+  console.log("%c Line:343 🍩 id", "background:#4fff4B", id);
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.assets.confirmDeleteHeader"),
+    body: $t("workbench.assets.confirmDeleteBody"),
+    confirmBtn: $t("workbench.assets.deleteBtn"),
+    cancelBtn: $t("workbench.assets.cancelBtn"),
+    theme: "warning",
+    onConfirm: async () => {
+      try {
+        axios.post("/assets/delImage", { id: id });
+        window.$message.success($t("workbench.assets.deleteSuccess"));
+        resultImages.value.splice(index, 1);
+        if (selectedImageIndex.value === index) {
+          selectedImageIndex.value = null;
+        } else if (selectedImageIndex.value !== null && selectedImageIndex.value > index) {
+          selectedImageIndex.value--;
+        }
+        dialog.destroy();
+      } catch (error) {
+        window.$message.error($t("workbench.assets.deleteFail"));
+        dialog.destroy();
+      }
+    },
+  });
 }
 //确认选择
 async function onClick() {
