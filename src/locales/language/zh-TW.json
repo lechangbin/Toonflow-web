@@ -1035,7 +1035,7 @@
         "restoreSortConfirm": "確定要還原為初始排序嗎？",
         "tip": "提示",
         "selectAtLeastOne": "請至少選擇一個分鏡進行匯出",
-        "exportFilename": "分鏡圖片.zip"
+        "exportFilename": "分鏡圖片"
       },
       "generate": {
         "noVideo": "暫無影片",

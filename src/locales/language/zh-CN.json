@@ -1130,7 +1130,7 @@
         "restoreSortConfirm": "确定要还原为初始排序吗？",
         "tip": "提示",
         "selectAtLeastOne": "请至少选择一个分镜进行导出",
-        "exportFilename": "分镜图片.zip"
+        "exportFilename": "分镜图片"
       },
       "generate": {
         "noVideo": "暂无数据",

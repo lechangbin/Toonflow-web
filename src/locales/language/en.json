@@ -1115,7 +1115,7 @@
         "restoreSortConfirm": "Are you sure you want to revert to the original sorting?",
         "tip": "Tip",
         "selectAtLeastOne": "Please select at least one storyboard to export",
-        "exportFilename": "Storyboard_Images.zip"
+        "exportFilename": "Storyboard pictures"
       },
       "generate": {
         "noVideo": "No Video",

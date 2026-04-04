@@ -405,15 +405,22 @@ function exportImage() {
     return;
   }
   axios
-    .post("/production/exportImage", {
-      shotId: selectedShots,
-    })
+    .post(
+      "/production/exportImage",
+      {
+        shotId: selectedShots,
+      },
+      {
+        responseType: "blob",
+      },
+    )
     .then((response) => {
-      const { data } = response;
+      const url = URL.createObjectURL(response.data);
       const link = document.createElement("a");
-      link.href = data.url;
-      link.download = $t("workbench.production.preview.exportFilename");
+      link.href = url;
+      link.download = $t("workbench.production.preview.exportFilename") + ".zip";
       link.click();
+      URL.revokeObjectURL(url);
     })
     .catch((error) => {
       console.error("导出图片失败:", error);
