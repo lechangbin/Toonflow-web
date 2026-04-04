@@ -79,7 +79,7 @@ function createProductionAgentStore(projectId: string) {
                 const track = attrs.track || "";
                 const shouldGenerateImage = attrs.shouldGenerateImage == "true" ? 1 : 0;
                 const videoDesc = attrs?.videoDesc ?? "";
-                const existingIndex = flowData.value.storyboard.findIndex((s) => s.prompt === prompt);
+                const existingIndex = flowData.value.storyboard.findIndex((s) => s.prompt == prompt && s.duration == duration && videoDesc == s.videoDesc);
                 if (existingIndex !== -1) {
                   // 已存在则更新 content，保留 id
                   flowData.value.storyboard[existingIndex].prompt = prompt;
