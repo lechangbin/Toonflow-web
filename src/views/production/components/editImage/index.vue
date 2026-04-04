@@ -242,7 +242,7 @@ async function sureNode(imageUrl: string) {
 
     if (props.flowData.flowId) {
       await axios.post("/production/editImage/updateImageFlow", { ...payload, flowId: props.flowData.flowId });
-      emit("save");
+      emit("save", { imageUrl });
     } else {
       const { data } = await axios.post("/production/editImage/saveImageFlow", { ...payload });
       emit("save", { imageUrl, flowId: data?.id });

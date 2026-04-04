@@ -173,10 +173,6 @@ function handleScriptClick(item: Script) {
 // 删除剧本
 async function handleDeleteScript(scriptId: number) {
   //判断是否有资产正在提取中
-  const extractingIds = new Set(notCompletedData.value.map((s) => s.id));
-  if (extractingIds.has(scriptId)) {
-    return window.$message.error($t("workbench.script.msg.extractingInProgress"));
-  }
   const dialog = DialogPlugin.confirm({
     header: $t("workbench.script.msg.deleteHeader"),
     body: $t("workbench.script.msg.deleteBody"),
@@ -204,10 +200,6 @@ async function handleDeleteScript(scriptId: number) {
 async function handleExtractAssets() {
   if (!project.value) return window.$message.error($t("workbench.script.msg.projectNotFound"));
   //判断是否有资产正在提取中
-  const extractingIds = new Set(notCompletedData.value.map((s) => s.id));
-  if (selectedIds.value.some((id) => extractingIds.has(id))) {
-    return window.$message.error($t("workbench.script.msg.extractingInProgress"));
-  }
   scriptLoad.value = true;
   try {
     await axios.post("/script/extractAssets", {
