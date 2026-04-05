@@ -22,9 +22,7 @@
       <div class="footItem fc ac">
         <t-tooltip :content="$t('workbench.menu.feedbackQuestions')" placement="right" theme="light" destroyOnClose :showArrow="false">
           <div class="item c" @click="openFeedback">
-            <t-badge :count="needUpdate ? 1 : 0" dot>
-              <i-bill class="icon" />
-            </t-badge>
+            <i-bill class="icon" />
           </div>
         </t-tooltip>
         <t-tooltip :content="$t('workbench.menu.settings')" placement="right" theme="light" destroyOnClose :showArrow="false">
@@ -137,7 +135,7 @@ async function openFeedback() {
   }
 }
 
-onMounted(async () => {
+async function checkVersion() {
   const { data } = await axios.post("/setting/about/checkUpdate", {
     source: "toonflow",
   });
@@ -169,6 +167,37 @@ onMounted(async () => {
   } else {
     needUpdate.value = false;
   }
+}
+
+let checkVersionTimer: ReturnType<typeof setInterval> | null = null;
+
+function startVersionCheck() {
+  checkVersion();
+  checkVersionTimer = setInterval(
+    () => {
+      checkVersion();
+    },
+    2 * 60 * 1000,
+  );
+}
+
+function stopVersionCheck() {
+  if (checkVersionTimer) {
+    clearInterval(checkVersionTimer);
+    checkVersionTimer = null;
+  }
+}
+
+watch(needUpdate, (val) => {
+  if (val) stopVersionCheck();
+});
+
+onMounted(() => {
+  startVersionCheck();
+});
+
+onUnmounted(() => {
+  stopVersionCheck();
 });
 </script>
 

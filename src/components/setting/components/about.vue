@@ -2,7 +2,7 @@
   <div class="about">
     <t-card bordered :style="{ width: '100%' }" class="logoCard">
       <div class="f">
-        <img src="@/assets/logo.png" alt="ToonFlow Logo" class="logo" />
+        <img src="@/assets/logo.png" alt="ToonFlow Logo" class="logo" @click="onLogoClick" />
         <div class="appName">
           <div class="name">ToonFlow</div>
           <div class="data">{{ $t("settings.about.slogan") }}</div>
@@ -126,6 +126,11 @@
           <span class="versionTimeValue">{{ formattedUpdateTime }}</span>
         </div>
 
+        <!-- 自定义URL输入 -->
+        <div class="customUrl" v-if="showCustomUrl">
+          <t-input v-model="customUpdateUrl" placeholder="输入自定义更新地址" clearable style="margin-bottom: 12px" />
+        </div>
+
         <!-- 更新源选择 -->
         <div class="sourceSelect">
           <span class="sourceTitle">{{ $t("settings.about.selectUpdateSource") }}</span>
@@ -181,6 +186,27 @@ const { isElectron, needUpdate } = storeToRefs(settingStore());
 
 type UpdateSource = "github" | "gitee" | "toonflow" | "atomgit";
 
+const showCustomUrl = ref(false);
+const customUpdateUrl = ref("");
+const logoClickCount = ref(0);
+let logoClickTimer: ReturnType<typeof setTimeout> | null = null;
+
+function onLogoClick() {
+  logoClickCount.value++;
+  if (logoClickCount.value === 1) {
+    logoClickTimer = setTimeout(() => {
+      logoClickCount.value = 0;
+    }, 3000);
+  }
+  if (logoClickCount.value >= 3) {
+    logoClickCount.value = 0;
+    if (logoClickTimer) clearTimeout(logoClickTimer);
+    showCustomUrl.value = !showCustomUrl.value;
+    if (!showCustomUrl.value) customUpdateUrl.value = "";
+    MessagePlugin.info(showCustomUrl.value ? "已开启自定义更新地址" : "已关闭自定义更新地址");
+  }
+}
+
 const updateDialogVisible = ref(false);
 const updateSource = ref<UpdateSource>("toonflow");
 const updateSources = ref([
@@ -226,6 +252,7 @@ const updateInfo = ref({
   reinstall: false,
   time: 0,
   url: "",
+  version: "",
 });
 
 const formattedUpdateTime = computed(() => {
@@ -237,7 +264,7 @@ const formattedUpdateTime = computed(() => {
 });
 
 watch(updateSource, () => {
-  updateInfo.value = { needUpdate: false, latestVersion: "", reinstall: false, time: 0, url: "" };
+  updateInfo.value = { needUpdate: false, latestVersion: "", reinstall: false, time: 0, url: "", version: "" };
 });
 
 async function openLink(url: string) {
@@ -254,7 +281,7 @@ onMounted(async () => {
 });
 
 function checkUpdate() {
-  updateInfo.value = { needUpdate: false, latestVersion: "", reinstall: false, time: 0, url: "" };
+  updateInfo.value = { needUpdate: false, latestVersion: "", reinstall: false, time: 0, url: "", version: "" };
   updateSource.value = "toonflow";
   updateDialogVisible.value = true;
 }
@@ -275,7 +302,13 @@ async function checkUpdateWithSource() {
   try {
     const { data } = await axios.post("/setting/about/checkUpdate", {
       source: updateSource.value,
+      url: customUpdateUrl.value || null,
     });
+
+    // 自定义URL时强制标记为需要更新
+    if (customUpdateUrl.value) {
+      data.needUpdate = true;
+    }
 
     updateInfo.value = data;
     if (data.needUpdate) {
@@ -304,6 +337,7 @@ async function doConfirmUpdate() {
     await axios.post("/setting/about/downloadApp", {
       url: updateInfo.value.url,
       reinstall: updateInfo.value.reinstall,
+      version: updateInfo.value.version,
     });
 
     electronAction("apprestart");
