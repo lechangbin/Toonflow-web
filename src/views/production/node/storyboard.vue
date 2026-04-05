@@ -314,6 +314,14 @@ async function removeFn(id: number) {
     cancelBtn: $t("workbench.assets.cancelBtn"),
     theme: "warning",
     onConfirm: async () => {
+      if (!id) {
+        const index = storyboard.value.findIndex((s) => s.id === id);
+        if (index !== -1) {
+          storyboard.value.splice(index, 1);
+        }
+        dialog.destroy();
+        return;
+      }
       try {
         await axios.post("/production/storyboard/removeFrame", {
           id,
