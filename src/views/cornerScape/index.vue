@@ -324,7 +324,13 @@ const selectByState = (state: string) => {
 };
 //全选提示词为空的
 function selectPromptEmpty() {
-  selectedIds.value = dataList.value.filter((item) => !item.prompt || item.prompt.trim() === "").map((item) => item.id);
+  const lite =  dataList.value.filter((item) => !item.prompt || item.prompt.trim() === "").map((item) => item.id);
+  if(lite.length === 0) {
+    window.$message.warning($t("workbench.cornerScape.noEmptyPrompt"));
+    return;
+  }
+  selectedIds.value = lite;
+  window.$message.success($t("workbench.cornerScape.selectedCount", { count: selectedIds.value.length }));
 }
 
 function toggleSelectAll() {

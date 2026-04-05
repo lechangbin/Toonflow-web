@@ -810,7 +810,9 @@
       "confirmReplace": "确认替换",
       "batchGenerationPrompt": "批量生成提示词",
       "generatingPrompt": "生成中",
-      "selectPromptEmpty": "全选提示词为空"
+      "selectPromptEmpty": "全选提示词为空",
+      "noEmptyPrompt": "没有提示词为空的资产",
+      "selectedCount": "已选中{count}个资产"
     },
     "script": {
       "searchPlaceholder": "搜索剧本名称...",

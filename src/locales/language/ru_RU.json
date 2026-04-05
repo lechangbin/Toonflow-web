@@ -715,7 +715,9 @@
       "confirmReplace": "Подтвердить замену",
       "batchGenerationPrompt": "Генерируйте подсказки в пакетном режиме",
       "generatingPrompt": "Создание",
-      "selectPromptEmpty": "Выбрать все подсказки. Слово пусто."
+      "selectPromptEmpty": "Выбрать все подсказки. Слово пусто.",
+      "noEmptyPrompt": "Нет ресурсов с пустым словом-подсказкой.",
+      "selectedCount": "Выбрано {count} объектов"
     },
     "script": {
       "searchPlaceholder": "Поиск по названию сценария...",

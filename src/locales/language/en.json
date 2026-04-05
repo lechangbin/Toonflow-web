@@ -795,7 +795,9 @@
       "confirmReplace": "Confirm replacement",
       "batchGenerationPrompt": "Generate prompt words in batches",
       "generatingPrompt": "Generating",
-      "selectPromptEmpty": "Select all prompt word is empty"
+      "selectPromptEmpty": "Select all prompt word is empty",
+      "noEmptyPrompt": "There are no assets with empty prompt word",
+      "selectedCount": "{count} assets selected"
     },
     "script": {
       "searchPlaceholder": "Search script names...",

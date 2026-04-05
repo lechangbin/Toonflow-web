@@ -715,7 +715,9 @@
       "confirmReplace": "交換の確認",
       "batchGenerationPrompt": "プロンプト単語をバッチで生成する",
       "generatingPrompt": "生成中",
-      "selectPromptEmpty": "プロンプトの単語が空であることをすべて選択してください"
+      "selectPromptEmpty": "プロンプトの単語が空であることをすべて選択してください",
+      "noEmptyPrompt": "空のプロンプトワードを含むアセットはありません",
+      "selectedCount": "{count} 個のアセットが選択されました"
     },
     "script": {
       "searchPlaceholder": "シナリオ名を検索...",

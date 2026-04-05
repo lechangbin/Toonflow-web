@@ -706,7 +706,9 @@
       "confirmReplace": "Xác nhận thay thế",
       "batchGenerationPrompt": "Tạo các từ nhắc nhở theo đợt",
       "generatingPrompt": "Đang tạo",
-      "selectPromptEmpty": "Chọn tất cả từ nhắc trống"
+      "selectPromptEmpty": "Chọn tất cả từ nhắc trống",
+      "noEmptyPrompt": "Không có nội dung nào có từ nhắc trống",
+      "selectedCount": "đã chọn {count} nội dung"
     },
     "script": {
       "searchPlaceholder": "Tìm kiếm tên kịch bản...",

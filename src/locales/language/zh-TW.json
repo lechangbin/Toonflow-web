@@ -719,7 +719,9 @@
       "confirmReplace": "確認替換",
       "batchGenerationPrompt": "大量生成提示詞",
       "generatingPrompt": "生成中",
-      "selectPromptEmpty": "全選提示詞為空"
+      "selectPromptEmpty": "全選提示詞為空",
+      "noEmptyPrompt": "沒有提示詞為空的資產",
+      "selectedCount": "已選取{count}個資產"
     },
     "script": {
       "searchPlaceholder": "搜尋劇本名稱...",

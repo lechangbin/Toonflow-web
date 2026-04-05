@@ -716,7 +716,9 @@
       "confirmReplace": "ยืนยันการเปลี่ยน",
       "batchGenerationPrompt": "สร้างคำพร้อมท์เป็นชุด",
       "generatingPrompt": "กำลังสร้าง",
-      "selectPromptEmpty": "เลือกทั้งหมด คำที่แจ้งว่างเปล่า"
+      "selectPromptEmpty": "เลือกทั้งหมด คำที่แจ้งว่างเปล่า",
+      "noEmptyPrompt": "ไม่มีเนื้อหาที่มีคำว่าง",
+      "selectedCount": "เลือกเนื้อหาแล้ว {count} รายการ"
     },
     "script": {
       "searchPlaceholder": "ค้นหาชื่อบทภาพยนตร์...",
