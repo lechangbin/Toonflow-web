@@ -291,14 +291,16 @@ async function genText() {
   const track = trackList.value[activeTrackIndex.value];
   const trackId = track?.id;
   if (trackId == null || genTextLoadingMap.value[trackId]) return;
-  const info = uploadBox.value
+  const isTextMode = selectMode.value === "text";
+  const infoSource = isTextMode
+    ? track.medias
+    : uploadBox.value.filter((item) => item.src).map((item) => ({ id: item.id, src: item.src, prompt: item.prompt, sources: item.sources }));
+  const info = infoSource
     .filter((item) => item.prompt)
-    .map((item) => {
-      return {
-        id: item.id,
-        sources: item.sources ? item.sources : "storyboard",
-      };
-    });
+    .map((item) => ({
+      id: item.id,
+      sources: item.sources ? item.sources : "storyboard",
+    }));
   genTextLoadingMap.value[trackId] = true;
   try {
     const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
@@ -761,10 +763,38 @@ watch(selectModel, (val) => {
 
 const userEditedUploadBox = ref(false);
 
+// 用于在模式切换时暂存 uploadBox 数据，避免污染 track.medias（itemBox 缩略图来源）
+const uploadBoxSnapshot = ref<UploadItem[]>([]);
+
 watch(selectMode, (val) => {
   if (!val) return (uploadBox.value = []);
+  const oldBox = uploadBox.value;
+  // 把当前 uploadBox 中有内容的 item 存入快照，供切回时恢复，不修改 track.medias
+  if (oldBox.some((item) => item.src)) {
+    uploadBoxSnapshot.value = oldBox.filter((item) => item.src).map((item) => ({ ...item }));
+  }
+  const newBox = buildUploadBox(val);
+  // 判断新 mode 是否为混合模式（val 已赋给 selectMode，用 parseMode 直接判断）
+  const newParsedMode = parseMode(val);
+  const newIsMixed = Array.isArray(newParsedMode);
+  if (newIsMixed) {
+    // 混合模式：保留旧有已填充的 item
+    uploadBox.value = oldBox.filter((item) => item.src);
+  } else {
+    // 非混合模式：按 fileType 从快照中逐槽匹配复用数据
+    const sourceItems = uploadBoxSnapshot.value.filter((item) => item.src);
+    const usedIndices = new Set<number>();
+    uploadBox.value = newBox.map((slot) => {
+      const matchIdx = sourceItems.findIndex((old, i) => !usedIndices.has(i) && old.fileType === slot.fileType && old.src);
+      if (matchIdx !== -1) {
+        usedIndices.add(matchIdx);
+        const old = sourceItems[matchIdx];
+        return { ...slot, src: old.src, id: old.id, prompt: old.prompt, sources: old.sources ?? slot.sources };
+      }
+      return slot;
+    });
+  }
   userEditedUploadBox.value = false;
-  uploadBox.value = buildUploadBox(val);
 });
 
 watch(
@@ -820,19 +850,21 @@ watch(
 );
 
 function batchGenText() {
+  const isTextMode = selectMode.value === "text";
   trackList.value
     .filter((track) => checkedTrackIds.value.includes(track.id))
     .forEach(async (track) => {
       const trackId = track.id;
       if (trackId == null || genTextLoadingMap.value[trackId]) return;
-      const info = track.medias
-        .filter((m) => m.prompt)
-        .map((m) => {
-          return {
-            id: m.id,
-            sources: m.sources ? m.sources : "storyboard",
-          };
-        });
+      // 文本模式取 track.medias 全部数据；非文本模式按当前模式模板槽位数量截取 track.medias
+      const modeTemplate = selectMode.value ? buildUploadBox(selectMode.value) : [];
+      const infoSource = isTextMode ? track.medias : modeTemplate.map((_, i) => track.medias[i]).filter(Boolean);
+      const info = infoSource
+        .filter((m) => m?.prompt)
+        .map((m) => ({
+          id: m.id,
+          sources: m.sources ? m.sources : "storyboard",
+        }));
       genTextLoadingMap.value[trackId] = true;
       try {
         const { data } = await axios.post("/production/workbench/generateVideoPrompt", {

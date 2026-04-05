@@ -1519,5 +1519,8 @@
   "workbench.production.node.assets.removeFailed": "Failed to delete asset",
   "version": {
     "newVersion": "There is a new version, do you want to update it?"
-  }
+  },
+  "workbench.production.generatedNode.localUpload": "Local upload",
+  "workbench.production.editImage.uploadFailed": "Image upload failed",
+  "workbench.production.editImage.noImage": "Please add pictures first"
 }

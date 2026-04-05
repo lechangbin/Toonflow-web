@@ -70,8 +70,6 @@ function createProductionAgentStore(projectId: string) {
             } else if (tag === "storyboardTable") {
               flowData.value.storyboardTable = value ?? "";
             } else if (tag === "storyboardItem") {
-              console.log("%c Line:60 🥔 status", "background:#3f7cff", status);
-
               if (status === "complete") {
                 const prompt = attrs.prompt ?? "";
 
@@ -79,7 +77,9 @@ function createProductionAgentStore(projectId: string) {
                 const track = attrs.track || "";
                 const shouldGenerateImage = attrs.shouldGenerateImage == "true" ? 1 : 0;
                 const videoDesc = attrs?.videoDesc ?? "";
-                const existingIndex = flowData.value.storyboard.findIndex((s) => s.prompt === prompt);
+                const existingIndex = flowData.value.storyboard.findIndex(
+                  (s) => s.prompt == prompt && s.duration == duration && videoDesc == s.videoDesc,
+                );
                 if (existingIndex !== -1) {
                   // 已存在则更新 content，保留 id
                   flowData.value.storyboard[existingIndex].prompt = prompt;
