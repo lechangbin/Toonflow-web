@@ -1429,5 +1429,8 @@
   "workbench.production.node.assets.removeFailed": "Không thể xóa nội dung",
   "version": {
     "newVersion": "Có phiên bản mới, bạn có muốn cập nhật không?"
-  }
+  },
+  "workbench.production.generatedNode.localUpload": "Tải lên cục bộ",
+  "workbench.production.editImage.uploadFailed": "Tải hình ảnh lên không thành công",
+  "workbench.production.editImage.noImage": "Vui lòng thêm hình ảnh trước"
 }

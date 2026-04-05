@@ -1437,5 +1437,8 @@
   "workbench.production.node.assets.removeFailed": "Не удалось удалить объект.",
   "version": {
     "newVersion": "Вышла новая версия, хотите ее обновить?"
-  }
+  },
+  "workbench.production.generatedNode.localUpload": "Локальная загрузка",
+  "workbench.production.editImage.uploadFailed": "Не удалось загрузить изображение.",
+  "workbench.production.editImage.noImage": "Пожалуйста, сначала добавьте фотографии"
 }

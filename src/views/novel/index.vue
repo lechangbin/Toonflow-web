@@ -103,7 +103,7 @@ const columns = ref<Record<string, unknown>[]>([
     align: "center",
   },
   {
-    colKey: "id",
+    colKey: "index",
     title: $t("workbench.novel.col.id"),
     width: 50,
     align: "center",

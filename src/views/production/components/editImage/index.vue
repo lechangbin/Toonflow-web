@@ -21,7 +21,7 @@
       @connect="onConnect"
       @edges-change="syncReferences">
       <template #node-upload="{ id, data }">
-        <uploadNode :id="id" :data="data" @upload="syncReferences" />
+        <uploadNode :id="id" :data="data" @upload="syncReferences" @keep="sureNode" />
       </template>
 
       <template #node-generated="{ id, data }">
@@ -242,7 +242,7 @@ async function sureNode(imageUrl: string) {
 
     if (props.flowData.flowId) {
       await axios.post("/production/editImage/updateImageFlow", { ...payload, flowId: props.flowData.flowId });
-      emit("save", { imageUrl });
+      emit("save", { imageUrl, flowId: props.flowData.flowId });
     } else {
       const { data } = await axios.post("/production/editImage/saveImageFlow", { ...payload });
       emit("save", { imageUrl, flowId: data?.id });

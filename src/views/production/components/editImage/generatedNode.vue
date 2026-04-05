@@ -20,6 +20,12 @@
             </template>
           </t-image>
         </div>
+        <t-dropdown :options="options" @click="clickHandler">
+          <div class="upload ac">
+            <i-upload theme="outline" size="18" fill="#fff" />
+            <span style="margin-left: 5px; color: #fff">{{ $t("workbench.production.editImage.upload") }}</span>
+          </div>
+        </t-dropdown>
         <t-tooltip theme="primary" :content="$t('workbench.production.editImage.deleteNode')">
           <div class="remove ac" @click="removeNodes(props.id)">
             <i-delete theme="outline" size="18" fill="#fff" />
@@ -34,7 +40,7 @@
         </div>
       </div>
       <div class="text w">
-        <PromptEditor v-model="data.prompt" :references="references" :placeholder="$t('workbench.production.editImage.promptPlaceholder')"/>
+        <PromptEditor v-model="data.prompt" :references="references" :placeholder="$t('workbench.production.editImage.promptPlaceholder')" />
       </div>
       <div class="operate ac jb">
         <div class="ac">
@@ -71,18 +77,34 @@
 
 <script setup lang="ts">
 import { Handle, useVueFlow, Position } from "@vue-flow/core";
+import type { Ref } from "vue";
 import modelSelect from "@/components/modelSelect.vue";
 import PromptEditor from "@/components/promptEditor.vue";
 import axios from "@/utils/axios";
 import { type GeneratedNodeData } from "../../utils/editImageType";
+import type { DropdownOption } from "tdesign-vue-next/es/dropdown";
+import type { Storyboard } from "../../utils/flowBuilder";
+import openAssetsSelector from "@/utils/assetsCheck";
+import { useFileDialog } from "@vueuse/core";
+
+const openStoryboardCheck = inject<() => Promise<Storyboard[]>>("openStoryboardCheck")!;
+const { open, onChange, onCancel } = useFileDialog({ multiple: false, reset: true, accept: ".png,.jpg,.jpeg" });
 
 const selected = ref(true);
 const generating = ref(false);
+const episodesId = inject<Ref<number>>("episodesId")!;
+
 const emit = defineEmits(["keep"]);
 const { removeNodes } = useVueFlow("editImage");
 
+const options = [
+  { content: $t("workbench.production.editImage.uploadImage"), value: 1 },
+  { content: $t("workbench.production.editImage.uploadStoryboardImage"), value: 2 },
+  { content: $t("workbench.production.generatedNode.localUpload"), value: 3 },
+];
+
 const references = computed(() => {
-  return props.data.references.map((i) => ({ type: 'image' as const, src: i.image })).filter(Boolean);
+  return props.data.references.map((i) => ({ type: "image" as const, src: i.image })).filter(Boolean);
 });
 
 const props = defineProps<{
@@ -95,7 +117,61 @@ const props = defineProps<{
 function selectedFn() {
   selected.value = !selected.value;
 }
+function clickHandler(data: DropdownOption) {
+  if (data.value == 1) {
+    uploadFn();
+  } else if (data.value == 2) {
+    getStoryboardImage();
+  } else if (data.value == 3) {
+    console.log("%c Line:124 🍷", "background:#4fff4B");
+    lensImage();
+  }
+}
+async function lensImage() {
+  const files = await new Promise<FileList | null>((resolve) => {
+    open();
+    onChange((f) => resolve(f));
+    onCancel(() => resolve(null));
+  });
 
+  if (!files?.length) return;
+
+  const file = files[0];
+  //转成base64显示
+  const reader = new FileReader();
+  reader.onload = async () => {
+    const base64 = reader.result as string;
+    try {
+      const { data } = await axios.post("/production/editImage/uploadImage", {
+        base64Data: base64,
+        projectId: props.projectId,
+        scriptId: episodesId.value,
+      });
+      props.data.generatedImage = data;
+    } catch (e) {
+      return window.$message.error((e as any)?.message || $t("workbench.production.editImage.uploadFailed"));
+    }
+  };
+  reader.readAsDataURL(file);
+  // mockStoryboard.value.id = -1; // 新上传的图片没有id，使用-1标识，后端根据filePath处理这种情况
+}
+async function uploadFn() {
+  const selectedAssets = await openAssetsSelector({
+    multiple: false,
+    title: $t("workbench.production.editImage.selectImage"),
+  });
+  if (selectedAssets.length > 0) {
+    const filePath = selectedAssets[0].src!;
+    props.data.generatedImage = filePath;
+  }
+}
+async function getStoryboardImage() {
+  const rows = await openStoryboardCheck();
+  if (rows.length > 0) {
+    const filePath = rows[0].src!;
+    props.data.generatedImage = filePath;
+  }
+}
 // 生成
 async function handleGenerate() {
   if (!props.data.model) return window.$message.error($t("workbench.production.editImage.selectModel"));
@@ -171,6 +247,15 @@ onMounted(() => {
         &:hover {
           background-color: rgba(220, 50, 50, 1);
         }
+      }
+      .upload {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 9999;
+        padding: 5px 10px;
+        border-radius: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
       }
       .imageLoading {
         width: 100%;

@@ -1426,5 +1426,8 @@
   "workbench.production.node.assets.removeFailed": "刪除資產失敗",
   "version": {
     "newVersion": "有新版本，是否更新？"
-  }
+  },
+  "workbench.production.generatedNode.localUpload": "本地上傳",
+  "workbench.production.editImage.uploadFailed": "圖片上傳失敗",
+  "workbench.production.editImage.noImage": "請先加入圖片"
 }

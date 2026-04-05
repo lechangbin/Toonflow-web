@@ -6,16 +6,15 @@
       top="5vh"
       :header="$t('workbench.script.add.title')"
       :closable="false"
-      :maskClosable="false"
-      >
+      :maskClosable="false">
       <div class="data">
         <div class="section name">
-          <span class="section-label">{{ $t('workbench.script.add.scriptName') }}</span>
+          <span class="section-label">{{ $t("workbench.script.add.scriptName") }}</span>
           <t-input v-model="scriptName" :placeholder="$t('workbench.script.add.scriptNamePh')" />
         </div>
 
         <div class="section upload">
-          <span class="section-label">{{ $t('workbench.script.add.uploadFile') }}</span>
+          <span class="section-label">{{ $t("workbench.script.add.uploadFile") }}</span>
           <div class="upload-area" @click="triggerUpload" @dragover.prevent @drop.prevent="handleDrop">
             <t-upload
               ref="uploadRef"
@@ -28,22 +27,26 @@
             <div class="dragIcon">
               <i-upload-one theme="outline" size="32" fill="var(--td-brand-color)" />
             </div>
-            <p class="upload-text">{{ $t('workbench.script.add.dragUpload') }}</p>
-            <p class="upload-hint">{{ $t('workbench.script.add.uploadHint') }}</p>
+            <p class="upload-text">{{ $t("workbench.script.add.dragUpload") }}</p>
+            <p class="upload-hint">{{ $t("workbench.script.add.uploadHint") }}</p>
           </div>
         </div>
 
         <div class="section content">
-          <span class="section-label">{{ $t('workbench.script.add.scriptContent') }}</span>
-          <t-textarea v-model="scriptData" :placeholder="$t('workbench.script.add.scriptContentPh')" name="description" :autosize="{ minRows: 12, maxRows: 12 }" />
+          <span class="section-label">{{ $t("workbench.script.add.scriptContent") }}</span>
+          <t-textarea
+            v-model="scriptData"
+            :placeholder="$t('workbench.script.add.scriptContentPh')"
+            name="description"
+            :autosize="{ minRows: 12, maxRows: 12 }" />
         </div>
 
         <div class="section assets-section">
           <div class="assets-header">
-            <span class="section-label">{{ $t('workbench.script.add.relatedAssets') }}</span>
+            <span class="section-label">{{ $t("workbench.script.add.relatedAssets") }}</span>
             <t-button size="small" theme="primary" variant="outline" @click="handleSelectAssets">
               <template #icon><i-plus /></template>
-              {{ $t('workbench.script.add.selectAssets') }}
+              {{ $t("workbench.script.add.selectAssets") }}
             </t-button>
           </div>
           <div class="assets-list" v-if="selectedAssets.length">
@@ -51,13 +54,13 @@
               {{ asset.name }}
             </t-tag>
           </div>
-          <div v-else class="assets-empty">{{ $t('workbench.script.add.noAssets') }}</div>
+          <div v-else class="assets-empty">{{ $t("workbench.script.add.noAssets") }}</div>
         </div>
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <t-button theme="default" @click="handleCancel">{{ $t('workbench.script.add.cancel') }}</t-button>
-          <t-button theme="primary" @click="handleConfirm">{{ $t('workbench.script.add.confirm') }}</t-button>
+          <t-button theme="default" @click="handleCancel">{{ $t("workbench.script.add.cancel") }}</t-button>
+          <t-button theme="primary" :loading="keepLoading" @click="handleConfirm">{{ $t("workbench.script.add.confirm") }}</t-button>
         </div>
       </template>
     </t-dialog>
@@ -83,6 +86,8 @@ const content = ref<string>("");
 const fileList = ref<UploadFile[]>([]);
 const scriptData = ref<string>("");
 
+const keepLoading = ref(false);
+
 // 触发上传
 function triggerUpload(): void {
   uploadRef.value?.triggerUpload();
@@ -100,24 +105,24 @@ async function readFile(file: File): Promise<string> {
 async function handleBeforeUpload(file: UploadFile): Promise<boolean> {
   const rawFile = file.raw;
   if (!rawFile) {
-    window.$message.error($t('workbench.script.add.msg.fileReadFailed'));
+    window.$message.error($t("workbench.script.add.msg.fileReadFailed"));
     return false;
   }
 
   const allowTypes = ["text/plain", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
 
   if (rawFile.type === "application/msword") {
-    window.$message.warning($t('workbench.script.add.msg.docNotSupported'));
+    window.$message.warning($t("workbench.script.add.msg.docNotSupported"));
     fileList.value = [];
     return false;
   }
   if (!allowTypes.includes(rawFile.type)) {
-    window.$message.error($t('workbench.script.add.msg.unsupportedType'));
+    window.$message.error($t("workbench.script.add.msg.unsupportedType"));
     fileList.value = [];
     return false;
   }
   if (rawFile.size > 10 * 1024 * 1024) {
-    window.$message.error($t('workbench.script.add.msg.fileTooLarge'));
+    window.$message.error($t("workbench.script.add.msg.fileTooLarge"));
     fileList.value = [];
     return false;
   }
@@ -125,14 +130,14 @@ async function handleBeforeUpload(file: UploadFile): Promise<boolean> {
   const loader = LoadingPlugin({
     fullscreen: true,
     attach: "body",
-    text: $t('workbench.script.add.msg.parsing'),
+    text: $t("workbench.script.add.msg.parsing"),
   });
   try {
     content.value = await readFile(rawFile);
     scriptData.value = content.value;
   } catch (error) {
     console.error("文件解析失败:", error);
-    window.$message.error($t('workbench.script.add.msg.parseFailed'));
+    window.$message.error($t("workbench.script.add.msg.parseFailed"));
     fileList.value = [];
   } finally {
     loader.hide();
@@ -156,7 +161,7 @@ interface SelectedAsset {
 const selectedAssets = ref<SelectedAsset[]>([]);
 
 async function handleSelectAssets() {
-  const assets = await openAssetsSelector({ title: $t('workbench.script.add.msg.selectAssetsTitle'), types: ["role", "tool", "scene"] });
+  const assets = await openAssetsSelector({ title: $t("workbench.script.add.msg.selectAssetsTitle"), types: ["role", "tool", "scene"] });
   if (assets.length) {
     const existing = new Set(selectedAssets.value.map((a) => a.id));
     for (const a of assets) {
@@ -188,13 +193,14 @@ function closeWin(): void {
 const emit = defineEmits(["searchScripts"]);
 async function handleConfirm(): Promise<void> {
   if (!scriptData.value.trim()) {
-    window.$message.warning($t('workbench.script.add.msg.enterContent'));
+    window.$message.warning($t("workbench.script.add.msg.enterContent"));
     return;
   }
   if (!scriptName.value.trim()) {
-    window.$message.warning($t('workbench.script.add.msg.enterName'));
+    window.$message.warning($t("workbench.script.add.msg.enterName"));
     return;
   }
+  keepLoading.value = true;
   try {
     await axios.post("/script/addScript", {
       name: scriptName.value,
@@ -202,13 +208,14 @@ async function handleConfirm(): Promise<void> {
       projectId: project.value?.id,
       assets: selectedAssets.value.map((a) => a.id),
     });
-    window.$message.success($t('workbench.script.add.msg.addSuccess'));
-  } catch (error) {
-    console.error("添加剧本失败:", error);
-    window.$message.error($t('workbench.script.add.msg.addFailed'));
-  } finally {
+    window.$message.success($t("workbench.script.add.msg.addSuccess"));
     closeWin();
     emit("searchScripts");
+  } catch (error) {
+    console.error("添加剧本失败:", error);
+    window.$message.error((error as any).message ?? $t("workbench.script.add.msg.addFailed"));
+  } finally {
+    keepLoading.value = false;
   }
 }
 const scriptName = ref<string>("");

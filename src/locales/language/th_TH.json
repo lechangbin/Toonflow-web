@@ -1425,5 +1425,8 @@
   "workbench.production.node.assets.removeFailed": "ลบเนื้อหาไม่สำเร็จ",
   "version": {
     "newVersion": "มีเวอร์ชั่นใหม่แล้ว คุณต้องการอัปเดตหรือไม่?"
-  }
+  },
+  "workbench.production.generatedNode.localUpload": "การอัปโหลดในเครื่อง",
+  "workbench.production.editImage.uploadFailed": "การอัปโหลดรูปภาพล้มเหลว",
+  "workbench.production.editImage.noImage": "กรุณาเพิ่มรูปภาพก่อน"
 }

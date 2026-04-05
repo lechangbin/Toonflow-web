@@ -34,7 +34,11 @@
             </div>
           </template>
         </t-dropdown>
-
+        <t-popup :content="$t('workbench.production.save')">
+          <t-button theme="primary" size="small" class="keepBottomLeftBtn" v-if="currentImageUrl" @click="handleKeep">
+            <template #icon><i-save /></template>
+          </t-button>
+        </t-popup>
         <t-tooltip theme="primary" :content="$t('workbench.production.editImage.deleteNode')">
           <div class="remove ac" @click="removeFn">
             <i-delete theme="outline" size="18" fill="#fff" />
@@ -84,7 +88,7 @@ onBeforeUnmount(() => {
 function removeFn() {
   removeNodes(props.id);
 }
-const emit = defineEmits(["upload"]);
+const emit = defineEmits(["upload", "keep"]);
 
 function clickHandler(data: DropdownOption) {
   if (data.value == 1) {
@@ -92,6 +96,10 @@ function clickHandler(data: DropdownOption) {
   } else if (data.value == 2) {
     getStoryboardImage();
   }
+}
+function handleKeep() {
+  if (!currentImageUrl.value) return window.$message.error($t("workbench.production.editImage.noImage"));
+  emit("keep", currentImageUrl.value);
 }
 async function uploadFn() {
   const selectedAssets = await openAssetsSelector({
@@ -136,7 +144,13 @@ async function getStoryboardImage() {
       width: 100%;
       position: relative;
       border-radius: 10px;
-
+      .keepBottomLeftBtn {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        z-index: 9999;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
       .image {
         .imageToolsWrap {
           opacity: 0;

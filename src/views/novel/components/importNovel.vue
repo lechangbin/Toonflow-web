@@ -110,7 +110,6 @@ const columns: PrimaryTableCol<TableRowData>[] = [
 const tableData = computed<ChapterItem[]>(() => {
   if (!content.value) return [];
   try {
-    const ddd = parseNovel(content.value);
     return parseNovel(content.value).flatMap((reel) =>
       reel.chapters.map((chapter) => ({
         index: chapter.index,

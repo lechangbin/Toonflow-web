@@ -1437,5 +1437,8 @@
   "workbench.production.node.assets.removeFailed": "アセットの削除に失敗しました",
   "version": {
     "newVersion": "新しいバージョンがあります。更新しますか?"
-  }
+  },
+  "workbench.production.generatedNode.localUpload": "ローカルアップロード",
+  "workbench.production.editImage.uploadFailed": "画像のアップロードに失敗しました",
+  "workbench.production.editImage.noImage": "まずは写真を追加してください"
 }
