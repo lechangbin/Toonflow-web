@@ -1019,7 +1019,7 @@
         "importingLoading": "インポート中です。しばらくお待ちください...",
         "mainTrackVideo": "メイントラック（動画）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "バッチ{ストーリーボード}-{id}.mp4"
+        "storyboardVideoName": "グループ {ストーリーボード}-{id}.mp4"
       },
       "preview": {
         "noImage": "画像なし",
