@@ -349,7 +349,7 @@ async function delScript(index: number) {
     theme: "danger",
     onConfirm: async () => {
       if (item.id) {
-        await axios.post("/script/delScript", { id: [item.id] });
+        await axios.post("/script/delScript", { ids: [item.id] });
         planData.value.script.splice(index, 1);
       } else {
         planData.value.script.splice(index, 1);
