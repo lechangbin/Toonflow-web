@@ -559,7 +559,8 @@
         "deleteDirectorManualBody": "Are you sure you want to delete Director's Manual \"{name}\"?",
         "directorManualUpdated": "Director's Manual updated",
         "directorManualAdded": "Director's Manual added",
-        "directorManual": "Please select Project Director's Manual"
+        "directorManual": "Please select Project Director's Manual",
+        "modelProviderDisabled": "The video model or picture model supplier is not enabled or there is no model supplier, please configure it first"
       },
       "type": {
         "novel": "Based on the original novel",

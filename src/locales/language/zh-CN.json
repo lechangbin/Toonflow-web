@@ -573,7 +573,8 @@
         "deleteDirectorManualBody": "确定要删除导演手册「{name}」吗？",
         "directorManualUpdated": "导演手册已更新",
         "directorManualAdded": "导演手册已添加",
-        "directorManual": "请选择项目导演手册"
+        "directorManual": "请选择项目导演手册",
+        "modelProviderDisabled": "视频模型或图片模型供应商未启用或无模型供应商，请先配置"
       },
       "type": {
         "novel": "基于小说原文",

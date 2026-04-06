@@ -489,7 +489,8 @@
         "deleteDirectorManualBody": "確定要刪除導演手冊「{name}」嗎？",
         "directorManualUpdated": "導演手冊已更新",
         "directorManualAdded": "導演手冊已添加",
-        "directorManual": "請選擇項目導演手冊"
+        "directorManual": "請選擇項目導演手冊",
+        "modelProviderDisabled": "視訊模型或圖片模型供應商未啟用或無模型供應商，請先配置"
       },
       "type": {
         "novel": "基於小說原文",

@@ -476,7 +476,8 @@
         "deleteDirectorManualBody": "Bạn có chắc chắn muốn xóa Sổ tay Giám đốc \"{name}\" không?",
         "directorManualUpdated": "Sổ tay Giám đốc được cập nhật",
         "directorManualAdded": "Đã thêm hướng dẫn sử dụng của Giám đốc",
-        "directorManual": "Vui lòng chọn Sổ tay Giám đốc Dự án"
+        "directorManual": "Vui lòng chọn Sổ tay Giám đốc Dự án",
+        "modelProviderDisabled": "Nhà cung cấp mô hình video hoặc mô hình hình ảnh chưa được bật hoặc không có nhà cung cấp mô hình, vui lòng định cấu hình trước"
       },
       "type": {
         "novel": "Dựa trên tiểu thuyết gốc",

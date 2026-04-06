@@ -77,12 +77,10 @@ const editProjectData = ref<{
   directorManual: string;
 } | null>(null);
 
-function getAllProject() {
-  axios
-    .post("/project/getProject")
-    .then(({ data }) => {
-      allProject.value = data;
-    })
+async function getAllProject() {
+  axios.post("/project/getProject").then(({ data }) => {
+    allProject.value = data;
+  });
 }
 
 onMounted(() => {
@@ -92,12 +90,33 @@ onMounted(() => {
 
 const router = useRouter();
 
-function openProject(projectId: string | undefined) {
+async function openProject(projectId: string | undefined) {
   const item = allProject.value.find((p) => p.id === projectId);
-  if (item) {
-    project.value = item;
+
+  if (!item) return window.$message.error($t("workbench.project.msg.notFound"));
+
+  if (!item.imageModel || !item.videoModel) {
+    window.$message.warning($t("workbench.project.msg.modelProviderDisabled"));
+    return openEdit(item);
   }
-  else return window.$message.error($t("workbench.project.msg.notFound"));
+
+  try {
+    if (item.imageModel) {
+      await axios.post("/modelSelect/getModelDetail", {
+        modelId: item.imageModel,
+      });
+    }
+    if (item.videoModel) {
+      await axios.post("/modelSelect/getModelDetail", {
+        modelId: item.videoModel,
+      });
+    }
+  } catch {
+    window.$message.warning($t("workbench.project.msg.modelProviderDisabled"));
+    return openEdit(item);
+  }
+
+  project.value = item;
   if (item.projectType === "novel") router.push(`/novel`);
   else if (item.projectType === "script") router.push(`/script`);
 }
