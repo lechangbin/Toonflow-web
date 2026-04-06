@@ -84,6 +84,9 @@
                         <div class="delBtn" @click.stop="deleteVisualManual(item)">
                           <i-delete theme="outline" size="14" />
                         </div>
+                        <div class="preview" @click.stop="handlePreview(item.images && item.images[0])">
+                          <i-preview-open theme="outline" size="14" />
+                        </div>
                       </div>
                     </div>
                   </t-loading>
@@ -117,6 +120,9 @@
                         </div>
                         <div class="delBtn" @click.stop="deleteDirectorManual(item)">
                           <i-delete theme="outline" size="14" />
+                        </div>
+                        <div class="preview" @click.stop="handlePreview(item.images && item.images[0])">
+                          <i-preview-open theme="outline" size="14" />
                         </div>
                       </div>
                     </div>
@@ -270,6 +276,7 @@
         </t-form>
       </t-loading>
     </t-dialog>
+    <t-image-viewer v-model="visible" :images="[trigger]" />
   </div>
 </template>
 
@@ -348,6 +355,13 @@ interface Data {
   label: string;
   value: string;
   data: string;
+}
+//预览
+const trigger = ref();
+const visible = ref(false);
+function handlePreview(src: string | undefined) {
+  visible.value = true;
+  trigger.value = src;
 }
 
 const DEFAULT_TAB_DATA: () => Data[] = () => [
@@ -912,6 +926,9 @@ function handleDirectorManualCoverFileChange(e: Event) {
       .delBtn {
         opacity: 1;
       }
+      .preview {
+        opacity: 1;
+      }
     }
 
     &.active {
@@ -966,7 +983,6 @@ function handleDirectorManualCoverFileChange(e: Event) {
       position: absolute;
       top: 6px;
       right: 6px;
-
       width: 24px;
       height: 24px;
       display: flex;
@@ -977,7 +993,25 @@ function handleDirectorManualCoverFileChange(e: Event) {
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.2s;
-
+      &:hover {
+        background: #fff;
+      }
+    }
+    .preview {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 4px;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.2s;
       &:hover {
         background: #fff;
       }

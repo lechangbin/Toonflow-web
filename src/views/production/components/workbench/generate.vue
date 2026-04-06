@@ -156,7 +156,14 @@
               v-for="v in activeTrackVideos"
               :key="v.id"
               @click="previewVideo(v)">
-              <video :src="v.src" preload="metadata" muted />
+              <template v-if="videoCoverMap[v.src]">
+                <img :src="videoCoverMap[v.src]" class="videoCover" />
+              </template>
+              <template v-else-if="v.state !== '生成中'">
+                <video :key="v.src" :src="v.src" preload="metadata" muted
+                  @loadedmetadata="(e: Event) => { (e.target as HTMLVideoElement).currentTime = 0.5 }"
+                  @seeked="(e: Event) => { const el = e.target as HTMLVideoElement; captureVideoCover(v.src); el.style.display = 'none' }" />
+              </template>
               <div v-if="v.state === '生成中'" class="loadingOverlay c fc">
                 <t-loading size="24px" />
                 <span class="loadingText">{{ $t("workbench.generate.generating") }}</span>
@@ -338,7 +345,60 @@ interface HistoryVideoItem {
   videoTrackId?: number | null;
 }
 
+// 视频封面图缓存 key=src
+const videoCoverMap = ref<Record<string, string>>({});
+
+function captureVideoCover(src: string) {
+  if (!src || videoCoverMap.value[src]) return;
+  const video = document.createElement("video");
+  video.crossOrigin = "anonymous";
+  video.preload = "auto";
+  video.muted = true;
+  video.src = src;
+  const onSeeked = () => {
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = video.videoWidth || 160;
+      canvas.height = video.videoHeight || 90;
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        videoCoverMap.value[src] = canvas.toDataURL("image/jpeg", 0.7);
+      }
+    } catch {}
+    video.src = "";
+  };
+  video.addEventListener("seeked", onSeeked, { once: true });
+  video.addEventListener(
+    "loadeddata",
+    () => {
+      video.currentTime = 0.5;
+    },
+    { once: true },
+  );
+  video.addEventListener(
+    "error",
+    () => {
+      video.src = "";
+    },
+    { once: true },
+  );
+  video.load();
+}
+
 const historyVideo = ref<HistoryVideoItem[]>([]);
+
+watch(
+  historyVideo,
+  (list) => {
+    for (const item of list) {
+      if (item.src && item.state === "已完成" && !videoCoverMap.value[item.src]) {
+        captureVideoCover(item.src);
+      }
+    }
+  },
+  { deep: true },
+);
 
 const activeTrackVideos = computed(() => {
   const track = trackList.value[activeTrackIndex.value];
@@ -401,7 +461,6 @@ interface VideoModel {
     | "text" // 文本生视频
     | ("videoReference" | "imageReference" | "audioReference" | "textReference")[] // 混合参考
   )[];
-  associationSkills?: string; // 关联技能，多个技能用逗号分隔
   audio: "optional" | false | true; // 音频配置
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
 }
@@ -1315,6 +1374,12 @@ async function downloadVideo(value: HistoryVideoItem) {
               box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             }
             video {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              pointer-events: none;
+            }
+            .videoCover {
               width: 100%;
               height: 100%;
               object-fit: cover;

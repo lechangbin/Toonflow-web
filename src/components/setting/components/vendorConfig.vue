@@ -140,10 +140,6 @@
               <t-option v-for="item in modelTypeOptions" :key="item.value" :value="item.value">{{ $t(item.label) }}</t-option>
             </t-select>
           </t-form-item>
-          <t-form-item name="associationSkills" :label="$t('settings.vendor.associationSkills')" v-if="modelFormData.type !== 'text'">
-            <t-tag>{{ modelFormData.associationSkills }}</t-tag>
-          </t-form-item>
-
           <template v-if="modelFormData.type === 'text'">
             <t-form-item name="think" :label="$t('settings.vendor.think')">
               <t-radio-group v-model="modelFormData.think">
@@ -331,7 +327,6 @@ interface TextModel {
   modelName: string;
   type: "text";
   think: boolean;
-  associationSkills: string;
 }
 
 interface ImageModel {
@@ -339,7 +334,6 @@ interface ImageModel {
   modelName: string;
   type: "image";
   mode: ("text" | "singleImage")[];
-  associationSkills: string;
 }
 
 interface VideoModel {
@@ -349,7 +343,6 @@ interface VideoModel {
   mode: ("singleImage" | "multiImage" | "startEndRequired" | "endFrameOptional" | "startFrameOptional" | "text")[];
   audio: "optional" | false | true;
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
-  associationSkills: string;
 }
 
 type VendorModel = TextModel | ImageModel | VideoModel;
@@ -640,7 +633,7 @@ function handleConfirmVendor() {
                 getVendorList();
               })
               .catch((err) => {
-                window.$message.error(`${$t("settings.vendor.msg.addFailed")}${err.message}`);
+                window.$message.error(err.message ?? `${$t("settings.vendor.msg.addFailed")}`);
               })
               .finally(() => {
                 secondConfirm.destroy();
@@ -709,7 +702,6 @@ const modelFormData = ref({
   mixedMode: [] as string[], // otherOptions 选中项，单独存放，构建时作为数组元素加入 mode
   audio: "optional" as "optional" | false | true,
   durationResolutionMap: [{ duration: [] as string[], resolution: [] as string[] }] as DrmRow[],
-  associationSkills: "",
 });
 
 function resetModelForm(type: "text" | "image" | "video" = "text") {
@@ -722,7 +714,6 @@ function resetModelForm(type: "text" | "image" | "video" = "text") {
     mixedMode: [],
     audio: "optional",
     durationResolutionMap: [{ duration: [], resolution: [] }],
-    associationSkills: "",
   };
 }
 
@@ -752,7 +743,6 @@ function buildModelFromForm(): VendorModel | null {
       modelName,
       type: "text",
       think: modelFormData.value.think,
-      associationSkills: modelFormData.value.associationSkills,
     };
   }
 
@@ -767,7 +757,6 @@ function buildModelFromForm(): VendorModel | null {
       modelName,
       type: "image",
       mode,
-      associationSkills: modelFormData.value.associationSkills,
     };
   }
 
@@ -804,7 +793,6 @@ function buildModelFromForm(): VendorModel | null {
     mode,
     audio: modelFormData.value.audio,
     durationResolutionMap,
-    associationSkills: modelFormData.value.associationSkills,
   };
 }
 
@@ -861,7 +849,6 @@ function handleEditModel(model: VendorModel) {
       mixedMode: [],
       audio: "optional",
       durationResolutionMap: [{ duration: [], resolution: [] }],
-      associationSkills: model.associationSkills || "",
     };
   }
 
@@ -875,7 +862,6 @@ function handleEditModel(model: VendorModel) {
       mixedMode: [],
       audio: "optional",
       durationResolutionMap: [{ duration: [], resolution: [] }],
-      associationSkills: model.associationSkills || "",
     };
   }
 
@@ -906,7 +892,6 @@ function handleEditModel(model: VendorModel) {
       mixedMode,
       audio: model.audio,
       durationResolutionMap: rows,
-      associationSkills: model.associationSkills || "",
     };
   }
 
@@ -1149,7 +1134,7 @@ async function handleBeforeUpload(file: UploadFile) {
                   getVendorList();
                 })
                 .catch((err) => {
-                  window.$message.error(`${$t("settings.vendor.msg.addFailed")}${err.message}`);
+                  window.$message.error(err.message ?? `${$t("settings.vendor.msg.addFailed")}`);
                 })
                 .finally(() => {
                   secondConfirm.destroy();

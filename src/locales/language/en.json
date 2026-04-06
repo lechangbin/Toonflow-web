@@ -172,7 +172,6 @@
         "importAdd": "Adding a new AI vendor will give it access to the system API, please make sure you trust the vendor's documentation source!",
         "linkAddFailed": "Failed to add link"
       },
-      "associationSkills": "Associated skills",
       "think": "deep thinking",
       "code": "code",
       "linkAddPlaceholder": "Enter link to add",
@@ -799,7 +798,10 @@
       "generatingPrompt": "Generating",
       "selectPromptEmpty": "Select all prompt word is empty",
       "noEmptyPrompt": "There are no assets with empty prompt word",
-      "selectedCount": "{count} assets selected"
+      "selectedCount": "{count} assets selected",
+      "cancelGeneration": "Cancel generation",
+      "selectGenerating": "Select the item being generated",
+      "noGenerating": "No data being generated"
     },
     "script": {
       "searchPlaceholder": "Search script names...",
@@ -985,7 +987,10 @@
         "imageGenFail": "Image generation failed",
         "unknownError": "Unknown error",
         "promptGenCancelled": "Generation canceled"
-      }
+      },
+      "confirmCancellation": "Confirm cancellation",
+      "confirmAgain": "Confirm cancellation? \nAfter cancellation, the backend AI will continue to call for deductions.",
+      "sure": "Sure"
     },
     "production": {
       "selectPlaceholder": "Please select an episode",
