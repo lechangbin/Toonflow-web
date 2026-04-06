@@ -408,7 +408,9 @@
       "updateSuccess": "更新成功，请重启应用",
       "updateFailed": "更新失败，请重试",
       "noUpdate": "当前已是最新版本",
-      "upToDate": "检测到新版本"
+      "upToDate": "检测到新版本",
+      "reinstallRequired": "将自动打开浏览器并下载，如未打开请手动打开",
+      "confirmReinstall": "复制链接"
     },
     "logout": {
       "warning": "退出登录后，您需要重新登录才能继续使用系统。",

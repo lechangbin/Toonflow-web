@@ -397,7 +397,9 @@
       "updateSuccess": "Update successful, please restart the app",
       "updateFailed": "Update failed, please try again",
       "noUpdate": "You are already on the latest version",
-      "upToDate": "New version detected"
+      "upToDate": "New version detected",
+      "confirmReinstall": "Copy link",
+      "reinstallRequired": "The browser will automatically open and download. If it does not open, please open it manually."
     },
     "logout": {
       "warning": "After logging out, you will need to log in again to access the system.",

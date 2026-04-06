@@ -201,9 +201,9 @@ function onLogoClick() {
   if (logoClickCount.value >= 3) {
     logoClickCount.value = 0;
     if (logoClickTimer) clearTimeout(logoClickTimer);
-    showCustomUrl.value = !showCustomUrl.value;
-    if (!showCustomUrl.value) customUpdateUrl.value = "";
-    MessagePlugin.info(showCustomUrl.value ? "已开启自定义更新地址" : "已关闭自定义更新地址");
+    if (showCustomUrl.value) return;
+    showCustomUrl.value = true;
+    MessagePlugin.info("已开启自定义更新地址");
   }
 }
 
@@ -334,6 +334,22 @@ async function electronAction(action: string) {
 async function doConfirmUpdate() {
   updateLoading.value = true;
   try {
+    if (updateInfo.value.reinstall) {
+      const dialog = DialogPlugin.alert({
+        header: t("settings.about.reinstallRequired"),
+        body: updateInfo.value.url,
+        onConfirm: () => {
+          dialog.destroy();
+        },
+        onClose: () => {
+          dialog.destroy();
+        },
+      });
+      try {
+        await fetch(`toonflow://openurlwithbrowser?url=${updateInfo.value.url}`);
+      } catch (error) {}
+      return;
+    }
     await axios.post("/setting/about/downloadApp", {
       url: updateInfo.value.url,
       reinstall: updateInfo.value.reinstall,

@@ -314,7 +314,9 @@
       "license": "Giấy phép",
       "licenseDesc": "Thỏa thuận giấy phép mã nguồn mở · Nhấn để xem chi tiết",
       "updateAvailable": "phiên bản mới được tìm thấy",
-      "upToDate": "Đã phát hiện phiên bản mới"
+      "upToDate": "Đã phát hiện phiên bản mới",
+      "confirmReinstall": "Sao chép liên kết",
+      "reinstallRequired": "Trình duyệt sẽ tự động mở và tải xuống. Nếu nó không mở, hãy mở nó bằng tay."
     },
     "logout": {
       "warning": "Sau khi đăng xuất, bạn cần đăng nhập lại để tiếp tục sử dụng hệ thống.",

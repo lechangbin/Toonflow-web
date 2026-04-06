@@ -325,7 +325,9 @@
       "license": "授權條款",
       "licenseDesc": "開源授權條款·點擊查看詳情",
       "updateAvailable": "發現新版本",
-      "upToDate": "偵測到新版本"
+      "upToDate": "偵測到新版本",
+      "confirmReinstall": "複製連結",
+      "reinstallRequired": "將自動開啟瀏覽器並下載，如未開啟請手動開啟"
     },
     "logout": {
       "warning": "登出後，您需要重新登入才能繼續使用系統。",
