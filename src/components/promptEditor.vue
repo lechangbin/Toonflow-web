@@ -9,7 +9,8 @@
       @keydown="handleKeydown"
       @blur="handleBlur"
       @mousedown.stop></div>
-    <div v-if="showReferences" class="referencesPopup" :style="{ left: popupPosition.left + 'px', top: popupPosition.top + 'px' }">
+    <Teleport to="body">
+    <div v-if="showReferences" class="referencesPopup" :style="{ left: popupPosition.left + 'px', top: popupPosition.top + 'px', position: 'fixed' }">
       <div class="referencesList">
         <div
           v-for="(item, index) in references"
@@ -26,6 +27,7 @@
         <div v-if="!references?.length" class="no-references">{{ $t("workbench.production.editImage.noReferences") }}</div>
       </div>
     </div>
+    </Teleport>
   </div>
 </template>
 
@@ -165,10 +167,9 @@ function getCursorPopupPosition(): { left: number; top: number } {
   const range = sel.getRangeAt(0).cloneRange();
   range.collapse(true);
   const rect = range.getBoundingClientRect();
-  const editorRect = editorRef.value!.getBoundingClientRect();
   return {
-    left: Math.max(0, rect.left - editorRect.left),
-    top: rect.bottom - editorRect.top + 4,
+    left: Math.max(0, rect.left),
+    top: rect.bottom + 4,
   };
 }
 
@@ -286,7 +287,6 @@ function handleBlur() {
   height: 100%;
   position: relative;
 }
-
 .promptEditor {
   width: 100%;
   height: 100%;
@@ -310,8 +310,8 @@ function handleBlur() {
 }
 
 .referencesPopup {
-  position: absolute;
-  z-index: 99999;
+  position: fixed;
+  z-index: 9999;
   min-width: 180px;
   max-height: 220px;
   overflow-y: auto;
@@ -329,7 +329,6 @@ function handleBlur() {
     flex-direction: column;
     gap: 2px;
   }
-
   .reference-item {
     display: flex;
     align-items: center;

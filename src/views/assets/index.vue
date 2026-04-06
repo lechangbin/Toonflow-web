@@ -880,32 +880,11 @@ const clipColumns: TableProps["columns"] = [
 // 选择行（正在生成中的行不允许勾选）
 function handleSelectChange(value: Array<string | number>) {
   const filtered = value.filter((key) => !isGenerating(key as number));
-  const prevKeys = selectedRowKeys.value;
   if (!props.multiple) {
     selectedRowKeys.value = filtered.length > 0 ? [filtered[filtered.length - 1]] : [];
   } else {
     selectedRowKeys.value = filtered;
   }
-  // 父资产勾选/取消时，同步子资产勾选状态
-  const newlySelected = selectedRowKeys.value.filter((k) => !prevKeys.includes(k));
-  const newlyDeselected = prevKeys.filter((k) => !selectedRowKeys.value.includes(k));
-  // 新勾选的父资产 → 其子资产全部勾选
-  newlySelected.forEach((parentId) => {
-    const parent = tableData.value.find((row) => row.id === parentId);
-    if (parent?.sonAssets?.length) {
-      const subIds = parent.sonAssets.map((sub) => sub.id);
-      const merged = new Set([...selectedSubRowKeys.value, ...subIds]);
-      selectedSubRowKeys.value = Array.from(merged);
-    }
-  });
-  // 取消勾选的父资产 → 其子资产全部取消
-  newlyDeselected.forEach((parentId) => {
-    const parent = tableData.value.find((row) => row.id === parentId);
-    if (parent?.sonAssets?.length) {
-      const subIds = new Set(parent.sonAssets.map((sub) => sub.id));
-      selectedSubRowKeys.value = selectedSubRowKeys.value.filter((k) => !subIds.has(k as number));
-    }
-  });
 }
 // 子资产选择行
 function handleSubSelectChange(value: Array<string | number>) {

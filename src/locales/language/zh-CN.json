@@ -1115,7 +1115,7 @@
         "importingLoading": "正在导入中，请稍候...",
         "mainTrackVideo": "主轨道（视频）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "分镜视频-{storyboard}.mp4"
+        "storyboardVideoName": "视频-{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "暂无图片",

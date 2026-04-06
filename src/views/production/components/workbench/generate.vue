@@ -66,7 +66,6 @@
             </div>
           </div>
         </t-dialog>
-
         <div class="modeMenu f ac jb">
           <div class="left f ac">
             <div class="model">
@@ -1023,10 +1022,17 @@ async function getGenerateData() {
     scriptId: episodesId.value ?? 0,
   });
   trackList.value = data.trackList;
+  // 保留用户本地已手动选择但后端可能还未持久化的映射
+  const prevMap = { ...trackSelectedVideoMap.value };
   trackSelectedVideoMap.value = {};
   for (const track of trackList.value) {
-    if (track.id != null && track.selectVideoId != null) {
-      trackSelectedVideoMap.value[track.id] = track.selectVideoId;
+    if (track.id != null) {
+      if (track.selectVideoId != null) {
+        trackSelectedVideoMap.value[track.id] = track.selectVideoId;
+      } else if (prevMap[track.id] != null) {
+        // 后端尚未返回最新选中状态，保留本地选择
+        trackSelectedVideoMap.value[track.id] = prevMap[track.id];
+      }
     }
   }
   storyboardList.value = data.storyboardList;
@@ -1054,22 +1060,19 @@ function restoreActiveTrackSelection() {
     videoUrl.value = "";
     return;
   }
-
   const selectedId = trackSelectedVideoMap.value[track.id] ?? track.selectVideoId ?? null;
   selectVideoId.value = selectedId;
-
   if (selectedId == null) {
-    videoUrl.value = "";
+    if (!videoUrl.value) {
+      videoUrl.value = "";
+    }
     return;
   }
-
   const selectedVideo = historyVideo.value.find((v) => v.videoTrackId === track.id && v.id === selectedId);
   if (selectedVideo && selectedVideo.state !== "生成中" && selectedVideo.state !== "生成失败") {
     videoUrl.value = selectedVideo.src;
     return;
   }
-
-  videoUrl.value = "";
 }
 
 onMounted(() => {

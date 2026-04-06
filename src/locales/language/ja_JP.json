@@ -1017,7 +1017,7 @@
         "importingLoading": "インポート中です。しばらくお待ちください...",
         "mainTrackVideo": "メイントラック（動画）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "絵コンテ動画-{storyboard}.mp4"
+        "storyboardVideoName": "ビデオ-{ストーリーボード}-{id}.mp4"
       },
       "preview": {
         "noImage": "画像なし",

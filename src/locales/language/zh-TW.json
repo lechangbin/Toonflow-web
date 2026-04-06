@@ -1020,7 +1020,8 @@
         "subtitle1": "字幕1",
         "stereo441": "44.1kHz 立體聲",
         "mono16": "16kHz 單聲道",
-        "sampleImage1": "範例圖片 1"
+        "sampleImage1": "範例圖片 1",
+        "storyboardVideoName": "影片-{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "暫無圖片",

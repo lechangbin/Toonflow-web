@@ -1018,7 +1018,7 @@
         "importingLoading": "กำลังนำเข้า โปรดรอสักครู่...",
         "mainTrackVideo": "แทร็กหลัก (วิดีโอ)",
         "subtitle1": "ซับไตเติล 1",
-        "storyboardVideoName": "วิดีโอสตอรี่บอร์ด-{storyboard}.mp4"
+        "storyboardVideoName": "วิดีโอ-{สตอรี่บอร์ด}-{id}.mp4"
       },
       "preview": {
         "noImage": "ยังไม่มีรูปภาพ",
