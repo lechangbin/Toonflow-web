@@ -180,7 +180,6 @@
         "importAdd": "新增新的 AI 供應商將賦予其存取系統 ​​API 的權限，請確認您信任該供應商的文件來源！",
         "linkAddFailed": "連結新增失敗"
       },
-      "associationSkills": "關聯skills",
       "think": "深度思考",
       "code": "程式碼",
       "linkAddPlaceholder": "輸入連結添加",

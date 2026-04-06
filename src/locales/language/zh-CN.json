@@ -183,7 +183,6 @@
         "importAdd": "添加新的 AI 供应商将赋予其访问系统 API 的权限，请确认您信任该供应商的文件来源！",
         "linkAddFailed": "链接添加失败"
       },
-      "associationSkills": "关联skills",
       "think": "深度思考",
       "code": "代码",
       "linkAddPlaceholder": "输入链接添加",
