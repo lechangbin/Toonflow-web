@@ -465,6 +465,7 @@ const theme = {
 };
 
 onUnmounted(() => {
+  playbackStore.pause();
   resizeObserver?.disconnect();
 });
 </script>
