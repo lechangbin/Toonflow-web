@@ -53,6 +53,7 @@
 </template>
 
 <script setup lang="ts">
+import type { Ref } from "vue";
 import axios from "@/utils/axios";
 import preview from "./preview.vue";
 import generate from "./generate.vue";
@@ -122,17 +123,18 @@ function getMediaType(src?: string): MediaType {
   if (["mp3", "wav", "ogg", "aac", "flac", "m4a"].includes(ext)) return "audio";
   return "unknown";
 }
-
 //切换菜单
 function changeMenu(type: string) {
   activeMenu.value = type;
   if (type == "editVideo") editFootage();
 }
+const episodesId = inject<Ref<number>>("episodesId")!;
 //查询剪辑素材
 function editFootage() {
   axios
     .post("/assets/getMaterialData", {
       projectId: project.value?.id,
+      scriptId: episodesId.value ?? 0,
     })
     .then(({ data }) => {
       const videoList = data.data.filter((item: any) => getMediaType(item.filePath) === "video");
