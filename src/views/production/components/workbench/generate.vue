@@ -836,7 +836,6 @@ watch(selectMode, (val) => {
   const newParsedMode = parseMode(val);
   const newIsMixed = Array.isArray(newParsedMode);
   if (newIsMixed) {
-    // 混合模式：保留旧有已填充的 item
     uploadBox.value = oldBox.filter((item) => item.src);
   } else {
     // 非混合模式：按 fileType 从快照中逐槽匹配复用数据
@@ -1044,13 +1043,28 @@ function syncMediasToUploadBox() {
   const track = trackList.value[activeTrackIndex.value];
   if (!track) return;
   const medias = track.medias;
-  uploadBox.value = uploadBox.value.map((item, i) => {
-    const media = medias[i];
-    if (media?.src) {
-      return { ...item, src: media.src, id: media.id, prompt: media.prompt, sources: media.sources ?? item.sources };
-    }
-    return { ...item, src: undefined, id: undefined, prompt: undefined };
-  });
+  if (isMixedMode.value) {
+    // 混合模式：直接用 track.medias 重建 uploadBox
+    uploadBox.value = medias
+      .filter((m) => m.src)
+      .map((m) => ({
+        fileType: m.fileType,
+        type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
+        sources: m.sources ?? "storyboard",
+        src: m.src,
+        id: m.id,
+        prompt: m.prompt,
+        label: "",
+      }));
+  } else {
+    uploadBox.value = uploadBox.value.map((item, i) => {
+      const media = medias[i];
+      if (media?.src) {
+        return { ...item, src: media.src, id: media.id, prompt: media.prompt, sources: media.sources ?? item.sources };
+      }
+      return { ...item, src: undefined, id: undefined, prompt: undefined };
+    });
+  }
 }
 
 function restoreActiveTrackSelection() {

@@ -140,7 +140,7 @@ function editFootage() {
       const videoList = data.data.filter((item: any) => getMediaType(item.filePath) === "video");
       const audioList = data.data.filter((item: any) => getMediaType(item.filePath) === "audio");
       const imageList = data.data.filter((item: any) => getMediaType(item.filePath) === "image");
-      initialVideoItems.value = data.video.map((item: any) => ({
+      initialVideoItems.value = data.video.map((item: any, index: number) => ({
         id: `video-${item.id}`,
         type: "video",
         name: $t("workbench.production.wb.storyboardVideoName", { storyboard: item.videoTrackId, id: item.id }),
