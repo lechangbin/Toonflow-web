@@ -62,14 +62,13 @@ function handleReset() {
 
 async function refreshAPI() {
   try {
-    const res = await fetch("toonflow://getPort");
+    const res = await fetch("toonflow://getAppUrl");
     const data = await res.json();
     if (data?.port) {
-      baseUrl.value = `http://localhost:${data.port}/api`;
+      baseUrl.value = data.url;
       isElectron.value = true;
       window.$message.success($t("settings.request.msg.refreshSuccess"));
     }
-    window.$message.error($t("settings.request.msg.refreshFailed"));
   } catch (error) {
     window.$message.error($t("settings.request.msg.refreshFailed"));
   }
