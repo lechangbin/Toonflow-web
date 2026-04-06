@@ -414,8 +414,19 @@ function exportImage() {
         responseType: "blob",
       },
     )
-    .then((response) => {
-      const url = URL.createObjectURL(response.data);
+    .then(async (response) => {
+      const blob = response.data;
+      if (!(blob instanceof Blob) || blob.type === "application/json") {
+        const text = blob instanceof Blob ? await blob.text() : String(blob);
+        try {
+          const errData = JSON.parse(text);
+          console.error("导出图片失败:", errData);
+        } catch {
+          console.error("导出图片失败:", text);
+        }
+        return;
+      }
+      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = $t("workbench.production.preview.exportFilename") + ".zip";

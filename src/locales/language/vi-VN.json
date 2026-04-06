@@ -171,7 +171,6 @@
         "importAdd": "Việc thêm nhà cung cấp AI mới sẽ cấp cho nhà cung cấp đó quyền truy cập vào API hệ thống, vui lòng đảm bảo rằng bạn tin cậy vào nguồn tài liệu của nhà cung cấp đó!",
         "linkAddFailed": "Không thể thêm liên kết"
       },
-      "associationSkills": "Kỹ năng liên quan",
       "think": "suy nghĩ sâu sắc",
       "code": "mã số",
       "linkAddPlaceholder": "Nhập liên kết để thêm",
@@ -477,7 +476,8 @@
         "deleteDirectorManualBody": "Bạn có chắc chắn muốn xóa Sổ tay Giám đốc \"{name}\" không?",
         "directorManualUpdated": "Sổ tay Giám đốc được cập nhật",
         "directorManualAdded": "Đã thêm hướng dẫn sử dụng của Giám đốc",
-        "directorManual": "Vui lòng chọn Sổ tay Giám đốc Dự án"
+        "directorManual": "Vui lòng chọn Sổ tay Giám đốc Dự án",
+        "modelProviderDisabled": "Nhà cung cấp mô hình video hoặc mô hình hình ảnh chưa được bật hoặc không có nhà cung cấp mô hình, vui lòng định cấu hình trước"
       },
       "type": {
         "novel": "Dựa trên tiểu thuyết gốc",
@@ -708,7 +708,10 @@
       "generatingPrompt": "Đang tạo",
       "selectPromptEmpty": "Chọn tất cả từ nhắc trống",
       "noEmptyPrompt": "Không có nội dung nào có từ nhắc trống",
-      "selectedCount": "đã chọn {count} nội dung"
+      "selectedCount": "đã chọn {count} nội dung",
+      "cancelGeneration": "Hủy tạo",
+      "selectGenerating": "Chọn mục đang được tạo",
+      "noGenerating": "Không có dữ liệu nào được tạo"
     },
     "script": {
       "searchPlaceholder": "Tìm kiếm tên kịch bản...",
@@ -894,7 +897,10 @@
         "imageGenFail": "Tạo hình ảnh thất bại",
         "unknownError": "Lỗi không xác định",
         "promptGenCancelled": "Thế hệ bị hủy"
-      }
+      },
+      "confirmCancellation": "Xác nhận hủy",
+      "confirmAgain": "Xác nhận hủy? Sau khi hủy, AI phụ trợ sẽ tiếp tục yêu cầu khấu trừ.",
+      "sure": "Chắc chắn"
     },
     "production": {
       "selectPlaceholder": "Vui lòng chọn tập",

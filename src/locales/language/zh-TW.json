@@ -180,7 +180,6 @@
         "importAdd": "新增新的 AI 供應商將賦予其存取系統 ​​API 的權限，請確認您信任該供應商的文件來源！",
         "linkAddFailed": "連結新增失敗"
       },
-      "associationSkills": "關聯skills",
       "think": "深度思考",
       "code": "程式碼",
       "linkAddPlaceholder": "輸入連結添加",
@@ -490,7 +489,8 @@
         "deleteDirectorManualBody": "確定要刪除導演手冊「{name}」嗎？",
         "directorManualUpdated": "導演手冊已更新",
         "directorManualAdded": "導演手冊已添加",
-        "directorManual": "請選擇項目導演手冊"
+        "directorManual": "請選擇項目導演手冊",
+        "modelProviderDisabled": "視訊模型或圖片模型供應商未啟用或無模型供應商，請先配置"
       },
       "type": {
         "novel": "基於小說原文",
@@ -721,7 +721,10 @@
       "generatingPrompt": "生成中",
       "selectPromptEmpty": "全選提示詞為空",
       "noEmptyPrompt": "沒有提示詞為空的資產",
-      "selectedCount": "已選取{count}個資產"
+      "selectedCount": "已選取{count}個資產",
+      "cancelGeneration": "取消生成",
+      "selectGenerating": "選擇正在產生項",
+      "noGenerating": "沒有正在產生的數據"
     },
     "script": {
       "searchPlaceholder": "搜尋劇本名稱...",
@@ -907,7 +910,10 @@
         "imageGenFail": "圖片生成失敗",
         "unknownError": "未知錯誤",
         "promptGenCancelled": "已取消生成"
-      }
+      },
+      "confirmCancellation": "確定取消",
+      "confirmAgain": "確認取消嗎？\n取消之後後台AI會繼續調取扣費",
+      "sure": "確定"
     },
     "production": {
       "selectPlaceholder": "請選擇劇集",

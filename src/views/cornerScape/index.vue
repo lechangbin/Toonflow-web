@@ -59,6 +59,11 @@
       <t-card v-show="dataList.length > 0" shadow class="card" v-for="item in dataList" :key="item.id" @click="openDrawer(item)">
         <div class="imageBox">
           <t-checkbox class="selectBox" :checked="selectedIds.includes(item.id)" @click.stop @change="toggleSelect(item.id)" />
+          <div class="cancelGeneration" @click.stop="cancelGenerationFn(item)" v-if="item.state === '生成中'">
+            <t-tag theme="danger" size="small">
+              {{ $t("workbench.cornerScape.cancelGeneration") }}
+            </t-tag>
+          </div>
           <t-empty v-if="!item.state && item.promptState !== '生成中'" type="maintenance" :title="$t('workbench.cornerScape.waitingGen')" />
           <div v-else-if="item.state === '生成中' || item.promptState === '生成中'" class="generatingBox">
             <t-loading />
@@ -219,6 +224,7 @@ interface Image {
 }
 interface DataItem {
   id: number;
+  imageId: number;
   type: string;
   name: string;
   prompt: string;
@@ -346,6 +352,38 @@ function toggleSelectAll() {
 }
 function clearSelection() {
   selectedIds.value = [];
+}
+//取消生成
+async function cancelGenerationFn(item: DataItem) {
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.assets.confirmCancellation"),
+    body: $t("workbench.assets.confirmAgain"),
+    confirmBtn: $t("workbench.assets.sure"),
+    cancelBtn: $t("workbench.assets.cancelBtn"),
+    theme: "warning",
+    onConfirm: async () => {
+      try {
+        const { data } = await axios.post("/cornerScape/getAllAssets", {
+          projectId: project.value?.id,
+          type: checkboxValue.value,
+        });
+        const freshItem = (data as DataItem[]).find((d) => d.id === item.id);
+        if (!freshItem || !freshItem.imageId) {
+          window.$message.warning($t("workbench.cornerScape.noGenerating"));
+          return;
+        }
+        await axios.post("/assetsGenerate/cancelGenerate", {
+          id: freshItem.imageId,
+        });
+        window.$message.success($t("workbench.cornerScape.cancelGeneration") + " " + item.name);
+      } catch (e: any) {
+        window.$message.error(e.message ?? $t("workbench.cornerScape.cancelGeneration") + "失败");
+      } finally {
+        getFilteredData();
+        dialog.destroy();
+      }
+    },
+  });
 }
 
 // Drawer
@@ -844,6 +882,17 @@ watch(generatingData, (val) => {
           left: 8px;
           z-index: 10;
         }
+        .cancelGeneration {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          z-index: 10;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s;
+          cursor: pointer;
+          font-size: 12px;
+        }
         .generatingBox {
           display: flex;
           flex-direction: column;
@@ -879,6 +928,10 @@ watch(generatingData, (val) => {
       }
       &:hover {
         .imageToolsWrap {
+          opacity: 1;
+          pointer-events: auto;
+        }
+        .cancelGeneration {
           opacity: 1;
           pointer-events: auto;
         }

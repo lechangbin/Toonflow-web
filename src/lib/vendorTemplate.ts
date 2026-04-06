@@ -14,7 +14,6 @@ interface ImageModel {
   modelName: string;
   type: "image";
   mode: ("text" | "singleImage" | "multiReference")[];
-  associationSkills?: string; // 关联技能，多个技能用逗号分隔
 }
 // 视频模型
 interface VideoModel {
@@ -29,7 +28,6 @@ interface VideoModel {
     | "text" // 文本生视频
     | ("videoReference" | "imageReference" | "audioReference" | "textReference")[]
   )[]; // 混合参考
-  associationSkills?: string; // 关联技能，多个技能用逗号分隔
   audio: "optional" | false | true; // 音频配置
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
 }
