@@ -1010,7 +1010,7 @@
         "importingLoading": "Đang nhập, vui lòng chờ...",
         "mainTrackVideo": "Track chính (Video)",
         "subtitle1": "Phụ đề 1",
-        "storyboardVideoName": "lô{bảng phân cảnh}-{id}.mp4"
+        "storyboardVideoName": "Nhóm {storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "Chưa có hình ảnh",

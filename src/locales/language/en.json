@@ -1102,7 +1102,7 @@
         "importingLoading": "Importing, please wait...",
         "mainTrackVideo": "Main Track (Video)",
         "subtitle1": "Subtitle 1",
-        "storyboardVideoName": "batch{storyboard}-{id}.mp4"
+        "storyboardVideoName": "Group {storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "No Image",

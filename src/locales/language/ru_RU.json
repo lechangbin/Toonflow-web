@@ -1019,7 +1019,7 @@
         "importingLoading": "Импорт, пожалуйста, подождите...",
         "mainTrackVideo": "Основная дорожка (Видео)",
         "subtitle1": "Субтитры 1",
-        "storyboardVideoName": "пакетная раскадровка-{id}.mp4"
+        "storyboardVideoName": "Группа {раскадровка}-{id}.mp4"
       },
       "preview": {
         "noImage": "Нет изображения",

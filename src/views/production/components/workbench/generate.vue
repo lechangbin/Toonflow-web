@@ -261,15 +261,10 @@ const episodesId = inject<Ref<number>>("episodesId")!;
 const { project } = storeToRefs(projectStore());
 
 const videoUrl = ref("");
-const promptText = computed({
-  get: () => {
-    const track = trackList.value[activeTrackIndex.value];
+const promptText = computed(() =>{
+   const track = trackList.value[activeTrackIndex.value];
+   console.log("%c Line:266 🥟 track", "background:#fca650", track);
     return track?.prompt ?? "";
-  },
-  set: (val: string) => {
-    const track = trackList.value[activeTrackIndex.value];
-    if (track) track.prompt = val;
-  },
 });
 const selectedResolution = ref("480p");
 const selectedDuration = ref(8);
@@ -315,10 +310,9 @@ async function genText() {
   const infoSource = isTextMode
     ? track.medias
     : uploadBox.value.filter((item) => item.src).map((item) => ({ id: item.id, src: item.src, prompt: item.prompt, sources: item.sources }));
-
   const info = infoSource.map((item) => ({
     id: item.id,
-    sources: item.sources ? item.sources : "storyboard",
+    sources: item.sources,
   }));
   genTextLoadingMap.value[trackId] = true;
   try {
@@ -933,7 +927,7 @@ function batchGenText() {
       const infoSource = isTextMode ? track.medias : modeTemplate.map((_, i) => track.medias[i]).filter(Boolean);
       const info = infoSource.map((m) => ({
         id: m.id,
-        sources: m.sources ? m.sources : "storyboard",
+        sources: m.sources,
       }));
       genTextLoadingMap.value[trackId] = true;
       try {
@@ -959,7 +953,6 @@ function batchGenVideo() {
     body: $t("workbench.generate.generateVideosInBatches"),
     onConfirm: async () => {
       dlg.destroy();
-      const modeTemplate = selectMode.value ? buildUploadBox(selectMode.value) : [];
       trackList.value
         .filter((track) => checkedTrackIds.value.includes(track.id))
         .forEach(async (track) => {
@@ -967,17 +960,15 @@ function batchGenVideo() {
           if (trackId == null || generatingMap.value[trackId]) return;
           generatingMap.value[trackId] = true;
           try {
-            const uploadData = modeTemplate.map((_, i) => track.medias[i]).filter((item) => item && Boolean(item.src));
+            const uploadData = track.medias.filter((item) => Boolean(item.src));
             const payload = {
               projectId: project.value?.id,
               duration: clampDuration(track.duration || selectedDuration.value),
               scriptId: episodesId.value,
-              uploadData: uploadData.map((item) => {
-                return {
-                  id: item.id,
-                  sources: item.sources ? item.sources : "storyboard",
-                };
-              }),
+              uploadData: uploadData.map((item) => ({
+                id: item.id,
+                sources: item.sources ?? "storyboard",
+              })),
               prompt: track.prompt,
               model: selectModel.value,
               mode: selectMode.value,
