@@ -81,7 +81,11 @@
           </t-image>
         </div>
         <div class="infoBox">
-          <div class="title">{{ item.name }}</div>
+          <div class="title ac jb">
+            {{ item.name }}
+            <t-tag size="small" variant="outline" theme="success" v-if="item.prompt">已生成提示词</t-tag>
+            <t-tag size="small" variant="outline" theme="danger" v-else>未生成提示词</t-tag>
+          </div>
           <div class="meta">
             <t-tag size="small" variant="light-outline" theme="warning" class="typeTag">
               {{
@@ -268,7 +272,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   if (abortController) {
-    abortController.abort();dataList.value
+    abortController.abort();
     abortController = null;
   }
   stopPolling();
@@ -324,8 +328,8 @@ const selectByState = (state: string) => {
 };
 //全选提示词为空的
 function selectPromptEmpty() {
-  const lite =  dataList.value.filter((item) => !item.prompt || item.prompt.trim() === "").map((item) => item.id);
-  if(lite.length === 0) {
+  const lite = dataList.value.filter((item) => !item.prompt || item.prompt.trim() === "").map((item) => item.id);
+  if (lite.length === 0) {
     window.$message.warning($t("workbench.cornerScape.noEmptyPrompt"));
     return;
   }
