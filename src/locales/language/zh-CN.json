@@ -575,7 +575,8 @@
         "deleteDirectorManualBody": "确定要删除导演手册「{name}」吗？",
         "directorManualUpdated": "导演手册已更新",
         "directorManualAdded": "导演手册已添加",
-        "directorManual": "请选择项目导演手册"
+        "directorManual": "请选择项目导演手册",
+        "modelProviderDisabled": "视频模型或图片模型供应商未启用或无模型供应商，请先配置"
       },
       "type": {
         "novel": "基于小说原文",
@@ -1116,7 +1117,7 @@
         "importingLoading": "正在导入中，请稍候...",
         "mainTrackVideo": "主轨道（视频）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "分镜视频-{storyboard}.mp4"
+        "storyboardVideoName": "批{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "暂无图片",
@@ -1566,5 +1567,17 @@
   },
   "workbench.production.generatedNode.localUpload": "本地上传",
   "workbench.production.editImage.uploadFailed": "图片上传失败",
-  "workbench.production.editImage.noImage": "请先添加图片"
+  "workbench.production.editImage.noImage": "请先添加图片",
+  "workbench.script.batchAddScript": "批量上传剧本",
+  "workbench.script.import.pasteLabel": "直接粘贴剧本内容",
+  "workbench.script.import.col.chapter": "集",
+  "workbench.script.import.col.scriptName": "剧本名称",
+  "workbench.script.import.col.scriptData": "剧本内容",
+  "workbench.script.import.episodeRegex": "剧本拆分正则",
+  "workbench.script.import.episodeRegexPh": "自定义剧本拆分正则，留空使用默认拆分正则（默认按 第X集 格式拆分）",
+  "workbench.script.import.regexInvalid": "正则表达式格式错误",
+  "workbench.script.import.parsedChapters": "已解析 {count} 集",
+  "workbench.script.import.msg.selectChapters": "请先勾选剧本",
+  "workbench.script.import.msg.saveSuccess": "剧本保存成功",
+  "workbench.script.import.batchTitle": "批量上传剧本"
 }

@@ -491,7 +491,8 @@
         "deleteDirectorManualBody": "確定要刪除導演手冊「{name}」嗎？",
         "directorManualUpdated": "導演手冊已更新",
         "directorManualAdded": "導演手冊已添加",
-        "directorManual": "請選擇項目導演手冊"
+        "directorManual": "請選擇項目導演手冊",
+        "modelProviderDisabled": "視訊模型或圖片模型供應商未啟用或無模型供應商，請先配置"
       },
       "type": {
         "novel": "基於小說原文",
@@ -1021,7 +1022,8 @@
         "subtitle1": "字幕1",
         "stereo441": "44.1kHz 立體聲",
         "mono16": "16kHz 單聲道",
-        "sampleImage1": "範例圖片 1"
+        "sampleImage1": "範例圖片 1",
+        "storyboardVideoName": "批次{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "暫無圖片",
@@ -1438,5 +1440,16 @@
   },
   "workbench.production.generatedNode.localUpload": "本地上傳",
   "workbench.production.editImage.uploadFailed": "圖片上傳失敗",
-  "workbench.production.editImage.noImage": "請先加入圖片"
+  "workbench.production.editImage.noImage": "請先加入圖片",
+  "workbench.script.batchAddScript": "大量上傳劇本",
+  "workbench.script.import.pasteLabel": "直接貼上劇本內容",
+  "workbench.script.import.col.scriptName": "劇本名稱",
+  "workbench.script.import.col.scriptData": "劇本內容",
+  "workbench.script.import.episodeRegex": "劇本拆分正規",
+  "workbench.script.import.episodeRegexPh": "自訂劇本拆分正規，留空使用預設拆分正規（預設按 第X集 格式拆分）",
+  "workbench.script.import.regexInvalid": "正規表示式格式錯誤",
+  "workbench.script.import.parsedChapters": "已解析 {count} 集",
+  "workbench.script.import.msg.selectChapters": "請先勾選劇本",
+  "workbench.script.import.msg.saveSuccess": "劇本保存成功",
+  "workbench.script.import.batchTitle": "大量上傳劇本"
 }

@@ -487,7 +487,8 @@
         "deleteDirectorManualBody": "ディレクターズマニュアル「{名前}」を削除してもよろしいですか?",
         "directorManualUpdated": "ディレクターズマニュアルを更新しました",
         "directorManualAdded": "ディレクターズマニュアルを追加しました",
-        "directorManual": "プロジェクトディレクターズマニュアルを選択してください"
+        "directorManual": "プロジェクトディレクターズマニュアルを選択してください",
+        "modelProviderDisabled": "ビデオ モデルまたは画像モデルのサプライヤーが有効になっていない、またはモデル サプライヤーがありません。最初に設定してください。"
       },
       "type": {
         "novel": "原作小説に基づいて",
@@ -1018,7 +1019,7 @@
         "importingLoading": "インポート中です。しばらくお待ちください...",
         "mainTrackVideo": "メイントラック（動画）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "絵コンテ動画-{storyboard}.mp4"
+        "storyboardVideoName": "バッチ{ストーリーボード}-{id}.mp4"
       },
       "preview": {
         "noImage": "画像なし",
@@ -1449,5 +1450,16 @@
   },
   "workbench.production.generatedNode.localUpload": "ローカルアップロード",
   "workbench.production.editImage.uploadFailed": "画像のアップロードに失敗しました",
-  "workbench.production.editImage.noImage": "まずは写真を追加してください"
+  "workbench.production.editImage.noImage": "まずは写真を追加してください",
+  "workbench.script.batchAddScript": "スクリプトをバッチでアップロードする",
+  "workbench.script.import.pasteLabel": "スクリプトの内容を直接貼り付けます",
+  "workbench.script.import.col.scriptName": "スクリプト名",
+  "workbench.script.import.col.scriptData": "スクリプトの内容",
+  "workbench.script.import.episodeRegex": "スクリプト分割ルール",
+  "workbench.script.import.episodeRegexPh": "スクリプト分割ルールをカスタマイズします。デフォルトの分割ルールを使用するには空白のままにしてください (デフォルトはエピソード X 形式に従って分割されます)。",
+  "workbench.script.import.regexInvalid": "正規表現の形式が正しくありません",
+  "workbench.script.import.parsedChapters": "{count} セットが解析されました",
+  "workbench.script.import.msg.selectChapters": "まずはスクリプトを確認してください",
+  "workbench.script.import.msg.saveSuccess": "スクリプトは正常に保存されました",
+  "workbench.script.import.batchTitle": "スクリプトをバッチでアップロードする"
 }

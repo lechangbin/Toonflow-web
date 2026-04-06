@@ -478,7 +478,8 @@
         "deleteDirectorManualBody": "Bạn có chắc chắn muốn xóa Sổ tay Giám đốc \"{name}\" không?",
         "directorManualUpdated": "Sổ tay Giám đốc được cập nhật",
         "directorManualAdded": "Đã thêm hướng dẫn sử dụng của Giám đốc",
-        "directorManual": "Vui lòng chọn Sổ tay Giám đốc Dự án"
+        "directorManual": "Vui lòng chọn Sổ tay Giám đốc Dự án",
+        "modelProviderDisabled": "Nhà cung cấp mô hình video hoặc mô hình hình ảnh chưa được bật hoặc không có nhà cung cấp mô hình, vui lòng định cấu hình trước"
       },
       "type": {
         "novel": "Dựa trên tiểu thuyết gốc",
@@ -1009,7 +1010,7 @@
         "importingLoading": "Đang nhập, vui lòng chờ...",
         "mainTrackVideo": "Track chính (Video)",
         "subtitle1": "Phụ đề 1",
-        "storyboardVideoName": "Video storyboard-{storyboard}.mp4"
+        "storyboardVideoName": "lô{bảng phân cảnh}-{id}.mp4"
       },
       "preview": {
         "noImage": "Chưa có hình ảnh",
@@ -1441,5 +1442,16 @@
   },
   "workbench.production.generatedNode.localUpload": "Tải lên cục bộ",
   "workbench.production.editImage.uploadFailed": "Tải hình ảnh lên không thành công",
-  "workbench.production.editImage.noImage": "Vui lòng thêm hình ảnh trước"
+  "workbench.production.editImage.noImage": "Vui lòng thêm hình ảnh trước",
+  "workbench.script.batchAddScript": "Tải lên tập lệnh theo đợt",
+  "workbench.script.import.pasteLabel": "Dán nội dung tập lệnh trực tiếp",
+  "workbench.script.import.col.scriptName": "Tên tập lệnh",
+  "workbench.script.import.col.scriptData": "Nội dung kịch bản",
+  "workbench.script.import.episodeRegex": "Quy tắc chia tập lệnh",
+  "workbench.script.import.episodeRegexPh": "Tùy chỉnh quy tắc chia tập lệnh, để trống để sử dụng quy tắc chia tập lệnh mặc định (mặc định là chia theo định dạng Tập X)",
+  "workbench.script.import.regexInvalid": "Định dạng biểu thức chính quy không hợp lệ",
+  "workbench.script.import.parsedChapters": "bộ {count} được phân tích cú pháp",
+  "workbench.script.import.msg.selectChapters": "Vui lòng kiểm tra kịch bản trước",
+  "workbench.script.import.msg.saveSuccess": "Tập lệnh đã được lưu thành công",
+  "workbench.script.import.batchTitle": "Tải lên tập lệnh theo đợt"
 }

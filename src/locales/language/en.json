@@ -561,7 +561,8 @@
         "deleteDirectorManualBody": "Are you sure you want to delete Director's Manual \"{name}\"?",
         "directorManualUpdated": "Director's Manual updated",
         "directorManualAdded": "Director's Manual added",
-        "directorManual": "Please select Project Director's Manual"
+        "directorManual": "Please select Project Director's Manual",
+        "modelProviderDisabled": "The video model or picture model supplier is not enabled or there is no model supplier, please configure it first"
       },
       "type": {
         "novel": "Based on the original novel",
@@ -1101,7 +1102,7 @@
         "importingLoading": "Importing, please wait...",
         "mainTrackVideo": "Main Track (Video)",
         "subtitle1": "Subtitle 1",
-        "storyboardVideoName": "Storyboard Video-{storyboard}.mp4"
+        "storyboardVideoName": "batch{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "No Image",
@@ -1529,5 +1530,16 @@
   },
   "workbench.production.generatedNode.localUpload": "Local upload",
   "workbench.production.editImage.uploadFailed": "Image upload failed",
-  "workbench.production.editImage.noImage": "Please add pictures first"
+  "workbench.production.editImage.noImage": "Please add pictures first",
+  "workbench.script.batchAddScript": "Upload scripts in batches",
+  "workbench.script.import.pasteLabel": "Paste the script content directly",
+  "workbench.script.import.col.scriptName": "Script name",
+  "workbench.script.import.col.scriptData": "Script content",
+  "workbench.script.import.episodeRegex": "Script splitting rules",
+  "workbench.script.import.episodeRegexPh": "Customize the script splitting rule, leave it blank to use the default splitting rule (the default is to split according to the Episode X format)",
+  "workbench.script.import.regexInvalid": "Invalid regular expression",
+  "workbench.script.import.parsedChapters": "{count} set parsed",
+  "workbench.script.import.msg.selectChapters": "Please check the script first",
+  "workbench.script.import.msg.saveSuccess": "Script saved successfully",
+  "workbench.script.import.batchTitle": "Upload scripts in batches"
 }

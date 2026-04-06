@@ -66,7 +66,6 @@
             </div>
           </div>
         </t-dialog>
-
         <div class="modeMenu f ac jb">
           <div class="left f ac">
             <div class="model">
@@ -837,7 +836,6 @@ watch(selectMode, (val) => {
   const newParsedMode = parseMode(val);
   const newIsMixed = Array.isArray(newParsedMode);
   if (newIsMixed) {
-    // 混合模式：保留旧有已填充的 item
     uploadBox.value = oldBox.filter((item) => item.src);
   } else {
     // 非混合模式：按 fileType 从快照中逐槽匹配复用数据
@@ -1023,10 +1021,17 @@ async function getGenerateData() {
     scriptId: episodesId.value ?? 0,
   });
   trackList.value = data.trackList;
+  // 保留用户本地已手动选择但后端可能还未持久化的映射
+  const prevMap = { ...trackSelectedVideoMap.value };
   trackSelectedVideoMap.value = {};
   for (const track of trackList.value) {
-    if (track.id != null && track.selectVideoId != null) {
-      trackSelectedVideoMap.value[track.id] = track.selectVideoId;
+    if (track.id != null) {
+      if (track.selectVideoId != null) {
+        trackSelectedVideoMap.value[track.id] = track.selectVideoId;
+      } else if (prevMap[track.id] != null) {
+        // 后端尚未返回最新选中状态，保留本地选择
+        trackSelectedVideoMap.value[track.id] = prevMap[track.id];
+      }
     }
   }
   storyboardList.value = data.storyboardList;
@@ -1038,13 +1043,28 @@ function syncMediasToUploadBox() {
   const track = trackList.value[activeTrackIndex.value];
   if (!track) return;
   const medias = track.medias;
-  uploadBox.value = uploadBox.value.map((item, i) => {
-    const media = medias[i];
-    if (media?.src) {
-      return { ...item, src: media.src, id: media.id, prompt: media.prompt, sources: media.sources ?? item.sources };
-    }
-    return { ...item, src: undefined, id: undefined, prompt: undefined };
-  });
+  if (isMixedMode.value) {
+    // 混合模式：直接用 track.medias 重建 uploadBox
+    uploadBox.value = medias
+      .filter((m) => m.src)
+      .map((m) => ({
+        fileType: m.fileType,
+        type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
+        sources: m.sources ?? "storyboard",
+        src: m.src,
+        id: m.id,
+        prompt: m.prompt,
+        label: "",
+      }));
+  } else {
+    uploadBox.value = uploadBox.value.map((item, i) => {
+      const media = medias[i];
+      if (media?.src) {
+        return { ...item, src: media.src, id: media.id, prompt: media.prompt, sources: media.sources ?? item.sources };
+      }
+      return { ...item, src: undefined, id: undefined, prompt: undefined };
+    });
+  }
 }
 
 function restoreActiveTrackSelection() {
@@ -1054,22 +1074,19 @@ function restoreActiveTrackSelection() {
     videoUrl.value = "";
     return;
   }
-
   const selectedId = trackSelectedVideoMap.value[track.id] ?? track.selectVideoId ?? null;
   selectVideoId.value = selectedId;
-
   if (selectedId == null) {
-    videoUrl.value = "";
+    if (!videoUrl.value) {
+      videoUrl.value = "";
+    }
     return;
   }
-
   const selectedVideo = historyVideo.value.find((v) => v.videoTrackId === track.id && v.id === selectedId);
   if (selectedVideo && selectedVideo.state !== "生成中" && selectedVideo.state !== "生成失败") {
     videoUrl.value = selectedVideo.src;
     return;
   }
-
-  videoUrl.value = "";
 }
 
 onMounted(() => {
