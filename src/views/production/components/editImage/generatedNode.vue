@@ -322,17 +322,14 @@ onMounted(() => {
     transform: translateX(-50%);
     margin-top: 10px;
     width: 500px;
-    height: 200px;
     border: 1px solid #d4d4d4;
     background-color: #fff;
     border-radius: 10px;
     z-index: 9999;
 
     .imageRefs {
-      height: 50px;
       overflow: auto;
       padding: 10px;
-
       .refThumb {
         margin-left: 8px;
         .refImg {
@@ -344,9 +341,13 @@ onMounted(() => {
     }
 
     .text {
-      height: 100px;
+      height: 200px;
+      min-height: 100px;
+      max-height: 500px;
       display: flex;
       position: relative;
+      overflow: auto;
+      resize: vertical;
     }
 
     .operate {
