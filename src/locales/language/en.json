@@ -797,7 +797,10 @@
       "generatingPrompt": "Generating",
       "selectPromptEmpty": "Select all prompt word is empty",
       "noEmptyPrompt": "There are no assets with empty prompt word",
-      "selectedCount": "{count} assets selected"
+      "selectedCount": "{count} assets selected",
+      "cancelGeneration": "Cancel generation",
+      "selectGenerating": "Select the item being generated",
+      "noGenerating": "No data being generated"
     },
     "script": {
       "searchPlaceholder": "Search script names...",
@@ -983,7 +986,10 @@
         "imageGenFail": "Image generation failed",
         "unknownError": "Unknown error",
         "promptGenCancelled": "Generation canceled"
-      }
+      },
+      "confirmCancellation": "Confirm cancellation",
+      "confirmAgain": "Confirm cancellation? \nAfter cancellation, the backend AI will continue to call for deductions.",
+      "sure": "Sure"
     },
     "production": {
       "selectPlaceholder": "Please select an episode",

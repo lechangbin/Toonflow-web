@@ -717,7 +717,10 @@
       "generatingPrompt": "Создание",
       "selectPromptEmpty": "Выбрать все подсказки. Слово пусто.",
       "noEmptyPrompt": "Нет ресурсов с пустым словом-подсказкой.",
-      "selectedCount": "Выбрано {count} объектов"
+      "selectedCount": "Выбрано {count} объектов",
+      "cancelGeneration": "Отменить генерацию",
+      "selectGenerating": "Выберите создаваемый элемент",
+      "noGenerating": "Данные не генерируются"
     },
     "script": {
       "searchPlaceholder": "Поиск по названию сценария...",
@@ -903,7 +906,10 @@
         "imageGenFail": "Ошибка генерации изображений",
         "unknownError": "Неизвестная ошибка",
         "promptGenCancelled": "Генерация отменена"
-      }
+      },
+      "confirmCancellation": "Подтвердить отмену",
+      "confirmAgain": "Подтвердить отмену? После отмены серверный ИИ продолжит требовать вычетов.",
+      "sure": "Конечно"
     },
     "production": {
       "selectPlaceholder": "Выберите эпизод",

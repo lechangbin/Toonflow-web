@@ -717,7 +717,10 @@
       "generatingPrompt": "生成中",
       "selectPromptEmpty": "プロンプトの単語が空であることをすべて選択してください",
       "noEmptyPrompt": "空のプロンプトワードを含むアセットはありません",
-      "selectedCount": "{count} 個のアセットが選択されました"
+      "selectedCount": "{count} 個のアセットが選択されました",
+      "cancelGeneration": "生成をキャンセルする",
+      "selectGenerating": "生成されるアイテムを選択します",
+      "noGenerating": "データは生成されていません"
     },
     "script": {
       "searchPlaceholder": "シナリオ名を検索...",
@@ -903,7 +906,10 @@
         "imageGenFail": "画像の生成に失敗しました",
         "unknownError": "不明なエラー",
         "promptGenCancelled": "生成がキャンセルされました"
-      }
+      },
+      "confirmCancellation": "キャンセルの確認",
+      "confirmAgain": "キャンセルを確認しますか?キャンセル後も、バックエンド AI は控除を要求し続けます。",
+      "sure": "もちろん"
     },
     "production": {
       "selectPlaceholder": "エピソードを選択してください",

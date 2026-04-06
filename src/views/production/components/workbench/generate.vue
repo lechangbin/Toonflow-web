@@ -1,6 +1,5 @@
 <template>
   <div class="generateContainer">
-    {{ episodesId }}
     <div class="data f">
       <div class="videoToImage">
         <video v-if="videoUrl" :src="videoUrl" class="previewVideo" controls preload="metadata" />
