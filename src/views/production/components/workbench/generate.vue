@@ -159,9 +159,23 @@
                 <img :src="videoCoverMap[v.src]" class="videoCover" />
               </template>
               <template v-else-if="v.state !== '生成中'">
-                <video :key="v.src" :src="v.src" preload="metadata" muted
-                  @loadedmetadata="(e: Event) => { (e.target as HTMLVideoElement).currentTime = 0.5 }"
-                  @seeked="(e: Event) => { const el = e.target as HTMLVideoElement; captureVideoCover(v.src); el.style.display = 'none' }" />
+                <video
+                  :key="v.src"
+                  :src="v.src"
+                  preload="metadata"
+                  muted
+                  @loadedmetadata="
+                    (e: Event) => {
+                      (e.target as HTMLVideoElement).currentTime = 0.5;
+                    }
+                  "
+                  @seeked="
+                    (e: Event) => {
+                      const el = e.target as HTMLVideoElement;
+                      captureVideoCover(v.src);
+                      el.style.display = 'none';
+                    }
+                  " />
               </template>
               <div v-if="v.state === '生成中'" class="loadingOverlay c fc">
                 <t-loading size="24px" />
@@ -301,12 +315,11 @@ async function genText() {
   const infoSource = isTextMode
     ? track.medias
     : uploadBox.value.filter((item) => item.src).map((item) => ({ id: item.id, src: item.src, prompt: item.prompt, sources: item.sources }));
-  const info = infoSource
-    .filter((item) => item.prompt)
-    .map((item) => ({
-      id: item.id,
-      sources: item.sources ? item.sources : "storyboard",
-    }));
+
+  const info = infoSource.map((item) => ({
+    id: item.id,
+    sources: item.sources ? item.sources : "storyboard",
+  }));
   genTextLoadingMap.value[trackId] = true;
   try {
     const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
@@ -916,12 +929,10 @@ function batchGenText() {
       // 文本模式取 track.medias 全部数据；非文本模式按当前模式模板槽位数量截取 track.medias
       const modeTemplate = selectMode.value ? buildUploadBox(selectMode.value) : [];
       const infoSource = isTextMode ? track.medias : modeTemplate.map((_, i) => track.medias[i]).filter(Boolean);
-      const info = infoSource
-        .filter((m) => m?.prompt)
-        .map((m) => ({
-          id: m.id,
-          sources: m.sources ? m.sources : "storyboard",
-        }));
+      const info = infoSource.map((m) => ({
+        id: m.id,
+        sources: m.sources ? m.sources : "storyboard",
+      }));
       genTextLoadingMap.value[trackId] = true;
       try {
         const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
