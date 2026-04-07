@@ -162,7 +162,7 @@
                 <label class="fieldLabel">{{ $t("workbench.project.dialog.visualManualCover") }}</label>
                 <div class="coverUploadArea multiCoverUploadArea">
                   <div v-for="(img, idx) in visualManualForm.images" :key="idx" class="coverPreview">
-                    <img :src="img" class="coverImg" />
+                    <img :src="img" class="coverImg" @click.stop="handlePreview(img && img)" style="cursor: pointer" />
                     <div class="coverImgRemove" @click="removeVisualManualCover(idx)">
                       <i-close size="10" />
                     </div>
@@ -276,7 +276,7 @@
         </t-form>
       </t-loading>
     </t-dialog>
-    <t-image-viewer v-model="visible" :images="[trigger]" />
+    <t-image-viewer v-model="visible" :images="[trigger]" :closeOnOverlay="true" />
   </div>
 </template>
 
