@@ -3,7 +3,7 @@
     <t-dialog :footer="false" v-model:visible="purgeNovelShow" :header="$t('workbench.script.import.batchTitle')" width="50%" placement="center">
       <div class="data">
         <t-tabs :value="activeKey" disabled>
-          <t-tab-panel value="To1" :label="$t('workbench.novel.import.step1')" style="height: 680px; overflow-y: auto">
+          <t-tab-panel value="To1" :label="$t('workbench.novel.import.step1')" style="height: 700px; overflow-y: auto">
             <div class="regexRow f ac" style="margin-top: 10px; gap: 8px">
               <span class="regexLabel">{{ $t("workbench.script.import.episodeRegex") }}</span>
               <t-input
