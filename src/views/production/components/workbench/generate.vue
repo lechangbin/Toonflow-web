@@ -31,6 +31,9 @@
                 <div class="clearBtn" @click.stop="clearUpload(index)">
                   <i-close size="12" />
                 </div>
+                <div class="source">
+                  <t-tag size="small">{{ item.sources == "storyboard" ? "分镜" : "资产" }}</t-tag>
+                </div>
               </template>
             </div>
             <div class="uploadBtn c fc" @click="handleMixedAdd">
@@ -261,10 +264,9 @@ const episodesId = inject<Ref<number>>("episodesId")!;
 const { project } = storeToRefs(projectStore());
 
 const videoUrl = ref("");
-const promptText = computed(() =>{
-   const track = trackList.value[activeTrackIndex.value];
-   console.log("%c Line:266 🥟 track", "background:#fca650", track);
-    return track?.prompt ?? "";
+const promptText = computed(() => {
+  const track = trackList.value[activeTrackIndex.value];
+  return track?.prompt ?? "";
 });
 const selectedResolution = ref("480p");
 const selectedDuration = ref(8);
@@ -309,7 +311,7 @@ async function genText() {
   const isTextMode = selectMode.value === "text";
   const infoSource = isTextMode
     ? track.medias
-    : uploadBox.value.filter((item) => item.src).map((item) => ({ id: item.id, src: item.src, prompt: item.prompt, sources: item.sources }));
+    : uploadBox.value.map((item) => ({ id: item.id, src: item.src, prompt: item.prompt, sources: item.sources }));
   const info = infoSource.map((item) => ({
     id: item.id,
     sources: item.sources,
@@ -593,7 +595,7 @@ const uploadBox = ref<UploadItem[]>([]);
 
 const references = computed(() => {
   return uploadBox.value
-    .filter((item) => item.src)
+    .filter((m) => m.src)
     .map((item) => ({
       type: item.fileType,
       src: item.src!,
@@ -774,7 +776,7 @@ async function generateVideo() {
         const payload = {
           projectId: project.value?.id,
           scriptId: episodesId.value,
-          uploadData: uploadBox.value.filter((item) => Boolean(item.src)),
+          uploadData: uploadBox.value,
           prompt: promptText.value,
           model: selectModel.value,
           mode: selectMode.value,
@@ -783,8 +785,6 @@ async function generateVideo() {
           audio: selectedAudio.value,
           trackId,
         };
-        console.log("%c Line:781 🍯 payload", "background:#3f7cff", payload);
-
         const { data } = await axios.post("/production/workbench/generateVideo", payload);
         window.$message.success($t("workbench.generate.generateStarted"));
         getVideoList();
@@ -806,13 +806,6 @@ watch(selectModel, (val) => {
   }
   axios.post("/modelSelect/getModelDetail", { modelId: val }).then(({ data }) => {
     modeOptions.value = data;
-    // 重置 mode 为第一个可选项
-    // if (data.mode?.length) {
-    //   const firstMode = data.mode[0];
-    //   selectMode.value = Array.isArray(firstMode) ? JSON.stringify(firstMode) : firstMode;
-    // } else {
-    //   selectMode.value = undefined;
-    // }
     // 重置分辨率和时长为第一个可选项
     const drMap = data.durationResolutionMap;
     if (Array.isArray(drMap) && drMap.length > 0) {
@@ -830,25 +823,23 @@ watch(selectModel, (val) => {
 
 const userEditedUploadBox = ref(false);
 
-// 用于在模式切换时暂存 uploadBox 数据，避免污染 track.medias（itemBox 缩略图来源）
 const uploadBoxSnapshot = ref<UploadItem[]>([]);
 
 watch(selectMode, (val) => {
   if (!val) return (uploadBox.value = []);
   const oldBox = uploadBox.value;
-  // 把当前 uploadBox 中有内容的 item 存入快照，供切回时恢复，不修改 track.medias
   if (oldBox.some((item) => item.src)) {
-    uploadBoxSnapshot.value = oldBox.filter((item) => item.src).map((item) => ({ ...item }));
+    uploadBoxSnapshot.value = oldBox.map((item) => ({ ...item }));
   }
   const newBox = buildUploadBox(val);
-  // 判断新 mode 是否为混合模式（val 已赋给 selectMode，用 parseMode 直接判断）
   const newParsedMode = parseMode(val);
   const newIsMixed = Array.isArray(newParsedMode);
   if (newIsMixed) {
-    uploadBox.value = oldBox.filter((item) => item.src);
+    //混合模式
+    uploadBox.value = oldBox;
   } else {
-    // 非混合模式：按 fileType 从快照中逐槽匹配复用数据
-    const sourceItems = uploadBoxSnapshot.value.filter((item) => item.src);
+    //非混合模式
+    const sourceItems = uploadBoxSnapshot.value;
     const usedIndices = new Set<number>();
     uploadBox.value = newBox.map((slot) => {
       const matchIdx = sourceItems.findIndex((old, i) => !usedIndices.has(i) && old.fileType === slot.fileType && old.src);
@@ -869,9 +860,7 @@ watch(
     if (!userEditedUploadBox.value) return;
     const track = trackList.value[activeTrackIndex.value];
     if (!track) return;
-    track.medias = items
-      .filter((item) => item.src)
-      .map((item) => ({ src: item.src!, id: item.id, prompt: item.prompt, fileType: item.fileType, sources: item.sources }));
+    track.medias = items.map((item) => ({ src: item.src!, id: item.id, prompt: item.prompt, fileType: item.fileType, sources: item.sources }));
   },
   { deep: true },
 );
@@ -916,16 +905,11 @@ watch(
 );
 
 function batchGenText() {
-  const isTextMode = selectMode.value === "text";
   trackList.value
     .filter((track) => checkedTrackIds.value.includes(track.id))
     .forEach(async (track) => {
       const trackId = track.id;
-      if (trackId == null || genTextLoadingMap.value[trackId]) return;
-      // 文本模式取 track.medias 全部数据；非文本模式按当前模式模板槽位数量截取 track.medias
-      const modeTemplate = selectMode.value ? buildUploadBox(selectMode.value) : [];
-      const infoSource = isTextMode ? track.medias : modeTemplate.map((_, i) => track.medias[i]).filter(Boolean);
-      const info = infoSource.map((m) => ({
+      const info = track.medias.map((m) => ({
         id: m.id,
         sources: m.sources,
       }));
@@ -960,7 +944,7 @@ function batchGenVideo() {
           if (trackId == null || generatingMap.value[trackId]) return;
           generatingMap.value[trackId] = true;
           try {
-            const uploadData = track.medias.filter((item) => Boolean(item.src));
+            const uploadData = track.medias;
             const payload = {
               projectId: project.value?.id,
               duration: clampDuration(track.duration || selectedDuration.value),
@@ -1049,17 +1033,15 @@ function syncMediasToUploadBox() {
   const medias = track.medias;
   if (isMixedMode.value) {
     // 混合模式：直接用 track.medias 重建 uploadBox
-    uploadBox.value = medias
-      .filter((m) => m.src)
-      .map((m) => ({
-        fileType: m.fileType,
-        type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
-        sources: m.sources ?? "storyboard",
-        src: m.src,
-        id: m.id,
-        prompt: m.prompt,
-        label: "",
-      }));
+    uploadBox.value = medias.map((m) => ({
+      fileType: m.fileType,
+      type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
+      sources: m.sources!,
+      src: m.src,
+      id: m.id,
+      prompt: m.prompt,
+      label: "",
+    }));
   } else {
     uploadBox.value = uploadBox.value.map((item, i) => {
       const media = medias[i];
@@ -1303,6 +1285,24 @@ async function downloadVideo(value: HistoryVideoItem) {
             }
           }
           &:hover .clearBtn {
+            display: flex;
+          }
+          .source {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            &:hover {
+              background: rgba(0, 0, 0, 0.85);
+            }
+          }
+          &:hover .source {
             display: flex;
           }
         }
