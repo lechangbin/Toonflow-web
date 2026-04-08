@@ -310,14 +310,14 @@ function handleBlur() {
   overflow-y: auto;
   font-size: 13px;
   line-height: 1.6;
-  color: #333;
+  color: var(--td-text-color-primary);
   white-space: pre-wrap;
   word-break: break-all;
   cursor: text;
 
   &:empty::before {
     content: attr(data-placeholder);
-    color: #aaa;
+    color: var(--td-text-color-placeholder);
     pointer-events: none;
   }
 }
@@ -328,8 +328,8 @@ function handleBlur() {
   min-width: 180px;
   max-height: 220px;
   overflow-y: auto;
-  background: #fff;
-  border: 1px solid #e8e8e8;
+  background: var(--td-bg-color-container);
+  border: 1px solid var(--td-border-level-1-color);
   border-radius: 10px;
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.12),
@@ -352,11 +352,11 @@ function handleBlur() {
     gap: 8px;
 
     &:hover {
-      background-color: #f5f5f5;
+      background-color: var(--td-bg-color-secondarycontainer);
     }
 
     &.active {
-      background-color: #edfaf7;
+      background-color: var(--td-brand-color-light);
       box-shadow: inset 0 0 0 1px rgba(91, 204, 179, 0.3);
     }
 
@@ -365,7 +365,7 @@ function handleBlur() {
       height: 38px;
       border-radius: 6px;
       flex-shrink: 0;
-      border: 1px solid #efefef;
+      border: 1px solid var(--td-border-level-1-color);
     }
 
     .ref-popup-icon {
@@ -376,22 +376,22 @@ function handleBlur() {
       justify-content: center;
       border-radius: 6px;
       flex-shrink: 0;
-      background: #f5f5f5;
+      background: var(--td-bg-color-secondarycontainer);
       font-size: 18px;
-      color: #666;
+      color: var(--td-text-color-secondary);
     }
 
     .reference-label {
       font-size: 13px;
       font-weight: 500;
-      color: #333;
+      color: var(--td-text-color-primary);
       flex: 1;
     }
 
     .ref-index-badge {
       font-size: 11px;
-      color: #aaa;
-      background: #f0f0f0;
+      color: var(--td-text-color-placeholder);
+      background: var(--td-bg-color-component);
       border-radius: 4px;
       padding: 1px 5px;
     }
@@ -400,7 +400,7 @@ function handleBlur() {
   .no-references {
     padding: 16px 12px;
     text-align: center;
-    color: #bbb;
+    color: var(--td-text-color-placeholder);
     font-size: 13px;
     display: flex;
     flex-direction: column;

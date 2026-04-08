@@ -70,7 +70,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   height: 32px;
-  background-color: #f0f0f0;
+  background-color: var(--td-bg-color-secondarycontainer);
   user-select: none;
   -webkit-app-region: drag;
   position: relative;
@@ -86,7 +86,7 @@ onUnmounted(() => {
 
 .titleBar-text {
   font-size: 13px;
-  color: #333;
+  color: var(--td-text-color-primary);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -119,10 +119,10 @@ onUnmounted(() => {
 
 // 暗色主题适配
 [theme-mode="dark"] .titleBar {
-  background-color: #2d2d2d;
+  background-color: var(--td-bg-color-secondarycontainer);
 
   .titleBar-text {
-    color: #ccc;
+    color: var(--td-text-color-primary);
   }
 }
 </style>

@@ -227,7 +227,7 @@ onMounted(() => {
 
       .titleText {
         margin-left: 5px;
-        color: #4b4b4b;
+        color: var(--td-text-color-secondary);
       }
     }
 
@@ -260,7 +260,7 @@ onMounted(() => {
       .imageLoading {
         width: 100%;
         height: 100%;
-        background-color: #e8e8e8;
+        background-color: var(--td-bg-color-component);
         border-radius: 10px;
         display: flex;
         flex-direction: column;
@@ -279,7 +279,7 @@ onMounted(() => {
 
         .loadingText {
           font-size: 14px;
-          color: #666;
+          color: var(--td-text-color-secondary);
         }
       }
 
@@ -296,7 +296,7 @@ onMounted(() => {
           box-sizing: border-box;
 
           &.selected {
-            border-color: #000;
+            border-color: var(--td-text-color-primary);
           }
         }
       }
@@ -322,8 +322,8 @@ onMounted(() => {
     transform: translateX(-50%);
     margin-top: 10px;
     width: 500px;
-    border: 1px solid #d4d4d4;
-    background-color: #fff;
+    border: 1px solid var(--td-border-level-2-color);
+    background-color: var(--td-bg-color-container);
     border-radius: 10px;
     z-index: 9999;
 

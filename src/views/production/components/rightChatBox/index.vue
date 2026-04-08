@@ -169,8 +169,8 @@ watchEffect(() => {
   height: calc(100% - 20px);
   margin-right: 5px;
   border-radius: 10px;
-  border: 1px solid #e0e0e0;
-  background-color: #fff;
+  border: 1px solid var(--td-border-level-1-color);
+  background-color: var(--td-bg-color-container);
   overflow-y: auto;
 
   .resizeHandle {
@@ -183,10 +183,10 @@ watchEffect(() => {
     cursor: col-resize;
     z-index: 10;
     &:hover {
-      background-color: rgba(0, 0, 0, 0.08);
+      background-color: var(--td-bg-color-container-hover);
     }
   }
-  box-shadow: -4px 2px 10px rgba(53, 53, 53, 0.1);
+  box-shadow: -4px 2px 10px var(--td-shadow-1);
   .chatBox {
     width: 100%;
     height: calc(100% - 50px);
@@ -233,10 +233,10 @@ watchEffect(() => {
     cursor: pointer;
     white-space: nowrap;
     &:hover {
-      background-color: #f3f3f3;
+      background-color: var(--td-bg-color-container-hover);
     }
     &.danger {
-      color: #e34d59;
+      color: var(--td-error-color);
     }
   }
 }

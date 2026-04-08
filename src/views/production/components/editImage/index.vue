@@ -361,7 +361,7 @@ async function layoutGraph(direction: "LR" | "TB") {
   padding: 5px;
   color: var(--mainColor);
   &:hover {
-    background-color: #f4f4f4;
+    background-color: var(--td-bg-color-container-hover);
     border-radius: 4px;
     cursor: pointer;
   }

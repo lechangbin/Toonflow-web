@@ -73,7 +73,7 @@
         </t-tooltip> -->
       </div>
       <div class="openRightChatBoxBtn c" v-show="!openShowVisible" @click.stop="openShowVisible = true">
-        <i-menu-unfold-one theme="outline" size="24" fill="#000000" />
+        <i-menu-unfold-one theme="outline" size="24" />
       </div>
       <transition name="slide" v-show="openShowVisible" v-if="episodesId">
         <rightChatBox :title="title" v-model="flowData" @close="openShowVisible = false" />
@@ -496,7 +496,7 @@ const steps = [
         padding: 5px;
         color: var(--mainColor);
         &:hover {
-          background-color: #f4f4f4;
+          background-color: var(--td-bg-color-container-hover);
           border-radius: 4px;
           cursor: pointer;
         }
@@ -508,7 +508,7 @@ const steps = [
       right: 0;
       width: 40px;
       height: 40px;
-      background-color: #ecedef;
+      background-color: var(--td-bg-color-secondarycontainer);
       border-radius: 10px;
       z-index: 10;
       cursor: pointer;

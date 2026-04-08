@@ -219,7 +219,7 @@ function handleBatchDownload(value: ImportVideoItem[]) {}
   .importLoadingMask {
     position: absolute;
     inset: 0;
-    background: rgba(255, 255, 255, 0.85);
+    background: var(--td-mask-active);
     z-index: 9999;
     display: flex;
     align-items: center;
@@ -257,13 +257,12 @@ function handleBatchDownload(value: ImportVideoItem[]) {}
         white-space: nowrap;
       }
       &:hover {
-        background-color: #ecedef;
+        background-color: var(--td-bg-color-container-hover);
         border-radius: 16px;
       }
     }
     .active {
-      background-color: #000 !important;
-      color: #fff;
+      background-color: var(--td-brand-color) !important;
       border-radius: 16px;
     }
   }

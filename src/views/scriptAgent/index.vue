@@ -479,7 +479,7 @@ function onConfirm(value: string) {
   border: 1px solid var(--td-border-level-2-color);
   border-radius: 8px;
   overflow: hidden;
-  background: #fff;
+  background: var(--td-bg-color-container);
   display: flex;
   flex-direction: column;
   transition: box-shadow 0.2s ease;
@@ -489,7 +489,7 @@ function onConfirm(value: string) {
     justify-content: space-between;
     gap: 8px;
     padding: 8px 12px;
-    background-color: #f5f7fa;
+    background-color: var(--td-bg-color-secondarycontainer);
     border-bottom: 1px solid var(--td-border-level-2-color);
     .scriptCardHeaderLeft {
       display: flex;
@@ -506,7 +506,7 @@ function onConfirm(value: string) {
       font-size: 12px;
       font-weight: 600;
       flex-shrink: 0;
-      background: #e6e3e3;
+      background: var(--td-bg-color-component);
       padding: 1px 6px;
       border-radius: 4px;
     }
@@ -542,8 +542,8 @@ function onConfirm(value: string) {
   .scriptCardFooter {
     gap: 8px;
     padding: 8px 12px;
-    border-top: 1px solid #e6e3e3;
-    background-color: #fafafa;
+    border-top: 1px solid var(--td-border-level-1-color);
+    background-color: var(--td-bg-color-secondarycontainer);
     .assetsLabel {
       display: flex;
       align-items: center;
@@ -588,7 +588,7 @@ function onConfirm(value: string) {
     gap: 8px;
     border-radius: 6px;
     padding: 8px 12px;
-    background: #fafafa;
+    background: var(--td-bg-color-secondarycontainer);
     .assetsTagList {
       display: flex;
       flex-wrap: wrap;
@@ -606,14 +606,14 @@ function onConfirm(value: string) {
 .forceGenerateMask {
   position: absolute;
   inset: 0;
-  background: rgba(170, 170, 170, 0.45);
+  background: var(--td-mask-active);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   border-radius: 10px;
   .forceGenerateCard {
-    background: #fdfbfb;
+    background: var(--td-bg-color-container);
     border-radius: 12px;
     padding: 28px 32px 24px;
     max-width: 300px;
@@ -642,10 +642,10 @@ function onConfirm(value: string) {
     cursor: pointer;
     white-space: nowrap;
     &:hover {
-      background-color: #f3f3f3;
+      background-color: var(--td-bg-color-container-hover);
     }
     &.danger {
-      color: #e34d59;
+      color: var(--td-error-color);
     }
   }
 }

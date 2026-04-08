@@ -464,10 +464,10 @@ function exportImage() {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: #f5f5f5;
+      background: var(--td-bg-color-secondarycontainer);
       border-radius: 12px;
       overflow: hidden;
-      border: 1px solid #e8e8e8;
+      border: 1px solid var(--td-border-level-1-color);
 
       .videoWrapper {
         width: 100%;
@@ -485,7 +485,7 @@ function exportImage() {
           @extend %flex-center;
           flex-direction: column;
           gap: 12px;
-          color: #999;
+          color: var(--td-text-color-placeholder);
           font-size: 14px;
         }
       }
@@ -494,8 +494,8 @@ function exportImage() {
         width: 100%;
         flex-shrink: 0;
         padding: 10px 16px 12px;
-        background: rgba(255, 255, 255, 0.95);
-        border-top: 1px solid #e8e8e8;
+        background: var(--td-bg-color-container);
+        border-top: 1px solid var(--td-border-level-1-color);
 
         .controlButtons {
           @extend %flex-center;
@@ -510,7 +510,7 @@ function exportImage() {
 
           .timeLabel {
             font-size: 12px;
-            color: #999;
+            color: var(--td-text-color-placeholder);
             font-variant-numeric: tabular-nums;
             min-width: 40px;
             text-align: center;
@@ -527,7 +527,7 @@ function exportImage() {
             .progressTrack {
               width: 100%;
               height: 6px;
-              background: #e8e8e8;
+              background: var(--td-bg-color-component);
               border-radius: 3px;
               position: relative;
 
@@ -539,7 +539,7 @@ function exportImage() {
                 transition: background 0.2s;
                 z-index: 1;
                 &.completed {
-                  background: rgba(102, 126, 234, 0.15);
+                  background: var(--td-brand-color-light);
                 }
                 &.active {
                   background: var(--td-brand-color-10-5) !important;
@@ -554,7 +554,7 @@ function exportImage() {
                 top: -2px;
                 width: 1.5px;
                 height: calc(100% + 4px);
-                background: #ccc;
+                background: var(--td-border-level-2-color);
                 z-index: 3;
                 transform: translateX(-50%);
                 pointer-events: none;
@@ -577,12 +577,12 @@ function exportImage() {
                 top: 50%;
                 width: 14px;
                 height: 14px;
-                background: #fff;
+                background: var(--td-bg-color-container);
                 border: 2px solid var(--td-brand-color-10-10);
                 border-radius: 50%;
                 transform: translate(-50%, -50%);
                 z-index: 4;
-                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+                box-shadow: var(--td-shadow-1);
                 transition:
                   left 0.05s linear,
                   transform 0.15s;
@@ -607,14 +607,14 @@ function exportImage() {
         width: 4px;
       }
       &::-webkit-scrollbar-thumb {
-        background: #ddd;
+        background: var(--td-scrollbar-color);
         border-radius: 2px;
       }
 
       .infoSection {
         margin-bottom: 20px;
         padding-bottom: 16px;
-        border-bottom: 1px solid #f0f0f0;
+        border-bottom: 1px solid var(--td-border-level-1-color);
         &:last-child {
           border-bottom: none;
         }
@@ -625,7 +625,7 @@ function exportImage() {
           gap: 8px;
           font-size: 14px;
           font-weight: 600;
-          color: #333;
+          color: var(--td-text-color-primary);
           margin-bottom: 12px;
 
           .titleIndicator {
@@ -638,7 +638,7 @@ function exportImage() {
 
         .sectionContent {
           font-size: 14px;
-          color: #666;
+          color: var(--td-text-color-secondary);
           line-height: 1.6;
         }
 
@@ -654,7 +654,7 @@ function exportImage() {
             gap: 8px;
 
             .characterAvatar {
-              border: 2px solid #e8e8e8;
+              border: 2px solid var(--td-border-level-1-color);
             }
           }
 
@@ -666,7 +666,7 @@ function exportImage() {
         .characterDesc {
           margin-top: 12px;
           font-size: 13px;
-          color: #999;
+          color: var(--td-text-color-placeholder);
           line-height: 1.5;
         }
 
@@ -677,10 +677,10 @@ function exportImage() {
 
           .tipItem {
             font-size: 13px;
-            color: #666;
+            color: var(--td-text-color-secondary);
             line-height: 1.6;
             .tipLabel {
-              color: #333;
+              color: var(--td-text-color-primary);
               font-weight: 500;
             }
           }
@@ -691,7 +691,7 @@ function exportImage() {
 
   .shotListArea {
     flex-shrink: 0;
-    border-top: 1px solid #e8e8e8;
+    border-top: 1px solid var(--td-border-level-1-color);
     padding-top: 12px;
 
     .shotListHeader {
@@ -718,7 +718,7 @@ function exportImage() {
         height: 6px;
       }
       &::-webkit-scrollbar-thumb {
-        background: #ddd;
+        background: var(--td-scrollbar-color);
         border-radius: 3px;
       }
 
@@ -733,7 +733,7 @@ function exportImage() {
           border-radius: 12px;
           overflow: hidden;
           border: 2px solid transparent;
-          background: #fff;
+          background: var(--td-bg-color-container);
           position: relative;
 
           &:hover,
@@ -752,7 +752,7 @@ function exportImage() {
             position: relative;
             width: 100%;
             height: 100px;
-            background: #f5f5f5;
+            background: var(--td-bg-color-secondarycontainer);
 
             .shotImage {
               width: 100%;
@@ -783,7 +783,7 @@ function exportImage() {
 <style lang="scss">
 .shotGhost {
   opacity: 0.5;
-  background: #c8ebfb;
+  background: var(--td-brand-color-light);
   border: 2px dashed var(--td-brand-color-10-10) !important;
 }
 

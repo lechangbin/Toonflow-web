@@ -7,7 +7,7 @@
     <div class="panelContent">
       <div v-if="!selectedClip" class="emptyState">
         <div class="emptyIconWrapper">
-          <i-inbox theme="outline" size="32" fill="#999" />
+          <i-inbox theme="outline" size="32" fill="var(--td-text-color-placeholder)" />
         </div>
         <div class="emptyText">{{ $t("workbench.production.editVideo.selectClip") }}</div>
       </div>
@@ -394,22 +394,22 @@ function handleDuplicateClip() {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #f5f5f5;
-  border: 1px solid #e8e8e8;
+  background: var(--td-bg-color-secondarycontainer);
+  border: 1px solid var(--td-border-level-1-color);
   border-radius: 10px;
   overflow: hidden;
 
   .panelHeader {
     flex-shrink: 0;
     padding: 14px 12px;
-    border-bottom: 1px solid #e8e8e8;
-    background: #fff;
+    border-bottom: 1px solid var(--td-border-level-1-color);
+    background: var(--td-bg-color-container);
 
     .panelTitle {
       margin: 0;
       font-size: 14px;
       font-weight: 600;
-      color: #333;
+      color: var(--td-text-color-primary);
     }
   }
 
@@ -422,7 +422,7 @@ function handleDuplicateClip() {
       width: 4px;
     }
     &::-webkit-scrollbar-thumb {
-      background: #ddd;
+      background: var(--td-scrollbar-color);
       border-radius: 2px;
     }
 
@@ -436,14 +436,14 @@ function handleDuplicateClip() {
         width: 64px;
         height: 64px;
         @extend %flex-center;
-        background: #fff;
+        background: var(--td-bg-color-container);
         border-radius: 16px;
-        border: 1px solid #e8e8e8;
+        border: 1px solid var(--td-border-level-1-color);
       }
 
       .emptyText {
         font-size: 13px;
-        color: #999;
+        color: var(--td-text-color-placeholder);
       }
     }
 
@@ -453,15 +453,15 @@ function handleDuplicateClip() {
       gap: 10px;
 
       .sectionCard {
-        background: #fff;
+        background: var(--td-bg-color-container);
         border: 1px solid transparent;
         border-radius: 12px;
         overflow: hidden;
         transition: all 0.2s;
 
         &:hover {
-          border-color: #000000;
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
+          border-color: var(--td-text-color-primary);
+          box-shadow: 0 4px 12px var(--td-shadow-1);
         }
 
         .sectionHeader {
@@ -469,23 +469,23 @@ function handleDuplicateClip() {
           align-items: center;
           gap: 8px;
           padding: 10px 12px;
-          border-bottom: 1px solid #f5f5f5;
+          border-bottom: 1px solid var(--td-bg-color-secondarycontainer);
 
           .sectionIconBadge {
             width: 28px;
             height: 28px;
             @extend %flex-center;
-            background: rgba(102, 126, 234, 0.1);
+            background: var(--td-brand-color-light);
             border-radius: 8px;
             flex-shrink: 0;
-            color: #000000;
+            color: var(--td-text-color-primary);
           }
 
           .sectionLabel {
             flex: 1;
             font-size: 13px;
             font-weight: 600;
-            color: #333;
+            color: var(--td-text-color-primary);
           }
         }
 
@@ -525,14 +525,14 @@ function handleDuplicateClip() {
       .propLabel {
         font-size: 12px;
         font-weight: 500;
-        color: #999;
+        color: var(--td-text-color-placeholder);
         line-height: 1;
       }
 
       .propValueText {
         font-size: 12px;
         font-weight: 600;
-        color: #333;
+        color: var(--td-text-color-primary);
         font-variant-numeric: tabular-nums;
       }
 
@@ -540,11 +540,11 @@ function handleDuplicateClip() {
         justify-content: space-between;
         align-items: center;
         padding-top: 4px;
-        border-top: 1px dashed #f0f0f0;
+        border-top: 1px dashed var(--td-border-level-1-color);
 
         .durationLabel {
           font-size: 12px;
-          color: #999;
+          color: var(--td-text-color-placeholder);
         }
       }
 

@@ -47,10 +47,10 @@ const props = defineProps<{
       display: flex;
       align-items: center;
       gap: 6px;
-      background-color: #000;
+      background-color: var(--td-text-color-primary);
       width: fit-content;
       padding: 5px 10px;
-      color: #fff;
+      color: var(--td-text-color-anti);
       border-radius: 8px 0;
       font-size: 14px;
     }
@@ -60,15 +60,15 @@ const props = defineProps<{
       gap: 8px;
 
       .toolbarIcon {
-        color: #666;
+        color: var(--td-text-color-secondary);
         cursor: pointer;
         padding: 4px;
         border-radius: 4px;
         transition: all 0.2s;
 
         &:hover {
-          color: #333;
-          background: #f0f0f0;
+          color: var(--td-text-color-primary);
+          background: var(--td-bg-color-container-hover);
         }
       }
     }
@@ -88,11 +88,11 @@ const props = defineProps<{
       .placeholder {
         width: 100%;
         height: 200px;
-        background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+        background: linear-gradient(135deg, var(--td-bg-color-secondarycontainer) 0%, var(--td-bg-color-component) 100%);
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #999;
+        color: var(--td-text-color-placeholder);
         font-size: 14px;
       }
 

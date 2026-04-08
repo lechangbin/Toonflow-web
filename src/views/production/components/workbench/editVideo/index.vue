@@ -22,7 +22,6 @@
       </pane>
       <pane size="40" class="pr">
         <VideoTrack
-          :theme="theme"
           class="videoTrack"
           ref="videoTrackRef"
           :operation-buttons="operationButtons"
@@ -456,13 +455,6 @@ onMounted(() => {
   }
 });
 
-const theme = {
-  primaryColor: "#000",
-  backgroundColor: "#ecedef",
-  textColor: "#ffffff",
-  borderColor: "#ecedef",
-};
-
 onUnmounted(() => {
   playbackStore.pause();
   resizeObserver?.disconnect();
@@ -482,13 +474,13 @@ onUnmounted(() => {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background: #f5f5f5;
-    border: 1px solid #e8e8e8;
+    background: var(--td-bg-color-secondarycontainer);
+    border: 1px solid var(--td-border-level-1-color);
     border-radius: 10px;
   }
   .videoTrack {
     height: 100%;
-    border: 1px solid #e8e8e8;
+    border: 1px solid var(--td-border-level-1-color);
     border-radius: 10px;
   }
 }
@@ -506,5 +498,37 @@ onUnmounted(() => {
 }
 :deep(.tools-bar__select) {
   display: none !important;
+}
+:deep(.video-track) {
+  --color-primary: var(--td-text-color-primary);
+  --color-bg-dark: var(--td-bg-color-component);
+  --color-bg-medium: var(--td-bg-color-secondarycontainer);
+  --color-text-primary: var(--td-text-color-primary);
+  .ruler {
+    background-color: var(--td-bg-color-container);
+    .ruler__placeholder {
+      background-color: var(--td-bg-color-secondarycontainer);
+    }
+  }
+  .track-control {
+    background-color: var(--td-bg-color-container);
+  }
+  .tools-bar {
+    background-color: var(--td-bg-color-container);
+  }
+  .tools-bar__time {
+    background-color: var(--td-bg-color-secondarycontainer);
+  }
+  .tools-bar__btn {
+    background-color: var(--td-brand-color-active);
+    &:hover {
+      background-color: var(--td-bg-color-container-hover);
+      box-shadow: none;
+    }
+  }
+
+  .tracks__scrollbar {
+    background-color: var(--td-bg-color-container);
+  }
 }
 </style>

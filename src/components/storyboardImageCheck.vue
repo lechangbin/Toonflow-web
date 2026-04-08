@@ -318,7 +318,7 @@ function handleClose() {
             justify-content: center;
             width: 100%;
             height: 100%;
-            background-color: #dad8d8;
+            background-color: var(--td-bg-color-component);
           }
           .imageHoverOverlay {
             position: absolute;
@@ -363,7 +363,7 @@ function handleClose() {
             object-fit: cover;
           }
           &.videoThumb {
-            background: #1a1a2e;
+            background: var(--td-bg-color-component);
             .thumbVideo {
               width: 100%;
               height: 100%;
@@ -412,7 +412,7 @@ function handleClose() {
   cursor: pointer;
   padding: 8px 16px;
   &:hover {
-    background-color: #f0f0f0;
+    background-color: var(--td-bg-color-container-hover);
   }
 }
 

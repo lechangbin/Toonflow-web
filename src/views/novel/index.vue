@@ -44,7 +44,6 @@
       :pagination="pagination"
       :loading="loading"
       lazy-load
-      resizable
       table-layout="fixed"
       @select-change="handleSelectChange"
       @page-change="handlePageChange">
@@ -53,11 +52,35 @@
       </template>
       <template #event="{ row }">
         <t-loading v-if="row.eventState == 0" size="small" :text="$t('workbench.novel.generating')"></t-loading>
-        <t-tooltip v-else-if="row.eventState == -1 && !row.event" :content="row?.errorReason">
-          <div style="color: red; cursor: pointer">{{ $t("workbench.novel.genFailed") }}</div>
-        </t-tooltip>
-        <div v-else>
-          {{ row.event || $t("workbench.novel.none") }}
+        <t-button
+          v-else-if="row.eventState == -1 && !row.event"
+          theme="danger"
+          variant="text"
+          size="small"
+          @click.stop="openPreview($t('workbench.novel.genFailed'), row?.errorReason)">
+          {{ $t("workbench.novel.genFailed") }}
+        </t-button>
+        <div v-else class="eventCell">
+          <div class="eventPreview">{{ formatPreview(row.event) }}</div>
+          <t-link
+            v-if="row.event && row.event.length > PREVIEW_MAX_LENGTH"
+            theme="primary"
+            hover="color"
+            @click="openPreview($t('workbench.novel.col.event'), row.event)">
+            {{ $t("workbench.novel.viewDetail") }}
+          </t-link>
+        </div>
+      </template>
+      <template #chapterData="{ row }">
+        <div class="chapterDataCell">
+          <div class="chapterPreview">{{ formatPreview(row.chapterData) }}</div>
+          <t-link
+            v-if="row.chapterData && row.chapterData.length > PREVIEW_MAX_LENGTH"
+            theme="primary"
+            hover="color"
+            @click.stop="openPreview($t('workbench.novel.col.chapterData'), row.chapterData)">
+            {{ $t("workbench.novel.viewDetail") }}
+          </t-link>
         </div>
       </template>
       <template #operation="{ row }">
@@ -77,6 +100,9 @@
         </t-space>
       </template>
     </t-table>
+    <t-dialog v-model:visible="previewVisible" :header="previewTitle" width="900px" placement="top" top="10vh" destroy-on-close :footer="false">
+      <div class="previewDialogContent">{{ previewContent || $t("workbench.novel.none") }}</div>
+    </t-dialog>
     <importNovel v-model="importNovelShow" @select="getNovel" />
     <editNodel v-model="editNodelShow" :formData="formData" @select="getNovel" />
   </div>
@@ -126,6 +152,22 @@ interface OriginalText {
   errorReason?: string;
 }
 const formData = ref<OriginalText>({ id: -1, index: 0, reel: "", chapter: "", chapterData: "", event: "" });
+const PREVIEW_MAX_LENGTH = 80;
+const previewVisible = ref(false);
+const previewTitle = ref("");
+const previewContent = ref("");
+
+function formatPreview(text?: string) {
+  if (!text) return $t("workbench.novel.none");
+  if (text.length <= PREVIEW_MAX_LENGTH) return text;
+  return `${text.slice(0, PREVIEW_MAX_LENGTH)}...`;
+}
+
+function openPreview(title: string, content?: string) {
+  previewTitle.value = title;
+  previewContent.value = content || "";
+  previewVisible.value = true;
+}
 
 // 表格数据
 const tableData = ref<OriginalText[]>([]);
@@ -317,5 +359,37 @@ onUnmounted(() => {
 }
 :deep(.t-table__content) {
   flex: 1;
+}
+
+.chapterDataCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chapterPreview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eventCell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eventPreview {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.previewDialogContent {
+  max-height: 65vh;
+  overflow: auto;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 </style>

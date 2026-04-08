@@ -221,7 +221,7 @@ onUnmounted(() => {
       .logo {
         width: 60%;
         aspect-ratio: 1/1;
-        background-color: var(--td-brand-color);
+        background-color: var(--td-text-color-primary);
         mask: url("@/assets/logo.svg") no-repeat center;
         mask-size: contain;
         -webkit-mask: url("@/assets/logo.svg") no-repeat center;
