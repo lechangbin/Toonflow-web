@@ -64,7 +64,7 @@
           <div class="eventPreview">{{ formatPreview(row.event) }}</div>
           <t-link
             v-if="row.event && row.event.length > PREVIEW_MAX_LENGTH"
-            theme="primary"
+            theme="success"
             hover="color"
             @click="openPreview($t('workbench.novel.col.event'), row.event)">
             {{ $t("workbench.novel.viewDetail") }}
@@ -76,7 +76,7 @@
           <div class="chapterPreview">{{ formatPreview(row.chapterData) }}</div>
           <t-link
             v-if="row.chapterData && row.chapterData.length > PREVIEW_MAX_LENGTH"
-            theme="primary"
+            theme="success"
             hover="color"
             @click.stop="openPreview($t('workbench.novel.col.chapterData'), row.chapterData)">
             {{ $t("workbench.novel.viewDetail") }}
