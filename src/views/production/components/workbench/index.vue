@@ -264,6 +264,7 @@ function handleBatchDownload(value: ImportVideoItem[]) {}
     .active {
       background-color: var(--td-brand-color) !important;
       border-radius: 16px;
+      color: #fff;
     }
   }
   .content {
