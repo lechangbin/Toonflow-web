@@ -21,7 +21,10 @@
             <t-input v-model="props.formData.remark" :placeholder="$t('workbench.assets.add.remarkPh')"></t-input>
           </t-form-item>
           <t-form-item :label="$t('workbench.assets.add.prompt')" name="prompt" v-if="props.type !== 'clip'">
-            <t-textarea v-model="props.formData.prompt" :autosize="{ minRows: 3, maxRows: 5 }" :placeholder="$t('workbench.assets.add.promptPh')"></t-textarea>
+            <t-textarea
+              v-model="props.formData.prompt"
+              :autosize="{ minRows: 3, maxRows: 5 }"
+              :placeholder="$t('workbench.assets.add.promptPh')"></t-textarea>
           </t-form-item>
         </t-form>
       </div>
@@ -48,9 +51,8 @@ const addAssetsShow = defineModel<boolean>({
   default: false,
 });
 const rules = ref<{}>({
-  name: [{ required: true, message: $t('workbench.assets.add.nameRequired'), trigger: "blur" }],
-  describe: [{ required: true, message: $t('workbench.assets.add.describeRequired'), trigger: "blur" }],
-  remark: [{ required: true, message: $t('workbench.assets.add.remarkRequired'), trigger: "blur" }],
+  name: [{ required: true, message: $t("workbench.assets.add.nameRequired"), trigger: "blur" }],
+  describe: [{ required: true, message: $t("workbench.assets.add.describeRequired"), trigger: "blur" }],
 });
 function handleCancel() {
   addAssetsShow.value = false;
@@ -58,37 +60,38 @@ function handleCancel() {
 const formRef = ref();
 const emit = defineEmits(["getFilteredData"]);
 function onConfirm() {
-  formRef.value?.validate().then(async () => {
-    if (props.formData.id !== 0) {
-      await axios
-        .post(`/assets/updateAssets`, {
-          id: props.formData.id,
-          name: props.formData.name,
-          describe: props.formData.describe,
-          remark: props.formData.remark,
-          prompt: props.formData.prompt,
-        })
-        .then(() => {
-          window.$message.success($t('workbench.assets.add.updateSuccess'));
-          emit("getFilteredData");
-          addAssetsShow.value = false;
-        });
-      return;
-    } else {
-      axios
-        .post(`/assets/addAssets`, {
-          name: props.formData.name,
-          describe: props.formData.describe,
-          remark: props.formData.remark,
-          type: props.type,
-          projectId: project.value?.id,
-          prompt: props.formData.prompt,
-        })
-        .then(() => {
-          window.$message.success($t('workbench.assets.add.addSuccess'));
-          emit("getFilteredData");
-          addAssetsShow.value = false;
-        });
+  formRef.value?.validate().then(async (result: any) => {
+    if (result == true) {
+      if (props.formData.id !== 0) {
+        await axios
+          .post(`/assets/updateAssets`, {
+            id: props.formData.id,
+            name: props.formData.name,
+            describe: props.formData.describe,
+            remark: props.formData.remark,
+            prompt: props.formData.prompt,
+          })
+          .then(() => {
+            window.$message.success($t("workbench.assets.add.updateSuccess"));
+            emit("getFilteredData");
+            addAssetsShow.value = false;
+          });
+      } else {
+        await axios
+          .post(`/assets/addAssets`, {
+            name: props.formData.name,
+            describe: props.formData.describe,
+            remark: props.formData.remark,
+            type: props.type,
+            projectId: project.value?.id,
+            prompt: props.formData.prompt,
+          })
+          .then(() => {
+            window.$message.success($t("workbench.assets.add.addSuccess"));
+            emit("getFilteredData");
+            addAssetsShow.value = false;
+          });
+      }
     }
   });
 }

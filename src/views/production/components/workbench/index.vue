@@ -143,7 +143,7 @@ function editFootage() {
       initialVideoItems.value = data.video.map((item: any, index: number) => ({
         id: `video-${item.id}`,
         type: "video",
-        name: $t("workbench.production.wb.storyboardVideoName", { storyboard: item.videoTrackId, id: item.id }),
+        name: $t("workbench.production.wb.storyboardVideoName", { storyboard: item.videoTrackId, id: index + 1 }),
         duration: item.duration || 0,
         icon: "🎬",
         color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
