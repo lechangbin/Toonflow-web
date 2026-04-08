@@ -39,8 +39,6 @@ onBeforeMount(() => {
 
 // 初始化主题
 onMounted(() => {
-  themeSetting.value.primaryColor = "#000";
-  initTheme();
   getPort();
 });
 
@@ -120,8 +118,7 @@ const customConfig: GlobalConfigProvider = {
 const globalConfig = computed<GlobalConfigProvider>(() => merge({}, tdesignLocaleMap[cachedLocale.value] || zhConfig, customConfig));
 
 onBeforeMount(() => {
-  document.documentElement.setAttribute("theme-mode", "light");
-  document.documentElement.setAttribute("data-theme", "light");
+  initTheme();
 });
 </script>
 

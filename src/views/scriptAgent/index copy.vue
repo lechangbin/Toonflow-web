@@ -175,7 +175,6 @@ import { MdPreview } from "md-editor-v3";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import settingStore from "@/stores/setting";
 import { Splitpanes, Pane } from "splitpanes";
-import "splitpanes/dist/splitpanes.css";
 import editMdPreivew from "@/components/editMdPreivew.vue";
 import openAssetsSelector from "@/utils/assetsCheck";
 import type { TabValue } from "tdesign-vue-next/es/tabs/type";

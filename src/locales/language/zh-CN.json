@@ -55,6 +55,7 @@
   "settings": {
     "title": "ToonFlow设置",
     "menu": {
+      "ui": "界面设置",
       "language": "语言设置",
       "vendorConfig": "模型服务",
       "agentConfig": "Agent配置",
@@ -591,6 +592,7 @@
       "search": "搜索",
       "generating": "生成中...",
       "genFailed": "生成失败",
+      "viewDetail": "查看详情",
       "none": "无",
       "edit": "编辑",
       "delete": "删除",

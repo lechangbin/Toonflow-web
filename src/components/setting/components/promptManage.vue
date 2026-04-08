@@ -13,9 +13,8 @@
     </div>
     <div class="show">
       <t-dialog v-model:visible="visible" :header="$t('workbench.project.dialog.prompt.title')" width="70%" :close-on-overlay-click="false" @confirm="onConfirm" top="9vh">
-        <MdEditor
+        <MdEditor :theme="themeSetting.mode"
           v-model="promptData.data"
-          :theme="'light'"
           :toolbars="promptToolbars"
           :footers="[]"
           style="height: 60vh"
@@ -30,6 +29,8 @@
 import axios from "@/utils/axios";
 import { MdEditor } from "md-editor-v3";
 import type { ToolbarNames } from "md-editor-v3";
+import settingStore from "@/stores/setting";
+const { themeSetting } = storeToRefs(settingStore());
 import { ref } from "vue";
 onMounted(() => {
   getPrompt();

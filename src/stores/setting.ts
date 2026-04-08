@@ -4,7 +4,7 @@ export default defineStore(
     const showSetting = ref(false);
     const isElectron = ref(false);
     const canvasWheelEvent = ref("zoom");
-    const activeMenu = ref("language");
+    const activeMenu = ref("ui");
 
     const baseUrl = ref<string>("http://localhost:10588/api");
 
@@ -17,9 +17,14 @@ export default defineStore(
       interacting: true,
     });
 
-    const themeSetting = ref({
-      mode: "light" as "light" | "dark" | "auto",
-      primaryColor: "#000",
+    const themeSetting = ref<{
+      mode: "auto" | "light" | "dark";
+      primaryColor: string;
+      fontSize: number;
+    }>({
+      mode: "auto",
+      primaryColor: "#0052D9",
+      fontSize: 16,
     });
 
     const language = ref<string>("zh-CN");

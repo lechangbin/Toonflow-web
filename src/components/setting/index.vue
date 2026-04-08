@@ -14,6 +14,7 @@
       <div class="settingRight">
         <div class="sectionTitle">{{ currentMenuItem ? $t(currentMenuItem.label) : "" }}</div>
         <div class="settingContent">
+          <uiConfig v-if="activeMenu === 'ui'" />
           <languageConfig v-if="activeMenu === 'language'" />
           <vendorConfig v-if="activeMenu === 'vendorConfig'" />
           <requestConfig v-if="activeMenu === 'requestConfig'" />
@@ -38,6 +39,7 @@
 import settingStore from "@/stores/setting";
 const { showSetting, activeMenu, needUpdate } = storeToRefs(settingStore());
 
+import uiConfig from "./components/uiConfig.vue";
 import languageConfig from "./components/languageConfig.vue";
 import requestConfig from "./components/requestConfig.vue";
 import loginConfig from "./components/loginConfig.vue";
@@ -54,6 +56,7 @@ import devConfig from "./components/devConfig.vue";
 import promptManage from "./components/promptManage.vue";
 
 const menuItems = [
+  { key: "ui", label: "settings.menu.ui", icon: "i-theme" },
   { key: "language", label: "settings.menu.language", icon: "i-translate" },
   { key: "vendorConfig", label: "settings.menu.vendorConfig", icon: "i-computer" },
   { key: "agentConfog", label: "settings.menu.agentConfig", icon: "i-color-filter" },

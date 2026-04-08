@@ -224,9 +224,11 @@ function delProjcer(projectId: string | undefined) {
     .title {
       font-size: 32px;
       font-weight: 600;
+      color: var(--td-text-color-primary);
     }
     .sub {
       opacity: 0.5;
+      color: var(--td-text-color-secondary);
     }
   }
   .list {

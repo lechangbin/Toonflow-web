@@ -87,13 +87,13 @@
             </t-tab-panel> -->
             <t-tab-panel :value="1" :label="$t('workbench.scriptAgent.storySkeleton')">
               <div class="panelContent">
-                <MdPreview v-if="planData.storySkeleton" :modelValue="planData.storySkeleton" />
+                <MdPreview v-if="planData.storySkeleton" :modelValue="planData.storySkeleton" :theme="themeSetting.mode" />
                 <t-empty v-else :title="$t('workbench.scriptAgent.noContent')" />
               </div>
             </t-tab-panel>
             <t-tab-panel :value="2" :label="$t('workbench.scriptAgent.adaptationStrategy')">
               <div class="panelContent">
-                <MdPreview v-if="planData.adaptationStrategy" :modelValue="planData.adaptationStrategy" />
+                <MdPreview v-if="planData.adaptationStrategy" :modelValue="planData.adaptationStrategy" :theme="themeSetting.mode" />
                 <t-empty v-else :title="$t('workbench.scriptAgent.noContent')" />
               </div>
             </t-tab-panel>
@@ -148,7 +148,7 @@
           <label>{{ $t("workbench.scriptAgent.content") }}</label>
           <MdEditor
             v-model="scriptEditData.content"
-            :theme="'light'"
+            :theme="themeSetting.mode"
             :toolbars="toolbars"
             :footers="[]"
             style="height: 50vh"
@@ -164,8 +164,9 @@
 import { MdEditor } from "md-editor-v3";
 import type { ToolbarNames } from "md-editor-v3";
 import { MdPreview } from "md-editor-v3";
+import settingStore from "@/stores/setting";
+const { themeSetting } = storeToRefs(settingStore());
 import { Splitpanes, Pane } from "splitpanes";
-import "splitpanes/dist/splitpanes.css";
 import axios from "@/utils/axios";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import projectStore from "@/stores/project";
@@ -409,8 +410,8 @@ function onConfirm(value: string) {
         display: flex;
         flex-direction: column;
         border-radius: 10px;
-        border: 1px solid #e6e3e3;
-        background-color: #fff;
+        border: 1px solid var(--td-border-level-1-color);
+        background-color: var(--td-bg-color-container);
         overflow: hidden;
         position: relative;
         width: 100%;
@@ -478,7 +479,7 @@ function onConfirm(value: string) {
   border: 1px solid var(--td-border-level-2-color);
   border-radius: 8px;
   overflow: hidden;
-  background: #fff;
+  background: var(--td-bg-color-container);
   display: flex;
   flex-direction: column;
   transition: box-shadow 0.2s ease;
@@ -488,7 +489,7 @@ function onConfirm(value: string) {
     justify-content: space-between;
     gap: 8px;
     padding: 8px 12px;
-    background-color: #f5f7fa;
+    background-color: var(--td-bg-color-secondarycontainer);
     border-bottom: 1px solid var(--td-border-level-2-color);
     .scriptCardHeaderLeft {
       display: flex;
@@ -505,7 +506,7 @@ function onConfirm(value: string) {
       font-size: 12px;
       font-weight: 600;
       flex-shrink: 0;
-      background: #e6e3e3;
+      background: var(--td-bg-color-component);
       padding: 1px 6px;
       border-radius: 4px;
     }
@@ -541,8 +542,8 @@ function onConfirm(value: string) {
   .scriptCardFooter {
     gap: 8px;
     padding: 8px 12px;
-    border-top: 1px solid #e6e3e3;
-    background-color: #fafafa;
+    border-top: 1px solid var(--td-border-level-1-color);
+    background-color: var(--td-bg-color-secondarycontainer);
     .assetsLabel {
       display: flex;
       align-items: center;
@@ -587,7 +588,7 @@ function onConfirm(value: string) {
     gap: 8px;
     border-radius: 6px;
     padding: 8px 12px;
-    background: #fafafa;
+    background: var(--td-bg-color-secondarycontainer);
     .assetsTagList {
       display: flex;
       flex-wrap: wrap;
@@ -605,14 +606,14 @@ function onConfirm(value: string) {
 .forceGenerateMask {
   position: absolute;
   inset: 0;
-  background: rgba(170, 170, 170, 0.45);
+  background: var(--td-mask-active);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
   border-radius: 10px;
   .forceGenerateCard {
-    background: #fdfbfb;
+    background: var(--td-bg-color-container);
     border-radius: 12px;
     padding: 28px 32px 24px;
     max-width: 300px;
@@ -641,10 +642,10 @@ function onConfirm(value: string) {
     cursor: pointer;
     white-space: nowrap;
     &:hover {
-      background-color: #f3f3f3;
+      background-color: var(--td-bg-color-container-hover);
     }
     &.danger {
-      color: #e34d59;
+      color: var(--td-error-color);
     }
   }
 }

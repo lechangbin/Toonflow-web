@@ -78,15 +78,15 @@
                           <img :src="item.images && item.images[0]" :alt="item.name" class="artImage" loading="lazy" />
                           <div class="text">{{ item.name }}</div>
                         </div>
-                        <div class="editBtn" @click.stop="openVisualManualDialog(item)">
+                        <t-button class="editBtn" shape="square" @click.stop="openVisualManualDialog(item)">
                           <i-edit theme="outline" size="14" />
-                        </div>
-                        <div class="delBtn" @click.stop="deleteVisualManual(item)">
+                        </t-button>
+                        <t-button class="delBtn" shape="square" @click.stop="deleteVisualManual(item)">
                           <i-delete theme="outline" size="14" />
-                        </div>
-                        <div class="preview" @click.stop="handlePreview(item.images && item.images[0])">
+                        </t-button>
+                        <t-button class="preview" shape="square" @click.stop="handlePreview(item.images && item.images[0])">
                           <i-preview-open theme="outline" size="14" />
-                        </div>
+                        </t-button>
                       </div>
                     </div>
                   </t-loading>
@@ -115,15 +115,15 @@
                           <img :src="item.images && item.images[0]" :alt="item.name" class="artImage" loading="lazy" />
                           <div class="text">{{ item.name }}</div>
                         </div>
-                        <div class="editBtn" @click.stop="openDirectorManualDialog(item)">
+                        <t-button class="editBtn" shape="square"  @click.stop="openDirectorManualDialog(item)">
                           <i-edit theme="outline" size="14" />
-                        </div>
-                        <div class="delBtn" @click.stop="deleteDirectorManual(item)">
+                        </t-button>
+                        <t-button class="delBtn" shape="square"  @click.stop="deleteDirectorManual(item)">
                           <i-delete theme="outline" size="14" />
-                        </div>
-                        <div class="preview" @click.stop="handlePreview(item.images && item.images[0])">
+                        </t-button>
+                        <t-button class="preview" shape="square"  @click.stop="handlePreview(item.images && item.images[0])">
                           <i-preview-open theme="outline" size="14" />
-                        </div>
+                        </t-button>
                       </div>
                     </div>
                   </t-loading>
@@ -190,7 +190,7 @@
                     <t-tab-panel v-for="tab in visualManualTabData" :key="tab.value" :value="tab.value" :label="tab.label">
                       <MdEditor
                         v-model="tab.data"
-                        :theme="'light'"
+                        :theme="themeSetting.mode"
                         :toolbars="promptToolbars"
                         :footers="[]"
                         :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
@@ -261,7 +261,7 @@
                     <t-tab-panel v-for="tab in directorManualTabData" :key="tab.value" :value="tab.value" :label="tab.label">
                       <MdEditor
                         v-model="tab.data"
-                        :theme="'light'"
+                        :theme="themeSetting.mode"
                         :toolbars="promptToolbars"
                         :footers="[]"
                         :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
@@ -284,8 +284,9 @@
 import { ref, watch, computed } from "vue";
 import axios from "@/utils/axios";
 import { MdEditor } from "md-editor-v3";
+import settingStore from "@/stores/setting";
+const { themeSetting } = storeToRefs(settingStore());
 import type { ToolbarNames } from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
 import modelSelect from "@/components/modelSelect.vue";
 import type { TabValue } from "tdesign-vue-next";
 import { DialogPlugin } from "tdesign-vue-next";
@@ -969,15 +970,10 @@ function handleDirectorManualCoverFileChange(e: Event) {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.9);
       border-radius: 4px;
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.2s;
-
-      &:hover {
-        background: #fff;
-      }
     }
     .delBtn {
       position: absolute;
@@ -988,14 +984,10 @@ function handleDirectorManualCoverFileChange(e: Event) {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.9);
       border-radius: 4px;
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.2s;
-      &:hover {
-        background: #fff;
-      }
     }
     .preview {
       position: absolute;
@@ -1007,14 +999,10 @@ function handleDirectorManualCoverFileChange(e: Event) {
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(255, 255, 255, 0.9);
       border-radius: 4px;
       cursor: pointer;
       opacity: 0;
       transition: opacity 0.2s;
-      &:hover {
-        background: #fff;
-      }
     }
   }
 }

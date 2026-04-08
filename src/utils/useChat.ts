@@ -84,7 +84,18 @@ export interface UseChatOptions {
 }
 
 export function useChat(options: UseChatOptions) {
-  const { url, auth, autoConnect = true, xmlTags = [], keepXmlInMessage = true, onXmlTag, onError, onConnect, onDisconnect, manageLifecycle = true } = options;
+  const {
+    url,
+    auth,
+    autoConnect = true,
+    xmlTags = [],
+    keepXmlInMessage = true,
+    onXmlTag,
+    onError,
+    onConnect,
+    onDisconnect,
+    manageLifecycle = true,
+  } = options;
 
   const socket = shallowRef<Socket | null>(null);
   const connected = ref(false);
@@ -103,7 +114,7 @@ export function useChat(options: UseChatOptions) {
     ).values(),
   );
   const normalizedXmlTags = normalizedXmlTagOptions.map((item) => item.tag);
-  const hiddenXmlTags = normalizedXmlTagOptions.filter((item) => item.keepInMessage ?? keepXmlInMessage ? false : true).map((item) => item.tag);
+  const hiddenXmlTags = normalizedXmlTagOptions.filter((item) => ((item.keepInMessage ?? keepXmlInMessage) ? false : true)).map((item) => item.tag);
   const emittedXmlState = new Map<string, Record<string, string>>();
   const rawContentState = new Map<string, string>();
 
@@ -138,6 +149,19 @@ export function useChat(options: UseChatOptions) {
 
   const findContent = (msg: AIMessage, contentId: string): AIMessageContent | undefined => {
     return msg.content?.find((c) => c.id === contentId);
+  };
+
+  const isEmptyMessageContent = (msg: ChatMessagesData | undefined): boolean => {
+    if (!msg || msg.role !== "assistant") return false;
+
+    const aiMsg = msg as AIMessage;
+    if (!aiMsg.content || aiMsg.content.length === 0) return true;
+
+    return aiMsg.content.every((item) => {
+      if (item.data === null || item.data === undefined) return true;
+      if (typeof item.data === "string") return item.data.trim() === "";
+      return false;
+    });
   };
 
   const isXmlTextContent = (content: AIMessageContent): content is Extract<AIMessageContent, { type: "text" | "markdown" }> => {
@@ -256,7 +280,7 @@ export function useChat(options: UseChatOptions) {
       if (parsed === null) continue;
 
       const { value, isComplete } = parsed;
-      const eventStatus = isComplete ? status === "error" || status === "stop" ? status : "complete" : status;
+      const eventStatus = isComplete ? (status === "error" || status === "stop" ? status : "complete") : status;
 
       const shouldEmit = prevState[tag] !== value || eventStatus === "complete";
       if (!shouldEmit) continue;
@@ -405,6 +429,10 @@ export function useChat(options: UseChatOptions) {
         ext: data.ext,
       } as ChatMessagesData;
 
+      if (newMessage.status === "complete" && isEmptyMessageContent(newMessage)) {
+        return;
+      }
+
       if (data.role === "assistant") {
         const aiMessage = newMessage as AIMessage;
         aiMessage.content?.forEach((content) => {
@@ -442,6 +470,15 @@ export function useChat(options: UseChatOptions) {
 
       if (data.status) {
         syncMessageXmlData(data.id, msg, data.status);
+      }
+
+      if (data.status === "complete" && isEmptyMessageContent(msg)) {
+        removeMessage(data.id);
+        if (currentMessageId.value === data.id) {
+          currentMessageId.value = null;
+          status.value = "idle";
+        }
+        return;
       }
 
       if (data.status === "streaming") {
@@ -544,7 +581,7 @@ export function useChat(options: UseChatOptions) {
         reconnectionDelay: 1000,
         reconnectionDelayMax: 5000,
         timeout: 10000,
-        auth: { token: localStorage.getItem("token"), ...(typeof auth === 'function' ? auth() : auth) },
+        auth: { token: localStorage.getItem("token"), ...(typeof auth === "function" ? auth() : auth) },
       });
 
       setupHandlers();

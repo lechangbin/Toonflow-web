@@ -1679,7 +1679,7 @@ async function batchDownloadVideo(): Promise<void> {
       gap: 12px;
       overflow-x: auto;
       .item {
-        background-color: #fff;
+        background-color: var(--td-bg-color-container);
         border-radius: 8px;
         flex-shrink: 0;
         width: 200px;
@@ -1780,7 +1780,7 @@ async function batchDownloadVideo(): Promise<void> {
     .pickerLabel {
       font-size: 13px;
       font-weight: 600;
-      color: #1a1a1a;
+      color: var(--td-text-color-primary);
       margin-bottom: 10px;
     }
 
@@ -1792,22 +1792,22 @@ async function batchDownloadVideo(): Promise<void> {
       .pickerOption {
         padding: 6px 0;
         border-radius: 8px;
-        border: 1.5px solid #e8e8e8;
+        border: 1.5px solid var(--td-border-level-1-color);
         font-size: 13px;
-        color: #333;
+        color: var(--td-text-color-primary);
         cursor: pointer;
         transition: all 0.15s;
         user-select: none;
         text-align: center;
-        background: #fff;
+        background: var(--td-bg-color-container);
 
         &:hover {
-          border-color: #999;
+          border-color: var(--td-border-level-2-color);
         }
 
         &.active {
-          border-color: #1a1a1a;
-          color: #1a1a1a;
+          border-color: var(--td-text-color-primary);
+          color: var(--td-text-color-primary);
           font-weight: 500;
         }
       }

@@ -3,7 +3,7 @@
     <!-- AVCanvas 视频预览区域 -->
     <div ref="canvasContainer" class="previewScreen">
       <div v-if="!hasSprites" class="previewScreenPlaceholder">
-        <div class="placeholderIcon"><i-film theme="outline" size="48" fill="#999" /></div>
+        <div class="placeholderIcon"><i-film theme="outline" size="48" fill="var(--td-text-color-placeholder)" /></div>
         <div class="placeholderText">{{ $t('workbench.production.editVideo.videoPreviewArea') }}</div>
         <div class="placeholderTime">{{ formatTime(currentTimeInSeconds) }}</div>
       </div>
@@ -1537,7 +1537,7 @@ defineExpose({
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: #f5f5f5;
+  background: var(--td-bg-color-secondarycontainer);
   overflow: hidden;
 
   .previewScreen {
@@ -1552,7 +1552,7 @@ defineExpose({
       @extend %flexCenter;
       flex-direction: column;
       gap: 12px;
-      color: #999;
+      color: var(--td-text-color-placeholder);
       position: absolute;
       z-index: 1;
 
@@ -1562,13 +1562,13 @@ defineExpose({
 
       .placeholderText {
         font-size: 14px;
-        color: #999;
+        color: var(--td-text-color-placeholder);
         font-weight: 500;
       }
 
       .placeholderTime {
         font-size: 24px;
-        color: #000000;
+        color: var(--td-text-color-primary);
         font-family: "Courier New", monospace;
         font-weight: 700;
         font-variant-numeric: tabular-nums;
@@ -1592,15 +1592,15 @@ defineExpose({
   .previewProgress {
     flex-shrink: 0;
     padding: 10px 16px 12px;
-    background: rgba(255, 255, 255, 0.95);
-    border-top: 1px solid #e8e8e8;
+    background: var(--td-bg-color-container);
+    border-top: 1px solid var(--td-border-level-1-color);
 
     .progressSlider {
       width: 100%;
       height: 6px;
       -webkit-appearance: none;
       appearance: none;
-      background: #e8e8e8;
+      background: var(--td-bg-color-component);
       border-radius: 3px;
       outline: none;
       cursor: pointer;
@@ -1610,12 +1610,12 @@ defineExpose({
         appearance: none;
         width: 14px;
         height: 14px;
-        background: #fff;
-        border: 2px solid #000000;
+        background: var(--td-bg-color-container);
+        border: 2px solid var(--td-text-color-primary);
         border-radius: 50%;
         cursor: pointer;
         transition: transform 0.15s;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--td-shadow-1);
 
         &:hover {
           transform: scale(1.2);
@@ -1625,12 +1625,12 @@ defineExpose({
       &::-moz-range-thumb {
         width: 14px;
         height: 14px;
-        background: #fff;
-        border: 2px solid #000000;
+        background: var(--td-bg-color-container);
+        border: 2px solid var(--td-text-color-primary);
         border-radius: 50%;
         cursor: pointer;
         transition: transform 0.15s;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+        box-shadow: var(--td-shadow-1);
 
         &:hover {
           transform: scale(1.2);

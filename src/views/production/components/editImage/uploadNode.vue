@@ -139,7 +139,7 @@ async function getStoryboardImage() {
       padding: 5px;
     }
     .imageBox {
-      border: 1px solid #e5e5e5;
+      border: 1px solid var(--td-border-level-1-color);
       height: 320px;
       width: 100%;
       position: relative;

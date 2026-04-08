@@ -408,16 +408,16 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #f5f5f5;
-  border: 1px solid #e8e8e8;
+  background: var(--td-bg-color-secondarycontainer);
+  border: 1px solid var(--td-border-level-1-color);
   border-radius: 10px;
   overflow: hidden;
 
   .mediaLibraryHeader {
     flex-shrink: 0;
     padding: 16px 12px 12px;
-    border-bottom: 1px solid #e8e8e8;
-    background: #fff;
+    border-bottom: 1px solid var(--td-border-level-1-color);
+    background: var(--td-bg-color-container);
 
     .headerTitle {
       display: flex;
@@ -429,7 +429,7 @@ onMounted(() => {
         margin: 0;
         font-size: 14px;
         font-weight: 600;
-        color: #333;
+        color: var(--td-text-color-primary);
         letter-spacing: -0.01em;
       }
     }
@@ -450,7 +450,7 @@ onMounted(() => {
       width: 4px;
     }
     &::-webkit-scrollbar-thumb {
-      background: #ddd;
+      background: var(--td-scrollbar-color);
       border-radius: 2px;
     }
 
@@ -465,7 +465,7 @@ onMounted(() => {
         align-items: center;
         gap: 10px;
         padding: 12px;
-        background: #fff;
+        background: var(--td-bg-color-container);
         border: 2px solid transparent;
         border-radius: 12px;
         cursor: grab;
@@ -523,7 +523,7 @@ onMounted(() => {
           .mediaItemName {
             font-size: 12px;
             font-weight: 400;
-            color: #333;
+            color: var(--td-text-color-primary);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -547,7 +547,7 @@ onMounted(() => {
         align-items: center;
         gap: 10px;
         padding: 12px;
-        background: #fff;
+        background: var(--td-bg-color-container);
         border: 2px solid transparent;
         border-radius: 12px;
         cursor: grab;
@@ -578,7 +578,7 @@ onMounted(() => {
         .transitionItemName {
           font-size: 12px;
           font-weight: 400;
-          color: #333;
+          color: var(--td-text-color-primary);
           line-height: 1.4;
         }
       }
@@ -595,7 +595,7 @@ onMounted(() => {
         align-items: center;
         gap: 10px;
         padding: 12px;
-        background: #fff;
+        background: var(--td-bg-color-container);
         border: 2px solid transparent;
         border-radius: 12px;
         cursor: grab;
@@ -625,7 +625,7 @@ onMounted(() => {
         .effectItemName {
           font-size: 12px;
           font-weight: 400;
-          color: #333;
+          color: var(--td-text-color-primary);
           line-height: 1.4;
         }
       }
@@ -642,7 +642,7 @@ onMounted(() => {
         align-items: center;
         gap: 10px;
         padding: 12px;
-        background: #fff;
+        background: var(--td-bg-color-container);
         border: 2px solid transparent;
         border-radius: 12px;
         cursor: grab;
@@ -672,7 +672,7 @@ onMounted(() => {
         .filterItemName {
           font-size: 12px;
           font-weight: 400;
-          color: #333;
+          color: var(--td-text-color-primary);
           line-height: 1.4;
         }
       }
@@ -689,7 +689,7 @@ onMounted(() => {
         align-items: center;
         gap: 10px;
         padding: 12px;
-        background: #fff;
+        background: var(--td-bg-color-container);
         border: 2px solid transparent;
         border-radius: 12px;
         cursor: grab;
@@ -732,7 +732,7 @@ onMounted(() => {
           .audioItemName {
             font-size: 12px;
             font-weight: 400;
-            color: #333;
+            color: var(--td-text-color-primary);
             line-height: 1.4;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -752,7 +752,7 @@ onMounted(() => {
         align-items: center;
         gap: 10px;
         padding: 12px;
-        background: #fff;
+        background: var(--td-bg-color-container);
         border: 2px solid transparent;
         border-radius: 12px;
         cursor: grab;
@@ -788,7 +788,7 @@ onMounted(() => {
         .textItemName {
           font-size: 12px;
           font-weight: 400;
-          color: #333;
+          color: var(--td-text-color-primary);
           line-height: 1.4;
         }
       }
