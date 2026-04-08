@@ -18,11 +18,13 @@ export default defineStore(
     });
 
     const themeSetting = ref<{
-      mode: "light" | "dark";
+      mode: "auto" | "light" | "dark";
       primaryColor: string;
+      fontSize: number;
     }>({
-      mode: "light",
-      primaryColor: "#000",
+      mode: "auto",
+      primaryColor: "#0052D9",
+      fontSize: 16,
     });
 
     const language = ref<string>("zh-CN");

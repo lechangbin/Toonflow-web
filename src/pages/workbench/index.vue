@@ -33,7 +33,7 @@
         </t-tooltip>
         <t-tooltip :content="$t('workbench.menu.jumpGithub')" placement="right" destroyOnClose :showArrow="false">
           <div class="item c" @click="jumpGithub">
-            <i-github-one size="24" />
+            <i-github-one class="icon"  />
           </div>
         </t-tooltip>
       </div>

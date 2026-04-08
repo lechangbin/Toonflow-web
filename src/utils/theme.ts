@@ -119,6 +119,9 @@ export const initTheme = () => {
   // 应用缓存的主题设置
   applyThemeMode(themeSetting.value.mode);
   applyThemeColor(themeSetting.value.primaryColor);
+  if (themeSetting.value.fontSize) {
+    document.documentElement.style.fontSize = `${themeSetting.value.fontSize}px`;
+  }
 
   // 监听系统主题变化
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
