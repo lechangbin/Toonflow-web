@@ -15,7 +15,7 @@
             {{ $t("workbench.generate.generateText") }}
           </t-button>
         </div>
-        <div class="promptInput">
+        <div class="promptInput" @focusout="handlePromptBlur">
           <promptEditor v-model="promptText" :references="references" :placeholder="$t('workbench.generate.promptPlaceholder')" />
           <!-- <t-textarea class="input" v-model="promptText" :autosize="{ minRows: 4, maxRows: 8 }" :disabled="activeTrackGenTextLoading" /> -->
         </div>
@@ -264,9 +264,15 @@ const episodesId = inject<Ref<number>>("episodesId")!;
 const { project } = storeToRefs(projectStore());
 
 const videoUrl = ref("");
-const promptText = computed(() => {
-  const track = trackList.value[activeTrackIndex.value];
-  return track?.prompt ?? "";
+const promptText = computed({
+  get() {
+    const track = trackList.value[activeTrackIndex.value];
+    return track?.prompt ?? "";
+  },
+  set(val: string) {
+    const track = trackList.value[activeTrackIndex.value];
+    if (track) track.prompt = val;
+  },
 });
 const selectedResolution = ref("480p");
 const selectedDuration = ref(8);
@@ -304,6 +310,12 @@ const activeTrackGenTextLoading = computed(() => {
   return trackId != null ? !!genTextLoadingMap.value[trackId] : false;
 });
 
+function handlePromptBlur() {
+  const trackId = trackList.value[activeTrackIndex.value]?.id;
+  if (trackId == null) return;
+  const content = promptText.value;
+  axios.post("/production/workbench/updateVideoPrompt", { id: trackId, prompt: content });
+}
 async function genText() {
   const track = trackList.value[activeTrackIndex.value];
   const trackId = track?.id;
