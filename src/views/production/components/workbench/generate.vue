@@ -957,13 +957,11 @@ watch(selectMode, (val) => {
     const combined = [...mediaSources, ...snapshotSources];
     genVideoParams.value = combined.filter((item, index, self) => self.findIndex((t) => t.id === item.id) === index);
   } else if (newParams.length > 0) {
-    // 合并已有参数并去重
+    // 新 uploadBox 有有效资源：合并已有参数并去重
     const merged = [...genVideoParams.value, ...newParams];
     genVideoParams.value = merged.filter((item, index, self) => self.findIndex((t) => t.id === item.id) === index);
-  } else {
-    // 新模式无有效资源，清空 genVideoParams
-    genVideoParams.value = [];
   }
+  // 新模式无有效资源时，保留原有 genVideoParams，不清空（可能是用户之前手动添加的）
   const curTrackId = trackList.value[activeTrackIndex.value]?.id;
   if (curTrackId != null) genVideoParamsMap.value[curTrackId] = [...genVideoParams.value];
 });
