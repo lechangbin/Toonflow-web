@@ -190,7 +190,7 @@
                     <t-tab-panel v-for="tab in visualManualTabData" :key="tab.value" :value="tab.value" :label="tab.label">
                       <MdEditor
                         v-model="tab.data"
-                        :theme="'light'"
+                        :theme="themeSetting.mode"
                         :toolbars="promptToolbars"
                         :footers="[]"
                         :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
@@ -261,7 +261,7 @@
                     <t-tab-panel v-for="tab in directorManualTabData" :key="tab.value" :value="tab.value" :label="tab.label">
                       <MdEditor
                         v-model="tab.data"
-                        :theme="'light'"
+                        :theme="themeSetting.mode"
                         :toolbars="promptToolbars"
                         :footers="[]"
                         :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
@@ -284,8 +284,9 @@
 import { ref, watch, computed } from "vue";
 import axios from "@/utils/axios";
 import { MdEditor } from "md-editor-v3";
+import settingStore from "@/stores/setting";
+const { themeSetting } = storeToRefs(settingStore());
 import type { ToolbarNames } from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
 import modelSelect from "@/components/modelSelect.vue";
 import type { TabValue } from "tdesign-vue-next";
 import { DialogPlugin } from "tdesign-vue-next";

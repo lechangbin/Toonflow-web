@@ -19,7 +19,7 @@
               v-model="item.enable"
               :customValue="[1, 0]"
               @click.stop
-              @change="(val: number) => onChange(item, val)"
+              @change="(val: any) => onChange(item, val)"
               style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 10"></t-switch>
           </t-menu-item>
         </t-menu>
@@ -36,7 +36,7 @@
             <span class="author">@{{ currentVendor.author }}</span>
           </div>
           <t-form-item>
-            <MdPreview v-model="currentVendor.description" :theme="'light'" />
+            <MdPreview v-model="currentVendor.description" :theme="themeSetting.mode" />
           </t-form-item>
           <t-form-item v-for="input in requiredInputs" :key="input.key" :name="input.key">
             <template #label>
@@ -320,6 +320,8 @@ import axios from "@/utils/axios";
 import VENDOR_CODE_TEMPLATE from "@/lib/vendorTemplate.ts?raw";
 import type { UploadFile } from "tdesign-vue-next";
 import { LoadingPlugin } from "tdesign-vue-next";
+import settingStore from "@/stores/setting";
+const { themeSetting } = storeToRefs(settingStore());
 
 // ── 类型 ──
 interface TextModel {

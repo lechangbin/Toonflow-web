@@ -6,7 +6,7 @@
       <Handle :id="props.handleIds.source" type="source" :position="Position.Right" style="right: calc(-1 * var(--td-comp-paddingLR-xl))" />
     </div>
     <div class="content">
-      <MdPreview v-model="script" :theme="'light'" />
+      <MdPreview v-model="script" :theme="themeSetting.mode" />
     </div>
     <Handle :id="props.handleIds.assets" type="source" :position="Position.Bottom" />
   </t-card>
@@ -25,7 +25,7 @@
     attach="body">
     <MdEditor
       v-model="editContent"
-      :theme="'light'"
+      :theme="themeSetting.mode"
       :toolbars="toolbars"
       :footers="[]"
       style="height: 72vh"
@@ -40,7 +40,8 @@ import { ref } from "vue";
 import { Handle, Position } from "@vue-flow/core";
 import { MdEditor, MdPreview } from "md-editor-v3";
 import type { ToolbarNames } from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
+import settingStore from "@/stores/setting";
+const { themeSetting } = storeToRefs(settingStore());
 
 const props = defineProps<{
   id: string;

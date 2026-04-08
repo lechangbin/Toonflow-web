@@ -109,7 +109,6 @@ import mediaLibrary from "./mediaLibrary.vue";
 import videoPreview from "./videoPreview.vue";
 import propertyPanel from "./propertyPanel.vue";
 import { Splitpanes, Pane } from "splitpanes";
-import "splitpanes/dist/splitpanes.css";
 import "vue-clip-track/style.css";
 import {
   VideoTrack,

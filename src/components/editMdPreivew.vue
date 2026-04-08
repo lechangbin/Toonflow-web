@@ -13,7 +13,7 @@
     attach="body">
     <MdEditor
       v-model="editContent"
-      :theme="'light'"
+      :theme="themeSetting.mode"
       :toolbars="toolbars"
       :footers="[]"
       style="height: 72vh"
@@ -26,7 +26,8 @@
 <script setup lang="ts">
 import { MdEditor } from "md-editor-v3";
 import type { ToolbarNames } from "md-editor-v3";
-import "md-editor-v3/lib/style.css";
+import settingStore from "@/stores/setting";
+const { themeSetting } = storeToRefs(settingStore());
 
 const props = defineProps<{
   content: string;

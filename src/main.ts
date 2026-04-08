@@ -10,12 +10,15 @@ import "@icon-park/vue-next/styles/index.css";
 import "tdesign-vue-next/es/style/index.css";
 import { LoadingDirective, LoadingPlugin } from "tdesign-vue-next";
 
-import "./assets/main.scss";
-
 import "@/utils/global";
 
 import { Log } from "@webav/av-cliper";
 Log.setLogLevel(Log.warn);
+
+import "md-editor-v3/lib/style.css";
+import "splitpanes/dist/splitpanes.css";
+
+import "./assets/main.scss";
 
 const app = createApp(App);
 install(app, "i");

@@ -28,7 +28,7 @@
         <div class="ac jb" style="cursor: pointer" @click="openLink('https://github.com/HBAI-Ltd/Toonflow-app')">
           <div class="f">
             <div class="github">
-              <i-github theme="outline" size="22" class="c" style="width: 100%; height: 100%" />
+              <i-github fill="#000" theme="outline" size="22" class="c" style="width: 100%; height: 100%" />
             </div>
             <div style="margin-left: 15px">
               <div>
@@ -45,7 +45,7 @@
         <div class="ac jb" style="cursor: pointer" @click="openLink('https://gitee.com/HBAI-Ltd/Toonflow-app')">
           <div class="f">
             <div class="gitee">
-              <i-code theme="outline" size="20" class="c" style="width: 100%; height: 100%" />
+              <i-code fill="#000" theme="outline" size="20" class="c" style="width: 100%; height: 100%" />
             </div>
             <div style="margin-left: 15px">
               <div>
@@ -66,7 +66,7 @@
         <div class="ac jb" style="cursor: pointer">
           <div class="f">
             <div class="data">
-              <i-notes theme="outline" size="20" class="c" style="width: 100%; height: 100%" />
+              <i-notes fill="#000" theme="outline" size="20" class="c" style="width: 100%; height: 100%" />
             </div>
             <div style="margin-left: 15px">
               <div>

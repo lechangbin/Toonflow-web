@@ -2,13 +2,12 @@
   <div class="main" :style="{ height: isElectron ? 'calc(100vh - 32px)' : '100vh' }">
     <div class="menu fc jb">
       <div class="logoBox c">
-        <img class="logo" src="@/assets/logo.png" />
+        <div class="logo"></div>
       </div>
       <div class="itemBox fc ac">
         <t-tooltip
           :content="menu.labelKey ? $t(menu.labelKey) : ''"
           placement="right"
-          theme="light"
           destroyOnClose
           :showArrow="false"
           v-for="(menu, index) in menuList"
@@ -20,19 +19,19 @@
         </t-tooltip>
       </div>
       <div class="footItem fc ac">
-        <t-tooltip :content="$t('workbench.menu.feedbackQuestions')" placement="right" theme="light" destroyOnClose :showArrow="false">
+        <t-tooltip :content="$t('workbench.menu.feedbackQuestions')" placement="right" destroyOnClose :showArrow="false">
           <div class="item c" @click="openFeedback">
             <i-bill class="icon" />
           </div>
         </t-tooltip>
-        <t-tooltip :content="$t('workbench.menu.settings')" placement="right" theme="light" destroyOnClose :showArrow="false">
+        <t-tooltip :content="$t('workbench.menu.settings')" placement="right" destroyOnClose :showArrow="false">
           <div class="item c" @click="showSetting = true">
             <t-badge :count="needUpdate ? 1 : 0" dot>
               <i-setting-one class="icon" />
             </t-badge>
           </div>
         </t-tooltip>
-        <t-tooltip :content="$t('workbench.menu.jumpGithub')" placement="right" theme="light" destroyOnClose :showArrow="false">
+        <t-tooltip :content="$t('workbench.menu.jumpGithub')" placement="right" destroyOnClose :showArrow="false">
           <div class="item c" @click="jumpGithub">
             <i-github-one size="24" />
           </div>
@@ -48,7 +47,6 @@
           <t-tooltip
             :content="menu.labelKey ? $t(menu.labelKey) : ''"
             placement="bottom"
-            theme="light"
             destroyOnClose
             :showArrow="false"
             v-for="(menu, index) in rightBtnList"
@@ -212,23 +210,28 @@ onUnmounted(() => {
     height: 100%;
     overflow-x: hidden;
     overflow-y: auto;
-    background-color: #fff;
+    background-color: var(--page);
     border-radius: 16px;
     padding-top: 16px;
     padding-bottom: 16px;
+    color: var(--td-text-color-primary);
     .logoBox {
       width: 100%;
       height: fit-content;
       .logo {
         width: 60%;
-        height: auto;
+        aspect-ratio: 1/1;
+        background-color: var(--td-brand-color);
+        mask: url("@/assets/logo.svg") no-repeat center;
+        mask-size: contain;
+        -webkit-mask: url("@/assets/logo.svg") no-repeat center;
+        -webkit-mask-size: contain;
       }
     }
     .itemBox {
       flex: 1;
       margin-top: 16px;
       margin-bottom: 16px;
-      padding-top: 16px;
       padding-bottom: 16px;
       width: 100%;
       height: 100%;
@@ -244,13 +247,12 @@ onUnmounted(() => {
           font-size: 24px;
         }
         &:hover {
-          background-color: #ecedef;
+          background-color: var(--td-bg-color-container-hover);
           border-radius: 16px;
         }
       }
       .active {
         background-color: #000 !important;
-        color: #ebebeb;
         border-radius: 16px;
       }
     }
@@ -271,7 +273,7 @@ onUnmounted(() => {
   .view {
     flex: 1;
     margin-left: 16px;
-    background-color: #fff;
+    background-color: var(--page);
     border-radius: 16px;
     width: 100%;
     overflow-x: hidden;
@@ -291,7 +293,7 @@ onUnmounted(() => {
         .divider {
           width: 1px;
           height: 24px;
-          background-color: #ecedef;
+          background-color: var(--td-border-level-1-color);
           margin: 0 4px;
         }
       }
@@ -315,25 +317,22 @@ onUnmounted(() => {
   .title {
     font-size: 10px;
     white-space: nowrap;
+    color: var(--td-text-color-primary);
   }
   &:hover {
-    background-color: #ecedef;
+    background-color: var(--td-bg-color-container-hover);
     border-radius: 16px;
   }
 }
-// .disabled {
-//   opacity: 0.3;
-//   cursor: not-allowed;
-// }
 .active {
-  background-color: #000 !important;
-  color: #ebebeb;
+  background-color: var(--td-brand-color) !important;
+  color: var(--td-font-white-1);
   border-radius: 16px;
 }
 .divider {
   width: 50px;
   height: 1px;
-  background-color: #ecedef;
+  background-color: var(--td-border-level-1-color);
   margin: 8px 0;
 }
 

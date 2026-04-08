@@ -1,16 +1,4 @@
-import { useStorage } from "@vueuse/core";
-
-// 主题设置类型
-interface ThemeSetting {
-  mode: "light" | "dark" | "auto";
-  primaryColor: string;
-}
-
-// 使用 VueUse 的 useStorage 进行本地存储缓存
-export const themeSetting = useStorage<ThemeSetting>("theme-setting", {
-  mode: "light",
-  primaryColor: "#000",
-});
+import settingStore from "@/stores/setting";
 
 // HEX 转 HSL
 const hexToHsl = (hex: string) => {
@@ -127,6 +115,7 @@ export const toggleThemeWithTransition = (event: MouseEvent | undefined, callbac
 
 // 初始化主题（在 App.vue 中调用）
 export const initTheme = () => {
+  const { themeSetting } = storeToRefs(settingStore());
   // 应用缓存的主题设置
   applyThemeMode(themeSetting.value.mode);
   applyThemeColor(themeSetting.value.primaryColor);
@@ -153,6 +142,7 @@ export const initTheme = () => {
 
 // 导出 composable 供组件使用
 export const useTheme = () => {
+  const { themeSetting } = storeToRefs(settingStore());
   return {
     themeSetting,
     applyThemeMode,

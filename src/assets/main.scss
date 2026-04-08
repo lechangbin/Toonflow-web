@@ -6,7 +6,8 @@ html,
 body,
 #app {
   margin: 0;
-  background-color: #ebebeb;
+  background-color: var(--bgc);
+  color: var(--td-text-color-primary);
 }
 
 // Electron titleBar 偏移：一劳永逸处理所有 TDesign 固定定位弹出层被 titleBar 遮挡的问题
@@ -164,6 +165,8 @@ body.is-electron {
 }
 :root,
 :root[theme-mode="light"] {
+  --bgc: #ebebeb;
+  --page: #fff;
   --td-brand-color-1: #f3f3f3;
   --td-brand-color-2: #e3e3e3;
   --td-brand-color-3: #c6c6c6;
@@ -297,6 +300,8 @@ body.is-electron {
 
 :root.dark,
 :root[theme-mode="dark"] {
+  --bgc: #3a3b3b;
+  --page: #242424;
   --td-brand-color-1: #000000;
   --td-brand-color-2: #303030;
   --td-brand-color-3: #434343;
@@ -551,4 +556,116 @@ body.is-electron {
 }
 .t-image-viewer__modal-image {
   user-select: none;
+}
+
+.md-editor.md-editor {
+  // 编辑器基础变量
+  --md-color: var(--td-text-color-primary);
+  --md-hover-color: var(--td-text-color-primary);
+  --md-bk-color: var(--td-bg-color-container);
+  --md-bk-color-outstand: var(--td-bg-color-secondarycontainer);
+  --md-bk-hover-color: var(--td-bg-color-container-hover);
+  --md-border-color: var(--td-border-level-1-color);
+  --md-border-hover-color: var(--td-border-level-2-color);
+  --md-border-active-color: var(--td-brand-color);
+  --md-modal-mask: var(--td-mask-active);
+  --md-modal-shadow: var(--td-shadow-2);
+  --md-scrollbar-bg-color: var(--td-scrollbar-color);
+  --md-scrollbar-thumb-color: var(--td-scrollbar-color);
+  --md-scrollbar-thumb-hover-color: var(--td-scrollbar-hover-color);
+  --md-scrollbar-thumb-active-color: var(--td-scrollbar-hover-color);
+
+  color: var(--md-color);
+  background-color: var(--md-bk-color);
+  border: none;
+
+  // 预览区主题变量
+  .md-editor-preview.md-editor-preview {
+    --md-theme-color: var(--td-text-color-primary);
+    --md-theme-color-reverse: var(--td-bg-color-container-hover);
+    --md-theme-color-hover: var(--td-bg-color-container-hover);
+    --md-theme-color-hover-inset: var(--td-bg-color-secondarycontainer-hover);
+    --md-theme-link-color: var(--td-brand-color-8);
+    --md-theme-link-hover-color: var(--td-success-color);
+    --md-theme-border-color: var(--td-border-level-1-color);
+    --md-theme-border-color-reverse: var(--td-border-level-2-color);
+    --md-theme-border-color-inset: var(--td-border-level-2-color);
+    --md-theme-bg-color: var(--td-bg-color-container);
+    --md-theme-bg-color-inset: var(--td-bg-color-secondarycontainer);
+
+    // 代码块
+    --md-theme-code-color: var(--td-text-color-primary);
+    --md-theme-code-bg-color: var(--td-bg-color-secondarycontainer);
+    --md-theme-code-block-bg-color: var(--td-bg-color-secondarycontainer);
+    --md-theme-code-block-color: var(--td-text-color-primary);
+    --md-theme-code-inline-color: var(--td-error-color);
+    --md-theme-code-inline-bg-color: var(--td-bg-color-secondarycontainer);
+    --md-theme-code-copy-tips-color: var(--td-text-color-primary);
+    --md-theme-code-copy-tips-bg-color: var(--td-bg-color-container);
+    --md-theme-code-active-color: var(--td-warning-color);
+
+    // 引用块
+    --md-theme-quote-color: var(--td-text-color-secondary);
+    --md-theme-quote-bg-color: var(--td-bg-color-secondarycontainer);
+    --md-theme-quote-border-color: var(--td-brand-color-5);
+    --md-theme-blockquote-color: var(--td-text-color-secondary);
+    --md-theme-blockquote-bg-color: var(--td-bg-color-secondarycontainer);
+
+    // 标题
+    --md-theme-heading-color: var(--td-text-color-primary);
+    --md-theme-heading-border: var(--td-border-level-1-color);
+    --md-theme-heading-bg-color: transparent;
+
+    // 表格
+    --md-theme-table-color: var(--td-text-color-primary);
+    --md-theme-table-border-color: var(--td-border-level-1-color);
+    --md-theme-table-td-border-color: var(--td-border-level-1-color);
+    --md-theme-table-th-color: var(--td-text-color-primary);
+    --md-theme-table-thead-bg-color: var(--td-bg-color-secondarycontainer);
+    --md-theme-table-tr-bg-color: var(--td-bg-color-container);
+    --md-theme-table-stripe-color: var(--td-bg-color-secondarycontainer);
+
+    // 文本样式
+    --md-theme-strong-color: var(--td-text-color-primary);
+    --md-theme-del-color: var(--td-text-color-disabled);
+    --md-theme-em-color: var(--td-text-color-secondary);
+
+    // 选中态
+    --md-theme-slct-text-color: var(--td-font-white-1);
+    --md-theme-slct-bg-color: var(--td-brand-color-5);
+
+    // 圆角
+    --md-theme-radius-s: var(--td-radius-small);
+    --md-theme-radius-m: var(--td-radius-medium);
+  }
+
+  // 编辑区 CodeMirror 样式
+  .cm-editor.cm-editor {
+    .cm-gutters.cm-gutters {
+      background-color: var(--td-bg-color-secondarycontainer);
+      color: var(--td-text-color-placeholder);
+      border-right: 1px solid var(--td-border-level-1-color);
+    }
+    .cm-activeLineGutter.cm-activeLineGutter {
+      background-color: var(--td-bg-color-secondarycontainer-hover);
+    }
+    .cm-activeLine.cm-activeLine {
+      background-color: var(--td-bg-color-container-hover);
+    }
+    .cm-cursor.cm-cursor {
+      border-left-color: var(--td-text-color-primary);
+    }
+    .cm-selectionBackground.cm-selectionBackground {
+      background-color: var(--td-brand-color-2) !important;
+    }
+    .cm-panels.cm-panels {
+      background-color: var(--td-bg-color-secondarycontainer);
+      color: var(--td-text-color-primary);
+      border-color: var(--td-border-level-1-color);
+    }
+  }
+}
+
+.splitpanes__splitter {
+  background-color: var(--td-border-level-1-color) !important;
 }
