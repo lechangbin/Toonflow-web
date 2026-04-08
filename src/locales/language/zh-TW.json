@@ -1326,7 +1326,11 @@
       "addReference": "新增參考",
       "promptPlaceholder": "請輸入影片提示詞",
       "downloadVideo": "批量下載視頻",
-      "selectVideo": "請勾選需要下載的視頻"
+      "selectVideo": "請勾選需要下載的視頻",
+      "batchDownloadVideo": "批量下載視頻",
+      "storyboard": "分鏡",
+      "assets": "資產",
+      "promptText": "產生影片提示詞數據"
     }
   },
   "login": {

@@ -1413,7 +1413,11 @@
       "addReference": "add reference",
       "promptPlaceholder": "Please enter the video prompt word",
       "downloadVideo": "Download videos in batches",
-      "selectVideo": "Please check the video you want to download"
+      "selectVideo": "Please check the video you want to download",
+      "batchDownloadVideo": "Download videos in batches",
+      "storyboard": "Storyboard",
+      "assets": "assets",
+      "promptText": "Generate video prompt word data"
     }
   },
   "login": {

@@ -1321,7 +1321,11 @@
       "addReference": "参照を追加",
       "promptPlaceholder": "動画のプロンプトワードを入力してください",
       "downloadVideo": "動画をバッチでダウンロードする",
-      "selectVideo": "ダウンロードしたい動画にチェックを入れてください"
+      "selectVideo": "ダウンロードしたい動画にチェックを入れてください",
+      "batchDownloadVideo": "動画をバッチでダウンロードする",
+      "storyboard": "絵コンテ",
+      "assets": "資産",
+      "promptText": "ビデオプロンプトワードデータの生成"
     }
   },
   "login": {

@@ -1423,7 +1423,7 @@
       "generateConfirm": "确认生成",
       "generateConfirmBody": "是否确认生成视频",
       "generateVideosInBatches": "批量生成视频",
-      "generateStarted": "生成开始",
+      "generateStarted": "开始生成",
       "promptEmpty": "勾选需要生成视频的数据有提示词为空，是否继续生成",
       "skipDataWithEmptyVideoPromptWords": "需要生成的视频数据存在提示词为空",
       "duration": "时长",
@@ -1433,7 +1433,11 @@
       "addReference": "添加参考",
       "promptPlaceholder": "请输入视频提示词",
       "downloadVideo": "批量下载视频",
-      "selectVideo": "请勾选需要下载的视频"
+      "selectVideo": "请勾选需要下载的视频",
+      "batchDownloadVideo": "批量下载视频",
+      "storyboard": "分镜",
+      "assets": "资产",
+      "promptText": "生成视频提示词数据"
     }
   },
   "login": {

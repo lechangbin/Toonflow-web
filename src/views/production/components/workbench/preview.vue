@@ -173,6 +173,7 @@ import { ref, computed, watch, nextTick, onUnmounted, type Ref } from "vue";
 import { VueDraggable } from "vue-draggable-plus";
 import { DialogPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
+import JSZip from "jszip";
 
 interface ShotCharacter {
   name: string;
@@ -404,48 +405,46 @@ watch(
 
 const onDragEnd = () => nextTick(() => (isDragging.value = false));
 
-function exportImage() {
-  //拿到选中的数据
-  const selectedShots = shotList.value.filter((shot) => shot.selected).map((shot) => ({ id: shot.id }));
-  if (selectedShots.length <= 0) {
+async function exportImage() {
+  const selectedShots = shotList.value
+    .filter((shot) => shot.selected)
+    .map((shot) => ({
+      id: shot.id,
+      filePath: shot.filePath,
+    }));
+  if (selectedShots.length === 0) {
     DialogPlugin.alert({
       header: $t("workbench.production.preview.tip"),
       body: $t("workbench.production.preview.selectAtLeastOne"),
     });
     return;
   }
-  axios
-    .post(
-      "/production/exportImage",
-      {
-        shotId: selectedShots,
-      },
-      {
-        responseType: "blob",
-      },
-    )
-    .then(async (response) => {
-      const blob = response.data;
-      if (!(blob instanceof Blob) || blob.type === "application/json") {
-        const text = blob instanceof Blob ? await blob.text() : String(blob);
-        try {
-          const errData = JSON.parse(text);
-          console.error("导出图片失败:", errData);
-        } catch {
-          console.error("导出图片失败:", text);
-        }
-        return;
-      }
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = $t("workbench.production.preview.exportFilename") + ".zip";
-      link.click();
-      URL.revokeObjectURL(url);
-    })
-    .catch((error) => {
-      console.error("导出图片失败:", error);
-    });
+  const zip = new JSZip();
+  const downloadPromises = selectedShots.map(async (shot) => {
+    try {
+      if (!shot.filePath) return;
+      const response = await fetch(shot.filePath);
+      const blob = await response.blob();
+      zip.file(`分镜${shot.id}.${getFileExtension(shot.filePath)}`, blob);
+    } catch (error) {
+      console.error(`图片下载失败: ${shot.filePath}`, error);
+    }
+  });
+
+  await Promise.all(downloadPromises);
+
+  zip.generateAsync({ type: "blob" }).then((content) => {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(content);
+    link.download = "分镜压缩包.zip";
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+  });
+}
+// 辅助方法：获取文件后缀
+function getFileExtension(path: string) {
+  const match = path.match(/\.(\w+)(?:\?|$)/);
+  return match ? match[1] : "jpg";
 }
 </script>
 

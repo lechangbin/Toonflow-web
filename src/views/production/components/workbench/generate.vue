@@ -15,9 +15,19 @@
             {{ $t("workbench.generate.generateText") }}
           </t-button>
         </div>
+        <div class="genVideoParams" style="text-align: right">
+          <t-tag
+            theme="primary"
+            closable
+            v-for="(item, index) in genVideoParams"
+            :key="index"
+            style="margin: 5px"
+            @close="removeGenVideoParam(index)">
+            #{{ item.sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}{{ index + 1 }}
+          </t-tag>
+        </div>
         <div class="promptInput" @focusout="handlePromptBlur">
           <promptEditor v-model="promptText" :references="references" :placeholder="$t('workbench.generate.promptPlaceholder')" />
-          <!-- <t-textarea class="input" v-model="promptText" :autosize="{ minRows: 4, maxRows: 8 }" :disabled="activeTrackGenTextLoading" /> -->
         </div>
         <div class="modeOpt f w">
           <template v-if="isMixedMode">
@@ -32,7 +42,9 @@
                   <i-close size="12" />
                 </div>
                 <div class="source">
-                  <t-tag size="small">{{ item.sources == "storyboard" ? "分镜" : "资产" }}</t-tag>
+                  <t-tag size="small">
+                    {{ item.sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}
+                  </t-tag>
                 </div>
               </template>
             </div>
@@ -47,6 +59,11 @@
                 <img :src="item.src" class="uploadPreview" />
                 <div class="clearBtn" @click.stop="clearUpload(index)">
                   <i-close size="12" />
+                </div>
+                <div class="source">
+                  <t-tag size="small">
+                    {{ item.sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}
+                  </t-tag>
                 </div>
               </template>
               <template v-else>
@@ -210,6 +227,7 @@
           <span class="selectedCount" v-if="checkedTrackIds.length">{{ $t("workbench.generate.selected") }} {{ checkedTrackIds.length }} 段</span>
         </div>
         <div class="right f ac">
+          <t-button size="small" variant="outline" @click="batchDownloadVideo">{{ $t("workbench.generate.batchDownloadVideo") }}</t-button>
           <t-button size="small" variant="outline" @click="batchGenText">{{ $t("workbench.generate.batchGenerateText") }}</t-button>
           <t-button size="small" variant="outline" @click="batchGenVideo">{{ $t("workbench.generate.batchGenerateVideo") }}</t-button>
           <!-- <t-button size="small" variant="outline" @click="importVideo">{{ $t("workbench.generate.importVideo") }}</t-button> -->
@@ -229,13 +247,15 @@
             @change="(val: boolean) => toggleCheck(track.id, val)" />
           <t-tag class="indexTag" size="small">#{{ index + 1 }}</t-tag>
           <t-tag class="selectTag" theme="success" size="small" v-if="track.selectVideoId">已选择</t-tag>
-          <div class="thumbGroup" v-if="track.medias.length">
+          <div class="thumbGroup" v-if="track.medias.some((m) => m.src)">
             <template v-for="(m, i) in track.medias" :key="i">
-              <img v-if="m.fileType === 'image'" :src="m.src" class="thumb" />
-              <div v-else class="thumb placeholder c">
-                <i-volume-notice v-if="m.fileType === 'audio'" size="20" />
-                <i-video v-else size="24" />
-              </div>
+              <template v-if="m.src">
+                <img v-if="m.fileType === 'image'" :src="m.src" class="thumb" />
+                <div v-else class="thumb placeholder c">
+                  <i-volume-notice v-if="m.fileType === 'audio'" size="20" />
+                  <i-video v-else size="24" />
+                </div>
+              </template>
             </template>
           </div>
           <span v-else class="emptyTrack">{{ $t("workbench.generate.emptyTrack", index + 1) }}</span>
@@ -258,12 +278,73 @@ import assetsCheck, { type AssetType, type ClipMediaType } from "@/utils/assetsC
 import { DialogPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
-
+import JSZip from "jszip";
+// ========================
+// 基础数据与初始化模块
+// ========================
+// 剧本ID
 const episodesId = inject<Ref<number>>("episodesId")!;
-
+// 项目信息
 const { project } = storeToRefs(projectStore());
-
+// 当前显示的视频URL
 const videoUrl = ref("");
+// 用户是否手动选择过时长，手动选择后不再被 track.duration 覆盖
+const userSelectedDuration = ref(false);
+// 初始化数据
+onMounted(() => {
+  selectModel.value = project.value?.videoModel || "";
+  selectMode.value = project.value?.mode || "";
+  getGenerateData();
+});
+// ========================
+// 主数据与分组管理模块
+// ========================
+interface TrackItem {
+  id: number;
+  prompt: string;
+  state: "未生成" | "生成中" | "已完成" | "生成失败";
+  reason?: string;
+  selectVideoId?: number | null;
+  medias: TrackMedia[];
+  videoList: VideoItem[];
+  duration: number;
+}
+const trackList = ref<TrackItem[]>([]);
+// 查询分组主数据
+async function getGenerateData() {
+  const { data } = await axios.post("/production/workbench/getGenerateData", {
+    projectId: project.value?.id,
+    scriptId: episodesId.value ?? 0,
+  });
+  trackList.value = data.trackList;
+  // 保留用户本地已手动选择但后端可能还未持久化的映射
+  const prevMap = { ...trackSelectedVideoMap.value };
+  trackSelectedVideoMap.value = {};
+  for (const track of trackList.value) {
+    if (track.id != null) {
+      if (track.selectVideoId != null) {
+        trackSelectedVideoMap.value[track.id] = track.selectVideoId;
+      } else if (prevMap[track.id] != null) {
+        // 后端尚未返回最新选中状态，保留本地选择
+        trackSelectedVideoMap.value[track.id] = prevMap[track.id];
+      }
+    }
+  }
+  storyboardList.value = data.storyboardList;
+  syncMediasToUploadBox();
+  // 同步 genVideoParams：优先用缓存，否则从 track.medias 初始化
+  const activeTrack = trackList.value[activeTrackIndex.value];
+  if (activeTrack?.id != null && genVideoParamsMap.value[activeTrack.id] != null) {
+    genVideoParams.value = [...genVideoParamsMap.value[activeTrack.id]];
+  } else if (genVideoParams.value.length === 0 && activeTrack) {
+    genVideoParams.value = activeTrack.medias.map((m) => ({ id: m.id, sources: m.sources }));
+  }
+  getVideoList();
+}
+// ========================
+// 提示词与上传资源管理模块
+// ========================
+// 视频提示词
 const promptText = computed({
   get() {
     const track = trackList.value[activeTrackIndex.value];
@@ -274,12 +355,49 @@ const promptText = computed({
     if (track) track.prompt = val;
   },
 });
+// 上传的数据图片/音视频信息
+interface UploadItem {
+  fileType: "image" | "video" | "audio";
+  type: Type;
+  sources: "assets" | "storyboard";
+  id?: number;
+  src?: string;
+  label?: string;
+  prompt?: string;
+}
+const uploadBox = ref<UploadItem[]>([]);
+
+// ========================
+// 分辨率、时长与模型配置模块
+// ========================
 const selectedResolution = ref("480p");
 const selectedDuration = ref(8);
-// 用户是否手动选择过时长，手动选择后不再被 track.duration 覆盖
-const userSelectedDuration = ref(false);
+const selectModel = ref<string>(); // 项目模型
+// 监听模型变化，自动获取模型详情并重置分辨率和时长
+watch(selectModel, (val) => {
+  if (!val) {
+    modeOptions.value = {} as VideoModel;
+    selectMode.value = undefined;
+    return;
+  }
+  axios.post("/modelSelect/getModelDetail", { modelId: val }).then(({ data }) => {
+    modeOptions.value = data;
+    // 重置分辨率和时长为第一个可选项
+    const drMap = data.durationResolutionMap;
+    if (Array.isArray(drMap) && drMap.length > 0) {
+      if (drMap[0].resolution?.length) {
+        selectedResolution.value = drMap[0].resolution[0];
+      }
+      if (drMap[0].duration?.length) {
+        selectedDuration.value = drMap[0].duration[0];
+      }
+    }
+    // 切换模型时重置手动选择标记
+    userSelectedDuration.value = false;
+  });
+});
 
-//仅批量生成视频，如果单个生成视频切换模型需要选择时长
+// 仅批量生成视频，如果单个生成视频切换模型需要选择时长
 function clampDuration(trackDuration: number): number {
   const drMap = modeOptions.value.durationResolutionMap;
   if (Array.isArray(drMap) && drMap.length > 0 && drMap[0].duration?.length) {
@@ -291,6 +409,7 @@ function clampDuration(trackDuration: number): number {
   return trackDuration;
 }
 
+// 时长选择
 const effectiveDuration = computed(() => {
   // 用户手动选择过时长，直接用 selectedDuration
   if (userSelectedDuration.value) return selectedDuration.value;
@@ -298,7 +417,12 @@ const effectiveDuration = computed(() => {
   const trackDuration = trackList.value[activeTrackIndex.value]?.duration || selectedDuration.value;
   return clampDuration(trackDuration);
 });
+// 是否启用声音
 const selectedAudio = ref(false);
+
+// ========================
+// 生成状态与加载状态模块
+// ========================
 const generatingMap = ref<Record<number, boolean>>({});
 const generating = computed(() => {
   const trackId = trackList.value[activeTrackIndex.value]?.id;
@@ -310,50 +434,38 @@ const activeTrackGenTextLoading = computed(() => {
   return trackId != null ? !!genTextLoadingMap.value[trackId] : false;
 });
 
+// ========================
+// 提示词与时长变更同步模块
+// ========================
 function handlePromptBlur() {
   const trackId = trackList.value[activeTrackIndex.value]?.id;
   if (trackId == null) return;
   const content = promptText.value;
   axios.post("/production/workbench/updateVideoPrompt", { id: trackId, prompt: content });
 }
-async function genText() {
-  const track = trackList.value[activeTrackIndex.value];
-  const trackId = track?.id;
-  if (trackId == null || genTextLoadingMap.value[trackId]) return;
-  const isTextMode = selectMode.value === "text";
-  const infoSource = isTextMode
-    ? track.medias
-    : uploadBox.value.map((item) => ({ id: item.id, src: item.src, prompt: item.prompt, sources: item.sources }));
-  const info = infoSource.map((item) => ({
-    id: item.id,
-    sources: item.sources,
-  }));
-  genTextLoadingMap.value[trackId] = true;
-  try {
-    const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
-      projectId: project.value?.id,
-      trackId,
-      info: info,
-      model: selectModel.value,
-    });
-    const targetTrack = trackList.value.find((item) => item.id === trackId);
-    if (targetTrack) {
-      targetTrack.prompt = data;
+// 监听时长变化，自动同步到后端
+watch(
+  () => selectedDuration.value,
+  (newVal, oldVal) => {
+    if (newVal !== oldVal) {
+      const trackId = trackList.value[activeTrackIndex.value]?.id;
+      if (trackId == null) return;
+      axios.post("/production/workbench/updateVideoPrompt", { id: trackId, duration: newVal });
+      getGenerateData();
     }
-  } finally {
-    genTextLoadingMap.value[trackId] = false;
-  }
-}
+  },
+);
 
+// ========================
+// 视频历史与封面管理模块
+// ========================
 interface VideoItem {
   id: number;
   src: string;
   state: "未生成" | "生成中" | "已完成" | "生成失败";
   errorReason?: string | null;
 }
-
 const selectVideoId = ref<number | null>(null);
-
 interface HistoryVideoItem {
   errorReason?: string | null;
   src: string;
@@ -365,10 +477,9 @@ interface HistoryVideoItem {
   time?: number | null;
   videoTrackId?: number | null;
 }
-
 // 视频封面图缓存 key=src
 const videoCoverMap = ref<Record<string, string>>({});
-
+// 捕获视频封面
 function captureVideoCover(src: string) {
   if (!src || videoCoverMap.value[src]) return;
   const video = document.createElement("video");
@@ -406,9 +517,8 @@ function captureVideoCover(src: string) {
   );
   video.load();
 }
-
 const historyVideo = ref<HistoryVideoItem[]>([]);
-
+// 监听历史视频变化，自动捕获封面
 watch(
   historyVideo,
   (list) => {
@@ -420,7 +530,7 @@ watch(
   },
   { deep: true },
 );
-
+// 当前track的视频列表
 const activeTrackVideos = computed(() => {
   const track = trackList.value[activeTrackIndex.value];
   if (!track?.id) return [];
@@ -428,12 +538,12 @@ const activeTrackVideos = computed(() => {
   if (fromHistory.length > 0) return fromHistory;
   return (track.videoList ?? []).map((v) => ({ ...v, videoTrackId: track.id }));
 });
-
+// 预览视频
 function previewVideo(v: HistoryVideoItem) {
   if (v.state === "生成中" || v.state === "生成失败") return;
   videoUrl.value = v.src;
 }
-
+// 选择视频
 async function selectVideo(v: HistoryVideoItem) {
   if (v.state === "生成中" || v.state === "生成失败") return;
   const activeTrack = trackList.value[activeTrackIndex.value];
@@ -458,20 +568,12 @@ async function selectVideo(v: HistoryVideoItem) {
   }
 }
 
+// ========================
+// 视频模型与模式配置模块
+// ========================
 type ReferenceType = "videoReference" | "imageReference" | "audioReference" | "textReference";
 type Type = "imageReference" | "startImage" | "endImage" | "videoReference" | "audioReference";
 type VideoMode = "singleImage" | "startEndRequired" | "endFrameOptional" | "startFrameOptional" | "text" | ReferenceType[];
-
-interface UploadItem {
-  fileType: "image" | "video" | "audio";
-  type: Type;
-  sources: "assets" | "storyboard";
-  id?: number;
-  src?: string;
-  label?: string;
-  prompt?: string;
-}
-
 interface VideoModel {
   name: string; // 显示名称
   modelName: string; //全局唯一
@@ -516,15 +618,11 @@ const modeList = computed(() => {
       })
     : [];
 });
-
-const selectModel = ref<string>();
 const selectMode = ref<string>();
-
 const isMixedMode = computed(() => {
   const mode = parseMode(selectMode.value || "");
   return Array.isArray(mode);
 });
-
 const mixedClipMediaTypes = computed<ClipMediaType[]>(() => {
   const mode = parseMode(selectMode.value || "");
   if (!Array.isArray(mode)) return [];
@@ -535,7 +633,6 @@ const mixedClipMediaTypes = computed<ClipMediaType[]>(() => {
   };
   return mode.filter((m) => m in map).map((m) => map[m]);
 });
-
 function parseMode(value: string): VideoMode | null {
   if (!value) return null;
   try {
@@ -549,6 +646,9 @@ function parseMode(value: string): VideoMode | null {
   return value as Exclude<VideoMode, ReferenceType[]>;
 }
 
+// ========================
+// Track媒体与选中状态模块
+// ========================
 interface TrackMedia {
   src: string;
   id?: number;
@@ -556,29 +656,32 @@ interface TrackMedia {
   fileType: "image" | "video" | "audio";
   sources?: "assets" | "storyboard";
 }
-
-interface TrackItem {
-  id: number;
-  prompt: string;
-  state: "未生成" | "生成中" | "已完成" | "生成失败";
-  reason?: string;
-  selectVideoId?: number | null;
-  medias: TrackMedia[];
-  videoList: VideoItem[];
-  duration: number;
-}
-const trackList = ref<TrackItem[]>([]);
 const activeTrackIndex = ref(0);
 const trackSelectedVideoMap = ref<Record<number, number>>({});
 
+// ========================
+// Track增删与选中管理模块
+// ========================
 async function addTrack() {
-  const { data } = await axios.post("/production/workbench/addTrack", {
-    projectId: project.value?.id,
-    scriptId: episodesId.value ?? 0,
+  let duration = 0;
+  axios.post("/modelSelect/getModelDetail", { modelId: selectModel.value }).then(async ({ data }) => {
+    modeOptions.value = data;
+    const drMap = data.durationResolutionMap;
+    if (Array.isArray(drMap) && drMap.length > 0) {
+      if (drMap[0].duration?.length) {
+        duration = drMap[0].duration[0];
+        const { data } = await axios.post("/production/workbench/addTrack", {
+          projectId: project.value?.id,
+          scriptId: episodesId.value ?? 0,
+          duration,
+        });
+        getGenerateData();
+        const trackId = typeof data === "object" && data !== null ? data.id : data;
+        trackList.value.push({ id: trackId, prompt: "", state: "未生成", medias: [], videoList: [], duration: 0 });
+        activeTrackIndex.value = trackList.value.length - 1;
+      }
+    }
   });
-  const trackId = typeof data === "object" && data !== null ? data.id : data;
-  trackList.value.push({ id: trackId, prompt: "", state: "未生成", medias: [], videoList: [], duration: 0 });
-  activeTrackIndex.value = trackList.value.length - 1;
 }
 
 function confirmDeleteTrack(index: number) {
@@ -605,8 +708,6 @@ async function deleteTrack(index: number) {
     activeTrackIndex.value = trackList.value.length - 1;
   }
 }
-
-const uploadBox = ref<UploadItem[]>([]);
 
 const references = computed(() => {
   return uploadBox.value
@@ -691,6 +792,10 @@ function handleSelectSource(index: number) {
       if (assets.length > 0) {
         userEditedUploadBox.value = true;
         uploadBox.value[index] = { ...item, sources: "assets", src: assets[0].src, id: assets[0].id, prompt: assets[0].prompt };
+        genVideoParams.value.push({ id: assets[0].id, sources: "assets" });
+        genVideoParams.value = genVideoParams.value.filter((item, index, self) => self.findIndex((t) => t.id === item.id) === index);
+        const curTrackId = trackList.value[activeTrackIndex.value]?.id;
+        if (curTrackId != null) genVideoParamsMap.value[curTrackId] = [...genVideoParams.value];
       }
     },
     onCancel: () => {
@@ -721,6 +826,10 @@ async function handleMixedAdd() {
           prompt: asset.prompt,
           label: "",
         });
+        genVideoParams.value.push({ id: asset.id, sources: "assets" });
+        genVideoParams.value = genVideoParams.value.filter((item, index, self) => self.findIndex((t) => t.id === item.id) === index);
+        const curTrackId2 = trackList.value[activeTrackIndex.value]?.id;
+        if (curTrackId2 != null) genVideoParamsMap.value[curTrackId2] = [...genVideoParams.value];
       }
     },
     onCancel: () => {
@@ -749,8 +858,12 @@ function getFileTypeByExt(src: string | undefined): "image" | "video" | "audio" 
 function pickStoryboard(sb: StoryboardItem) {
   storyboardDialogVisible.value = false;
   userEditedUploadBox.value = true;
+  const fileType = getFileTypeByExt(sb.src);
+  genVideoParams.value.push({ id: sb.id, sources: "storyboard" });
+  genVideoParams.value = genVideoParams.value.filter((item, index, self) => self.findIndex((t) => t.id === item.id) === index);
+  const curTrackId3 = trackList.value[activeTrackIndex.value]?.id;
+  if (curTrackId3 != null) genVideoParamsMap.value[curTrackId3] = [...genVideoParams.value];
   if (isMixedMode.value) {
-    const fileType = getFileTypeByExt(sb.src);
     uploadBox.value.push({
       fileType,
       type: refTypeMap[fileType] as Type,
@@ -777,64 +890,6 @@ function clearUpload(index: number) {
     uploadBox.value[index] = { ...item, sources: "storyboard", src: undefined, id: undefined, prompt: undefined };
   }
 }
-
-async function generateVideo() {
-  const trackId = trackList.value[activeTrackIndex.value]?.id;
-  if (trackId == null || generatingMap.value[trackId]) return;
-  const dlg = DialogPlugin.confirm({
-    header: $t("workbench.generate.generateConfirm"),
-    body: $t("workbench.generate.generateConfirmBody"),
-    onConfirm: async () => {
-      dlg.destroy();
-      generatingMap.value[trackId] = true;
-      try {
-        const payload = {
-          projectId: project.value?.id,
-          scriptId: episodesId.value,
-          uploadData: uploadBox.value,
-          prompt: promptText.value,
-          model: selectModel.value,
-          mode: selectMode.value,
-          resolution: selectedResolution.value,
-          duration: effectiveDuration.value,
-          audio: selectedAudio.value,
-          trackId,
-        };
-        const { data } = await axios.post("/production/workbench/generateVideo", payload);
-        window.$message.success($t("workbench.generate.generateStarted"));
-        getVideoList();
-      } finally {
-        generatingMap.value[trackId] = false;
-      }
-    },
-    onCancel: () => {
-      dlg.destroy();
-    },
-  });
-}
-
-watch(selectModel, (val) => {
-  if (!val) {
-    modeOptions.value = {} as VideoModel;
-    selectMode.value = undefined;
-    return;
-  }
-  axios.post("/modelSelect/getModelDetail", { modelId: val }).then(({ data }) => {
-    modeOptions.value = data;
-    // 重置分辨率和时长为第一个可选项
-    const drMap = data.durationResolutionMap;
-    if (Array.isArray(drMap) && drMap.length > 0) {
-      if (drMap[0].resolution?.length) {
-        selectedResolution.value = drMap[0].resolution[0];
-      }
-      if (drMap[0].duration?.length) {
-        selectedDuration.value = drMap[0].duration[0];
-      }
-    }
-    // 切换模型时重置手动选择标记
-    userSelectedDuration.value = false;
-  });
-});
 
 const userEditedUploadBox = ref(false);
 
@@ -875,7 +930,10 @@ watch(
     if (!userEditedUploadBox.value) return;
     const track = trackList.value[activeTrackIndex.value];
     if (!track) return;
-    track.medias = items.map((item) => ({ src: item.src!, id: item.id, prompt: item.prompt, fileType: item.fileType, sources: item.sources }));
+    // 只写回有 src 的有效项，避免空占位项污染 track.medias
+    track.medias = items
+      .filter((item) => !!item.src)
+      .map((item) => ({ src: item.src!, id: item.id, prompt: item.prompt, fileType: item.fileType, sources: item.sources }));
   },
   { deep: true },
 );
@@ -919,15 +977,228 @@ watch(
   { deep: true },
 );
 
+type ImportVideoItem = { trackId: number; videoId: number; src: string; duration: number };
+const emit = defineEmits<{
+  importVideo: [videoList: ImportVideoItem[]];
+}>();
+// ...existing code...
+// ========================
+// 上传资源同步模块
+// ========================
+function syncMediasToUploadBox() {
+  const track = trackList.value[activeTrackIndex.value];
+  if (!track) return;
+  const medias = track.medias;
+  if (isMixedMode.value) {
+    // 混合模式：直接用 track.medias 重建 uploadBox
+    uploadBox.value = medias.map((m) => ({
+      fileType: m.fileType,
+      type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
+      sources: m.sources!,
+      src: m.src,
+      id: m.id,
+      prompt: m.prompt,
+      label: "",
+    }));
+  } else {
+    uploadBox.value = uploadBox.value.map((item, i) => {
+      const media = medias[i];
+      if (media?.src) {
+        return { ...item, src: media.src, id: media.id, prompt: media.prompt, sources: media.sources ?? item.sources };
+      }
+      return { ...item, src: undefined, id: undefined, prompt: undefined };
+    });
+  }
+}
+
+// ========================
+// 当前Track选中视频恢复模块
+// ========================
+function restoreActiveTrackSelection() {
+  const track = trackList.value[activeTrackIndex.value];
+  if (!track?.id) {
+    selectVideoId.value = null;
+    videoUrl.value = "";
+    return;
+  }
+  const selectedId = trackSelectedVideoMap.value[track.id] ?? track.selectVideoId ?? null;
+  selectVideoId.value = selectedId;
+  if (selectedId == null) {
+    if (!videoUrl.value) {
+      videoUrl.value = "";
+    }
+    return;
+  }
+  const selectedVideo = historyVideo.value.find((v) => v.videoTrackId === track.id && v.id === selectedId);
+  if (selectedVideo && selectedVideo.state !== "生成中" && selectedVideo.state !== "生成失败") {
+    videoUrl.value = selectedVideo.src;
+    return;
+  }
+}
+
+// ========================
+// 轮询与自动刷新模块
+// ========================
+const hasGeneratedVideo = computed(() => {
+  return historyVideo.value.some((v) => v.state === "生成中");
+});
+let pollTimer: number | null = null;
+function startPoll() {
+  if (pollTimer !== null) return;
+  pollTimer = window.setInterval(() => {
+    getVideoList();
+  }, 3000);
+}
+function stopPoll() {
+  if (pollTimer !== null) {
+    window.clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+watch(
+  () => hasGeneratedVideo.value,
+  (newValue) => {
+    if (newValue) {
+      startPoll();
+    } else {
+      stopPoll();
+    }
+  },
+);
+onUnmounted(() => {
+  stopPoll();
+});
+
+// ========================
+// 视频列表获取与状态提醒模块
+// ========================
+async function getVideoList() {
+  const { data } = await axios.post("/production/workbench/getVideoList", {
+    projectId: project.value?.id,
+    scriptId: episodesId.value ?? 0,
+  });
+  const oldList = historyVideo.value;
+  historyVideo.value = data;
+  restoreActiveTrackSelection();
+  // 检测生成完成的视频并提醒用户
+  for (const item of data as HistoryVideoItem[]) {
+    const old = oldList.find((o) => o.id === item.id);
+    if (!old) continue;
+    if (old.state === "生成中" && item.state === "已完成") {
+      window.$message.success($t("workbench.generate.generateSuccess"));
+    } else if (old.state === "生成中" && item.state === "生成失败") {
+      window.$message.error(item.errorReason || $t("workbench.generate.generateFailed"));
+    }
+  }
+}
+
+// ========================
+// Track切换时同步模块
+// ========================
+watch(activeTrackIndex, (newIndex, oldIndex) => {
+  // 保存旧 track 的 genVideoParams 到缓存
+  const oldTrack = trackList.value[oldIndex];
+  if (oldTrack?.id != null) {
+    genVideoParamsMap.value[oldTrack.id] = [...genVideoParams.value];
+  }
+  userSelectedDuration.value = false;
+  // 恢复新 track 的 genVideoParams：优先用缓存，否则从 track.medias 初始化
+  const newTrack = trackList.value[newIndex];
+  if (newTrack?.id != null && genVideoParamsMap.value[newTrack.id] != null) {
+    genVideoParams.value = [...genVideoParamsMap.value[newTrack.id]];
+  } else {
+    genVideoParams.value = newTrack ? newTrack.medias.map((m) => ({ id: m.id, sources: m.sources })) : [];
+  }
+  syncMediasToUploadBox();
+  restoreActiveTrackSelection();
+});
+// ========================
+// 分辨率与时长变更处理模块
+// ========================
+function handleResolutionChange(res: string) {
+  selectedResolution.value = res;
+}
+function handleDurationChange(dur: number) {
+  selectedDuration.value = dur;
+  userSelectedDuration.value = true;
+}
+// ========================
+// 视频删除与下载模块
+// ========================
+function handleDeleteVideo(value: HistoryVideoItem) {
+  const dlg = DialogPlugin.confirm({
+    header: $t("workbench.generate.del"),
+    body: $t("workbench.generate.delVideo"),
+    onConfirm: () => {
+      axios
+        .post(`/production/workbench/delVideo`, {
+          id: value.id,
+        })
+        .then(() => {
+          window.$message.success($t("workbench.generate.delSuccess"));
+          dlg.destroy();
+          getVideoList();
+        });
+    },
+    onCancel: () => {
+      dlg.destroy();
+    },
+  });
+}
+async function downloadVideo(value: HistoryVideoItem) {
+  const url = value.src;
+  const response = await fetch(url);
+  const blob = await response.blob();
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  const filename = "视频" + ".mp4";
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+}
+// ========================
+// 提示词生成模块
+// ========================
+const genVideoParams = ref<{ id?: number; sources?: string }[]>([]);
+// 按 trackId 缓存每个 track 的 genVideoParams
+const genVideoParamsMap = ref<Record<number, { id?: number; sources?: string }[]>>({});
+
+function removeGenVideoParam(index: number) {
+  genVideoParams.value.splice(index, 1);
+  const curTrackId = trackList.value[activeTrackIndex.value]?.id;
+  if (curTrackId != null) genVideoParamsMap.value[curTrackId] = [...genVideoParams.value];
+}
+// 单个生成视频提示词
+async function genText() {
+  const track = trackList.value[activeTrackIndex.value];
+  const trackId = track?.id;
+  if (trackId == null || genTextLoadingMap.value[trackId]) return;
+  genTextLoadingMap.value[trackId] = true;
+  try {
+    const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
+      projectId: project.value?.id,
+      trackId,
+      info: genVideoParams.value,
+      model: selectModel.value,
+    });
+    const targetTrack = trackList.value.find((item) => item.id === trackId);
+    if (targetTrack) {
+      targetTrack.prompt = data;
+    }
+  } finally {
+    genTextLoadingMap.value[trackId] = false;
+  }
+}
+// 批量生成提示词
 function batchGenText() {
   trackList.value
     .filter((track) => checkedTrackIds.value.includes(track.id))
     .forEach(async (track) => {
       const trackId = track.id;
-      const info = track.medias.map((m) => ({
-        id: m.id,
-        sources: m.sources,
-      }));
+      const cached = genVideoParamsMap.value[trackId];
+      const info = cached ? cached.filter((item) => item.id) : track.medias.filter((item) => item.id).map((m) => ({ id: m.id, sources: m.sources }));
       genTextLoadingMap.value[trackId] = true;
       try {
         const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
@@ -945,7 +1216,45 @@ function batchGenText() {
       }
     });
 }
-
+// ========================
+// 视频生成模块
+// ========================
+// 单个生成视频
+async function generateVideo() {
+  const trackId = trackList.value[activeTrackIndex.value]?.id;
+  if (trackId == null || generatingMap.value[trackId]) return;
+  const dlg = DialogPlugin.confirm({
+    header: $t("workbench.generate.generateConfirm"),
+    body: $t("workbench.generate.generateConfirmBody"),
+    onConfirm: async () => {
+      dlg.destroy();
+      generatingMap.value[trackId] = true;
+      try {
+        const payload = {
+          projectId: project.value?.id,
+          scriptId: episodesId.value,
+          uploadData: uploadBox.value.filter((item) => Boolean(item.src)),
+          prompt: promptText.value,
+          model: selectModel.value,
+          mode: selectMode.value,
+          resolution: selectedResolution.value,
+          duration: effectiveDuration.value,
+          audio: selectedAudio.value,
+          trackId,
+        };
+        const { data } = await axios.post("/production/workbench/generateVideo", payload);
+        window.$message.success($t("workbench.generate.generateStarted"));
+        getVideoList();
+      } finally {
+        generatingMap.value[trackId] = false;
+      }
+    },
+    onCancel: () => {
+      dlg.destroy();
+    },
+  });
+}
+// 批量生成视频
 function batchGenVideo() {
   const dlg = DialogPlugin.confirm({
     header: $t("workbench.generate.generateConfirm"),
@@ -989,216 +1298,53 @@ function batchGenVideo() {
     },
   });
 }
+//批量下载视频
+function getFileExtension(url: string): string {
+  const parts = url.split(".");
+  const extWithQuery = parts[parts.length - 1];
+  return extWithQuery.split(/\#|\?/)[0] || "mp4"; // 默认mp4
+}
 
-type ImportVideoItem = { trackId: number; videoId: number; src: string; duration: number };
-const emit = defineEmits<{
-  importVideo: [videoList: ImportVideoItem[]];
-}>();
-// function importVideo() {
-//   if (checkedTrackIds.value.length === 0) {
-//     return window.$message.warning($t("workbench.generate.selectTrackFirst"));
-//   }
-//   const videoList: ImportVideoItem[] = trackList.value
-//     .filter((track) => track.id != null && checkedTrackIds.value.includes(track.id))
-//     .map((track) => {
-//       const trackId = track.id!;
-//       const selectedVid = trackSelectedVideoMap.value[trackId] ?? track.selectVideoId;
-//       if (!selectedVid) return null;
-//       const video = historyVideo.value.find((v) => v.id === selectedVid && v.videoTrackId === trackId);
-//       if (!video || video.state === "生成中" || video.state === "生成失败" || video.id == null) {
-//         return null;
-//       }
-//       const duration = Number(video.duration ?? video.time ?? selectedDuration.value);
-//       return { trackId, videoId: video.id, src: video.src, duration: Number.isFinite(duration) && duration > 0 ? duration : selectedDuration.value };
-//     })
-//     .filter((i): i is ImportVideoItem => i !== null);
-//   if (videoList.length === 0) {
-//     return window.$message.warning($t("workbench.generate.noSelectedVideo"));
-//   }
-//   emit("importVideo", videoList);
-// }
+async function batchDownloadVideo(): Promise<void> {
+  const zip = new JSZip();
 
-async function getGenerateData() {
-  const { data } = await axios.post("/production/workbench/getGenerateData", {
-    projectId: project.value?.id,
-    scriptId: episodesId.value ?? 0,
+  // 选中的 track
+  const selectedTracks = trackList.value.filter((track) => checkedTrackIds.value.includes(track.id));
+
+  // 下载任务集合
+  const downloadTasks: Promise<void>[] = [];
+
+  selectedTracks.forEach((track) => {
+    // 只下载选中的视频
+    const video = track.videoList.find((v) => v.id === selectVideoId.value);
+    if (video && video.src) {
+      const filename = `分镜${track.id}.${getFileExtension(video.src)}`;
+      // 创建下载任务
+      downloadTasks.push(
+        fetch(video.src)
+          .then((res) => res.blob())
+          .then((blob) => {
+            zip.file(filename, blob);
+          })
+          .catch((err) => {
+            console.error(`视频下载失败: ${video.src}`, err);
+          }),
+      );
+    }
   });
-  trackList.value = data.trackList;
-  // 保留用户本地已手动选择但后端可能还未持久化的映射
-  const prevMap = { ...trackSelectedVideoMap.value };
-  trackSelectedVideoMap.value = {};
-  for (const track of trackList.value) {
-    if (track.id != null) {
-      if (track.selectVideoId != null) {
-        trackSelectedVideoMap.value[track.id] = track.selectVideoId;
-      } else if (prevMap[track.id] != null) {
-        // 后端尚未返回最新选中状态，保留本地选择
-        trackSelectedVideoMap.value[track.id] = prevMap[track.id];
-      }
-    }
-  }
-  storyboardList.value = data.storyboardList;
-  syncMediasToUploadBox();
-  getVideoList();
-}
 
-function syncMediasToUploadBox() {
-  const track = trackList.value[activeTrackIndex.value];
-  if (!track) return;
-  const medias = track.medias;
-  if (isMixedMode.value) {
-    // 混合模式：直接用 track.medias 重建 uploadBox
-    uploadBox.value = medias.map((m) => ({
-      fileType: m.fileType,
-      type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
-      sources: m.sources!,
-      src: m.src,
-      id: m.id,
-      prompt: m.prompt,
-      label: "",
-    }));
-  } else {
-    uploadBox.value = uploadBox.value.map((item, i) => {
-      const media = medias[i];
-      if (media?.src) {
-        return { ...item, src: media.src, id: media.id, prompt: media.prompt, sources: media.sources ?? item.sources };
-      }
-      return { ...item, src: undefined, id: undefined, prompt: undefined };
-    });
-  }
-}
+  await Promise.all(downloadTasks);
 
-function restoreActiveTrackSelection() {
-  const track = trackList.value[activeTrackIndex.value];
-  if (!track?.id) {
-    selectVideoId.value = null;
-    videoUrl.value = "";
-    return;
-  }
-  const selectedId = trackSelectedVideoMap.value[track.id] ?? track.selectVideoId ?? null;
-  selectVideoId.value = selectedId;
-  if (selectedId == null) {
-    if (!videoUrl.value) {
-      videoUrl.value = "";
-    }
-    return;
-  }
-  const selectedVideo = historyVideo.value.find((v) => v.videoTrackId === track.id && v.id === selectedId);
-  if (selectedVideo && selectedVideo.state !== "生成中" && selectedVideo.state !== "生成失败") {
-    videoUrl.value = selectedVideo.src;
-    return;
-  }
-}
-
-onMounted(() => {
-  selectModel.value = project.value?.videoModel || "";
-  selectMode.value = project.value?.mode || "";
-  getGenerateData();
-});
-
-const hasGeneratedVideo = computed(() => {
-  return historyVideo.value.some((v) => v.state === "生成中");
-});
-
-let pollTimer: number | null = null;
-
-function startPoll() {
-  if (pollTimer !== null) return;
-  pollTimer = window.setInterval(() => {
-    getVideoList();
-  }, 3000);
-}
-
-function stopPoll() {
-  if (pollTimer !== null) {
-    window.clearInterval(pollTimer);
-    pollTimer = null;
-  }
-}
-
-watch(
-  () => hasGeneratedVideo.value,
-  (newValue) => {
-    if (newValue) {
-      startPoll();
-    } else {
-      stopPoll();
-    }
-  },
-);
-
-onUnmounted(() => {
-  stopPoll();
-});
-
-async function getVideoList() {
-  const { data } = await axios.post("/production/workbench/getVideoList", {
-    projectId: project.value?.id,
-    scriptId: episodesId.value ?? 0,
-  });
-  const oldList = historyVideo.value;
-  historyVideo.value = data;
-  restoreActiveTrackSelection();
-  // 检测生成完成的视频并提醒用户
-  for (const item of data as HistoryVideoItem[]) {
-    const old = oldList.find((o) => o.id === item.id);
-    if (!old) continue;
-    if (old.state === "生成中" && item.state === "已完成") {
-      window.$message.success($t("workbench.generate.generateSuccess"));
-    } else if (old.state === "生成中" && item.state === "生成失败") {
-      window.$message.error(item.errorReason || $t("workbench.generate.generateFailed"));
-    }
-  }
-}
-
-watch(activeTrackIndex, () => {
-  // 切换 track 时重置手动选择标记，让新 track 的 duration 自动生效
-  userSelectedDuration.value = false;
-  syncMediasToUploadBox();
-  restoreActiveTrackSelection();
-});
-function handleResolutionChange(res: string) {
-  selectedResolution.value = res;
-}
-
-function handleDurationChange(dur: number) {
-  selectedDuration.value = dur;
-  userSelectedDuration.value = true;
-}
-//删除视频
-function handleDeleteVideo(value: HistoryVideoItem) {
-  const dlg = DialogPlugin.confirm({
-    header: $t("workbench.generate.del"),
-    body: $t("workbench.generate.delVideo"),
-    onConfirm: () => {
-      axios
-        .post(`/production/workbench/delVideo`, {
-          id: value.id,
-        })
-        .then(() => {
-          window.$message.success($t("workbench.generate.delSuccess"));
-          dlg.destroy();
-          getVideoList();
-        });
-    },
-    onCancel: () => {
-      dlg.destroy();
-    },
-  });
-}
-//下载视频
-async function downloadVideo(value: HistoryVideoItem) {
-  const url = value.src;
-  const response = await fetch(url);
-  const blob = await response.blob();
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  const filename = "视频" + ".mp4";
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(link.href);
+  // 生成zip并下载
+  const zipBlob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(zipBlob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `视频批量下载_${Date.now()}.zip`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 </script>
 
@@ -1256,7 +1402,7 @@ async function downloadVideo(value: HistoryVideoItem) {
         border: 1px solid var(--td-component-border);
         border-radius: 8px;
         min-height: 100px;
-        height: 200px;
+        height: 150px;
         overflow: auto;
         resize: vertical;
       }
