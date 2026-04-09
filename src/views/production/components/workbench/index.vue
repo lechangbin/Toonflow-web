@@ -150,7 +150,7 @@ function editFootage() {
             icon: "🎬",
             color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
             url: subItem.filePath,
-            selected: subItem.selected ?? false,
+            selected: item.videoId == subItem.id ? true : false,
           }));
         }
       });
