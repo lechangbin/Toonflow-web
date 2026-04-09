@@ -258,7 +258,7 @@
               </template>
             </template>
           </div>
-          <span v-else class="emptyTrack">{{ $t("workbench.generate.emptyTrack", index + 1) }}</span>
+          <span v-else class="emptyTrack">{{ $t("workbench.generate.emptyTrack", index) }}</span>
           <div class="deleteBtn" @click.stop="confirmDeleteTrack(index)">
             <i-close size="14" />
           </div>
@@ -382,6 +382,13 @@ watch(selectModel, (val) => {
   }
   axios.post("/modelSelect/getModelDetail", { modelId: val }).then(({ data }) => {
     modeOptions.value = data;
+    // 重置模式默认第一个
+    if (Array.isArray(data?.mode[0])) {
+      selectMode.value = JSON.stringify(data?.mode[0]);
+    } else {
+      selectMode.value = data?.mode[0];
+    }
+    selectedAudio.value = data.audio;
     // 重置分辨率和时长为第一个可选项
     const drMap = data.durationResolutionMap;
     if (Array.isArray(drMap) && drMap.length > 0) {
@@ -1707,6 +1714,7 @@ async function batchDownloadVideo(): Promise<void> {
       width: 100%;
       display: flex;
       overflow-x: auto;
+      gap: 10px;
       &::-webkit-scrollbar {
         height: 6px;
       }

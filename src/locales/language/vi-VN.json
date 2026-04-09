@@ -1010,7 +1010,7 @@
         "importingLoading": "Đang nhập, vui lòng chờ...",
         "mainTrackVideo": "Track chính (Video)",
         "subtitle1": "Phụ đề 1",
-        "storyboardVideoName": "Nhóm {storyboard}-{id}.mp4"
+        "storyboardVideoName": "{bảng phân cảnh}-{id}.mp4"
       },
       "preview": {
         "noImage": "Chưa có hình ảnh",
@@ -1283,7 +1283,7 @@
       "generate": "Tạo video",
       "history": "Phiên bản lịch sử",
       "generating": "Đang tạo",
-      "generateFailed": "thất bại",
+      "generateFailed": "Kiểm tra lý do thất bại",
       "selectAll": "Chọn tất cả",
       "selected": "Đã chọn",
       "batchGenerateText": "Tạo các từ nhắc nhở theo đợt",

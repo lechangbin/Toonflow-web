@@ -1119,7 +1119,7 @@
         "importingLoading": "正在导入中，请稍候...",
         "mainTrackVideo": "主轨道（视频）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "组{storyboard}-{id}.mp4"
+        "storyboardVideoName": "{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "暂无图片",
@@ -1405,7 +1405,7 @@
       "generate": "生成视频",
       "history": "历史版本",
       "generating": "生成中",
-      "generateFailed": "失败",
+      "generateFailed": "查看失败原因",
       "selectAll": "全选",
       "selected": "已选",
       "batchGenerateText": "批量生成提示词",

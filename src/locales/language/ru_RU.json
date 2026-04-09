@@ -1019,7 +1019,7 @@
         "importingLoading": "Импорт, пожалуйста, подождите...",
         "mainTrackVideo": "Основная дорожка (Видео)",
         "subtitle1": "Субтитры 1",
-        "storyboardVideoName": "Группа {раскадровка}-{id}.mp4"
+        "storyboardVideoName": "{раскадровка}-{id}.mp4"
       },
       "preview": {
         "noImage": "Нет изображения",
@@ -1292,7 +1292,7 @@
       "generate": "Создать видео",
       "history": "Историческая версия",
       "generating": "Создание",
-      "generateFailed": "неудача",
+      "generateFailed": "Проверьте причину сбоя",
       "selectAll": "Выбрать все",
       "selected": "Выбрано",
       "batchGenerateText": "Генерируйте подсказки в пакетном режиме",

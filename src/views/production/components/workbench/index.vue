@@ -140,16 +140,20 @@ function editFootage() {
       const videoList = data.data.filter((item: any) => getMediaType(item.filePath) === "video");
       const audioList = data.data.filter((item: any) => getMediaType(item.filePath) === "audio");
       const imageList = data.data.filter((item: any) => getMediaType(item.filePath) === "image");
-      initialVideoItems.value = data.video.map((item: any, index: number) => ({
-        id: `video-${item.id}`,
-        type: "video",
-        name: $t("workbench.production.wb.storyboardVideoName", { storyboard: item.videoTrackId, id: index + 1 }),
-        duration: item.duration || 0,
-        icon: "🎬",
-        color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        url: item.filePath,
-        selected: item.selected || false,
-      }));
+      initialVideoItems.value = data.video.flatMap((item: any, index: number) => {
+        if (Array.isArray(item.video)) {
+          return item.video.map((subItem: any, subIndex: number) => ({
+            id: `video-${subItem.id}`,
+            type: "video",
+            name: "#" + $t("workbench.production.wb.storyboardVideoName", { storyboard: index + 1, id: subIndex + 1 }),
+            duration: subItem.duration || 0,
+            icon: "🎬",
+            color: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            url: subItem.filePath,
+            selected: subItem.selected ?? false,
+          }));
+        }
+      });
       mockMediaItems.value = videoList.map((item: any) => ({
         id: `video-${item.id}`,
         type: "video",

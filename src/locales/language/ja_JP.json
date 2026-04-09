@@ -1019,7 +1019,7 @@
         "importingLoading": "インポート中です。しばらくお待ちください...",
         "mainTrackVideo": "メイントラック（動画）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "グループ {ストーリーボード}-{id}.mp4"
+        "storyboardVideoName": "{ストーリーボード}-{id}.mp4"
       },
       "preview": {
         "noImage": "画像なし",
@@ -1292,7 +1292,7 @@
       "generate": "ビデオの生成",
       "history": "歴史的バージョン",
       "generating": "生成中",
-      "generateFailed": "失敗",
+      "generateFailed": "失敗の原因を確認する",
       "selectAll": "すべて選択",
       "selected": "選択済み",
       "batchGenerateText": "プロンプト単語をバッチで生成する",

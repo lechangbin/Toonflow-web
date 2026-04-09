@@ -94,7 +94,6 @@
                 :max="10"
                 :step="0.1"
                 :decimal-places="1"
-                theme="normal"
                 suffix="x"
                 @change="(val: any) => handleUpdatePlaybackRate(Number(val))" />
             </div>

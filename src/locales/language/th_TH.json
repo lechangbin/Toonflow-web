@@ -1020,7 +1020,7 @@
         "importingLoading": "กำลังนำเข้า โปรดรอสักครู่...",
         "mainTrackVideo": "แทร็กหลัก (วิดีโอ)",
         "subtitle1": "ซับไตเติล 1",
-        "storyboardVideoName": "กลุ่ม {สตอรี่บอร์ด}-{id}.mp4"
+        "storyboardVideoName": "{สตอรี่บอร์ด}-{id}.mp4"
       },
       "preview": {
         "noImage": "ยังไม่มีรูปภาพ",
@@ -1293,7 +1293,7 @@
       "generate": "สร้างวิดีโอ",
       "history": "เวอร์ชันประวัติศาสตร์",
       "generating": "กำลังสร้าง",
-      "generateFailed": "ล้มเหลว",
+      "generateFailed": "ตรวจสอบสาเหตุความล้มเหลว",
       "selectAll": "เลือกทั้งหมด",
       "selected": "เลือกแล้ว",
       "batchGenerateText": "สร้างคำพร้อมท์เป็นชุด",

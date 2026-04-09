@@ -1023,7 +1023,7 @@
         "stereo441": "44.1kHz 立體聲",
         "mono16": "16kHz 單聲道",
         "sampleImage1": "範例圖片 1",
-        "storyboardVideoName": "組{storyboard}-{id}.mp4"
+        "storyboardVideoName": "{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "暫無圖片",
@@ -1297,7 +1297,7 @@
       "generate": "產生影片",
       "history": "歷史版本",
       "generating": "生成中",
-      "generateFailed": "失敗",
+      "generateFailed": "看失敗原因",
       "selectAll": "全選",
       "selected": "已選",
       "batchGenerateText": "大量生成提示詞",

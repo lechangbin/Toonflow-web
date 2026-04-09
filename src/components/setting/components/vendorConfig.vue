@@ -829,11 +829,11 @@ function handleConfirmModel() {
   if (editingModelIndex.value === null) {
     list.push(model);
     window.$message.success($t("settings.vendor.msg.modelAdded"));
-  } else {
+  }
+  if (editingModelIndex.value !== null) {
     list.splice(editingModelIndex.value, 1, model);
     window.$message.success($t("settings.vendor.msg.modelUpdated"));
   }
-
   modelDialogVisible.value = false;
 }
 
