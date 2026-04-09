@@ -1350,34 +1350,22 @@ function getFileExtension(url: string): string {
 async function batchDownloadVideo(): Promise<void> {
   const zip = new JSZip();
 
-  // 选中的 track
   const selectedTracks = trackList.value.filter((track) => checkedTrackIds.value.includes(track.id));
 
-  // 下载任务集合
-  const downloadTasks: Promise<void>[] = [];
-
-  selectedTracks.forEach((track) => {
-    // 只下载选中的视频
-    const video = track.videoList.find((v) => v.id === selectVideoId.value);
-    if (video && video.src) {
+  const downloadTasks = selectedTracks
+    .map((track) => {
+      const video = track.videoList.find((v) => v.id === track.selectVideoId);
+      if (!video?.src) return null;
       const filename = `分镜${track.id}.${getFileExtension(video.src)}`;
-      // 创建下载任务
-      downloadTasks.push(
-        fetch(video.src)
-          .then((res) => res.blob())
-          .then((blob) => {
-            zip.file(filename, blob);
-          })
-          .catch((err) => {
-            console.error(`视频下载失败: ${video.src}`, err);
-          }),
-      );
-    }
-  });
+      return fetch(video.src)
+        .then((res) => res.blob())
+        .then((blob) => zip.file(filename, blob))
+        .catch((err) => console.error(`视频下载失败: ${video.src}`, err));
+    })
+    .filter(Boolean);
 
   await Promise.all(downloadTasks);
 
-  // 生成zip并下载
   const zipBlob = await zip.generateAsync({ type: "blob" });
   const url = URL.createObjectURL(zipBlob);
   const a = document.createElement("a");
@@ -1718,8 +1706,14 @@ async function batchDownloadVideo(): Promise<void> {
       min-height: 0;
       width: 100%;
       display: flex;
-      gap: 12px;
       overflow-x: auto;
+      &::-webkit-scrollbar {
+        height: 6px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #696969;
+        border-radius: 3px;
+      }
       .item {
         background-color: var(--td-bg-color-container);
         border-radius: 8px;
