@@ -665,39 +665,32 @@ function deleteVisualManual(item: VisualManualItem) {
     },
   });
 }
-type VideoMixedRef = "videoReference" | "imageReference" | "audioReference" | "textReference";
-
-type VideoModelMode =
-  | "singleImage"
-  | "multiImage"
-  | "gridImage"
-  | "startEndRequired"
-  | "endFrameOptional"
-  | "startFrameOptional"
-  | "text"
-  | VideoMixedRef[];
+type VideoMode =
+  | "singleImage" //单图参考
+  | "startEndRequired" //首尾帧（两张都得有）
+  | "endFrameOptional" //首尾帧（尾帧可选）
+  | "startFrameOptional" //首尾帧（首帧可选）
+  | "text" //文本
+  | (`videoReference:${number}` | `imageReference:${number}` | `audioReference:${number}`)[]; //多参考（数字代表限制数量）
 const mode = ref<{ label: string; value: string }[]>([]);
 const MODE_LABEL: Record<string, string> = {
   singleImage: $t("workbench.production.generate.modeSingleImage"),
-  multiImage: $t("workbench.production.generate.modeMultiImage"),
-  gridImage: $t("workbench.production.generate.modeGridImage"),
   startEndRequired: $t("workbench.production.generate.modeStartEnd"),
   endFrameOptional: $t("workbench.production.generate.modeStartEnd"),
   startFrameOptional: $t("workbench.production.generate.modeStartEnd"),
   text: $t("workbench.production.generate.modeText"),
-  ["videoReference"]: $t("workbench.production.generate.modeVideoRef"),
-  ["imageReference"]: $t("workbench.production.generate.modeImageRef"),
-  ["audioReference"]: $t("workbench.production.generate.modeAudioRef"),
-  ["textReference"]: $t("workbench.production.generate.modeTextRef"),
+  videoReference: $t("workbench.production.generate.modeVideoRef"),
+  imageReference: $t("workbench.production.generate.modeImageRef"),
+  audioReference: $t("workbench.production.generate.modeAudioRef"),
 };
 // 模式转换为统一的 key 形式，方便后续处理
-function getModeLabel(mode?: VideoModelMode): string {
+function getModeLabel(mode?: VideoMode): string {
   if (!mode) return "";
-  if (Array.isArray(mode)) return mode.map((r) => MODE_LABEL[r] ?? r).join("、");
+  if (Array.isArray(mode)) return mode.map((r) => MODE_LABEL[r.replace(/:.*$/, '')] ?? r).join("、");
   return MODE_LABEL[mode] ?? mode;
 }
 //模式数组转换为字符串 key，方便在前端使用和比较
-function modeToKey(m: VideoModelMode): string {
+function modeToKey(m: VideoMode): string {
   return Array.isArray(m) ? JSON.stringify(m) : m;
 }
 //获取模式
