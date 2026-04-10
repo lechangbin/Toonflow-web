@@ -101,15 +101,15 @@
           <div class="videoData">
             <div class="modeOpt f w">
               <template v-if="isMixedMode">
-                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="!item.src && handleMixedAdd()">
-                  <template v-if="item.src">
+                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="!item.src && handleMixedAdd()" v-show="item.id">
+                  <template v-if="item.src && item.id">
                     <img v-if="item.fileType === 'image'" :src="item.src" class="uploadPreview" />
                     <div v-else class="uploadPreview c">
                       <i-volume-notice v-if="item.fileType === 'audio'" size="24" />
                       <i-video v-else size="24" />
                     </div>
                   </template>
-                  <template v-else>
+                  <template v-else-if="item.id">
                     <span style="font-size: 20px">文</span>
                   </template>
                   <div class="clearBtn" @click.stop="clearUpload(index)">
@@ -127,11 +127,11 @@
                 </div>
               </template>
               <template v-else>
-                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="handleSelectSource(index)">
-                  <template v-if="item.src">
+                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="handleSelectSource(index)" v-show="item.id">
+                  <template v-if="item.src && item.id">
                     <img :src="item.src" class="uploadPreview" />
                   </template>
-                  <template v-else>
+                  <template v-else-if="item.id">
                     <span style="font-size: 20px">文</span>
                   </template>
                   <div class="clearBtn" @click.stop="clearUpload(index)">
@@ -425,7 +425,13 @@ async function getGenerateData() {
   }
 
   storyboardList.value = data.storyboardList;
-  syncMediasToUploadBox();
+  // 刷新后，对于已有缓存的轨道直接恢复 uploadBox，避免被后端空 medias 覆盖
+  const newTrackId = trackList.value[activeTrackIndex.value]?.id;
+  if (newTrackId != null && uploadBoxCache.value.has(newTrackId)) {
+    uploadBox.value = uploadBoxCache.value.get(newTrackId)!.map((item) => ({ ...item }));
+  } else {
+    syncMediasToUploadBox();
+  }
   getVideoList();
 }
 
@@ -453,9 +459,7 @@ async function addTrack() {
     scriptId: episodesId.value ?? 0,
     duration,
   });
-  getGenerateData();
-  const trackId = typeof data === "object" && data !== null ? data.id : data;
-  trackList.value.push({ id: trackId, prompt: "", state: "未生成", medias: [], videoList: [], duration: 0 });
+  await getGenerateData();
   activeTrackIndex.value = trackList.value.length - 1;
 }
 
@@ -689,15 +693,28 @@ function buildUploadBox(value: string): UploadItem[] {
   return (modeUploadMap[currentMode] || []).map((item) => ({ ...item }));
 }
 
-/** 将当前轨道的 uploadBox 存入缓存 */
+/** 将当前轨道的 uploadBox 存入缓存，并将有效 medias 持久化到后端 */
 function saveUploadBoxToCache() {
-  const trackId = trackList.value[activeTrackIndex.value]?.id;
-  if (trackId != null) {
-    uploadBoxCache.value.set(
-      trackId,
-      uploadBox.value.map((item) => ({ ...item })),
-    );
-  }
+  const track = trackList.value[activeTrackIndex.value];
+  const trackId = track?.id;
+  if (trackId == null) return;
+  const snapshot = uploadBox.value.map((item) => ({ ...item }));
+  uploadBoxCache.value.set(trackId, snapshot);
+  const validMedias = snapshot
+    .filter((item) => Boolean(item.src))
+    .map((item) => ({
+      src: item.src!,
+      id: item.id,
+      prompt: item.prompt,
+      fileType: item.fileType,
+      sources: item.sources,
+    }));
+  track.medias = validMedias;
+  // 持久化到后端
+  axios.post("/production/workbench/updateVideoPrompt", {
+    id: trackId,
+    medias: validMedias,
+  });
 }
 
 /** 将当前轨道的 medias 同步到 uploadBox */
@@ -720,9 +737,9 @@ function syncMediasToUploadBox() {
         prompt: media.prompt,
       };
     });
-    // 超出 baseBox 长度的 medias 追加到末尾
     for (let i = baseBox.length; i < medias.length; i++) {
       const m = medias[i];
+      if (!m) continue;
       filledBox.push({
         fileType: m.fileType,
         type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
@@ -1667,6 +1684,7 @@ onUnmounted(() => stopPoll());
         border-radius: 8px;
         flex-shrink: 0;
         width: 200px;
+        border: 1px solid var(--td-gray-color-3);
         overflow: hidden;
         cursor: pointer;
         display: flex;
