@@ -1465,5 +1465,10 @@
   "workbench.script.import.parsedChapters": "{count} набор проанализирован",
   "workbench.script.import.msg.selectChapters": "Пожалуйста, сначала проверьте сценарий",
   "workbench.script.import.msg.saveSuccess": "Скрипт успешно сохранен",
-  "workbench.script.import.batchTitle": "Загружайте скрипты партиями"
+  "workbench.script.import.batchTitle": "Загружайте скрипты партиями",
+  "workbench.assets.sex": "пол",
+  "workbench.assets.audioText": "аудиоконтент",
+  "workbench.assets.audio": "Аудио",
+  "workbench.assets.add.sex": "пол",
+  "workbench.assets.add.sexPh": "Пожалуйста, укажите пол"
 }

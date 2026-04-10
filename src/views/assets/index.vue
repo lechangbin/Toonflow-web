@@ -20,7 +20,7 @@
                   {{ $t("workbench.assets.addPrefix") }}{{ item.name }}
                 </t-button>
                 <t-popup placement="bottom">
-                  <t-button theme="primary" v-if="assetOptions != 'clip'">
+                  <t-button theme="primary" v-if="assetOptions != 'clip' && assetOptions != 'audio'">
                     <template #icon>
                       <t-icon name="indent-left" />
                     </template>
@@ -56,7 +56,7 @@
             </div>
             <div class="assetsList f w">
               <t-table
-                v-if="assetOptions !== 'clip'"
+                v-if="['role', 'tool', 'scene'].includes(assetOptions)"
                 :columns="columns"
                 :data="tableData"
                 :selected-row-keys="selectedRowKeys"
@@ -280,6 +280,96 @@
                   </t-space>
                 </template>
               </t-table>
+              <t-table
+                v-if="assetOptions == 'audio'"
+                :columns="audioColumns"
+                :data="tableData"
+                :selected-row-keys="selectedRowKeys"
+                :expanded-row-keys="expandedRowKeys"
+                row-key="id"
+                hover
+                stripe
+                size="small"
+                :pagination="pagination"
+                :loading="loading"
+                lazy-load
+                table-layout="fixed"
+                @select-change="handleSelectChange"
+                @expand-change="handleExpandChange"
+                @page-change="handlePageChange">
+                <template #expandedRow="{ row }" v-if="!selectorMode">
+                  <div class="expandedContent">
+                    <t-table
+                      :columns="subAudioColumns"
+                      :data="row.sonAssets || []"
+                      :selected-row-keys="selectedSubRowKeys"
+                      row-key="id"
+                      hover
+                      size="small"
+                      table-layout="fixed"
+                      stripe
+                      :select-on-row-click="false"
+                      @select-change="handleSubSelectChange">
+                      <template #previewWithLoading="{ row: subRow }" >
+                        <div class="previewCell">
+                          <div class="mediaTrigger audioThumb" @click="openMediaPreview(subRow.src, subRow.name)">
+                            <t-icon name="music" size="28px" />
+                            <div class="mediaHoverOverlay">
+                              <t-icon name="play-circle" size="24px" />
+                              <span class="hoverText">{{ $t("workbench.assets.play") }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </template>
+                      <template #prompt="{ row: subRow }">
+                        <div class="promptCell">
+                          <span>{{ subRow.prompt }}</span>
+                        </div>
+                      </template>
+                      <template #operation="{ row: subRow }">
+                        <t-space :size="0">
+                          <t-button theme="danger" variant="text" :disabled="isGenerating(subRow.id)" @click="handleDelete(subRow)">
+                            <template #icon>
+                              <t-icon name="delete" />
+                            </template>
+                            {{ $t("workbench.assets.delete") }}
+                          </t-button>
+                        </t-space>
+                      </template>
+                    </t-table>
+                  </div>
+                </template>
+                <template #preview="{ row }">
+                  <div class="previewCell">
+                    <div class="mediaTrigger audioThumb" @click="openMediaPreview(row.src, row.name)">
+                      <t-icon name="music" size="28px" />
+                      <div class="mediaHoverOverlay">
+                        <t-icon name="play-circle" size="24px" />
+                        <span class="hoverText">{{ $t("workbench.assets.play") }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+                <template #startTime="{ row }">
+                  <span>{{ dayjs(row.startTime).format("YYYY-MM-DD HH:mm:ss") }}</span>
+                </template>
+                <template #operation="{ row }">
+                  <t-space :size="0">
+                    <t-button theme="primary" variant="text" @click="handleEdit(row)">
+                      <template #icon>
+                        <t-icon name="edit" />
+                      </template>
+                      {{ $t("workbench.assets.edit") }}
+                    </t-button>
+                    <t-button theme="danger" variant="text" @click="handleDelete(row)">
+                      <template #icon>
+                        <t-icon name="delete" />
+                      </template>
+                      {{ $t("workbench.assets.delete") }}
+                    </t-button>
+                  </t-space>
+                </template>
+              </t-table>
             </div>
           </div>
         </t-tab-panel>
@@ -293,6 +383,7 @@
       @getFilteredData="getFilteredData(assetOptions)" />
     <generateImage v-model="generateImageShow" @update="loadCurrentTabData" :formData="currentAssetData" />
 
+    <addAudioAssets v-model="addAudioShow" :formData="audioFormData" @getFilteredData="getFilteredData(assetOptions)" />
     <t-dialog
       v-model:visible="mediaPreviewShow"
       :header="mediaPreviewName || $t('workbench.assets.mediaPreview')"
@@ -347,6 +438,7 @@ import { useFileDialog } from "@vueuse/core";
 import axios from "@/utils/axios";
 import type { TabValue, TableProps } from "tdesign-vue-next";
 import addAssets from "./components/addAssets.vue";
+import addAudioAssets from "./components/addAudioAssets.vue";
 import generateImage from "./components/generateImage.vue";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
@@ -368,6 +460,13 @@ const props = withDefaults(
     multiple: true,
   },
 );
+const addAudioShow = ref(false);
+
+const audioFormData = ref({
+  name: "",
+  describe: "",
+  sex: "",
+});
 
 onMounted(() => {
   loadCurrentTabData();
@@ -401,11 +500,16 @@ const allThemeData = [
     value: "clip",
     icon: "i-editing",
   },
+  {
+    name: $t("workbench.assets.audio"),
+    value: "audio",
+    icon: "i-audio-file",
+  },
 ];
 const themeData = ref(props.allowedTypes?.length ? allThemeData.filter((item) => props.allowedTypes!.includes(item.value as any)) : allThemeData);
 
 const initialTab = (themeData.value[0]?.value || "role") as "role" | "tool" | "scene" | "clip";
-const assetOptions = ref<"role" | "tool" | "scene" | "clip">(initialTab);
+const assetOptions = ref<"role" | "tool" | "scene" | "clip" | "audio">(initialTab);
 const searchText = ref("");
 
 const tabNameMap: Record<string, string> = {
@@ -413,6 +517,7 @@ const tabNameMap: Record<string, string> = {
   tool: $t("workbench.assets.prop"),
   scene: $t("workbench.assets.scene"),
   clip: $t("workbench.assets.clip"),
+  audio: $t("workbench.assets.audio"),
 };
 const selectedRowKeys = ref<Array<string | number>>([]);
 const selectedSubRowKeys = ref<Array<string | number>>([]);
@@ -464,7 +569,7 @@ async function getFilteredData(type: string) {
 
     tableData.value = data.data || [];
     // 当 clip 类型且指定了 clipMediaTypes 时，进行二次过滤
-    if (type === 'clip' && props.clipMediaTypes?.length) {
+    if (type === "clip" && props.clipMediaTypes?.length) {
       tableData.value = tableData.value.filter((item) => {
         const mt = getMediaType(item.src);
         return props.clipMediaTypes!.includes(mt as any);
@@ -491,6 +596,8 @@ async function loadCurrentTabData() {
     type = "场景";
   } else if (assetOptions.value === "clip") {
     type = "素材";
+  } else if (assetOptions.value === "audio") {
+    type = "音频";
   }
   await getFilteredData(assetOptions.value);
 }
@@ -537,6 +644,13 @@ async function handleAdd(type: string) {
       getFilteredData(assetOptions.value);
     };
     reader.readAsDataURL(file);
+  } else if (type == "audio") {
+    addAudioShow.value = true;
+    audioFormData.value = {
+      name: "",
+      describe: "",
+      sex: "",
+    };
   } else {
     addAssetsShow.value = true;
     formData.value = {
@@ -833,13 +947,6 @@ const subColumns: TableProps["columns"] = [
 const clipColumns: TableProps["columns"] = [
   { colKey: "row-select", type: "multiple", width: 50, align: "center", fixed: "left" },
   {
-    colKey: "src",
-    title: $t("workbench.assets.colPreview"),
-    width: 100,
-    align: "center",
-    cell: "preview",
-  },
-  {
     colKey: "name",
     title: $t("workbench.assets.colName"),
     width: 200,
@@ -876,7 +983,76 @@ const clipColumns: TableProps["columns"] = [
     cell: "operation",
   },
 ];
-
+const audioColumns: TableProps["columns"] = [
+  { colKey: "row-select", type: "multiple", width: 50, align: "center", fixed: "left" },
+  {
+    colKey: "name",
+    title: $t("workbench.assets.audioName"),
+    width: 200,
+    align: "left",
+    ellipsis: true,
+  },
+  {
+    colKey: "sex",
+    title: $t("workbench.assets.sex"),
+    width: 200,
+    align: "left",
+    ellipsis: true,
+  },
+  {
+    colKey: "describe",
+    title: $t("workbench.assets.colDescribe"),
+    width: 200,
+    align: "left",
+    ellipsis: true,
+  },
+  {
+    colKey: "startTime",
+    title: $t("workbench.assets.colCreateTime"),
+    width: 200,
+    align: "center",
+    cell: "startTime",
+  },
+  {
+    colKey: "operation",
+    title: $t("workbench.assets.colOperation"),
+    width: 180,
+    align: "center",
+    fixed: "right",
+    cell: "operation",
+  },
+];
+const subAudioColumns: TableProps["columns"] = [
+  {
+    colKey: "row-select",
+    type: selectType,
+    width: 50,
+    align: "center",
+    fixed: "left",
+  },
+  {
+    colKey: "src",
+    title: $t("workbench.assets.colPreview"),
+    width: 100,
+    align: "center",
+    cell: "previewWithLoading",
+  },
+  {
+    colKey: "prompt",
+    title: $t("workbench.assets.audioText"),
+    width: 100,
+    align: "left",
+    ellipsis: true,
+  },
+  {
+    colKey: "operation",
+    title: $t("workbench.assets.colOperation"),
+    width: 280,
+    align: "center",
+    fixed: "right",
+    cell: "operation",
+  },
+];
 // 选择行（正在生成中的行不允许勾选）
 function handleSelectChange(value: Array<string | number>) {
   const filtered = value.filter((key) => !isGenerating(key as number));
@@ -938,10 +1114,18 @@ function generate(row: any) {
 }
 // 编辑
 function handleEdit(row: any) {
-  formData.value = {
-    ...row,
-  };
-  addAssetsShow.value = true;
+  console.log(row);
+  if (row.type == "audio") {
+    audioFormData.value = {
+      ...row,
+    };
+    addAudioShow.value = true;
+  } else {
+    formData.value = {
+      ...row,
+    };
+    addAssetsShow.value = true;
+  }
 }
 // 删除
 function handleDelete(row: any) {
@@ -1134,22 +1318,26 @@ watch(generatingData, (val) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+
   .data {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+
     :deep(.t-tabs) {
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+
       .t-tabs__content {
         flex: 1;
         display: flex;
         flex-direction: column;
         overflow: hidden;
       }
+
       .t-tab-panel {
         flex: 1;
         display: flex;
@@ -1157,17 +1345,20 @@ watch(generatingData, (val) => {
         overflow: hidden;
       }
     }
+
     .tabLabel {
       display: flex;
       align-items: center;
       gap: 8px;
     }
+
     .panelContent {
       margin-top: 20px;
       flex: 1;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+
       .toolbar {
         display: flex;
         justify-content: space-between;
@@ -1175,45 +1366,55 @@ watch(generatingData, (val) => {
         margin-bottom: 16px;
         padding-bottom: 16px;
       }
+
       .data {
         display: flex;
         flex-direction: column;
         gap: 12px;
       }
+
       .assetsList {
         flex: 1;
         overflow-y: auto;
         min-height: 0;
+
         .expandedContent {
           padding: 16px 24px;
           border-radius: 4px;
           margin: 8px 0;
         }
+
         .promptCell {
           display: flex;
           align-items: center;
           gap: 4px;
+
           .generating-text {
             font-style: italic;
           }
         }
+
         .generatingImage {
           flex-direction: column;
           gap: 6px;
           cursor: default;
+
           &:hover {
             transform: none !important;
           }
+
           .generatingLabel {
             font-size: 11px;
           }
         }
       }
+
       .previewCell {
         display: flex;
         justify-content: center;
         align-items: center;
         padding: 4px 0;
+
         .imageTrigger {
           position: relative;
           width: 80px;
@@ -1225,22 +1426,27 @@ watch(generatingData, (val) => {
           align-items: center;
           justify-content: center;
           transition: all 0.3s ease;
+
           &:hover {
             transform: scale(1.05);
+
             .imageHoverOverlay {
               opacity: 1;
             }
           }
+
           img {
             width: 100%;
             height: 100%;
             object-fit: cover;
           }
+
           .previewImage {
             width: 100%;
             height: 100%;
             object-fit: cover;
           }
+
           .noImage {
             display: flex;
             align-items: center;
@@ -1249,6 +1455,7 @@ watch(generatingData, (val) => {
             height: 100%;
             background-color: #dad8d8;
           }
+
           .imageHoverOverlay {
             position: absolute;
             top: 0;
@@ -1264,11 +1471,13 @@ watch(generatingData, (val) => {
             opacity: 0;
             transition: opacity 0.3s ease;
             color: white;
+
             .hoverText {
               font-size: 12px;
             }
           }
         }
+
         .mediaTrigger {
           position: relative;
           width: 80px;
@@ -1280,19 +1489,24 @@ watch(generatingData, (val) => {
           align-items: center;
           justify-content: center;
           transition: all 0.3s ease;
+
           &:hover {
             transform: scale(1.05);
+
             .mediaHoverOverlay {
               opacity: 1;
             }
           }
+
           img {
             width: 100%;
             height: 100%;
             object-fit: cover;
           }
+
           &.videoThumb {
             background: #1a1a2e;
+
             .thumbVideo {
               width: 100%;
               height: 100%;
@@ -1300,15 +1514,19 @@ watch(generatingData, (val) => {
               pointer-events: none;
             }
           }
+
           &.audioThumb {
             color: white;
           }
+
           &.noMedia {
             cursor: default;
+
             &:hover {
               transform: none;
             }
           }
+
           .mediaHoverOverlay {
             position: absolute;
             top: 0;
@@ -1324,6 +1542,7 @@ watch(generatingData, (val) => {
             opacity: 0;
             transition: opacity 0.3s ease;
             color: white;
+
             .hoverText {
               font-size: 12px;
             }
@@ -1340,6 +1559,7 @@ watch(generatingData, (val) => {
 .generateImage {
   cursor: pointer;
   padding: 8px 16px;
+
   &:hover {
     background-color: #f0f0f0;
   }
@@ -1350,16 +1570,19 @@ watch(generatingData, (val) => {
   justify-content: center;
   align-items: center;
   padding: 8px 0 16px;
+
   .mediaPlayer {
     display: block;
     border-radius: 6px;
     outline: none;
   }
+
   .videoPlayer {
     width: 100%;
     max-height: 60vh;
     background: #000;
   }
+
   .audioWrapper {
     display: flex;
     flex-direction: column;
@@ -1367,6 +1590,7 @@ watch(generatingData, (val) => {
     gap: 16px;
     width: 100%;
     padding: 16px 0;
+
     .audioIcon {
       display: flex;
       align-items: center;
@@ -1377,6 +1601,7 @@ watch(generatingData, (val) => {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
     }
+
     .audioName {
       margin: 0;
       font-size: 14px;
@@ -1385,6 +1610,7 @@ watch(generatingData, (val) => {
       text-overflow: ellipsis;
       white-space: nowrap;
     }
+
     .audioPlayer {
       width: 100%;
     }

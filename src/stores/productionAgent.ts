@@ -75,7 +75,11 @@ function createProductionAgentStore(projectId: string) {
 
                 const duration = Number(attrs.duration) || 0;
                 const track = attrs.track || "";
-                const shouldGenerateImage = attrs.shouldGenerateImage == "true" ? 1 : 0;
+                const shouldGenerateImage =
+                  (typeof attrs.shouldGenerateImage == "boolean" && attrs.shouldGenerateImage) ||
+                  String(attrs.shouldGenerateImage).toLowerCase() == "true"
+                    ? 1
+                    : 0;
                 const videoDesc = attrs?.videoDesc ?? "";
                 const existingIndex = flowData.value.storyboard.findIndex(
                   (s) => s.prompt == prompt && s.duration == duration && videoDesc == s.videoDesc,

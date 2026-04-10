@@ -1453,5 +1453,10 @@
   "workbench.script.import.parsedChapters": "แยกวิเคราะห์แล้ว {count} ชุด",
   "workbench.script.import.msg.selectChapters": "โปรดตรวจสอบสคริปต์ก่อน",
   "workbench.script.import.msg.saveSuccess": "บันทึกสคริปต์เรียบร้อยแล้ว",
-  "workbench.script.import.batchTitle": "อัปโหลดสคริปต์เป็นชุด"
+  "workbench.script.import.batchTitle": "อัปโหลดสคริปต์เป็นชุด",
+  "workbench.assets.sex": "เพศ",
+  "workbench.assets.audioText": "เนื้อหาเสียง",
+  "workbench.assets.audio": "เสียง",
+  "workbench.assets.add.sex": "เพศ",
+  "workbench.assets.add.sexPh": "กรุณากรอกเพศ"
 }

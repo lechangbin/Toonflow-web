@@ -629,7 +629,7 @@
         "parsedChapters": "已解析 {count} 章节",
         "nextStep": "下一步",
         "prevStep": "上一步",
-        "selectedInfo": "已勾选：{count}字(小于200000字)",
+        "selectedInfo": "已勾选：{count}字",
         "eventAnalysis": "事件分析",
         "saveAndAnalyze": "保存原文并分析事件",
         "col": {
@@ -1585,5 +1585,20 @@
   "workbench.script.import.parsedChapters": "已解析 {count} 集",
   "workbench.script.import.msg.selectChapters": "请先勾选剧本",
   "workbench.script.import.msg.saveSuccess": "剧本保存成功",
-  "workbench.script.import.batchTitle": "批量上传剧本"
+  "workbench.script.import.batchTitle": "批量上传剧本",
+  "workbench.assets.sex": "性别",
+  "workbench.assets.audioText": "音频文本",
+  "workbench.assets.audio": "音频",
+  "workbench.assets.add.sex": "性别",
+  "workbench.assets.add.sexPh": "请输入性别",
+  "workbench.assets.add.pleaseUploadAudio": "请上传音频文件",
+  "workbench.cornerScape.assetsAudioLabel": "音频参考",
+  "workbench.cornerScape.selectAudio": "选择音频",
+  "workbench.cornerScape.noAudio": "暂无音频参考",
+  "workbench.assets.audioName": "音色",
+  "workbench.assets.add.audioName": "音色",
+  "workbench.assets.add.audioNamePh": "请输入音色",
+  "workbench.assets.add.audioFile": "音频文件",
+  "workbench.cornerScape.batchBingAudio": "一键绑定音频",
+  "workbench.cornerScape.msg.selectAtLeastBindOne": "请至少选择一个资产进行绑定"
 }

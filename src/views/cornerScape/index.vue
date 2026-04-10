@@ -25,6 +25,7 @@
           <t-form-item :label="$t('workbench.cornerScape.assetTypeFilter')">
             <t-checkbox-group @change="onChangeFn" v-model="checkboxValue" :options="translatedOptions" class="filterGroup" />
           </t-form-item>
+
           <t-form-item :label="$t('workbench.cornerScape.genModel')">
             <modelSelect v-model="selectValue" :type="`image`" />
           </t-form-item>
@@ -47,10 +48,17 @@
               :placeholder="$t('workbench.cornerScape.concurrencyPh')"></t-input-number>
           </t-form-item> -->
           <t-form-item>
-            <t-button theme="primary" block @click="batchGenerationPrompt">{{ $t("workbench.cornerScape.batchGenerationPrompt") }}</t-button>
-            <t-button theme="primary" block @click="batchGenerationImage" style="margin-left: 10px">
-              {{ $t("workbench.cornerScape.startBatch") }}
-            </t-button>
+            <div class="btnGap fc">
+              <div class="ac jb">
+                <t-button theme="primary" block @click="batchGenerationPrompt">{{ $t("workbench.cornerScape.batchGenerationPrompt") }}</t-button>
+                <t-button theme="primary" style="margin-left: 10px" block @click="batchSelectBindAudio">
+                  {{ $t("workbench.cornerScape.batchBingAudio") }}
+                </t-button>
+              </div>
+              <t-button theme="primary" block @click="batchGenerationImage">
+                {{ $t("workbench.cornerScape.startBatch") }}
+              </t-button>
+            </div>
           </t-form-item>
         </t-form>
       </t-card>
@@ -121,6 +129,9 @@
                     : $t("workbench.cornerScape.typeUnknown")
             }}{{ $t("workbench.cornerScape.descriptionSuffix") }}{{ item.describe }}
           </div>
+          <div v-if="item.relepedAudio.length" style="margin-top: 6px;">
+            <t-tag v-for="audio in item.relepedAudio" :key="audio.id" size="small" variant="outline" theme="primary">{{ audio.name }}</t-tag>
+          </div>
         </div>
       </t-card>
       <t-empty v-if="dataList.length === 0" type="empty" :title="$t('workbench.cornerScape.operateScriptFirst')" />
@@ -189,6 +200,22 @@
                 @blur="savePromptOnBlur" />
             </t-loading>
           </t-form-item>
+          <t-form-item :label="$t('workbench.cornerScape.assetsAudioLabel')">
+            <div>
+              <div>
+                <t-button size="small" theme="primary" variant="outline" @click="selectAudio">
+                  <template #icon><i-plus /></template>
+                  {{ $t("workbench.cornerScape.selectAudio") }}
+                </t-button>
+              </div>
+              <div class="audioList ac w" v-if="editForm.relepedAudio.length">
+                <t-tag v-for="audio in editForm.relepedAudio" :key="audio.id" closable variant="light-outline" @close="removeAudio(audio.id)">
+                  {{ audio.name }}
+                </t-tag>
+              </div>
+              <div v-else class="assets-empty">{{ $t("workbench.cornerScape.noAudio") }}</div>
+            </div>
+          </t-form-item>
           <t-form-item>
             <div class="drawerActions">
               <t-button
@@ -217,6 +244,8 @@ import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import modelSelect from "@/components/modelSelect.vue";
 import settingStore from "@/stores/setting";
+import openAssetsSelector from "@/utils/assetsCheck";
+
 const { otherSetting } = storeToRefs(settingStore());
 interface Image {
   filePath: string;
@@ -237,6 +266,7 @@ interface DataItem {
   historyImages: Image[];
   errorReason: string;
   promptErrorReason: string;
+  relepedAudio: { id: number; name: string }[];
 }
 
 const checkboxValue = ref<string[]>([]);
@@ -425,6 +455,7 @@ const editForm = reactive({
   name: "",
   describe: "",
   promptState: "",
+  relepedAudio: [] as { id: number; name: string }[],
 });
 
 async function openDrawer(item: DataItem) {
@@ -439,6 +470,8 @@ async function openDrawer(item: DataItem) {
   editForm.prompt = item.prompt || "";
   editForm.describe = item.describe || "";
   editForm.promptState = item.promptState;
+  editForm.relepedAudio = item?.relepedAudio ?? [];
+
   drawerVisible.value = true;
   // 重新获取最新数据（含历史图片）
   try {
@@ -587,6 +620,38 @@ async function batchGenerationPrompt() {
         name: item.name,
         describe: item.describe,
       })),
+      concurrentCount: otherSetting.value.assetsBatchGenereateSize,
+    });
+  } catch (e: any) {
+    window.$message.error(e.message ?? $t("workbench.cornerScape.msg.promptGenFail"));
+    // 生成失败时重置 promptState
+    items.forEach((item) => {
+      const target = dataList.value.find((row) => row.id === item.id);
+      if (target) target.promptState = "";
+    });
+  }
+}
+//绑定音频
+async function batchSelectBindAudio() {
+  if (selectedIds.value.length === 0) {
+    window.$message.warning($t("workbench.cornerScape.msg.selectAtLeastBindOne"));
+    return;
+  }
+
+  const items = dataList.value.filter((item) => selectedIds.value.includes(item.id));
+
+  // 前端先将所有选中项的 promptState 标记为"生成中"，让轮询自动接管状态跟踪
+  items.forEach((item) => {
+    item.promptState = "生成中";
+  });
+
+  // 清除已选中的项
+  selectedIds.value = [];
+
+  try {
+    await axios.post("/cornerScape/batchBindAudio", {
+      projectId: project.value?.id,
+      assetsIds: items.map((item) => item.id),
       concurrentCount: otherSetting.value.assetsBatchGenereateSize,
     });
   } catch (e: any) {
@@ -794,6 +859,25 @@ watch(generatingData, (val) => {
     stopImagePolling();
   }
 });
+
+function removeAudio(id: number) {
+  editForm.relepedAudio = editForm.relepedAudio.filter((a) => a.id !== id);
+}
+async function selectAudio() {
+  const assets = await openAssetsSelector({ title: $t("workbench.script.add.msg.selectAssetsTitle"), types: ["audio"] });
+  if (assets.length) {
+    const existing = new Set(editForm.relepedAudio.map((a) => a.id));
+    for (const a of assets) {
+      if (!existing.has(a.id)) {
+        editForm.relepedAudio.push({ id: a.id, name: a.name });
+      }
+    }
+  }
+  await axios.post("/cornerScape/updateAssetsAudio", {
+    assetsId: editForm.assetsId,
+    audioIds: editForm.relepedAudio.map((i) => i.id),
+  });
+}
 </script>
 
 <style lang="scss" scoped>
@@ -812,6 +896,10 @@ watch(generatingData, (val) => {
     margin-bottom: 16px;
     display: flex;
     flex-direction: column;
+    .btnGap {
+      gap: 8px;
+      width: 100%;
+    }
     .card {
       height: 100%;
       min-height: 0;
@@ -992,7 +1080,9 @@ watch(generatingData, (val) => {
   align-items: center;
   gap: 8px;
 }
-
+  .audioList{
+    margin-top: 8px;
+  }
 .drawerImageBox {
   width: 100%;
   min-height: 120px;
@@ -1005,6 +1095,7 @@ watch(generatingData, (val) => {
   justify-content: center;
   overflow: hidden;
   position: relative;
+
   .image {
     width: 100%;
     height: auto;

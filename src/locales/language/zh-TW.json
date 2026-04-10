@@ -1455,5 +1455,9 @@
   "workbench.script.import.parsedChapters": "已解析 {count} 集",
   "workbench.script.import.msg.selectChapters": "請先勾選劇本",
   "workbench.script.import.msg.saveSuccess": "劇本保存成功",
-  "workbench.script.import.batchTitle": "大量上傳劇本"
+  "workbench.script.import.batchTitle": "大量上傳劇本",
+  "workbench.assets.sex": "性別",
+  "workbench.assets.audioText": "音訊內容",
+  "workbench.assets.add.sex": "性別",
+  "workbench.assets.add.sexPh": "請輸入性別"
 }

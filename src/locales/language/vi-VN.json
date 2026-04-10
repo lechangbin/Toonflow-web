@@ -1457,5 +1457,10 @@
   "workbench.script.import.parsedChapters": "bộ {count} được phân tích cú pháp",
   "workbench.script.import.msg.selectChapters": "Vui lòng kiểm tra kịch bản trước",
   "workbench.script.import.msg.saveSuccess": "Tập lệnh đã được lưu thành công",
-  "workbench.script.import.batchTitle": "Tải lên tập lệnh theo đợt"
+  "workbench.script.import.batchTitle": "Tải lên tập lệnh theo đợt",
+  "workbench.assets.sex": "giới tính",
+  "workbench.assets.audioText": "nội dung âm thanh",
+  "workbench.assets.audio": "Âm thanh",
+  "workbench.assets.add.sex": "giới tính",
+  "workbench.assets.add.sexPh": "Vui lòng nhập giới tính"
 }

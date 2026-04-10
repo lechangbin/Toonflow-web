@@ -1465,5 +1465,10 @@
   "workbench.script.import.parsedChapters": "{count} セットが解析されました",
   "workbench.script.import.msg.selectChapters": "まずはスクリプトを確認してください",
   "workbench.script.import.msg.saveSuccess": "スクリプトは正常に保存されました",
-  "workbench.script.import.batchTitle": "スクリプトをバッチでアップロードする"
+  "workbench.script.import.batchTitle": "スクリプトをバッチでアップロードする",
+  "workbench.assets.sex": "性別",
+  "workbench.assets.audioText": "音声コンテンツ",
+  "workbench.assets.audio": "オーディオ",
+  "workbench.assets.add.sex": "性別",
+  "workbench.assets.add.sexPh": "性別を入力してください"
 }

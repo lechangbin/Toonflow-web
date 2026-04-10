@@ -1546,5 +1546,10 @@
   "workbench.script.import.parsedChapters": "{count} set parsed",
   "workbench.script.import.msg.selectChapters": "Please check the script first",
   "workbench.script.import.msg.saveSuccess": "Script saved successfully",
-  "workbench.script.import.batchTitle": "Upload scripts in batches"
+  "workbench.script.import.batchTitle": "Upload scripts in batches",
+  "workbench.assets.sex": "gender",
+  "workbench.assets.audioText": "audio content",
+  "workbench.assets.audio": "Audio",
+  "workbench.assets.add.sex": "gender",
+  "workbench.assets.add.sexPh": "Please enter gender"
 }
