@@ -1119,7 +1119,7 @@
         "importingLoading": "正在导入中，请稍候...",
         "mainTrackVideo": "主轨道（视频）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "组{storyboard}-{id}.mp4"
+        "storyboardVideoName": "{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "暂无图片",
@@ -1400,12 +1400,12 @@
     "generate": {
       "noVideo": "暂无数据",
       "prompt": "视频提示词",
-      "generateText": "AI生成提示词",
+      "generateText": "生成提示词",
       "selectStoryboard": "选择分镜",
       "generate": "生成视频",
       "history": "历史版本",
       "generating": "生成中",
-      "generateFailed": "失败",
+      "generateFailed": "查看失败原因",
       "selectAll": "全选",
       "selected": "已选",
       "batchGenerateText": "批量生成提示词",
@@ -1439,7 +1439,9 @@
       "batchDownloadVideo": "批量下载视频",
       "storyboard": "分镜",
       "assets": "资产",
-      "promptText": "生成视频提示词数据"
+      "promptText": "生成视频提示词数据",
+      "videoMenu": "生成视频",
+      "videoPreview": "视频预览"
     }
   },
   "login": {
@@ -1602,3 +1604,4 @@
   "workbench.cornerScape.batchBingAudio": "一键绑定音频",
   "workbench.cornerScape.msg.selectAtLeastBindOne": "请至少选择一个资产进行绑定"
 }
+

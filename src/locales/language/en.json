@@ -1103,7 +1103,7 @@
         "importingLoading": "Importing, please wait...",
         "mainTrackVideo": "Main Track (Video)",
         "subtitle1": "Subtitle 1",
-        "storyboardVideoName": "Group {storyboard}-{id}.mp4"
+        "storyboardVideoName": "{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "No Image",
@@ -1386,7 +1386,7 @@
       "generate": "Generate video",
       "history": "Historical version",
       "generating": "Generating",
-      "generateFailed": "fail",
+      "generateFailed": "Check the failure reason",
       "selectAll": "Select all",
       "selected": "Selected",
       "batchGenerateText": "Generate prompt words in batches",
@@ -1418,7 +1418,9 @@
       "batchDownloadVideo": "Download videos in batches",
       "storyboard": "Storyboard",
       "assets": "assets",
-      "promptText": "Generate video prompt word data"
+      "promptText": "Generate video prompt word data",
+      "videoMenu": "Generate video",
+      "videoPreview": "Video preview"
     }
   },
   "login": {
