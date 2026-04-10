@@ -922,12 +922,18 @@ async function genText() {
   const track = trackList.value[activeTrackIndex.value];
   const trackId = track?.id;
   if (trackId == null || genTextLoadingMap.value[trackId]) return;
+  let info = [];
+  if (selectMode.value == "text") {
+    info = track?.medias.map(({ id, sources }) => ({ id, sources }));
+  } else {
+    info = uploadBox.value.map(({ id, sources }) => ({ id, sources }));
+  }
   genTextLoadingMap.value[trackId] = true;
   try {
     const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
       projectId: project.value?.id,
       trackId,
-      info: uploadBox.value.map(({ id, sources }) => ({ id, sources })),
+      info: info,
       model: selectModel.value,
     });
     const targetTrack = trackList.value.find((item) => item.id === trackId);
@@ -965,7 +971,12 @@ function batchGenText() {
     .filter((track) => checkedTrackIds.value.includes(track.id))
     .forEach(async (track) => {
       const trackId = track.id;
-      const info = getTrackUploadInfo(track);
+      let info = [];
+      if (selectMode.value == "text") {
+        info = track?.medias.map(({ id, sources }) => ({ id, sources }));
+      } else {
+        info = getTrackUploadInfo(track);
+      }
       if (genTextLoadingMap.value[trackId]) return;
       genTextLoadingMap.value[trackId] = true;
       try {
