@@ -450,8 +450,6 @@ async function getGenerateData() {
     projectId: project.value?.id,
     scriptId: episodesId.value ?? 0,
   });
-  console.log("%c Line:426 🌶 data", "background:#6ec1c2", data);
-
   trackList.value = data.trackList;
   // 保留用户本地已手动选择但后端可能尚未持久化的映射
   const prevMap = { ...trackSelectedVideoMap.value };
@@ -749,15 +747,13 @@ function saveUploadBoxToCache() {
   if (trackId == null) return;
   if (isMixedMode.value) {
     // 混合模式：只保留有 src 的项（无位置概念）
-    track.medias = (uploadBox.value as UploadItem[])
-      .filter((item) => Boolean(item.src))
-      .map((item) => ({
-        src: item.src!,
-        id: item.id,
-        prompt: item.prompt,
-        fileType: item.fileType,
-        sources: (item.sources ?? "storyboard") as string,
-      })) as TrackMedia[];
+    track.medias = (uploadBox.value as UploadItem[]).map((item) => ({
+      src: item.src!,
+      id: item.id,
+      prompt: item.prompt,
+      fileType: item.fileType,
+      sources: (item.sources ?? "storyboard") as string,
+    })) as TrackMedia[];
   } else {
     // 非混合模式：保留所有 slot（含空项），以 type 作为位置标识，避免切换轨道时错位
     track.medias = (uploadBox.value as UploadItem[]).map((item) => ({
@@ -891,8 +887,6 @@ function handleMixedAdd() {
       const assets = await assetsCheck({ types: ["role", "tool", "scene", "clip"], clipMediaTypes: mixedClipMediaTypes.value, multiple: true });
       if (!assets.length) return;
       userEditedUploadBox.value = true;
-      // 优先找最后一个有 src 且 sources 为 assets 的项，插入其后；
-      // 若不存在，则找最后一个有 src 的项插入其后（保证新数据在空项前面）
       let insertIndex = -1;
       for (let i = uploadBox.value.length - 1; i >= 0; i--) {
         if (uploadBox.value[i].src && uploadBox.value[i].sources === "assets") {
@@ -975,7 +969,7 @@ watch(selectMode, (val) => {
     for (const item of incoming) {
       if (!item.src) continue;
       // 以 src 为唯一标识去重
-      if (!result.some((r) => r.src === item.src)) {
+      if (!result.some((r) => r.id === item.id)) {
         result.push({ ...item });
       }
     }
@@ -987,7 +981,6 @@ watch(selectMode, (val) => {
   } else if (activeTrack?.medias?.length && uploadBoxSnapshot.value.length === 0) {
     // 仅在快照为空时才从 track.medias 初始化（避免覆盖已有快照）
     uploadBoxSnapshot.value = activeTrack.medias
-      .filter((m: any) => m.src)
       .map((m: any) => ({
         fileType: m.fileType,
         type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
@@ -1004,7 +997,7 @@ watch(selectMode, (val) => {
   const newParsedMode = parseMode(val);
   if (Array.isArray(newParsedMode)) {
     // 混合模式：用快照中所有有 src 的项填充，保证历史图片都显示出来
-    const snapshotItems = uploadBoxSnapshot.value.filter((item) => item.src);
+    const snapshotItems = uploadBoxSnapshot.value;
     if (snapshotItems.length > 0) {
       uploadBox.value = snapshotItems.map((item) => ({ ...item })) as UploadItem[];
     } else {
