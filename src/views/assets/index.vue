@@ -500,11 +500,11 @@ const allThemeData = [
     value: "clip",
     icon: "i-editing",
   },
-  {
-    name: $t("workbench.assets.audio"),
-    value: "audio",
-    icon: "i-audio-file",
-  },
+  // {
+  //   name: $t("workbench.assets.audio"),
+  //   value: "audio",
+  //   icon: "i-audio-file",
+  // },
 ];
 const themeData = ref(props.allowedTypes?.length ? allThemeData.filter((item) => props.allowedTypes!.includes(item.value as any)) : allThemeData);
 

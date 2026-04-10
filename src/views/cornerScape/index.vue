@@ -48,14 +48,14 @@
               :placeholder="$t('workbench.cornerScape.concurrencyPh')"></t-input-number>
           </t-form-item> -->
           <t-form-item>
-            <div class="btnGap fc">
-              <div class="ac jb">
+            <div class="btnGap ac">
+              <!-- <div class="ac jb"> -->
                 <t-button theme="primary" block @click="batchGenerationPrompt">{{ $t("workbench.cornerScape.batchGenerationPrompt") }}</t-button>
-                <t-button theme="primary" style="margin-left: 10px" block @click="batchSelectBindAudio">
+                <!-- <t-button theme="primary" style="margin-left: 10px" block @click="batchSelectBindAudio">
                   {{ $t("workbench.cornerScape.batchBingAudio") }}
                 </t-button>
-              </div>
-              <t-button theme="primary" block @click="batchGenerationImage">
+              </div> -->
+              <t-button theme="primary" block @click="batchGenerationImage" style="margin-left: 10px">
                 {{ $t("workbench.cornerScape.startBatch") }}
               </t-button>
             </div>
@@ -200,7 +200,7 @@
                 @blur="savePromptOnBlur" />
             </t-loading>
           </t-form-item>
-          <t-form-item :label="$t('workbench.cornerScape.assetsAudioLabel')">
+          <!-- <t-form-item :label="$t('workbench.cornerScape.assetsAudioLabel')">
             <div>
               <div>
                 <t-button size="small" theme="primary" variant="outline" @click="selectAudio">
@@ -215,7 +215,7 @@
               </div>
               <div v-else class="assets-empty">{{ $t("workbench.cornerScape.noAudio") }}</div>
             </div>
-          </t-form-item>
+          </t-form-item> -->
           <t-form-item>
             <div class="drawerActions">
               <t-button
