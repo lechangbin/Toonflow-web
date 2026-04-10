@@ -747,13 +747,14 @@ function saveUploadBoxToCache() {
   if (trackId == null) return;
   if (isMixedMode.value) {
     // 混合模式：只保留有 src 的项（无位置概念）
-    track.medias = (uploadBox.value as UploadItem[]).map((item) => ({
-      src: item.src!,
-      id: item.id,
-      prompt: item.prompt,
-      fileType: item.fileType,
-      sources: (item.sources ?? "storyboard") as string,
-    })) as TrackMedia[];
+    track.medias = (uploadBox.value as UploadItem[])
+      .map((item) => ({
+        src: item.src!,
+        id: item.id,
+        prompt: item.prompt,
+        fileType: item.fileType,
+        sources: (item.sources ?? "storyboard") as string,
+      })) as TrackMedia[];
   } else {
     // 非混合模式：保留所有 slot（含空项），以 type 作为位置标识，避免切换轨道时错位
     track.medias = (uploadBox.value as UploadItem[]).map((item) => ({
@@ -967,11 +968,11 @@ watch(selectMode, (val) => {
     const existing = uploadBoxSnapshot.value;
     const result = [...existing];
     for (const item of incoming) {
-      if (!item.src) continue;
-      // 以 src 为唯一标识去重
-      if (!result.some((r) => r.id === item.id)) {
-        result.push({ ...item });
-      }
+      // 以 id 或 src 为唯一标识去重（无 src 的纯文本项也保留）
+      const isDup = item.src
+        ? result.some((r) => r.src === item.src)
+        : item.id != null && result.some((r) => r.id === item.id);
+      if (!isDup) result.push({ ...item });
     }
     uploadBoxSnapshot.value = result;
   };
@@ -996,10 +997,9 @@ watch(selectMode, (val) => {
   const newBox = buildUploadBox(val);
   const newParsedMode = parseMode(val);
   if (Array.isArray(newParsedMode)) {
-    // 混合模式：用快照中所有有 src 的项填充，保证历史图片都显示出来
-    const snapshotItems = uploadBoxSnapshot.value;
-    if (snapshotItems.length > 0) {
-      uploadBox.value = snapshotItems.map((item) => ({ ...item })) as UploadItem[];
+    // 混合模式：用快照中所有项填充（包含没有 src 的纯文本项），保证历史内容都显示出来
+    if (uploadBoxSnapshot.value.length > 0) {
+      uploadBox.value = uploadBoxSnapshot.value.map((item) => ({ ...item })) as UploadItem[];
     } else {
       uploadBox.value = oldBox;
     }
