@@ -1104,7 +1104,7 @@
         "importingLoading": "Importing, please wait...",
         "mainTrackVideo": "Main Track (Video)",
         "subtitle1": "Subtitle 1",
-        "storyboardVideoName": "Group {storyboard}-{id}.mp4"
+        "storyboardVideoName": "{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "No Image",
@@ -1387,7 +1387,7 @@
       "generate": "Generate video",
       "history": "Historical version",
       "generating": "Generating",
-      "generateFailed": "fail",
+      "generateFailed": "Check the failure reason",
       "selectAll": "Select all",
       "selected": "Selected",
       "batchGenerateText": "Generate prompt words in batches",
@@ -1419,7 +1419,9 @@
       "batchDownloadVideo": "Download videos in batches",
       "storyboard": "Storyboard",
       "assets": "assets",
-      "promptText": "Generate video prompt word data"
+      "promptText": "Generate video prompt word data",
+      "videoMenu": "Generate video",
+      "videoPreview": "Video preview"
     }
   },
   "login": {
@@ -1547,5 +1549,10 @@
   "workbench.script.import.parsedChapters": "{count} set parsed",
   "workbench.script.import.msg.selectChapters": "Please check the script first",
   "workbench.script.import.msg.saveSuccess": "Script saved successfully",
-  "workbench.script.import.batchTitle": "Upload scripts in batches"
+  "workbench.script.import.batchTitle": "Upload scripts in batches",
+  "workbench.assets.sex": "gender",
+  "workbench.assets.audioText": "audio content",
+  "workbench.assets.audio": "Audio",
+  "workbench.assets.add.sex": "gender",
+  "workbench.assets.add.sexPh": "Please enter gender"
 }

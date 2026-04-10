@@ -630,7 +630,7 @@
         "parsedChapters": "已解析 {count} 章节",
         "nextStep": "下一步",
         "prevStep": "上一步",
-        "selectedInfo": "已勾选：{count}字(小于200000字)",
+        "selectedInfo": "已勾选：{count}字",
         "eventAnalysis": "事件分析",
         "saveAndAnalyze": "保存原文并分析事件",
         "col": {
@@ -1120,7 +1120,7 @@
         "importingLoading": "正在导入中，请稍候...",
         "mainTrackVideo": "主轨道（视频）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "组{storyboard}-{id}.mp4"
+        "storyboardVideoName": "{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "暂无图片",
@@ -1401,12 +1401,12 @@
     "generate": {
       "noVideo": "暂无数据",
       "prompt": "视频提示词",
-      "generateText": "AI生成提示词",
+      "generateText": "生成提示词",
       "selectStoryboard": "选择分镜",
       "generate": "生成视频",
       "history": "历史版本",
       "generating": "生成中",
-      "generateFailed": "失败",
+      "generateFailed": "查看失败原因",
       "selectAll": "全选",
       "selected": "已选",
       "batchGenerateText": "批量生成提示词",
@@ -1440,7 +1440,9 @@
       "batchDownloadVideo": "批量下载视频",
       "storyboard": "分镜",
       "assets": "资产",
-      "promptText": "生成视频提示词数据"
+      "promptText": "生成视频提示词数据",
+      "videoMenu": "生成视频",
+      "videoPreview": "视频预览"
     }
   },
   "login": {
@@ -1586,5 +1588,21 @@
   "workbench.script.import.parsedChapters": "已解析 {count} 集",
   "workbench.script.import.msg.selectChapters": "请先勾选剧本",
   "workbench.script.import.msg.saveSuccess": "剧本保存成功",
-  "workbench.script.import.batchTitle": "批量上传剧本"
+  "workbench.script.import.batchTitle": "批量上传剧本",
+  "workbench.assets.sex": "性别",
+  "workbench.assets.audioText": "音频文本",
+  "workbench.assets.audio": "音频",
+  "workbench.assets.add.sex": "性别",
+  "workbench.assets.add.sexPh": "请输入性别",
+  "workbench.assets.add.pleaseUploadAudio": "请上传音频文件",
+  "workbench.cornerScape.assetsAudioLabel": "音频参考",
+  "workbench.cornerScape.selectAudio": "选择音频",
+  "workbench.cornerScape.noAudio": "暂无音频参考",
+  "workbench.assets.audioName": "音色",
+  "workbench.assets.add.audioName": "音色",
+  "workbench.assets.add.audioNamePh": "请输入音色",
+  "workbench.assets.add.audioFile": "音频文件",
+  "workbench.cornerScape.batchBingAudio": "一键绑定音频",
+  "workbench.cornerScape.msg.selectAtLeastBindOne": "请至少选择一个资产进行绑定"
 }
+

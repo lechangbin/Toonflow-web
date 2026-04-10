@@ -3,7 +3,7 @@
     <t-dialog :footer="false" v-model:visible="purgeNovelShow" :header="$t('workbench.script.import.batchTitle')" width="50%" placement="center">
       <div class="data">
         <t-tabs :value="activeKey" disabled>
-          <t-tab-panel value="To1" :label="$t('workbench.novel.import.step1')" style="height: 700px; overflow-y: auto">
+          <t-tab-panel value="To1" :label="$t('workbench.novel.import.step1')" style="height: 680px; overflow-y: auto">
             <div class="regexRow f ac" style="margin-top: 10px; gap: 8px">
               <span class="regexLabel">{{ $t("workbench.script.import.episodeRegex") }}</span>
               <t-input
@@ -34,7 +34,7 @@
             <div class="formItem">
               <div class="label">{{ $t("workbench.script.import.pasteLabel") }}</div>
               <div class="uploadWrap">
-                <t-textarea v-model="content" :placeholder="$t('workbench.script.add.scriptContentPh')" :autosize="{ minRows: 12, maxRows: 12 }" />
+                <t-textarea v-model="content" :placeholder="$t('workbench.script.add.scriptContentPh')" :autosize="{ minRows: 10, maxRows: 10 }" />
               </div>
 
               <div class="footerInfo f ac jb" style="margin-top: 8px">
@@ -72,7 +72,7 @@
               <div class="selectedInfo">{{ $t("workbench.novel.import.selectedInfo", { count: selectedTextLength }) }}</div>
               <div style="margin-top: 16px; text-align: right">
                 <t-button variant="outline" @click="activeKey = 'To1'">{{ $t("workbench.novel.import.prevStep") }}</t-button>
-                <t-button theme="primary" style="margin-left: 10px" :disabled="selectedTextLength > 200000" :loading="nextLoading" @click="keep">
+                <t-button theme="primary" style="margin-left: 10px" :disabled="selectedTextLength > 3000" :loading="nextLoading" @click="keep">
                   保存
                 </t-button>
               </div>

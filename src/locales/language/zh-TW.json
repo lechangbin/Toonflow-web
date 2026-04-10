@@ -1024,7 +1024,7 @@
         "stereo441": "44.1kHz 立體聲",
         "mono16": "16kHz 單聲道",
         "sampleImage1": "範例圖片 1",
-        "storyboardVideoName": "組{storyboard}-{id}.mp4"
+        "storyboardVideoName": "{storyboard}-{id}.mp4"
       },
       "preview": {
         "noImage": "暫無圖片",
@@ -1298,7 +1298,7 @@
       "generate": "產生影片",
       "history": "歷史版本",
       "generating": "生成中",
-      "generateFailed": "失敗",
+      "generateFailed": "看失敗原因",
       "selectAll": "全選",
       "selected": "已選",
       "batchGenerateText": "大量生成提示詞",
@@ -1331,7 +1331,9 @@
       "batchDownloadVideo": "批量下載視頻",
       "storyboard": "分鏡",
       "assets": "資產",
-      "promptText": "產生影片提示詞數據"
+      "promptText": "產生影片提示詞數據",
+      "videoMenu": "產生影片",
+      "videoPreview": "影片預覽"
     }
   },
   "login": {
@@ -1456,5 +1458,9 @@
   "workbench.script.import.parsedChapters": "已解析 {count} 集",
   "workbench.script.import.msg.selectChapters": "請先勾選劇本",
   "workbench.script.import.msg.saveSuccess": "劇本保存成功",
-  "workbench.script.import.batchTitle": "大量上傳劇本"
+  "workbench.script.import.batchTitle": "大量上傳劇本",
+  "workbench.assets.sex": "性別",
+  "workbench.assets.audioText": "音訊內容",
+  "workbench.assets.add.sex": "性別",
+  "workbench.assets.add.sexPh": "請輸入性別"
 }

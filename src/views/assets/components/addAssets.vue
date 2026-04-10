@@ -37,7 +37,7 @@ import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 const props = defineProps<{
-  type: "role" | "tool" | "scene" | "clip";
+  type: "role" | "tool" | "scene" | "clip" | "audio";
   title: string;
   formData: {
     id: number;

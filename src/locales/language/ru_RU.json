@@ -1020,7 +1020,7 @@
         "importingLoading": "Импорт, пожалуйста, подождите...",
         "mainTrackVideo": "Основная дорожка (Видео)",
         "subtitle1": "Субтитры 1",
-        "storyboardVideoName": "Группа {раскадровка}-{id}.mp4"
+        "storyboardVideoName": "{раскадровка}-{id}.mp4"
       },
       "preview": {
         "noImage": "Нет изображения",
@@ -1293,7 +1293,7 @@
       "generate": "Создать видео",
       "history": "Историческая версия",
       "generating": "Создание",
-      "generateFailed": "неудача",
+      "generateFailed": "Проверьте причину сбоя",
       "selectAll": "Выбрать все",
       "selected": "Выбрано",
       "batchGenerateText": "Генерируйте подсказки в пакетном режиме",
@@ -1326,7 +1326,9 @@
       "batchDownloadVideo": "Скачивайте видео партиями",
       "storyboard": "Раскадровка",
       "assets": "ресурсы",
-      "promptText": "Генерация данных слов видеоподсказки"
+      "promptText": "Генерация данных слов видеоподсказки",
+      "videoMenu": "Создать видео",
+      "videoPreview": "Предварительный просмотр видео"
     }
   },
   "login": {
@@ -1466,5 +1468,10 @@
   "workbench.script.import.parsedChapters": "{count} набор проанализирован",
   "workbench.script.import.msg.selectChapters": "Пожалуйста, сначала проверьте сценарий",
   "workbench.script.import.msg.saveSuccess": "Скрипт успешно сохранен",
-  "workbench.script.import.batchTitle": "Загружайте скрипты партиями"
+  "workbench.script.import.batchTitle": "Загружайте скрипты партиями",
+  "workbench.assets.sex": "пол",
+  "workbench.assets.audioText": "аудиоконтент",
+  "workbench.assets.audio": "Аудио",
+  "workbench.assets.add.sex": "пол",
+  "workbench.assets.add.sexPh": "Пожалуйста, укажите пол"
 }

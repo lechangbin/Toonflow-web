@@ -16,7 +16,7 @@ interface Asset {
   sonAssets?: Asset[];
 }
 
-export type AssetType = "role" | "tool" | "scene" | "clip";
+export type AssetType = "role" | "tool" | "scene" | "clip" | "audio";
 export type ClipMediaType = "image" | "video" | "audio";
 
 export interface AssetsSelectOptions {

@@ -1020,7 +1020,7 @@
         "importingLoading": "インポート中です。しばらくお待ちください...",
         "mainTrackVideo": "メイントラック（動画）",
         "subtitle1": "字幕1",
-        "storyboardVideoName": "グループ {ストーリーボード}-{id}.mp4"
+        "storyboardVideoName": "{ストーリーボード}-{id}.mp4"
       },
       "preview": {
         "noImage": "画像なし",
@@ -1293,7 +1293,7 @@
       "generate": "ビデオの生成",
       "history": "歴史的バージョン",
       "generating": "生成中",
-      "generateFailed": "失敗",
+      "generateFailed": "失敗の原因を確認する",
       "selectAll": "すべて選択",
       "selected": "選択済み",
       "batchGenerateText": "プロンプト単語をバッチで生成する",
@@ -1326,7 +1326,9 @@
       "batchDownloadVideo": "動画をバッチでダウンロードする",
       "storyboard": "絵コンテ",
       "assets": "資産",
-      "promptText": "ビデオプロンプトワードデータの生成"
+      "promptText": "ビデオプロンプトワードデータの生成",
+      "videoMenu": "ビデオの生成",
+      "videoPreview": "ビデオプレビュー"
     }
   },
   "login": {
@@ -1466,5 +1468,10 @@
   "workbench.script.import.parsedChapters": "{count} セットが解析されました",
   "workbench.script.import.msg.selectChapters": "まずはスクリプトを確認してください",
   "workbench.script.import.msg.saveSuccess": "スクリプトは正常に保存されました",
-  "workbench.script.import.batchTitle": "スクリプトをバッチでアップロードする"
+  "workbench.script.import.batchTitle": "スクリプトをバッチでアップロードする",
+  "workbench.assets.sex": "性別",
+  "workbench.assets.audioText": "音声コンテンツ",
+  "workbench.assets.audio": "オーディオ",
+  "workbench.assets.add.sex": "性別",
+  "workbench.assets.add.sexPh": "性別を入力してください"
 }
