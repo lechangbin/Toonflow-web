@@ -13,35 +13,6 @@
             </t-button>
           </template>
           <div class="promptData">
-            <div class="genVideoParams f ac">
-              <div
-                v-for="(item, index) in genPromptParams"
-                :key="index"
-                class="item"
-                style="position: relative; width: 80px; height: 80px; margin-right: 12px">
-                <t-image
-                  v-if="item.url"
-                  :src="item.url"
-                  @click="handlePreview(item.url)"
-                  :style="{ width: '80px', height: '80px', cursor: 'pointer', borderRadius: '8px' }"
-                  fit="cover"
-                  shape="round" />
-                <div v-else class="noneImage ac c">文</div>
-                <div class="delete ac c" @click.stop="delGenPromptParams(index)">
-                  <i-close size="12" />
-                </div>
-                <div class="source">
-                  <t-tag size="small">
-                    {{ item.sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}
-                  </t-tag>
-                </div>
-              </div>
-              <div class="selectImage" @click="selectGenPromptAsset" style="flex-shrink: 0">
-                <div class="clearBtn ac c">
-                  <i-plus size="24"></i-plus>
-                </div>
-              </div>
-            </div>
             <div class="promptInput" @focusout="handlePromptBlur">
               <promptEditor v-model="promptText" :references="references" :placeholder="$t('workbench.generate.promptPlaceholder')" />
             </div>
@@ -130,22 +101,25 @@
           <div class="videoData">
             <div class="modeOpt f w">
               <template v-if="isMixedMode">
-                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" v-show="item.src">
+                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="!item.src && handleMixedAdd()">
                   <template v-if="item.src">
                     <img v-if="item.fileType === 'image'" :src="item.src" class="uploadPreview" />
                     <div v-else class="uploadPreview c">
                       <i-volume-notice v-if="item.fileType === 'audio'" size="24" />
                       <i-video v-else size="24" />
                     </div>
-                    <div class="clearBtn" @click.stop="clearUpload(index)">
-                      <i-close size="12" />
-                    </div>
-                    <div class="source">
-                      <t-tag size="small">
-                        {{ item.sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}
-                      </t-tag>
-                    </div>
                   </template>
+                  <template v-else>
+                    <span style="font-size: 20px">文</span>
+                  </template>
+                  <div class="clearBtn" @click.stop="clearUpload(index)">
+                    <i-close size="12" />
+                  </div>
+                  <div class="source">
+                    <t-tag size="small">
+                      {{ item.sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}
+                    </t-tag>
+                  </div>
                 </div>
                 <div class="uploadBtn c fc" @click="handleMixedAdd">
                   <i-plus size="24"></i-plus>
@@ -156,19 +130,18 @@
                 <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="handleSelectSource(index)">
                   <template v-if="item.src">
                     <img :src="item.src" class="uploadPreview" />
-                    <div class="clearBtn" @click.stop="clearUpload(index)">
-                      <i-close size="12" />
-                    </div>
-                    <div class="source">
-                      <t-tag size="small">
-                        {{ item.sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}
-                      </t-tag>
-                    </div>
                   </template>
                   <template v-else>
-                    <i-plus size="24"></i-plus>
-                    {{ item.label }}
+                    <span style="font-size: 20px">文</span>
                   </template>
+                  <div class="clearBtn" @click.stop="clearUpload(index)">
+                    <i-close size="12" />
+                  </div>
+                  <div class="source">
+                    <t-tag size="small">
+                      {{ item.sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}
+                    </t-tag>
+                  </div>
                 </div>
               </template>
             </div>
@@ -453,24 +426,19 @@ async function getGenerateData() {
 
   storyboardList.value = data.storyboardList;
   syncMediasToUploadBox();
-
-  // 恢复当前轨道的 genPromptParams 缓存
-  const activeTrack = trackList.value[activeTrackIndex.value];
-  if (activeTrack?.id != null && genPromptParamsMap.value[activeTrack.id] != null) {
-    genPromptParams.value = [...genPromptParamsMap.value[activeTrack.id]];
-  } else if (genPromptParams.value.length === 0 && activeTrack) {
-    genPromptParams.value = activeTrack.medias
-      .filter((m) => m.id != null)
-      .map((m) => ({ id: m.id!, sources: m.sources ?? "storyboard", url: m.src }));
-  }
-
   getVideoList();
 }
 
 /** 切换轨道：保存旧轨道缓存，加载新轨道数据 */
 function changeTrack(index: number) {
+  const currentTrackId = trackList.value[activeTrackIndex.value]?.id;
+  if (currentTrackId != null) {
+    uploadBoxCache.value.set(
+      currentTrackId,
+      uploadBox.value.map((item) => ({ ...item })),
+    );
+  }
   activeTrackIndex.value = index;
-  getGenerateData();
 }
 
 /** 添加轨道 */
@@ -549,22 +517,16 @@ watch(
   { deep: true },
 );
 
-// 切换轨道时保存旧轨道缓存，加载新轨道状态
-watch(activeTrackIndex, (newIndex, oldIndex) => {
-  const oldTrack = trackList.value[oldIndex];
-  if (oldTrack?.id != null) {
-    genPromptParamsMap.value[oldTrack.id] = [...genPromptParams.value];
-  }
+// 切换轨道时加载新轨道状态
+watch(activeTrackIndex, () => {
   userSelectedDuration.value = false;
-  const newTrack = trackList.value[newIndex];
-  if (newTrack?.id != null && genPromptParamsMap.value[newTrack.id] != null) {
-    genPromptParams.value = [...genPromptParamsMap.value[newTrack.id]];
+  // 优先从缓存恢复当前轨道的 uploadBox，无缓存时才从 track.medias 同步
+  const newTrackId = trackList.value[activeTrackIndex.value]?.id;
+  if (newTrackId != null && uploadBoxCache.value.has(newTrackId)) {
+    uploadBox.value = uploadBoxCache.value.get(newTrackId)!.map((item) => ({ ...item }));
   } else {
-    genPromptParams.value = newTrack
-      ? newTrack.medias.filter((m) => m.id != null).map((m) => ({ id: m.id!, sources: m.sources ?? "storyboard", url: m.src }))
-      : [];
+    syncMediasToUploadBox();
   }
-  syncMediasToUploadBox();
   restoreActiveTrackSelection();
 });
 
@@ -685,11 +647,11 @@ watch(
 // 模块三：上传框（uploadBox）管理
 
 const uploadBox = ref<UploadItem[]>([]); // 当前轨道的上传框列表
+const uploadBoxCache = ref<Map<number, UploadItem[]>>(new Map()); // 每个轨道 uploadBox 的缓存（key: trackId）
 const uploadBoxSnapshot = ref<UploadItem[]>([]); // 切换模式时的快照，用于恢复资源
 const userEditedUploadBox = ref(false); // 用户是否手动编辑过上传框
 const pendingIndex = ref(-1); // 待选分镜对应的 uploadBox 索引
 const storyboardDialogVisible = ref(false); // 分镜选择弹窗显示状态
-const pendingGenPromptStoryboard = ref(false); // 标志：当前分镜弹窗是为 genPromptParams 服务（而非 uploadBox）
 
 /** 根据模式值构建空的 uploadBox 结构 */
 function buildUploadBox(value: string): UploadItem[] {
@@ -727,22 +689,51 @@ function buildUploadBox(value: string): UploadItem[] {
   return (modeUploadMap[currentMode] || []).map((item) => ({ ...item }));
 }
 
+/** 将当前轨道的 uploadBox 存入缓存 */
+function saveUploadBoxToCache() {
+  const trackId = trackList.value[activeTrackIndex.value]?.id;
+  if (trackId != null) {
+    uploadBoxCache.value.set(
+      trackId,
+      uploadBox.value.map((item) => ({ ...item })),
+    );
+  }
+}
+
 /** 将当前轨道的 medias 同步到 uploadBox */
 function syncMediasToUploadBox() {
   const track = trackList.value[activeTrackIndex.value];
   if (!track) return;
   const medias = track.medias;
   if (isMixedMode.value) {
-    // 混合模式：直接用 track.medias 重建 uploadBox
-    uploadBox.value = medias.map((m) => ({
-      fileType: m.fileType,
-      type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
-      sources: m.sources!,
-      src: m.src,
-      id: m.id,
-      prompt: m.prompt,
-      label: "",
-    }));
+    const baseBox = buildUploadBox(selectMode.value || "");
+    const filledBox: UploadItem[] = baseBox.map((slot, i) => {
+      const media = medias[i];
+      if (!media) return { ...slot };
+      return {
+        ...slot,
+        fileType: media.fileType,
+        type: (refTypeMap[media.fileType] ?? "imageReference") as Type,
+        sources: media.sources ?? slot.sources,
+        src: media.src || undefined,
+        id: media.id,
+        prompt: media.prompt,
+      };
+    });
+    // 超出 baseBox 长度的 medias 追加到末尾
+    for (let i = baseBox.length; i < medias.length; i++) {
+      const m = medias[i];
+      filledBox.push({
+        fileType: m.fileType,
+        type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
+        sources: m.sources!,
+        src: m.src,
+        id: m.id,
+        prompt: m.prompt,
+        label: "",
+      });
+    }
+    uploadBox.value = filledBox;
   } else {
     // 非混合模式：按位置映射
     uploadBox.value = uploadBox.value.map((item, i) => {
@@ -763,9 +754,10 @@ function clearUpload(index: number) {
   } else {
     uploadBox.value[index] = { ...item, sources: "storyboard", src: undefined, id: undefined, prompt: undefined };
   }
+  saveUploadBoxToCache();
 }
 
-/** 非混合模式：点击 uploadBox slot，弹窗选择资产或分镜（仅操作 uploadBox，不影响 genPromptParams） */
+/** 非混合模式：点击 uploadBox slot，弹窗选择资产或分镜 */
 function handleSelectSource(index: number) {
   const item = uploadBox.value[index];
   if (!item) return;
@@ -780,6 +772,7 @@ function handleSelectSource(index: number) {
       if (assets.length > 0) {
         userEditedUploadBox.value = true;
         uploadBox.value[index] = { ...item, sources: "assets", src: assets[0].src, id: assets[0].id, prompt: assets[0].prompt };
+        saveUploadBoxToCache();
       }
     },
     onCancel: () => {
@@ -789,7 +782,7 @@ function handleSelectSource(index: number) {
   });
 }
 
-/** 混合模式：添加参考资源（仅操作 uploadBox，不影响 genPromptParams） */
+/** 混合模式：添加参考资源 */
 function handleMixedAdd() {
   const dlg = DialogPlugin.confirm({
     header: $t("workbench.generate.selectSource"),
@@ -812,6 +805,7 @@ function handleMixedAdd() {
           label: "",
         });
       }
+      saveUploadBoxToCache();
     },
     onCancel: () => {
       dlg.destroy();
@@ -824,14 +818,6 @@ function handleMixedAdd() {
 /** 分镜弹窗选中回调 */
 function pickStoryboard(sb: StoryboardItem) {
   storyboardDialogVisible.value = false;
-
-  // 来源为 genPromptParams：将分镜写入提示词参数，不操作 uploadBox
-  if (pendingGenPromptStoryboard.value) {
-    pendingGenPromptStoryboard.value = false;
-    addToGenPromptParams({ id: sb.id, sources: "storyboard", url: sb.src ?? "" });
-    return;
-  }
-
   userEditedUploadBox.value = true;
   const fileType = getFileTypeByExt(sb.src);
   if (isMixedMode.value) {
@@ -844,20 +830,20 @@ function pickStoryboard(sb: StoryboardItem) {
       prompt: sb.prompt ?? undefined,
       label: "",
     });
+    saveUploadBoxToCache();
     return;
   }
   const item = uploadBox.value[pendingIndex.value];
   if (!item) return;
   uploadBox.value[pendingIndex.value] = { ...item, sources: "storyboard", src: sb.src, id: sb.id, prompt: sb.prompt ?? undefined };
+  saveUploadBoxToCache();
 }
 
-// 切换模式：重建 uploadBox 并同步 genPromptParams
+// 切换模式：重建 uploadBox
 watch(selectMode, (val) => {
   if (!val) return void (uploadBox.value = []);
   const oldBox = uploadBox.value;
   const activeTrack = trackList.value[activeTrackIndex.value];
-
-  // 保存快照：优先当前 uploadBox，否则从 track.medias 构建
   if (oldBox.some((item) => item.src)) {
     uploadBoxSnapshot.value = oldBox.map((item) => ({ ...item }));
   } else if (activeTrack?.medias?.length) {
@@ -882,7 +868,7 @@ watch(selectMode, (val) => {
     const sourceItems = uploadBoxSnapshot.value;
     const usedIndices = new Set<number>();
     uploadBox.value = newBox.map((slot) => {
-      const matchIdx = sourceItems.findIndex((old, i) => !usedIndices.has(i) && old.fileType === slot.fileType && old.src);
+      const matchIdx = sourceItems.findIndex((old, i) => !usedIndices.has(i) && old.fileType === slot.fileType);
       if (matchIdx !== -1) {
         usedIndices.add(matchIdx);
         const old = sourceItems[matchIdx];
@@ -892,65 +878,9 @@ watch(selectMode, (val) => {
     });
   }
   userEditedUploadBox.value = false;
-  // genPromptParams 与 uploadBox 完全隔离，切换模式不修改 genPromptParams
 });
 
-// 模块四：genPromptParams（提示词参数）管理
-/** 各轨道的 genPromptParams 缓存，切换轨道时保存/恢复 */
-const genPromptParamsMap = ref<Record<number, { id: number; sources: string; url: string }[]>>({});
-/** 当前轨道的提示词图片/资产参数（用于生成提示词） */
-const genPromptParams = ref<{ id: number; sources: string; url: string }[]>([]);
-
-/** 去重辅助：按 id + sources 联合去重（相同 id 但 sources 不同的条目视为不同资源） */
-function dedupeByIdAndSources<T extends { id?: number | null; sources?: string }>(arr: T[]): T[] {
-  return arr.filter((item, index, self) => self.findIndex((t) => t.id === item.id && t.sources === item.sources) === index);
-}
-
-/** 将当前 genPromptParams 保存到缓存 */
-function saveGenPromptParamsCache() {
-  const trackId = trackList.value[activeTrackIndex.value]?.id;
-  if (trackId != null) genPromptParamsMap.value[trackId] = [...genPromptParams.value];
-}
-
-/** 添加一条参数并去重、保存缓存 */
-function addToGenPromptParams(item: { id?: number; sources: string; url: string }) {
-  if (item.id == null) return;
-  genPromptParams.value.push(item as { id: number; sources: string; url: string });
-  genPromptParams.value = dedupeByIdAndSources(genPromptParams.value);
-  saveGenPromptParamsCache();
-}
-
-/** 选择生成提示词所用的资产（弹窗确认选资产或分镜） */
-function selectGenPromptAsset() {
-  const dlg = DialogPlugin.confirm({
-    header: $t("workbench.generate.selectSource"),
-    confirmBtn: $t("workbench.generate.confirm"),
-    cancelBtn: $t("workbench.generate.cancel"),
-    onConfirm: async () => {
-      dlg.destroy();
-      const assets = await assetsCheck({ types: ["role", "tool", "scene", "clip"], clipMediaTypes: mixedClipMediaTypes.value, multiple: true });
-      if (!assets.length) return;
-      for (const asset of assets) {
-        addToGenPromptParams({ id: asset.id, sources: "assets", url: asset.src });
-      }
-    },
-    onCancel: () => {
-      dlg.destroy();
-      // 标记来源为 genPromptParams，再打开分镜弹窗
-      pendingGenPromptStoryboard.value = true;
-      storyboardDialogVisible.value = true;
-    },
-  });
-}
-
-/** 删除提示词参数中指定索引的条目 */
-function delGenPromptParams(index: number) {
-  genPromptParams.value.splice(index, 1);
-  saveGenPromptParamsCache();
-}
-
-// 模块五：提示词编辑
-
+// 模块四：提示词编辑
 /** 当前轨道的提示词文本（双向绑定） */
 const promptText = computed({
   get() {
@@ -962,13 +892,13 @@ const promptText = computed({
   },
 });
 
-/** genPromptParams 作为 promptEditor 的引用预览，无图片则用 text 类型 */
+/** uploadBox 作为 promptEditor 的引用预览 */
 const references = computed(() =>
-  genPromptParams.value
-    .filter((item) => item.url)
+  uploadBox.value
+    .filter((item) => item.src)
     .map((item) => ({
-      type: item.url ? (getFileTypeByExt(item.url) as "image" | "video" | "audio" | "text") : ("text" as const),
-      src: item.url ?? "",
+      type: getFileTypeByExt(item.src) as "image" | "video" | "audio" | "text",
+      src: item.src ?? "",
     })),
 );
 
@@ -997,7 +927,7 @@ async function genText() {
     const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
       projectId: project.value?.id,
       trackId,
-      info: genPromptParams.value.map(({ id, sources }) => ({ id, sources })),
+      info: uploadBox.value.map(({ id, sources }) => ({ id, sources })),
       model: selectModel.value,
     });
     const targetTrack = trackList.value.find((item) => item.id === trackId);
@@ -1007,17 +937,36 @@ async function genText() {
   }
 }
 
+/**
+ * 获取指定轨道的上传数据：
+ * 当前活动轨道 → uploadBox（含未保存的最新编辑）
+ * 其他轨道 → uploadBoxCache（含切换前的编辑）→ 降级 track.medias
+ * @param filterEmpty 是否过滤掉没有 src 的项（生成视频时需要过滤，生成提示词时不需要）
+ */
+function getTrackUploadInfo(track: TrackItem, filterEmpty = false): { id?: number; sources: string }[] {
+  const activeTrackId = trackList.value[activeTrackIndex.value]?.id;
+  let items: UploadItem[];
+  if (track.id === activeTrackId) {
+    items = uploadBox.value;
+  } else {
+    const cached = uploadBoxCache.value.get(track.id);
+    if (cached) {
+      items = cached;
+    } else {
+      return track.medias.filter((m) => !filterEmpty || Boolean(m.src)).map(({ id, sources }) => ({ id, sources: sources ?? "storyboard" }));
+    }
+  }
+  return (filterEmpty ? items.filter((item) => Boolean(item.src)) : items).map(({ id, sources }) => ({ id, sources }));
+}
+
 /** 批量为已勾选轨道生成提示词 */
 function batchGenText() {
   trackList.value
     .filter((track) => checkedTrackIds.value.includes(track.id))
     .forEach(async (track) => {
       const trackId = track.id;
-      const cached = genPromptParamsMap.value[trackId];
-      // 优先使用缓存，否则用 track.medias 兜底
-      const info =
-        cached?.filter((item) => item.id).map(({ id, sources }) => ({ id, sources })) ??
-        track.medias.filter((m) => m.id).map((m) => ({ id: m.id, sources: m.sources }));
+      const info = getTrackUploadInfo(track);
+      if (genTextLoadingMap.value[trackId]) return;
       genTextLoadingMap.value[trackId] = true;
       try {
         const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
@@ -1092,14 +1041,12 @@ function batchGenVideo() {
           if (trackId == null || generatingMap.value[trackId]) return;
           generatingMap.value[trackId] = true;
           try {
+            const uploadData = selectMode.value === "text" ? [] : getTrackUploadInfo(track, true);
             const payload = {
               projectId: project.value?.id,
               scriptId: episodesId.value,
               duration: clampDuration(track.duration || selectedDuration.value),
-              uploadData:
-                selectMode.value === "text"
-                  ? []
-                  : track.medias.filter((m) => Boolean(m.src)).map(({ id, sources }) => ({ id, sources: sources ?? "storyboard" })),
+              uploadData,
               prompt: track.prompt,
               model: selectModel.value,
               mode: selectMode.value,
@@ -1433,82 +1380,11 @@ onUnmounted(() => stopPoll());
         }
         .promptData {
           width: 100%;
-          .genVideoParams {
-            padding-top: 10px;
-            padding-bottom: 10px;
-            height: 100px;
-            width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
-            gap: 10px;
-            .item {
-              position: relative;
-              .noneImage {
-                width: 80px;
-                height: 80px;
-                cursor: pointer;
-                background-color: #fff;
-                border: 1px solid var(--td-component-border);
-                border-radius: 8px;
-                color: #000;
-                font-size: 28px;
-                font-weight: 500;
-              }
-              .delete {
-                position: absolute;
-                width: 18px;
-                height: 18px;
-                border-radius: 50%;
-                background: rgba(0, 0, 0, 0.6);
-                right: 4px;
-                top: 4px;
-                cursor: pointer;
-                z-index: 1;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                color: #fff;
-              }
-              &:hover .delete {
-                display: flex;
-              }
-              .source {
-                position: absolute;
-                bottom: 2px;
-                right: 2px;
-                border-radius: 50%;
-                background: rgba(0, 0, 0, 0.6);
-                color: #fff;
-                display: none;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                z-index: 1;
-                &:hover {
-                  background: rgba(0, 0, 0, 0.85);
-                }
-              }
-              &:hover .source {
-                display: flex;
-              }
-            }
-            .selectImage {
-              width: 80px;
-              height: 80px;
-              cursor: pointer;
-              border: 1px dashed var(--td-component-border);
-              border-radius: 8px;
-              .clearBtn {
-                width: 100%;
-                height: 100%;
-              }
-            }
-          }
           .promptInput {
             border: 1px solid var(--td-component-border);
             border-radius: 8px;
             min-height: 100px;
-            height: 120px;
+            height: 200px;
             overflow: auto;
             resize: vertical;
           }
@@ -1799,7 +1675,7 @@ onUnmounted(() => stopPoll());
           position: absolute;
           bottom: 4px;
           left: 4px;
-          z-index: 1;
+          z-index: 2;
         }
         .selectTag {
           position: absolute;
