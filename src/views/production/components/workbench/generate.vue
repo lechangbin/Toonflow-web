@@ -127,12 +127,16 @@
                 </div>
               </template>
               <template v-else>
-                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="handleSelectSource(index)" v-show="item.id">
+                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="handleSelectSource(index)">
                   <template v-if="item.src && item.id">
                     <img :src="item.src" class="uploadPreview" />
                   </template>
                   <template v-else-if="item.id">
                     <span style="font-size: 20px">文</span>
+                  </template>
+                  <template v-else>
+                    <i-plus size="24"></i-plus>
+                    {{ item.label }}
                   </template>
                   <div class="clearBtn" @click.stop="clearUpload(index)">
                     <i-close size="12" />
@@ -425,25 +429,12 @@ async function getGenerateData() {
   }
 
   storyboardList.value = data.storyboardList;
-  // 刷新后，对于已有缓存的轨道直接恢复 uploadBox，避免被后端空 medias 覆盖
-  const newTrackId = trackList.value[activeTrackIndex.value]?.id;
-  if (newTrackId != null && uploadBoxCache.value.has(newTrackId)) {
-    uploadBox.value = uploadBoxCache.value.get(newTrackId)!.map((item) => ({ ...item }));
-  } else {
-    syncMediasToUploadBox();
-  }
+  syncMediasToUploadBox();
   getVideoList();
 }
 
-/** 切换轨道：保存旧轨道缓存，加载新轨道数据 */
+/** 切换轨道：加载新轨道数据 */
 function changeTrack(index: number) {
-  const currentTrackId = trackList.value[activeTrackIndex.value]?.id;
-  if (currentTrackId != null) {
-    uploadBoxCache.value.set(
-      currentTrackId,
-      uploadBox.value.map((item) => ({ ...item })),
-    );
-  }
   activeTrackIndex.value = index;
 }
 
@@ -524,13 +515,7 @@ watch(
 // 切换轨道时加载新轨道状态
 watch(activeTrackIndex, () => {
   userSelectedDuration.value = false;
-  // 优先从缓存恢复当前轨道的 uploadBox，无缓存时才从 track.medias 同步
-  const newTrackId = trackList.value[activeTrackIndex.value]?.id;
-  if (newTrackId != null && uploadBoxCache.value.has(newTrackId)) {
-    uploadBox.value = uploadBoxCache.value.get(newTrackId)!.map((item) => ({ ...item }));
-  } else {
-    syncMediasToUploadBox();
-  }
+  syncMediasToUploadBox();
   restoreActiveTrackSelection();
 });
 
@@ -651,7 +636,6 @@ watch(
 // 模块三：上传框（uploadBox）管理
 
 const uploadBox = ref<UploadItem[]>([]); // 当前轨道的上传框列表
-const uploadBoxCache = ref<Map<number, UploadItem[]>>(new Map()); // 每个轨道 uploadBox 的缓存（key: trackId）
 const uploadBoxSnapshot = ref<UploadItem[]>([]); // 切换模式时的快照，用于恢复资源
 const userEditedUploadBox = ref(false); // 用户是否手动编辑过上传框
 const pendingIndex = ref(-1); // 待选分镜对应的 uploadBox 索引
@@ -693,14 +677,12 @@ function buildUploadBox(value: string): UploadItem[] {
   return (modeUploadMap[currentMode] || []).map((item) => ({ ...item }));
 }
 
-/** 将当前轨道的 uploadBox 存入缓存，并将有效 medias 持久化到后端 */
+/** 将当前轨道的 uploadBox 持久化到后端 */
 function saveUploadBoxToCache() {
   const track = trackList.value[activeTrackIndex.value];
   const trackId = track?.id;
   if (trackId == null) return;
-  const snapshot = uploadBox.value.map((item) => ({ ...item }));
-  uploadBoxCache.value.set(trackId, snapshot);
-  const validMedias = snapshot
+  const validMedias = uploadBox.value
     .filter((item) => Boolean(item.src))
     .map((item) => ({
       src: item.src!,
@@ -968,18 +950,11 @@ async function genText() {
  */
 function getTrackUploadInfo(track: TrackItem, filterEmpty = false): { id?: number; sources: string }[] {
   const activeTrackId = trackList.value[activeTrackIndex.value]?.id;
-  let items: UploadItem[];
   if (track.id === activeTrackId) {
-    items = uploadBox.value;
-  } else {
-    const cached = uploadBoxCache.value.get(track.id);
-    if (cached) {
-      items = cached;
-    } else {
-      return track.medias.filter((m) => !filterEmpty || Boolean(m.src)).map(({ id, sources }) => ({ id, sources: sources ?? "storyboard" }));
-    }
+    const items = uploadBox.value;
+    return (filterEmpty ? items.filter((item) => Boolean(item.src)) : items).map(({ id, sources }) => ({ id, sources }));
   }
-  return (filterEmpty ? items.filter((item) => Boolean(item.src)) : items).map(({ id, sources }) => ({ id, sources }));
+  return track.medias.filter((m) => !filterEmpty || Boolean(m.src)).map(({ id, sources }) => ({ id, sources: sources ?? "storyboard" }));
 }
 
 /** 批量为已勾选轨道生成提示词 */
