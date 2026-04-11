@@ -35,6 +35,11 @@
             <span class="idBox">#{{ currentVendor.id }}</span>
             <span class="author">@{{ currentVendor.author }}</span>
           </div>
+          <t-alert
+            v-if="needsUpdate(currentVendor)"
+            theme="warning"
+            :message="$t('settings.vendor.msg.vendorNeedsUpdate')"
+            style="margin-bottom: 12px" />
           <t-form-item>
             <MdPreview v-model="currentVendor.description" :theme="themeSetting.mode" />
           </t-form-item>
@@ -167,8 +172,12 @@
                 <t-checkbox-group v-model="modelFormData.mode">
                   <t-checkbox v-for="opt in videoModeOptions" :key="opt.value" :value="opt.value">{{ $t(opt.label) }}</t-checkbox>
                 </t-checkbox-group>
-                <div v-if="modelFormData.mode.includes('multiReference')" style="border: 1px solid #ddd; border-radius: 6px; padding: 6px 12px; margin-top: 6px">
-                  <t-checkbox-group v-model="modelFormData.mixedMode" style="display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; align-items: center">
+                <div
+                  v-if="modelFormData.mode.includes('multiReference')"
+                  style="border: 1px solid #ddd; border-radius: 6px; padding: 6px 12px; margin-top: 6px">
+                  <t-checkbox-group
+                    v-model="modelFormData.mixedMode"
+                    style="display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; align-items: center">
                     <template v-for="opt in referenceOptions" :key="opt.value">
                       <t-checkbox :value="opt.value">{{ $t(opt.label) }}</t-checkbox>
                       <t-input-number
@@ -363,7 +372,7 @@ interface VideoModel {
     | "endFrameOptional"
     | "startFrameOptional"
     | "text"
-    | (`videoReference:${number}` | `imageReference:${number}` | `audioReference:${number}`)[] 
+    | (`videoReference:${number}` | `imageReference:${number}` | `audioReference:${number}`)[]
   )[];
   audio: "optional" | false | true;
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
@@ -395,6 +404,7 @@ interface VendorItem {
   model?: VendorModel[];
   models?: VendorModel[];
   enable: number; //1启用 0禁用
+  version?: string;
 }
 
 // ── 常量 ──
@@ -550,6 +560,12 @@ function isValidBase64(str?: string): boolean {
   return base64Regex.test(str) && str.length > 0;
 }
 
+function needsUpdate(vendor: VendorItem): boolean {
+  if (!vendor.version) return true;
+  const ver = parseFloat(vendor.version);
+  return isNaN(ver) || ver < 2.0;
+}
+
 function getModelLogo(modelName: string): string | null {
   if (!modelName) return null;
   const rule = modelProviderRules.find((r) => r.pattern.test(modelName));
@@ -559,11 +575,7 @@ function getModelLogo(modelName: string): string | null {
 function buildVendorUpdatePayload(vendor: VendorItem) {
   return {
     id: vendor.id,
-    name: vendor.name,
-    icon: vendor.icon,
-    inputs: vendor.inputs,
     inputValues: vendor.inputValues,
-    models: vendor.models ?? vendor.model ?? [],
   };
 }
 
@@ -594,7 +606,7 @@ async function handleAutoUpdateVendor() {
 
   autoUpdating.value = true;
   try {
-    await axios.post("/setting/vendorConfig/updateVendor", buildVendorUpdatePayload(currentVendor.value));
+    await axios.post("/setting/vendorConfig/updateVendorInputs", buildVendorUpdatePayload(currentVendor.value));
     lastSavedSnapshot.value = snapshot;
   } catch (err: any) {
     window.$message.error(`${$t("settings.vendor.msg.updateFailed")}${err.message}`);
@@ -719,6 +731,7 @@ function handleConfirmVendor() {
 // ── 模型弹窗 ──
 const modelDialogVisible = ref(false);
 const editingModelIndex = ref<number | null>(null);
+const editingModelName = ref<string | null>(null);
 interface DrmRow {
   duration: string[];
   resolution: string[];
@@ -843,7 +856,7 @@ function handleAddModel() {
   modelDialogVisible.value = true;
 }
 
-function handleConfirmModel() {
+async function handleConfirmModel() {
   const list = ensureVendorModels();
   if (!list.length && !currentVendor.value) return;
 
@@ -862,19 +875,39 @@ function handleConfirmModel() {
   }
 
   if (editingModelIndex.value === null) {
-    list.push(model);
-    window.$message.success($t("settings.vendor.msg.modelAdded"));
+    try {
+      await axios.post("/setting/vendorConfig/addVendorModel", {
+        id: currentVendor.value!.id,
+        model,
+      });
+      window.$message.success($t("settings.vendor.msg.modelAdded"));
+      modelDialogVisible.value = false;
+      getVendorList();
+    } catch (err: any) {
+      window.$message.error(err.message ?? $t("settings.vendor.msg.operationFailed"));
+    }
+    return;
   }
   if (editingModelIndex.value !== null) {
-    list.splice(editingModelIndex.value, 1, model);
-    window.$message.success($t("settings.vendor.msg.modelUpdated"));
+    try {
+      await axios.post("/setting/vendorConfig/upVendorModel", {
+        id: currentVendor.value!.id,
+        modelName: editingModelName.value,
+        model,
+      });
+      window.$message.success($t("settings.vendor.msg.modelUpdated"));
+      modelDialogVisible.value = false;
+      getVendorList();
+    } catch (err: any) {
+      window.$message.error(err.message ?? $t("settings.vendor.msg.operationFailed"));
+    }
   }
-  modelDialogVisible.value = false;
 }
 
 function handleEditModel(model: VendorModel) {
   const list = ensureVendorModels();
   editingModelIndex.value = list.findIndex((item) => item.modelName === model.modelName);
+  editingModelName.value = model.modelName;
 
   if (model.type === "text") {
     modelFormData.value = {
@@ -984,13 +1017,19 @@ function handleDeleteModel(modelName: string) {
     body: `${$t("settings.vendor.msg.deleteModelBody", { name: modelName })}`,
     confirmBtn: { content: $t("settings.vendor.msg.confirmDelete"), theme: "danger" },
     cancelBtn: $t("settings.vendor.msg.cancel"),
-    onConfirm: () => {
-      const list = ensureVendorModels();
-      const nextList = list.filter((item) => item.modelName !== modelName);
-      currentVendor.value!.models = nextList;
-      currentVendor.value!.model = nextList;
-      window.$message.success($t("settings.vendor.msg.modelDeleted"));
-      confirmDialog.destroy();
+    onConfirm: async () => {
+      try {
+        await axios.post("/setting/vendorConfig/delVendorModel", {
+          id: currentVendor.value!.id,
+          modelName,
+        });
+        window.$message.success($t("settings.vendor.msg.modelDeleted"));
+        getVendorList();
+      } catch (err: any) {
+        window.$message.error(err.message ?? $t("settings.vendor.msg.operationFailed"));
+      } finally {
+        confirmDialog.destroy();
+      }
     },
   });
 }
@@ -1027,11 +1066,9 @@ function handleDeleteVendor() {
 }
 function onBlurFn() {
   axios
-    .post("/setting/vendorConfig/updateVendor", {
+    .post("/setting/vendorConfig/updateVendorInputs", {
       id: currentVendor.value?.id,
-      inputs: currentVendor.value?.inputs,
       inputValues: currentVendor.value?.inputValues,
-      models: currentVendor.value?.models ?? currentVendor.value?.model ?? [],
     })
     .then(() => {
       window.$message.success($t("settings.vendor.msg.vendorConfigUpdated"));

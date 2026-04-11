@@ -166,6 +166,7 @@
         "deleteVendorConfirm": "Confirm Provider Deletion",
         "deleteVendorBody": "Deleting this provider will also delete all its associated models. Do you want to continue?",
         "vendorDeleted": "Provider deleted",
+        "vendorNeedsUpdate": "This provider version is outdated or missing. Please update to version 2.0 or above for the best experience.",
         "deleteFailed": "Deletion failed",
         "enabled": "Enabled",
         "disabled": "Disabled",

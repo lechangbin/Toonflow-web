@@ -101,7 +101,12 @@
           <div class="videoData">
             <div class="modeOpt f w">
               <template v-if="isMixedMode">
-                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="!item.src && handleMixedAdd()" v-show="item.id">
+                <div
+                  class="uploadBtn c fc"
+                  v-for="(item, index) in uploadMixComputed"
+                  :key="index"
+                  @click="!item.src && handleMixedAdd()"
+                  v-show="item.id">
                   <template v-if="item.src && item.id">
                     <img v-if="item.fileType === 'image'" :src="item.src" class="uploadPreview" />
                     <div v-else class="uploadPreview c">
@@ -127,12 +132,16 @@
                 </div>
               </template>
               <template v-else>
-                <div class="uploadBtn c fc" v-for="(item, index) in uploadBox" :key="index" @click="handleSelectSource(index)" v-show="item.id">
+                <div class="uploadBtn c fc" v-for="(item, index) in uploadBoxComputed" :key="index" @click="handleSelectSource(index)">
                   <template v-if="item.src && item.id">
                     <img :src="item.src" class="uploadPreview" />
                   </template>
                   <template v-else-if="item.id">
                     <span style="font-size: 20px">文</span>
+                  </template>
+                  <template v-else>
+                    <i-plus size="24"></i-plus>
+                    {{ item.label }}
                   </template>
                   <div class="clearBtn" @click.stop="clearUpload(index)">
                     <i-close size="12" />
@@ -294,13 +303,29 @@ import projectStore from "@/stores/project";
 // 类型定义
 // ============================================================
 
-interface TrackMedia {
+interface TrackMediaBase {
   src: string;
   id?: number;
   prompt?: string;
   fileType: "image" | "video" | "audio";
-  sources?: "assets" | "storyboard";
+  slotType?: Type; // 本地保存时记录的 slot 类型，用于切换轨道时精确还原位置
+  index?: number;
 }
+
+interface TrackMediaStoryboard extends TrackMediaBase {
+  sources: "storyboard";
+  index?: number;
+}
+
+interface TrackMediaAssets extends TrackMediaBase {
+  sources: "assets";
+}
+
+interface TrackMediaUnknown extends TrackMediaBase {
+  sources?: string;
+}
+
+type TrackMedia = TrackMediaStoryboard | TrackMediaAssets | TrackMediaUnknown;
 
 interface VideoItem {
   id: number;
@@ -347,15 +372,30 @@ interface StoryboardItem {
   trackId?: number | null;
 }
 
-interface UploadItem {
+interface UploadItemBase {
   fileType: "image" | "video" | "audio";
   type: Type;
-  sources: "assets" | "storyboard";
   id?: number;
   src?: string;
   label?: string;
   prompt?: string;
 }
+
+interface UploadItemStoryboard extends UploadItemBase {
+  sources: "storyboard";
+  index?: number;
+}
+
+interface UploadItemAssets extends UploadItemBase {
+  sources: "assets";
+}
+
+/** 纯骨架槽位（尚未选择来源），sources 为 undefined */
+interface UploadItemSlot extends UploadItemBase {
+  sources?: undefined;
+}
+
+type UploadItem = UploadItemStoryboard | UploadItemAssets | UploadItemSlot;
 
 type ReferenceType = "videoReference" | "imageReference" | "audioReference" | "textReference";
 type Type = "imageReference" | "startImage" | "endImage" | "videoReference" | "audioReference";
@@ -425,25 +465,39 @@ async function getGenerateData() {
   }
 
   storyboardList.value = data.storyboardList;
-  // 刷新后，对于已有缓存的轨道直接恢复 uploadBox，避免被后端空 medias 覆盖
-  const newTrackId = trackList.value[activeTrackIndex.value]?.id;
-  if (newTrackId != null && uploadBoxCache.value.has(newTrackId)) {
-    uploadBox.value = uploadBoxCache.value.get(newTrackId)!.map((item) => ({ ...item }));
-  } else {
-    syncMediasToUploadBox();
-  }
+  syncMediasToUploadBox();
   getVideoList();
 }
+/** 混合模式下对 uploadBox 排序：assets 有内容 → storyboard 有内容 → 无内容（空槽） */
+const uploadMixComputed = computed(() => {
+  const getPriority = (item: UploadItem) => {
+    if (item.src && item.sources === "assets") return 0;
+    if (item.src && item.sources === "storyboard") return 1;
+    return 2;
+  };
+  return [...(uploadBox.value as UploadItem[])].sort((a, b) => {
+    const pa = getPriority(a);
+    const pb = getPriority(b);
+    if (pa !== pb) return pa - pb;
+    // 同为 storyboard 时，按 index 从小到大排序
+    if (a.sources === "storyboard" && b.sources === "storyboard") {
+      return ((a as UploadItemStoryboard).index ?? Infinity) - ((b as UploadItemStoryboard).index ?? Infinity);
+    }
+    return 0;
+  });
+});
+/** 非混合模式下对 uploadBox 排序：storyboard 按 index 从小到大 */
+const uploadBoxComputed = computed(() => {
+  return [...(uploadBox.value as UploadItem[])].sort((a, b) => {
+    if (a.sources === "storyboard" && b.sources === "storyboard") {
+      return ((a as UploadItemStoryboard).index ?? Infinity) - ((b as UploadItemStoryboard).index ?? Infinity);
+    }
+    return 0;
+  });
+});
 
-/** 切换轨道：保存旧轨道缓存，加载新轨道数据 */
+/** 切换轨道：加载新轨道数据 */
 function changeTrack(index: number) {
-  const currentTrackId = trackList.value[activeTrackIndex.value]?.id;
-  if (currentTrackId != null) {
-    uploadBoxCache.value.set(
-      currentTrackId,
-      uploadBox.value.map((item) => ({ ...item })),
-    );
-  }
   activeTrackIndex.value = index;
 }
 
@@ -524,13 +578,8 @@ watch(
 // 切换轨道时加载新轨道状态
 watch(activeTrackIndex, () => {
   userSelectedDuration.value = false;
-  // 优先从缓存恢复当前轨道的 uploadBox，无缓存时才从 track.medias 同步
-  const newTrackId = trackList.value[activeTrackIndex.value]?.id;
-  if (newTrackId != null && uploadBoxCache.value.has(newTrackId)) {
-    uploadBox.value = uploadBoxCache.value.get(newTrackId)!.map((item) => ({ ...item }));
-  } else {
-    syncMediasToUploadBox();
-  }
+  uploadBoxSnapshot.value = []; // 清空快照，避免残留上一个轨道的图片
+  syncMediasToUploadBox();
   restoreActiveTrackSelection();
 });
 
@@ -626,7 +675,6 @@ watch(selectModel, (val) => {
   }
   axios.post("/modelSelect/getModelDetail", { modelId: val }).then(({ data }) => {
     modeOptions.value = data;
-    selectMode.value = Array.isArray(data?.mode[0]) ? JSON.stringify(data.mode[0]) : data?.mode[0];
     selectedAudio.value = data.audio === true || data.audio === "true";
     const drMap = data.durationResolutionMap;
     if (Array.isArray(drMap) && drMap.length > 0) {
@@ -651,36 +699,35 @@ watch(
 // 模块三：上传框（uploadBox）管理
 
 const uploadBox = ref<UploadItem[]>([]); // 当前轨道的上传框列表
-const uploadBoxCache = ref<Map<number, UploadItem[]>>(new Map()); // 每个轨道 uploadBox 的缓存（key: trackId）
 const uploadBoxSnapshot = ref<UploadItem[]>([]); // 切换模式时的快照，用于恢复资源
 const userEditedUploadBox = ref(false); // 用户是否手动编辑过上传框
 const pendingIndex = ref(-1); // 待选分镜对应的 uploadBox 索引
 const storyboardDialogVisible = ref(false); // 分镜选择弹窗显示状态
 
 /** 根据模式值构建空的 uploadBox 结构 */
-function buildUploadBox(value: string): UploadItem[] {
+function buildUploadBox(value: string): UploadItemSlot[] {
   const currentMode = parseMode(value);
   if (!currentMode) return [];
 
-  const referenceUploadMap: Record<Exclude<ReferenceType, "textReference">, UploadItem> = {
-    videoReference: { fileType: "video", type: "videoReference", sources: "storyboard", label: "参考视频" },
-    imageReference: { fileType: "image", type: "imageReference", sources: "storyboard", label: "参考图片" },
-    audioReference: { fileType: "audio", type: "audioReference", sources: "storyboard", label: "参考音频" },
+  const referenceUploadMap: Record<Exclude<ReferenceType, "textReference">, UploadItemSlot> = {
+    videoReference: { fileType: "video", type: "videoReference", label: "参考视频" },
+    imageReference: { fileType: "image", type: "imageReference", label: "参考图片" },
+    audioReference: { fileType: "audio", type: "audioReference", label: "参考音频" },
   };
 
-  const modeUploadMap: Record<Exclude<VideoMode, ReferenceType[]>, UploadItem[]> = {
-    singleImage: [{ fileType: "image", type: "imageReference", sources: "storyboard", label: "参考图片" }],
+  const modeUploadMap: Record<Exclude<VideoMode, ReferenceType[]>, UploadItemSlot[]> = {
+    singleImage: [{ fileType: "image", type: "imageReference", label: "参考图片" }],
     startEndRequired: [
-      { fileType: "image", type: "startImage", sources: "storyboard", label: "首帧" },
-      { fileType: "image", type: "endImage", sources: "storyboard", label: "末帧" },
+      { fileType: "image", type: "startImage", label: "首帧" },
+      { fileType: "image", type: "endImage", label: "末帧" },
     ],
     endFrameOptional: [
-      { fileType: "image", type: "startImage", sources: "storyboard", label: "首帧" },
-      { fileType: "image", type: "endImage", sources: "storyboard", label: "末帧(可选)" },
+      { fileType: "image", type: "startImage", label: "首帧" },
+      { fileType: "image", type: "endImage", label: "末帧(可选)" },
     ],
     startFrameOptional: [
-      { fileType: "image", type: "startImage", sources: "storyboard", label: "首帧(可选)" },
-      { fileType: "image", type: "endImage", sources: "storyboard", label: "末帧" },
+      { fileType: "image", type: "startImage", label: "首帧(可选)" },
+      { fileType: "image", type: "endImage", label: "末帧" },
     ],
     text: [],
   };
@@ -688,33 +735,37 @@ function buildUploadBox(value: string): UploadItem[] {
   if (Array.isArray(currentMode)) {
     return currentMode
       .filter((item): item is Exclude<ReferenceType, "textReference"> => item !== "textReference")
-      .map((item) => ({ ...referenceUploadMap[item] }));
+      .map((item) => ({ ...referenceUploadMap[item] })) as UploadItemSlot[];
   }
-  return (modeUploadMap[currentMode] || []).map((item) => ({ ...item }));
+  return (modeUploadMap[currentMode] || []).map((item) => ({ ...item })) as UploadItemSlot[];
 }
 
-/** 将当前轨道的 uploadBox 存入缓存，并将有效 medias 持久化到后端 */
+/** 将当前轨道的 uploadBox 持久化到后端 */
 function saveUploadBoxToCache() {
   const track = trackList.value[activeTrackIndex.value];
   const trackId = track?.id;
   if (trackId == null) return;
-  const snapshot = uploadBox.value.map((item) => ({ ...item }));
-  uploadBoxCache.value.set(trackId, snapshot);
-  const validMedias = snapshot
-    .filter((item) => Boolean(item.src))
-    .map((item) => ({
-      src: item.src!,
+  if (isMixedMode.value) {
+    // 混合模式：只保留有 src 的项（无位置概念）
+    track.medias = (uploadBox.value as UploadItem[])
+      .map((item) => ({
+        src: item.src!,
+        id: item.id,
+        prompt: item.prompt,
+        fileType: item.fileType,
+        sources: (item.sources ?? "storyboard") as string,
+      })) as TrackMedia[];
+  } else {
+    // 非混合模式：保留所有 slot（含空项），以 type 作为位置标识，避免切换轨道时错位
+    track.medias = (uploadBox.value as UploadItem[]).map((item) => ({
+      src: item.src ?? "",
       id: item.id,
       prompt: item.prompt,
       fileType: item.fileType,
-      sources: item.sources,
-    }));
-  track.medias = validMedias;
-  // 持久化到后端
-  axios.post("/production/workbench/updateVideoPrompt", {
-    id: trackId,
-    medias: validMedias,
-  });
+      sources: (item.sources ?? "storyboard") as string,
+      slotType: item.type, // 额外记录 slot 类型，用于恢复时精确匹配
+    })) as TrackMedia[];
+  }
 }
 
 /** 将当前轨道的 medias 同步到 uploadBox */
@@ -726,38 +777,65 @@ function syncMediasToUploadBox() {
     const baseBox = buildUploadBox(selectMode.value || "");
     const filledBox: UploadItem[] = baseBox.map((slot, i) => {
       const media = medias[i];
-      if (!media) return { ...slot };
+      if (!media) return { ...slot } as UploadItem;
+      const src = media.sources as "storyboard" | "assets" | undefined;
       return {
         ...slot,
         fileType: media.fileType,
         type: (refTypeMap[media.fileType] ?? "imageReference") as Type,
-        sources: media.sources ?? slot.sources,
+        sources: src ?? "storyboard",
         src: media.src || undefined,
         id: media.id,
         prompt: media.prompt,
-      };
+        ...(src === "storyboard" ? { index: (media as TrackMediaStoryboard).index } : {}),
+      } as UploadItem;
     });
     for (let i = baseBox.length; i < medias.length; i++) {
       const m = medias[i];
       if (!m) continue;
+      const src = m.sources as "storyboard" | "assets" | undefined;
       filledBox.push({
         fileType: m.fileType,
         type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
-        sources: m.sources!,
+        sources: src ?? "storyboard",
         src: m.src,
         id: m.id,
         prompt: m.prompt,
         label: "",
-      });
+        ...(src === "storyboard" ? { index: (m as TrackMediaStoryboard).index } : {}),
+      } as UploadItem);
     }
     uploadBox.value = filledBox;
   } else {
-    // 非混合模式：按位置映射
-    uploadBox.value = uploadBox.value.map((item, i) => {
-      const media = medias[i];
-      if (media?.src) return { ...item, src: media.src, id: media.id, prompt: media.prompt, sources: media.sources ?? item.sources };
-      return { ...item, src: undefined, id: undefined, prompt: undefined };
-    });
+    // 非混合模式：先重建骨架，再填充 medias 数据
+    const baseBox = buildUploadBox(selectMode.value || "");
+    // 判断是否为新格式（本地保存过，含 slotType）还是旧格式（后端返回的压缩数组，无 slotType）
+    const hasSlotType = medias.some((m: any) => m.slotType);
+    if (hasSlotType) {
+      // 新格式：按 slotType 精确匹配，每个 slot 独立对应
+      uploadBox.value = baseBox.map((slot) => {
+        const media = medias.find((m: any) => m.slotType === slot.type);
+        if (media?.src) {
+          const mediaSrc = media.sources as "storyboard" | "assets" | undefined;
+          return { ...slot, src: media.src, id: media.id, prompt: media.prompt, sources: mediaSrc ?? "storyboard" } as UploadItem;
+        }
+        return { ...slot } as UploadItem;
+      });
+    } else {
+      // 旧格式：medias 是压缩有序数组（只含有 src 的项），按 fileType 顺序匹配
+      // 用已消费集合避免多个同类型 slot（如首帧/尾帧都是 image）重复取同一条 media
+      const usedIndices = new Set<number>();
+      uploadBox.value = baseBox.map((slot) => {
+        const mediaIdx = medias.findIndex((m: any, i: number) => !usedIndices.has(i) && m.fileType === slot.fileType && m.src);
+        if (mediaIdx !== -1) {
+          usedIndices.add(mediaIdx);
+          const media = medias[mediaIdx];
+          const mediaSrc = media.sources as "storyboard" | "assets" | undefined;
+          return { ...slot, src: media.src, id: media.id, prompt: media.prompt, sources: mediaSrc ?? "storyboard" } as UploadItem;
+        }
+        return { ...slot } as UploadItem;
+      });
+    }
   }
 }
 
@@ -769,7 +847,7 @@ function clearUpload(index: number) {
   if (isMixedMode.value) {
     uploadBox.value.splice(index, 1);
   } else {
-    uploadBox.value[index] = { ...item, sources: "storyboard", src: undefined, id: undefined, prompt: undefined };
+    uploadBox.value[index] = { ...item, sources: undefined, src: undefined, id: undefined, prompt: undefined } as UploadItem;
   }
   saveUploadBoxToCache();
 }
@@ -810,9 +888,24 @@ function handleMixedAdd() {
       const assets = await assetsCheck({ types: ["role", "tool", "scene", "clip"], clipMediaTypes: mixedClipMediaTypes.value, multiple: true });
       if (!assets.length) return;
       userEditedUploadBox.value = true;
-      for (const asset of assets) {
+      let insertIndex = -1;
+      for (let i = uploadBox.value.length - 1; i >= 0; i--) {
+        if (uploadBox.value[i].src && uploadBox.value[i].sources === "assets") {
+          insertIndex = i + 1;
+          break;
+        }
+      }
+      if (insertIndex === -1) {
+        for (let i = uploadBox.value.length - 1; i >= 0; i--) {
+          if (uploadBox.value[i].src) {
+            insertIndex = i + 1;
+            break;
+          }
+        }
+      }
+      const newItems: UploadItem[] = assets.map((asset) => {
         const fileType = getFileTypeByExt(asset.src);
-        uploadBox.value.push({
+        return {
           fileType,
           type: refTypeMap[fileType] as Type,
           sources: "assets",
@@ -820,7 +913,13 @@ function handleMixedAdd() {
           id: asset.id,
           prompt: asset.prompt,
           label: "",
-        });
+        };
+      });
+      if (insertIndex === -1) {
+        // 没有已有的 assets 项，直接追加到末尾
+        uploadBox.value.push(...newItems);
+      } else {
+        uploadBox.value.splice(insertIndex, 0, ...newItems);
       }
       saveUploadBoxToCache();
     },
@@ -846,52 +945,94 @@ function pickStoryboard(sb: StoryboardItem) {
       id: sb.id,
       prompt: sb.prompt ?? undefined,
       label: "",
+      index: sb.index,
     });
     saveUploadBoxToCache();
     return;
   }
   const item = uploadBox.value[pendingIndex.value];
   if (!item) return;
-  uploadBox.value[pendingIndex.value] = { ...item, sources: "storyboard", src: sb.src, id: sb.id, prompt: sb.prompt ?? undefined };
+  uploadBox.value[pendingIndex.value] = { ...item, sources: "storyboard", src: sb.src, id: sb.id, prompt: sb.prompt ?? undefined, index: sb.index };
   saveUploadBoxToCache();
 }
 
-// 切换模式：重建 uploadBox
+// 切换模式：重建 uploadBox，同时将已有图片按顺序填入对应槽位
 watch(selectMode, (val) => {
   if (!val) return void (uploadBox.value = []);
   const oldBox = uploadBox.value;
   const activeTrack = trackList.value[activeTrackIndex.value];
+
+  // 构建快照：将当前 uploadBox 中有 src 的项与已有快照合并（去重），保证历史图片不丢失
+  // 场景：3张图 → 单图（只用1张）→ 首尾帧，此时快照仍需保留原来的3张
+  const mergeIntoSnapshot = (incoming: UploadItem[]) => {
+    const existing = uploadBoxSnapshot.value;
+    const result = [...existing];
+    for (const item of incoming) {
+      // 以 id 或 src 为唯一标识去重（无 src 的纯文本项也保留）
+      const isDup = item.src
+        ? result.some((r) => r.src === item.src)
+        : item.id != null && result.some((r) => r.id === item.id);
+      if (!isDup) result.push({ ...item });
+    }
+    uploadBoxSnapshot.value = result;
+  };
+
   if (oldBox.some((item) => item.src)) {
-    uploadBoxSnapshot.value = oldBox.map((item) => ({ ...item }));
-  } else if (activeTrack?.medias?.length) {
-    uploadBoxSnapshot.value = activeTrack.medias.map((m) => ({
-      fileType: m.fileType,
-      type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
-      sources: m.sources ?? "storyboard",
-      src: m.src,
-      id: m.id,
-      prompt: m.prompt,
-      label: "",
-    }));
+    mergeIntoSnapshot(oldBox as UploadItem[]);
+  } else if (activeTrack?.medias?.length && uploadBoxSnapshot.value.length === 0) {
+    // 仅在快照为空时才从 track.medias 初始化（避免覆盖已有快照）
+    uploadBoxSnapshot.value = activeTrack.medias
+      .map((m: any) => ({
+        fileType: m.fileType,
+        type: (refTypeMap[m.fileType] ?? "imageReference") as Type,
+        sources: (m.sources ?? "storyboard") as "storyboard" | "assets",
+        src: m.src,
+        id: m.id,
+        prompt: m.prompt,
+        label: "",
+        ...(m.sources === "storyboard" ? { index: m.index } : {}),
+      })) as UploadItem[];
   }
 
   const newBox = buildUploadBox(val);
   const newParsedMode = parseMode(val);
   if (Array.isArray(newParsedMode)) {
-    // 混合模式：保留旧 uploadBox
-    uploadBox.value = oldBox;
+    // 混合模式：用快照中所有项填充（包含没有 src 的纯文本项），保证历史内容都显示出来
+    if (uploadBoxSnapshot.value.length > 0) {
+      uploadBox.value = uploadBoxSnapshot.value.map((item) => ({ ...item })) as UploadItem[];
+    } else {
+      uploadBox.value = oldBox;
+    }
   } else {
-    // 非混合模式：从快照中按文件类型匹配填充
-    const sourceItems = uploadBoxSnapshot.value;
-    const usedIndices = new Set<number>();
+    // 非混合模式：从快照中按文件类型顺序填充，只取图片类资源填入图片槽
+    // 过滤出快照中有 src 且 fileType 为 image 的项（按原始顺序）
+    const imageItems = uploadBoxSnapshot.value.filter((item) => item.src && item.fileType === "image");
+    let imageIdx = 0;
     uploadBox.value = newBox.map((slot) => {
-      const matchIdx = sourceItems.findIndex((old, i) => !usedIndices.has(i) && old.fileType === slot.fileType);
-      if (matchIdx !== -1) {
-        usedIndices.add(matchIdx);
-        const old = sourceItems[matchIdx];
-        return { ...slot, src: old.src, id: old.id, prompt: old.prompt, sources: old.sources ?? slot.sources };
+      if (slot.fileType === "image" && imageIdx < imageItems.length) {
+        const matched = imageItems[imageIdx++];
+        return {
+          ...slot,
+          src: matched.src,
+          id: matched.id,
+          prompt: matched.prompt,
+          sources: (matched.sources ?? "storyboard") as "storyboard" | "assets",
+          ...(matched.sources === "storyboard" ? { index: (matched as UploadItemStoryboard).index } : {}),
+        } as UploadItem;
       }
-      return slot;
+      // 非图片槽（video/audio）也尝试按类型匹配
+      const otherItems = uploadBoxSnapshot.value.filter((item) => item.src && item.fileType === slot.fileType && item.fileType !== "image");
+      if (otherItems.length > 0) {
+        const matched = otherItems[0];
+        return {
+          ...slot,
+          src: matched.src,
+          id: matched.id,
+          prompt: matched.prompt,
+          sources: (matched.sources ?? "storyboard") as "storyboard" | "assets",
+        } as UploadItem;
+      }
+      return { ...slot } as UploadItem;
     });
   }
   userEditedUploadBox.value = false;
@@ -968,18 +1109,14 @@ async function genText() {
  */
 function getTrackUploadInfo(track: TrackItem, filterEmpty = false): { id?: number; sources: string }[] {
   const activeTrackId = trackList.value[activeTrackIndex.value]?.id;
-  let items: UploadItem[];
   if (track.id === activeTrackId) {
-    items = uploadBox.value;
-  } else {
-    const cached = uploadBoxCache.value.get(track.id);
-    if (cached) {
-      items = cached;
-    } else {
-      return track.medias.filter((m) => !filterEmpty || Boolean(m.src)).map(({ id, sources }) => ({ id, sources: sources ?? "storyboard" }));
-    }
+    const items = uploadBox.value as UploadItem[];
+    return (filterEmpty ? items.filter((item) => Boolean(item.src)) : items).map(({ id, sources }) => ({
+      id,
+      sources: (sources ?? "storyboard") as string,
+    }));
   }
-  return (filterEmpty ? items.filter((item) => Boolean(item.src)) : items).map(({ id, sources }) => ({ id, sources }));
+  return track.medias.filter((m) => !filterEmpty || Boolean(m.src)).map(({ id, sources }) => ({ id, sources: (sources ?? "storyboard") as string }));
 }
 
 /** 批量为已勾选轨道生成提示词 */

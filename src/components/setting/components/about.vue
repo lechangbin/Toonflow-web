@@ -63,7 +63,7 @@
     <div class="license">
       <span>{{ $t("settings.about.license") }}</span>
       <t-card bordered :style="{ width: '100%' }" class="logoCard">
-        <div class="ac jb" style="cursor: pointer">
+        <div class="ac jb" style="cursor: pointer" @click="openLink('https://github.com/HBAI-Ltd/Toonflow-app?tab=Apache-2.0-1-ov-file')">
           <div class="f">
             <div class="data">
               <i-notes fill="#000" theme="outline" size="20" class="c" style="width: 100%; height: 100%" />
