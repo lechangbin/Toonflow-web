@@ -238,15 +238,21 @@ function editStoryboaryImage(item: Storyboard, images: string[], insertAfterInde
 
     if (item.associateAssetsIds && item.associateAssetsIds.length > 0) {
       const assetsImages: string[] = [];
-      for (const asset of props.assetsData) {
-        if (item.associateAssetsIds.includes(asset.id) && asset.src) {
-          assetsImages.push(asset.src);
+      for (const id of item.associateAssetsIds) {
+        // 先查顶层 asset
+        const asset = props.assetsData.find((a) => a.id === id);
+        if (asset) {
+          if (asset.src) assetsImages.push(asset.src);
+          continue;
         }
-        asset.derive?.forEach((d) => {
-          if (item?.associateAssetsIds!.includes(d.id) && d.src) {
-            assetsImages.push(d.src);
+        // 再查 derive
+        for (const a of props.assetsData) {
+          const derive = a.derive?.find((d) => d.id === id);
+          if (derive) {
+            if (derive.src) assetsImages.push(derive.src);
+            break;
           }
-        });
+        }
       }
       imagesPush = imagesPush.concat(assetsImages);
     }
