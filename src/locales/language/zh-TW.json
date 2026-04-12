@@ -808,7 +808,10 @@
         }
       },
       "deleteScript": "大量刪除劇本",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "自訂劇本拆分正規，留空使用預設拆分正規（預設按 第X集 格式拆分）"
+      }
     },
     "assets": {
       "addPrefix": "新增",

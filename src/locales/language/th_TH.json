@@ -805,7 +805,10 @@
         }
       },
       "deleteScript": "ลบสคริปต์เป็นชุด",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "ปรับแต่งกฎการแยกสคริปต์ ปล่อยว่างไว้เพื่อใช้กฎการแยกเริ่มต้น (ค่าเริ่มต้นคือการแบ่งตามรูปแบบ Episode X)"
+      }
     },
     "assets": {
       "addPrefix": "เพิ่ม",

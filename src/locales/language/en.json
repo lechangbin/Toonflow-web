@@ -940,7 +940,10 @@
         }
       },
       "deleteScript": "Delete scripts in batches",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "Customize the script splitting rule, leave it blank to use the default splitting rule (the default is to split according to the Episode X format)"
+      }
     },
     "assets": {
       "addPrefix": "Add",

@@ -981,7 +981,11 @@
         }
       },
       "deleteScript": "批量删除剧本",
-      "extractAssets": "提取资产"
+      "extractAssets": "提取资产",
+      "import": {
+        "getAiRegex": "AI解析正则",
+        "episodeRegexPh": "自定义剧本拆分正则"
+      }
     },
     "assets": {
       "addPrefix": "新增",

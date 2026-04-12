@@ -10,9 +10,11 @@
                 v-model="customRegStr"
                 :placeholder="$t('workbench.script.import.episodeRegexPh')"
                 clearable
+                :disabled="aiRegexLoading"
                 style="flex: 1"
                 :status="regexError ? 'error' : undefined"
                 :tips="regexError || undefined" />
+              <t-button :loading="aiRegexLoading" @click="getAiRegex">{{ $t("workbench.script.import.getAiRegex") }}</t-button>
             </div>
             <div class="uploadArea" @click="triggerUpload" @dragover.prevent @drop.prevent="handleDrop">
               <t-upload
@@ -116,6 +118,7 @@ const selectedRowKeys = ref<number[]>([]);
 const nextLoading = ref(false);
 const customRegStr = ref("");
 const regexError = ref("");
+const aiRegexLoading = ref(false);
 
 // 验证正则合法性
 watch(customRegStr, (val) => {
@@ -256,6 +259,25 @@ watch(purgeNovelShow, (newVal) => {
     regexError.value = "";
   }
 });
+
+async function getAiRegex() {
+  if (!content.value.trim()) {
+    window.$message.warning($t("workbench.script.import.msg.selectChapters"));
+    return;
+  }
+  const sample = content.value.slice(0, 2000);
+  aiRegexLoading.value = true;
+  try {
+    const { data } = await axios.post("/script/getAiRegex", { content: sample });
+    if (data) {
+      customRegStr.value = data;
+    }
+  } catch (e) {
+    window.$message.error((e as Error).message);
+  } finally {
+    aiRegexLoading.value = false;
+  }
+}
 </script>
 
 <style lang="scss" scoped>

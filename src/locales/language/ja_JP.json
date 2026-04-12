@@ -804,7 +804,10 @@
         }
       },
       "deleteScript": "スクリプトを一括で削除する",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "スクリプト分割ルールをカスタマイズします。デフォルトの分割ルールを使用するには空白のままにしてください (デフォルトはエピソード X 形式に従って分割されます)。"
+      }
     },
     "assets": {
       "addPrefix": "追加",
