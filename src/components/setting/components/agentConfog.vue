@@ -20,25 +20,59 @@
       </div>
     </div>
 
-    <div class="cardGrid">
-      <t-card hoverShadow v-for="(item, index) in modelData" :key="index" class="skillCard" @click="startConfig(item)">
-        <div class="skillCardHeader">
-          <div class="headerLeft">
-            <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
-            <t-avatar v-else shape="round" class="fallbackAvatar">
-              {{ getFallbackText(item.name) }}
-            </t-avatar>
-            <span class="skillName">{{ item.name }}</span>
-          </div>
-          <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
-          <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
-          <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
-            {{ $t("settings.agent.notConfigured") }}
-          </t-tag>
+    <t-tabs :default-value="1">
+      <t-tab-panel :value="1" :label="$t('settings.agent.ordinary')">
+        <div class="cardGrid">
+          <t-card hoverShadow v-for="(item, index) in modelData" :key="index" class="skillCard f" @click="startConfig(item, '普通')">
+            <div class="skillCardHeader">
+              <div class="headerLeft">
+                <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
+                <t-avatar v-else shape="round" class="fallbackAvatar">
+                  {{ getFallbackText(item.name) }}
+                </t-avatar>
+                <span class="skillName">{{ item.name }}</span>
+              </div>
+              <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
+              <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
+              <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
+                {{ $t("settings.agent.notConfigured") }}
+              </t-tag>
+            </div>
+            <div class="skillCardBody">{{ item.desc }}</div>
+          </t-card>
         </div>
-        <div class="skillCardBody">{{ item.desc }}</div>
-      </t-card>
-    </div>
+      </t-tab-panel>
+      <t-tab-panel :value="2" :label="$t('settings.agent.advanced')">
+        <div class="cardGrid">
+          <t-card hoverShadow v-for="(item, index) in advancedModelData" :key="index" class="skillCard f" @click="startConfig(item, '高级')">
+            <div class="skillCardHeader">
+              <div class="headerLeft">
+                <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
+                <t-avatar v-else shape="round" class="fallbackAvatar">
+                  {{ getFallbackText(item.name) }}
+                </t-avatar>
+                <div>
+                  <div class="skillName">{{ item.name }}</div>
+                </div>
+              </div>
+              <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
+              <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
+              <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
+                {{ $t("settings.agent.notConfigured") }}
+              </t-tag>
+            </div>
+            <div class="skillCardBody jb">
+              <div>{{ item.desc }}</div>
+              <div>
+                <t-tag theme="primary" variant="light" size="small">topP：{{ item.topP }}</t-tag>
+                <t-tag theme="primary" variant="light" size="small" style="margin-left: 5px;">温度：{{ item.temperature }}</t-tag>
+                <t-tag theme="primary" variant="light" size="small"  style="margin-left: 5px;">最大输出Token：{{ item.maxOutputTokens }}</t-tag>
+              </div>
+            </div>
+          </t-card>
+        </div>
+      </t-tab-panel>
+    </t-tabs>
 
     <!-- 模型配置弹窗 -->
     <t-dialog
@@ -49,9 +83,18 @@
       :confirm-btn="$t('settings.agent.confirm')"
       :cancel-btn="$t('settings.agent.cancel')">
       <div class="dialogContent">
-        <t-form label-align="left" :label-width="70">
+        <t-form v-if="currentItem" label-align="top" :label-width="70">
           <t-form-item :label="$t('settings.agent.selectModel')">
             <modelSelect v-model="selectValue" type="text" />
+          </t-form-item>
+          <t-form-item :label="$t('settings.agent.topP')" v-if="type == '高级'">
+            <t-input-number v-model="currentItem.topP" style="width: 100%" />
+          </t-form-item>
+          <t-form-item :label="$t('settings.agent.temperature')" v-if="type == '高级'">
+            <t-input-number v-model="currentItem.temperature" style="width: 100%" />
+          </t-form-item>
+          <t-form-item :label="$t('settings.agent.maxOutputTokens')" v-if="type == '高级'">
+            <t-input-number v-model="currentItem.maxOutputTokens" style="width: 100%" />
           </t-form-item>
         </t-form>
       </div>
@@ -75,6 +118,10 @@ interface ModelType {
   icon: string;
   desc: string;
   disabled?: boolean;
+  type?: string;
+  topP?: number;
+  temperature?: number;
+  maxOutputTokens?: number;
 }
 
 const modelData = ref<ModelType[]>([]);
@@ -82,8 +129,6 @@ const modelData = ref<ModelType[]>([]);
 const modelDataShow = ref(false);
 const currentItem = ref<ModelType | null>(null);
 const selectValue = ref<string>("");
-
-
 
 function getProviderLogo(manufacturer: string) {
   if (!manufacturer) return null;
@@ -105,12 +150,13 @@ function getDisplayLogo(item: ModelType) {
 function getFallbackText(name: string) {
   return name?.slice(0, 1) || "A";
 }
-
-function startConfig(item: ModelType) {
+const type = ref("");
+function startConfig(item: ModelType, source: string) {
   if (item.disabled) return window.$message.warning($t("settings.agent.msg.notAvailable"));
   currentItem.value = item;
   selectValue.value = item.modelName;
   modelDataShow.value = true;
+  type.value = source;
 }
 
 const currentVendorId = ref<number | null>(null);
@@ -126,6 +172,9 @@ function confirmConfig() {
     modelName: currentItem.value?.modelName,
     vendorId: selectValue.value.split(":")[0],
     desc: currentItem.value?.desc,
+    topP: currentItem.value?.topP ?? 1,
+    temperature: currentItem.value?.temperature ?? 1,
+    maxOutputTokens: currentItem.value?.maxOutputTokens ?? 0,
   };
   axios
     .post("/setting/agentDeploy/deployAgentModel", data)
@@ -154,19 +203,9 @@ const loading = ref(false);
 function getAgentDeploy() {
   axios
     .post("/setting/agentDeploy/getAgentDeploy")
-    .then((res: { data: any[] }) => {
-      modelData.value = res.data.map((item: any) => {
-        return {
-          id: item.id,
-          model: item.model,
-          modelName: item.modelName,
-          vendorId: item.vendorId,
-          name: item.name,
-          icon: item.icon,
-          desc: item.desc,
-          disabled: item.disabled,
-        };
-      });
+    .then((res: any) => {
+      modelData.value = res.data.qrdinaryData;
+      advancedModelData.value = res.data.advancedData;
     })
     .catch((err: { message?: string }) => {
       window.$message.error(`${$t("settings.agent.msg.getAgentListFailed")}${err.message}`);
@@ -259,6 +298,8 @@ async function getVendorList() {
     window.$message.error(`${$t("settings.vendor.msg.getVendorListFailed")}${err.message}`);
   }
 }
+//高级配置
+const advancedModelData = ref<ModelType[]>([]);
 </script>
 
 <style lang="scss" scoped>
@@ -291,6 +332,7 @@ async function getVendorList() {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+  margin-top: 5px;
 }
 
 .skillCard {

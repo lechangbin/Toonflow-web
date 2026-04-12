@@ -1477,5 +1477,11 @@
   "workbench.assets.audioText": "nội dung âm thanh",
   "workbench.assets.audio": "Âm thanh",
   "workbench.assets.add.sex": "giới tính",
-  "workbench.assets.add.sexPh": "Vui lòng nhập giới tính"
+  "workbench.assets.add.sexPh": "Vui lòng nhập giới tính",
+  "settings.agent.advanced": "Cấu hình nâng cao",
+  "settings.agent.ordinary": "Cấu hình dễ dàng",
+  "settings.agent.temperature": "nhiệt độ",
+  "settings.agent.maxOutputTokens": "Mã thông báo đầu ra tối đa",
+  "settings.agent.topP": "topP",
+  "settings.agent.msg.notmodel": "Không có mô hình nào được chọn"
 }
