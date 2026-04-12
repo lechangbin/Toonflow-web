@@ -1287,7 +1287,7 @@
     "generateText": "AIが生成したプロンプトワード",
     "selectStoryboard": "ストーリーボードを選択",
     "generate": {
-      "noVideo": "まだビデオはありません",
+      "noVideo": "まだデータがありません",
       "generateText": "AIが生成したプロンプトワード",
       "selectStoryboard": "ストーリーボードを選択",
       "generate": "ビデオの生成",
@@ -1328,7 +1328,10 @@
       "assets": "資産",
       "promptText": "ビデオプロンプトワードデータの生成",
       "videoMenu": "ビデオの生成",
-      "videoPreview": "ビデオプレビュー"
+      "videoPreview": "ビデオプレビュー",
+      "referenceImage": "参考写真",
+      "generatePrompt": "プロンプト単語を生成する",
+      "generateVideo": "ビデオの生成"
     }
   },
   "login": {
