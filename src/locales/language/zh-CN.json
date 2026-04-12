@@ -1635,5 +1635,6 @@
   "workbench.assets.add.audioNamePh": "请输入音色",
   "workbench.assets.add.audioFile": "音频文件",
   "workbench.cornerScape.batchBingAudio": "一键绑定音频",
-  "workbench.cornerScape.msg.selectAtLeastBindOne": "请至少选择一个资产进行绑定"
+  "workbench.cornerScape.msg.selectAtLeastBindOne": "请至少选择一个资产进行绑定",
+  "settings.generate.delConfirmBtn": "确认删除"
 }

@@ -591,7 +591,7 @@ const selectedAudio = ref(false); // 是否启用音频
 const selectedResolution = ref("480p"); // 当前分辨率
 const selectedDuration = ref(8); // 当前时长
 const userSelectedDuration = ref(false); // 用户是否手动选过时长
-const modeOptions = ref<VideoModel>({} as VideoModel); // 当前模型配置
+const modeOptions = ref<any>({} as VideoModel); // 当前模型配置
 
 /** 将时长限制在模型支持的范围内 */
 function clampDuration(trackDuration: number): number {
@@ -1047,13 +1047,21 @@ const promptText = computed({
 });
 
 /** uploadBox 作为 promptEditor 的引用预览 */
-const references = computed(() =>
-  uploadBox.value
+const references = computed(() =>{
+  function getFileTypeByExt(src: string | undefined): "image" | "video" | "audio" {
+  const ext = src?.split(".").pop()?.toLowerCase() ?? "";
+  if (["mp4", "webm", "mov", "avi", "mkv"].includes(ext)) return "video";
+  if (["mp3", "wav", "ogg", "aac", "flac", "m4a"].includes(ext)) return "audio";
+  return "image";
+}
+ return uploadBox.value
     .filter((item) => item.src)
     .map((item) => ({
       type: getFileTypeByExt(item.src) as "image" | "video" | "audio" | "text",
       src: item.src ?? "",
     })),
+}
+
 );
 
 /** 提示词失焦时保存到后端 */

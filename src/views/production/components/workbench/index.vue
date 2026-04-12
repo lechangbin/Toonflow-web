@@ -211,15 +211,14 @@ function handleBatchDownload(value: ImportVideoItem[]) {}
 </script>
 
 <style lang="scss" scoped>
+:deep(.t-dialog__body) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
 .fullscreenDialog {
-  :deep(.t-dialog__body) {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    overflow: hidden;
-    position: relative;
-  }
-
   .importLoadingMask {
     position: absolute;
     inset: 0;
