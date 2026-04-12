@@ -1619,5 +1619,11 @@
   "workbench.assets.audioText": "audio content",
   "workbench.assets.audio": "Audio",
   "workbench.assets.add.sex": "gender",
-  "workbench.assets.add.sexPh": "Please enter gender"
+  "workbench.assets.add.sexPh": "Please enter gender",
+  "settings.agent.advanced": "Advanced configuration",
+  "settings.agent.ordinary": "Easy configuration",
+  "settings.agent.temperature": "temperature",
+  "settings.agent.maxOutputTokens": "Maximum output token",
+  "settings.agent.topP": "topP",
+  "settings.agent.msg.notmodel": "No model selected"
 }
