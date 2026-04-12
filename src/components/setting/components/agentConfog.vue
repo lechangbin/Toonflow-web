@@ -114,7 +114,6 @@ interface ModelType {
   icon: string;
   desc: string;
   disabled?: boolean;
-  type?: string;
   temperature?: number;
   maxOutputTokens?: number;
 }
