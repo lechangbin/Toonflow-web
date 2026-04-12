@@ -240,7 +240,10 @@
         "name": "ชื่อรุ่น",
         "model": "แบบอย่าง",
         "type": "พิมพ์",
-        "editWord": "ผูกคำพร้อมท์"
+        "editWord": "ผูกคำพร้อมท์",
+        "operation": "ดำเนินงาน",
+        "bindingSuccessful": "การผูกสำเร็จ",
+        "bindingFailed": "การเชื่อมโยงล้มเหลว"
       }
     },
     "login": {

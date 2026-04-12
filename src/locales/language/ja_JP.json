@@ -240,7 +240,10 @@
         "name": "機種名",
         "model": "モデル",
         "type": "タイプ",
-        "editWord": "プロンプトワードをバインドする"
+        "editWord": "プロンプトワードをバインドする",
+        "operation": "操作する",
+        "bindingSuccessful": "バインド成功",
+        "bindingFailed": "バインドに失敗しました"
       }
     },
     "login": {

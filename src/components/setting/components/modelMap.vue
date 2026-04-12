@@ -100,7 +100,7 @@ const columns: TableProps["columns"] = [
   },
   {
     colKey: "operation",
-    title: "操作",
+    title: $t("settings.memory.modelMap.operation"),
     width: 100,
     align: "center",
     fixed: "right",
@@ -129,10 +129,18 @@ function onConfirm() {
     model: promptForm.value.model,
     prompt: promptForm.value.prompt,
   };
-  axios.post("/setting/modelMap/bindingPrompt", data).then((res) => {
-    visible.value = false;
-    queryModelMap();
-  });
+  axios
+    .post("/setting/modelMap/bindingPrompt", data)
+    .then((res) => {
+      window.$message.success($t("settings.memory.modelMap.bindingSuccessful"));
+    })
+    .catch((err) => {
+      window.$message.error($t("settings.memory.modelMap.bindingFailed", err));
+    })
+    .finally(() => {
+      visible.value = false;
+      queryModelMap();
+    });
 }
 </script>
 

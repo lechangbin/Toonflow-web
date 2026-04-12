@@ -247,7 +247,10 @@
         "name": "模型名稱",
         "model": "模型",
         "type": "類型",
-        "editWord": "綁定提示詞"
+        "editWord": "綁定提示詞",
+        "operation": "操作",
+        "bindingSuccessful": "綁定成功",
+        "bindingFailed": "綁定失敗"
       }
     },
     "login": {

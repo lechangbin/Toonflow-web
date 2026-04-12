@@ -241,7 +241,10 @@
         "name": "Model name",
         "model": "Model",
         "type": "type",
-        "editWord": "Bind prompt word"
+        "editWord": "Bind prompt word",
+        "operation": "operate",
+        "bindingSuccessful": "Binding successful",
+        "bindingFailed": "Binding failed"
       }
     },
     "login": {

@@ -281,7 +281,10 @@
         "name": "模型名称",
         "model": "模型",
         "type": "类型",
-        "editWord": "绑定提示词"
+        "editWord": "绑定提示词",
+        "operation": "操作",
+        "bindingSuccessful": "绑定成功",
+        "bindingFailed": "绑定失败"
       }
     },
     "login": {

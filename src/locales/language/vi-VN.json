@@ -239,7 +239,10 @@
         "name": "Tên mẫu",
         "model": "Người mẫu",
         "type": "kiểu",
-        "editWord": "Ràng buộc từ nhắc nhở"
+        "editWord": "Ràng buộc từ nhắc nhở",
+        "operation": "vận hành",
+        "bindingSuccessful": "Ràng buộc thành công",
+        "bindingFailed": "Ràng buộc không thành công"
       }
     },
     "login": {
