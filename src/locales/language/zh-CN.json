@@ -404,7 +404,10 @@
       "scroll": "滚动",
       "isInteracting": "生产页无限画布拖拽性能优化",
       "closeIsInteracting": "关闭",
-      "openIsInteracting": "开启"
+      "openIsInteracting": "开启",
+      "scriptEpisodeLength": "剧本单集长度限制",
+      "chars": "字",
+      "inputChars": "请输入字数"
     },
     "request": {
       "warning": "如非特殊情况，不需要修改或者配置",
@@ -981,7 +984,11 @@
         }
       },
       "deleteScript": "批量删除剧本",
-      "extractAssets": "提取资产"
+      "extractAssets": "提取资产",
+      "import": {
+        "getAiRegex": "AI解析正则",
+        "episodeRegexPh": "自定义剧本拆分正则"
+      }
     },
     "assets": {
       "addPrefix": "新增",
@@ -1704,6 +1711,5 @@
   "settings.agent.ordinary": "简易配置",
   "settings.agent.temperature": "温度",
   "settings.agent.maxOutputTokens": "最大输出Token",
-  "settings.agent.topP": "topP",
   "settings.agent.msg.notmodel": "未选择模型"
 }

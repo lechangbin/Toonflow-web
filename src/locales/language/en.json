@@ -365,7 +365,10 @@
       "zoom": "Zoom",
       "scroll": "scroll",
       "isInteracting": "Unlimited canvas drag performance optimization on production page",
-      "closeIsInteracting": "closure"
+      "closeIsInteracting": "closure",
+      "scriptEpisodeLength": "Script Episode Length Limit",
+      "chars": "chars",
+      "inputChars": "Please enter character count"
     },
     "request": {
       "warning": "Do not modify unless absolutely necessary",
@@ -937,7 +940,10 @@
         }
       },
       "deleteScript": "Delete scripts in batches",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "Customize the script splitting rule, leave it blank to use the default splitting rule (the default is to split according to the Episode X format)"
+      }
     },
     "assets": {
       "addPrefix": "Add",
@@ -1624,6 +1630,5 @@
   "settings.agent.ordinary": "Easy configuration",
   "settings.agent.temperature": "temperature",
   "settings.agent.maxOutputTokens": "Maximum output token",
-  "settings.agent.topP": "topP",
   "settings.agent.msg.notmodel": "No model selected"
 }

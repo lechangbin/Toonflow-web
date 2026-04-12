@@ -795,7 +795,10 @@
         }
       },
       "deleteScript": "Xóa tập lệnh theo đợt",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "Tùy chỉnh quy tắc chia tập lệnh, để trống để sử dụng quy tắc chia tập lệnh mặc định (mặc định là chia theo định dạng Tập X)"
+      }
     },
     "assets": {
       "addPrefix": "Thêm mới",
@@ -1483,6 +1486,5 @@
   "settings.agent.ordinary": "Cấu hình dễ dàng",
   "settings.agent.temperature": "nhiệt độ",
   "settings.agent.maxOutputTokens": "Mã thông báo đầu ra tối đa",
-  "settings.agent.topP": "topP",
   "settings.agent.msg.notmodel": "Không có mô hình nào được chọn"
 }

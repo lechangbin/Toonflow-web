@@ -11,10 +11,10 @@
           <template #icon><i-plus /></template>
           {{ $t("workbench.script.addScript") }}
         </t-button>
-        <!-- <t-button theme="primary" @click="handleBatchAddScript">
+        <t-button theme="primary" @click="handleBatchAddScript">
           <template #icon><i-plus /></template>
           {{ $t("workbench.script.batchAddScript") }}
-        </t-button> -->
+        </t-button>
       </div>
       <div class="actionBar-right f ac" v-if="scripts.length">
         <t-button :theme="isAllSelected ? 'default' : 'primary'" variant="outline" @click="toggleSelectAll(!isAllSelected)">

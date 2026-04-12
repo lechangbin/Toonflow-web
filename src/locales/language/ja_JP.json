@@ -804,7 +804,10 @@
         }
       },
       "deleteScript": "スクリプトを一括で削除する",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "スクリプト分割ルールをカスタマイズします。デフォルトの分割ルールを使用するには空白のままにしてください (デフォルトはエピソード X 形式に従って分割されます)。"
+      }
     },
     "assets": {
       "addPrefix": "追加",
@@ -1491,6 +1494,5 @@
   "settings.agent.ordinary": "簡単な設定",
   "settings.agent.temperature": "温度",
   "settings.agent.maxOutputTokens": "最大出力トークン",
-  "settings.agent.topP": "トップP",
   "settings.agent.msg.notmodel": "モデルが選択されていません"
 }
