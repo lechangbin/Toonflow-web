@@ -365,7 +365,10 @@
       "zoom": "Zoom",
       "scroll": "scroll",
       "isInteracting": "Unlimited canvas drag performance optimization on production page",
-      "closeIsInteracting": "closure"
+      "closeIsInteracting": "closure",
+      "scriptEpisodeLength": "Script Episode Length Limit",
+      "chars": "chars",
+      "inputChars": "Please enter character count"
     },
     "request": {
       "warning": "Do not modify unless absolutely necessary",

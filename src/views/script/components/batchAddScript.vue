@@ -72,7 +72,12 @@
               <div class="selectedInfo">{{ $t("workbench.novel.import.selectedInfo", { count: selectedTextLength }) }}</div>
               <div style="margin-top: 16px; text-align: right">
                 <t-button variant="outline" @click="activeKey = 'To1'">{{ $t("workbench.novel.import.prevStep") }}</t-button>
-                <t-button theme="primary" style="margin-left: 10px" :disabled="selectedTextLength > 3000" :loading="nextLoading" @click="keep">
+                <t-button
+                  theme="primary"
+                  style="margin-left: 10px"
+                  :disabled="selectedTextLength > otherSetting.scriptEpisodeLength"
+                  :loading="nextLoading"
+                  @click="keep">
                   保存
                 </t-button>
               </div>
@@ -85,6 +90,8 @@
 </template>
 
 <script setup lang="ts">
+import settingStore from "@/stores/setting";
+const { otherSetting } = storeToRefs(settingStore());
 import { LoadingPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
 import parseScript from "@/utils/parseScript";
