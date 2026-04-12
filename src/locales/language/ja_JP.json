@@ -235,6 +235,12 @@
         "cancel": "キャンセル",
         "cleared": "メモリをクリアしました",
         "clearFailed": "メモリのクリアに失敗しました"
+      },
+      "modelMap": {
+        "name": "機種名",
+        "model": "モデル",
+        "type": "タイプ",
+        "editWord": "プロンプトワードをバインドする"
       }
     },
     "login": {

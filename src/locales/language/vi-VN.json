@@ -234,6 +234,12 @@
         "cancel": "Hủy",
         "cleared": "Bộ nhớ đã được xóa",
         "clearFailed": "Xóa bộ nhớ thất bại"
+      },
+      "modelMap": {
+        "name": "Tên mẫu",
+        "model": "Người mẫu",
+        "type": "kiểu",
+        "editWord": "Ràng buộc từ nhắc nhở"
       }
     },
     "login": {

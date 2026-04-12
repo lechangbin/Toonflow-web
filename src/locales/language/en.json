@@ -236,6 +236,12 @@
         "cancel": "Cancel",
         "cleared": "Memory cleared",
         "clearFailed": "Failed to clear memory"
+      },
+      "modelMap": {
+        "name": "Model name",
+        "model": "Model",
+        "type": "type",
+        "editWord": "Bind prompt word"
       }
     },
     "login": {

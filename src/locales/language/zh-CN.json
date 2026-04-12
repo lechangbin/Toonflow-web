@@ -276,6 +276,12 @@
         "cancel": "取消",
         "cleared": "记忆已清空",
         "clearFailed": "清空记忆失败"
+      },
+      "modelMap": {
+        "name": "模型名称",
+        "model": "模型",
+        "type": "类型",
+        "editWord": "绑定提示词"
       }
     },
     "login": {
