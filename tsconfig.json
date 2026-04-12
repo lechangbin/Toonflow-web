@@ -1,7 +1,5 @@
 {
-  "compilerOptions": {
-    "disableSolutionSearching": true
-  },
+  "files": [],
   "references": [
     {
       "path": "./tsconfig.node.json"
