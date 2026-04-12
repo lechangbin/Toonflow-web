@@ -6,12 +6,7 @@
       </div>
     </div>
     <div class="modelSelect">
-      <modeMenu
-        v-model="modelParmas"
-        :modeOptions="modeOptions"
-        :modeList="modeList"
-        :effectiveDuration="effectiveDuration"
-        @modeChange="modeChange" />
+      <modeMenu v-model="modelParmas" :modeOptions="modeOptions" :modeList="modeList" @modeChange="modeChange" />
     </div>
     <div class="generate ac">
       <div class="prompt" v-if="currentTrack">
@@ -88,9 +83,23 @@ const modelParmas = ref<ModelSetting>({
 const storyboardList = ref<StoryboardItem[]>([]); // 分镜列表
 const imageList = ref<UploadItem[]>([]);
 
-function modeChange() {
-  imageList.value.length = 0;
-  currentTrack.value.prompt = "";
+function modeChange(newVal: string) {
+  if (imageList.value.length || currentTrack.value.prompt) {
+    const dialog = DialogPlugin.confirm({
+      header: $t("workbench.generate.modeChange"),
+      body: $t("workbench.generate.modeChangeConfirm"),
+      confirmBtn: $t("settings.generate.modelChnageSure"),
+      cancelBtn: $t("settings.memory.msg.cancel"),
+      onConfirm: async () => {
+        imageList.value.length = 0;
+        currentTrack.value.prompt = "";
+        dialog.destroy();
+        modelParmas.value.mode = newVal;
+      },
+    });
+  } else {
+    modelParmas.value.mode = newVal;
+  }
 }
 const modeList = computed(() => {
   const modeLabelMap: Record<string, string> = {
@@ -142,11 +151,6 @@ function clampDuration(trackDuration: number): number {
   }
   return trackDuration;
 }
-/** 实际生效时长：用户手动选择优先，否则取轨道时长并 clamp */
-const effectiveDuration = computed(() => {
-  const trackDuration = trackList.value[activeTrackIndex.value]?.duration || modelParmas.value.duration;
-  return clampDuration(trackDuration);
-});
 watch(
   () => modelParmas.value.model,
   (val) => {
@@ -168,7 +172,7 @@ watch(
       const drMap = data.durationResolutionMap;
       if (Array.isArray(drMap) && drMap.length > 0) {
         if (drMap[0].resolution?.length) modelParmas.value.resolution = drMap[0].resolution[0];
-        if (drMap[0].duration?.length) modelParmas.value.duration = drMap[0].duration[0];
+        if (drMap[0].duration?.length) modelParmas.value.duration = clampDuration(modelParmas.value.duration);
       }
     });
   },
@@ -199,6 +203,14 @@ async function getGenerateData() {
   storyboardList.value = data.storyboardList;
   trackList.value = data.trackList;
   data.trackList.length && (imageList.value = data.trackList[activeTrackIndex.value].medias);
+  console.log(
+    "%c Line:203 🍖 data.trackList[activeTrackIndex.value].duration",
+    "background:#4fff4B",
+    data.trackList[activeTrackIndex.value].duration,
+  );
+
+  modelParmas.value.duration = clampDuration(data.trackList[activeTrackIndex.value].duration);
+  console.log("%c Line:203 🍰 modelParmas.value.duration", "background:#33a5ff", modelParmas.value.duration);
 }
 /** 提示词失焦时保存到后端 */
 function handlePromptBlur() {
@@ -241,6 +253,7 @@ async function genText() {
     });
     currentTrack.value.prompt = data;
   } catch (e) {
+    console.log("%c Line:256 🥚 e", "background:#2eafb0", e);
     window.$message.error((e as Error)?.message ?? "提示词生成失败");
   } finally {
     genTextLoadingMap.value[currentTrack.value.id] = false;
@@ -248,6 +261,7 @@ async function genText() {
 }
 function trackChange() {
   trackList.value.length && (imageList.value = trackList.value[activeTrackIndex.value].medias as UploadItem[]);
+  modelParmas.value.duration = clampDuration(trackList.value[activeTrackIndex.value].duration);
 }
 onMounted(() => {
   modelParmas.value.model = project.value?.videoModel || "";
@@ -338,7 +352,7 @@ async function generateVideo() {
             border: 1px solid var(--td-component-border);
             border-radius: 8px;
             min-height: 100px;
-            height: 200px;
+            height: 300px;
             overflow: auto;
             resize: vertical;
           }

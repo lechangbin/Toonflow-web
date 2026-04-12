@@ -536,6 +536,9 @@
         "confirmClear": "确认清空",
         "cancel": "取消"
       }
+    },
+    "generate": {
+      "modelChnageSure": "确认清空"
     }
   },
   "workbench": {
@@ -1532,7 +1535,9 @@
       "videoPreview": "视频预览",
       "referenceImage": "参考图片",
       "generatePrompt": "生成提示词",
-      "generateVideo": "生成视频"
+      "generateVideo": "生成视频",
+      "modeChange": "清空内容",
+      "modeChangeConfirm": "切换模式将会清空当前选中的图片和提示词"
     }
   },
   "login": {
