@@ -539,6 +539,9 @@
         "confirmClear": "确认清空",
         "cancel": "取消"
       }
+    },
+    "generate": {
+      "modelChnageSure": "确认清空"
     }
   },
   "workbench": {
@@ -1539,7 +1542,9 @@
       "videoPreview": "视频预览",
       "referenceImage": "参考图片",
       "generatePrompt": "生成提示词",
-      "generateVideo": "生成视频"
+      "generateVideo": "生成视频",
+      "modeChange": "清空内容",
+      "modeChangeConfirm": "切换模式将会清空当前选中的图片和提示词"
     }
   },
   "login": {
@@ -1701,5 +1706,11 @@
   "workbench.assets.add.audioFile": "音频文件",
   "workbench.cornerScape.batchBingAudio": "一键绑定音频",
   "workbench.cornerScape.msg.selectAtLeastBindOne": "请至少选择一个资产进行绑定",
-  "settings.generate.delConfirmBtn": "确认删除"
+  "settings.generate.delConfirmBtn": "确认删除",
+  "settings.agent.advanced": "高级配置",
+  "settings.agent.ordinary": "简易配置",
+  "settings.agent.temperature": "温度",
+  "settings.agent.maxOutputTokens": "最大输出Token",
+  "settings.agent.topP": "topP",
+  "settings.agent.msg.notmodel": "未选择模型"
 }

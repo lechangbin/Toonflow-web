@@ -1489,5 +1489,11 @@
   "workbench.assets.audioText": "音声コンテンツ",
   "workbench.assets.audio": "オーディオ",
   "workbench.assets.add.sex": "性別",
-  "workbench.assets.add.sexPh": "性別を入力してください"
+  "workbench.assets.add.sexPh": "性別を入力してください",
+  "settings.agent.advanced": "高度な構成",
+  "settings.agent.ordinary": "簡単な設定",
+  "settings.agent.temperature": "温度",
+  "settings.agent.maxOutputTokens": "最大出力トークン",
+  "settings.agent.topP": "トップP",
+  "settings.agent.msg.notmodel": "モデルが選択されていません"
 }

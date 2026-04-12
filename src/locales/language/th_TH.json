@@ -1477,5 +1477,11 @@
   "workbench.assets.audioText": "เนื้อหาเสียง",
   "workbench.assets.audio": "เสียง",
   "workbench.assets.add.sex": "เพศ",
-  "workbench.assets.add.sexPh": "กรุณากรอกเพศ"
+  "workbench.assets.add.sexPh": "กรุณากรอกเพศ",
+  "settings.agent.advanced": "การกำหนดค่าขั้นสูง",
+  "settings.agent.ordinary": "การกำหนดค่าง่าย",
+  "settings.agent.temperature": "อุณหภูมิ",
+  "settings.agent.maxOutputTokens": "โทเค็นเอาต์พุตสูงสุด",
+  "settings.agent.topP": "ท็อปพี",
+  "settings.agent.msg.notmodel": "ไม่ได้เลือกรุ่น"
 }

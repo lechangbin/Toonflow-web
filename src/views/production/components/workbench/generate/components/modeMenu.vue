@@ -4,7 +4,7 @@
       <div class="model">
         <modelSelect v-model="modelParmas.model" type="video" size="small" />
       </div>
-      <t-select size="small" class="mode" v-model="modelParmas.mode" :onChange="changeModel">
+      <t-select size="small" class="mode" :value="modelParmas.mode" :onChange="handleBeforeChange">
         <t-option v-for="(item, index) in modeList" :key="index" :value="item.value" :label="item.label"></t-option>
       </t-select>
       <t-button
@@ -24,7 +24,7 @@
           placement="top"
           overlay-class-name="resDurPickerPopup"
           :overlay-inner-style="{ padding: '16px', borderRadius: '8px' }">
-          <t-tag class="btn" variant="outline">{{ modelParmas.resolution }}·{{ effectiveDuration }}s</t-tag>
+          <t-tag class="btn" variant="outline">{{ modelParmas.resolution }}·{{ modelParmas.duration }}s</t-tag>
           <template #content>
             <div class="resolutionDurationPicker">
               <div
@@ -61,7 +61,7 @@
                     v-for="dur in modeOptions.durationResolutionMap[0].duration"
                     :key="dur"
                     class="pickerOption"
-                    :class="{ active: effectiveDuration === dur }"
+                    :class="{ active: modelParmas.duration == dur }"
                     @click="modelParmas.duration = dur">
                     {{ dur }}s
                   </div>
@@ -81,7 +81,6 @@ import "@/views/production/components/workbench/type/type";
 const props = defineProps<{
   modeOptions: VideoModel;
   modeList: { value: string; label: string }[];
-  effectiveDuration: number;
 }>();
 const modelParmas = defineModel<ModelSetting>({
   default: {
@@ -93,9 +92,9 @@ const modelParmas = defineModel<ModelSetting>({
   },
 });
 const emit = defineEmits(["modeChange"]);
-function changeModel() {
-  emit("modeChange");
-}
+function handleBeforeChange(newVal: string) {
+    emit("modeChange",newVal);
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -112,6 +111,54 @@ function changeModel() {
         cursor: pointer;
         &:hover {
           background-color: var(--td-bg-color-secondarycontainer);
+        }
+      }
+    }
+  }
+}
+</style>
+<style lang="scss">
+.resolutionDurationPicker {
+  min-width: 240px;
+  .pickerSection {
+    margin-bottom: 16px;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .pickerLabel {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--td-text-color-primary);
+      margin-bottom: 10px;
+    }
+
+    .pickerOptions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+
+      .pickerOption {
+        padding: 6px 0;
+        border-radius: 8px;
+        border: 1.5px solid var(--td-border-level-1-color);
+        font-size: 13px;
+        color: var(--td-text-color-primary);
+        cursor: pointer;
+        transition: all 0.15s;
+        user-select: none;
+        text-align: center;
+        background: var(--td-bg-color-container);
+
+        &:hover {
+          border-color: var(--td-border-level-2-color);
+        }
+
+        &.active {
+          border-color: var(--td-text-color-primary);
+          color: var(--td-text-color-primary);
+          font-weight: 500;
         }
       }
     }

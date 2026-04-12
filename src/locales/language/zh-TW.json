@@ -1478,5 +1478,11 @@
   "workbench.assets.sex": "性別",
   "workbench.assets.audioText": "音訊內容",
   "workbench.assets.add.sex": "性別",
-  "workbench.assets.add.sexPh": "請輸入性別"
+  "workbench.assets.add.sexPh": "請輸入性別",
+  "settings.agent.advanced": "進階配置",
+  "settings.agent.ordinary": "簡易配置",
+  "settings.agent.temperature": "溫度",
+  "settings.agent.maxOutputTokens": "最大輸出Token",
+  "settings.agent.topP": "topP",
+  "settings.agent.msg.notmodel": "未選擇模型"
 }
