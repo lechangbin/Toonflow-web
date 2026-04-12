@@ -16,8 +16,8 @@
       </t-button>
     </div>
     <div class="list">
-      <t-row style="gap: 20px">
-        <t-col :xs="12" :sm="6" :md="6" :lg="4" :xl="4" v-for="project in allProject" :key="project.id">
+      <t-row>
+        <t-col :xs="12" :sm="4" :md="4" :lg="4" :xl="4" v-for="project in allProject" :key="project.id">
           <t-card hoverShadow class="card" @click="openProject(project.id)">
             <div class="jb ac">
               <div class="title">
@@ -29,7 +29,7 @@
                 </t-tag>
               </div>
             </div>
-            <t-tag shape="round" v-if="project.artStyle">{{ project.artStyle }}</t-tag>
+            <t-tag shape="round" v-if="project.artStyle" style="align-self: flex-start;">{{ project.artStyle }}</t-tag>
             <div class="intro">
               {{ project.intro }}
             </div>
@@ -233,6 +233,8 @@ function delProjcer(projectId: string | undefined) {
   }
   .list {
     .card {
+      height: 100%;
+      margin: 5px;
       cursor: pointer;
       .title {
         font-size: 20px;
@@ -242,6 +244,11 @@ function delProjcer(projectId: string | undefined) {
       .intro {
         margin-top: 8px;
         margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .bottomMenu {
         margin-top: 32px;
@@ -266,5 +273,19 @@ function delProjcer(projectId: string | undefined) {
       }
     }
   }
+}
+:deep(.t-col){
+  display: flex !important;
+  flex-direction: column !important;
+}
+:deep(.t-col > .t-card){
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+:deep(.t-card__body){
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
 }
 </style>
