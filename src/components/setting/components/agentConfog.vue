@@ -94,7 +94,7 @@ function getProviderLogo(manufacturer: string) {
 function inferProviderByModel(modelName?: string, model?: string) {
   const source = `${modelName || ""} ${model || ""}`.trim();
   if (!source) return null;
-  const matchedRule = modelProviderRules.find((rule) => rule.pattern.test(source));
+  const matchedRule = modelProviderRules.find((rule: { pattern: RegExp }) => rule.pattern.test(source));
   return matchedRule ? providersLogo[matchedRule.provider] : null;
 }
 
@@ -133,7 +133,7 @@ function confirmConfig() {
       window.$message.success($t("settings.agent.msg.configSuccess"));
       getAgentDeploy();
     })
-    .catch((err) => {
+    .catch((err: { message?: string }) => {
       window.$message.error(`${$t("settings.agent.msg.updateConfigFailed")}${err.message}`);
     })
     .finally(() => {
@@ -154,7 +154,7 @@ const loading = ref(false);
 function getAgentDeploy() {
   axios
     .post("/setting/agentDeploy/getAgentDeploy")
-    .then((res) => {
+    .then((res: { data: any[] }) => {
       modelData.value = res.data.map((item: any) => {
         return {
           id: item.id,
@@ -168,7 +168,7 @@ function getAgentDeploy() {
         };
       });
     })
-    .catch((err) => {
+    .catch((err: { message?: string }) => {
       window.$message.error(`${$t("settings.agent.msg.getAgentListFailed")}${err.message}`);
     })
     .finally(() => {});
@@ -229,7 +229,7 @@ function submitAgentSetKey(key: string) {
       window.$message.success($t("settings.agent.msg.configSuccess"));
       getAgentDeploy();
     })
-    .catch((err) => {
+    .catch((err: { message?: string }) => {
       window.$message.error(`${$t("settings.agent.msg.updateConfigFailed")}${err.message}`);
     })
     .finally(() => {
