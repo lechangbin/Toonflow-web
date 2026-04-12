@@ -77,7 +77,7 @@ function createProductionAgentStore(projectId: string) {
                 const track = attrs.track || "";
                 const shouldGenerateImage =
                   (typeof attrs.shouldGenerateImage == "boolean" && attrs.shouldGenerateImage) ||
-                  String(attrs.shouldGenerateImage).toLowerCase() == "true"
+                    String(attrs.shouldGenerateImage).toLowerCase() == "true"
                     ? 1
                     : 0;
                 const videoDesc = attrs?.videoDesc ?? "";
@@ -228,10 +228,7 @@ function createProductionAgentStore(projectId: string) {
             scriptId: episodesId.value,
             projectId: projectId,
             storyboardIds: allIds,
-            script: flowData.value.script,
-            scriptPlan: flowData.value.scriptPlan,
-            storyboardTable: flowData.value.storyboardTable,
-            assets: flowData.value.assets,
+            concurrentCount: settingStore().otherSetting.assetsBatchGenereateSize,
           });
           if (data) {
             if (flowData.value.storyboard.length === 0) {
@@ -281,7 +278,7 @@ function createProductionAgentStore(projectId: string) {
               });
             }
             return data;
-          } catch (e) {}
+          } catch (e) { }
         }
         const assetsNotStateImageIds = computed(() => {
           const ids: number[] = [];
