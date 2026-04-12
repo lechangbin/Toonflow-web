@@ -216,13 +216,30 @@ watch(
         if (drMap[0].duration?.length) modelParmas.value.duration = clampDuration(modelParmas.value.duration);
       }
 
-      if (!data.mode.includes(modelParmas.value.mode)) {
+      const currentParsed = parseMode(modelParmas.value.mode);
+      const modeMatched = data.mode.some((m: VideoMode) => {
+        if (Array.isArray(m) && Array.isArray(currentParsed)) {
+          return JSON.stringify(m) === JSON.stringify(currentParsed);
+        }
+        return m == currentParsed;
+      });
+      if (!modeMatched) {
         const newMode = Array.isArray(data.mode[0]) ? JSON.stringify(data.mode[0]) : data.mode[0];
         modeChange(newMode);
       }
     });
   },
 );
+function parseMode(value: string): VideoMode | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed as ReferenceType[];
+  } catch {
+    return value as Exclude<VideoMode, ReferenceType[]>;
+  }
+  return value as Exclude<VideoMode, ReferenceType[]>;
+}
 /** uploadBox 作为 promptEditor 的引用预览 */
 const references = computed(() => {
   function getFileTypeByExt(src: string | undefined): "image" | "video" | "audio" {
