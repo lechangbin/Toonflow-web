@@ -1278,7 +1278,7 @@
     "generateText": "Lời nhắc do AI tạo ra",
     "selectStoryboard": "Chọn bảng phân cảnh",
     "generate": {
-      "noVideo": "Chưa có video",
+      "noVideo": "Chưa có dữ liệu",
       "generateText": "Lời nhắc do AI tạo ra",
       "selectStoryboard": "Chọn bảng phân cảnh",
       "generate": "Tạo video",
@@ -1319,7 +1319,10 @@
       "assets": "tài sản",
       "promptText": "Tạo dữ liệu từ nhắc video",
       "videoMenu": "Tạo video",
-      "videoPreview": "Xem trước video"
+      "videoPreview": "Xem trước video",
+      "referenceImage": "Hình ảnh tham khảo",
+      "generatePrompt": "Tạo các từ nhắc nhở",
+      "generateVideo": "Tạo video"
     }
   },
   "login": {

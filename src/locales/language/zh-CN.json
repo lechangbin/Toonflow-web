@@ -1443,7 +1443,10 @@
       "assets": "资产",
       "promptText": "生成视频提示词数据",
       "videoMenu": "生成视频",
-      "videoPreview": "视频预览"
+      "videoPreview": "视频预览",
+      "referenceImage": "参考图片",
+      "generatePrompt": "生成提示词",
+      "generateVideo": "生成视频"
     }
   },
   "login": {
@@ -1606,4 +1609,3 @@
   "workbench.cornerScape.batchBingAudio": "一键绑定音频",
   "workbench.cornerScape.msg.selectAtLeastBindOne": "请至少选择一个资产进行绑定"
 }
-

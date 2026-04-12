@@ -1382,7 +1382,7 @@
     "generateText": "AI generated prompt words",
     "selectStoryboard": "Select storyboard",
     "generate": {
-      "noVideo": "No video yet",
+      "noVideo": "No data yet",
       "generateText": "AI generated prompt words",
       "selectStoryboard": "Select storyboard",
       "generate": "Generate video",
@@ -1422,7 +1422,10 @@
       "assets": "assets",
       "promptText": "Generate video prompt word data",
       "videoMenu": "Generate video",
-      "videoPreview": "Video preview"
+      "videoPreview": "Video preview",
+      "referenceImage": "Reference pictures",
+      "generatePrompt": "Generate prompt words",
+      "generateVideo": "Generate video"
     }
   },
   "login": {

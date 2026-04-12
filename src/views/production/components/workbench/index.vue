@@ -56,7 +56,7 @@
 import type { Ref } from "vue";
 import axios from "@/utils/axios";
 import preview from "./preview.vue";
-import generate from "./generate.vue";
+import generate from "./generate/index.vue";
 import editVideo from "./editVideo/index.vue";
 import { generateId, type Track } from "vue-clip-track";
 import type { MediaItem, AudioItem } from "./editVideo/utils/mediaData";
