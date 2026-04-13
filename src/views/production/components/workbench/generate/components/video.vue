@@ -253,6 +253,10 @@ watch(
     }
   },
 );
+
+onUnmounted(() =>{
+  stopPoll()
+})
 </script>
 
 <style lang="scss" scoped>
