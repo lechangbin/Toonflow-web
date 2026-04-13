@@ -254,9 +254,14 @@ watch(
   },
 );
 
-onUnmounted(() =>{
-  stopPoll()
-})
+onUnmounted(() => {
+  stopPoll();
+});
+onMounted(() => {
+  if (hasGenerateVideoIds.value && hasGenerateVideoIds.value.length) {
+    startPoll();
+  }
+});
 </script>
 
 <style lang="scss" scoped>
