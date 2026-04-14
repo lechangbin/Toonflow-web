@@ -108,19 +108,23 @@ function createRefTag(index: number): HTMLSpanElement {
   return container;
 }
 
-// 将 prompt 文本渲染到编辑器，处理 @图N 为标签
+// 将 prompt 文本渲染到编辑器，处理 @图N 为标签，\n 为 <br>
 function renderPromptToEditor(text: string) {
   if (!editorRef.value) return;
   editorRef.value.innerHTML = "";
-  const regex = /@图(\d+)/g;
+  const regex = /@图(\d+)|\n/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(text)) !== null) {
     if (match.index > lastIndex) {
       editorRef.value.appendChild(document.createTextNode(text.substring(lastIndex, match.index)));
     }
-    editorRef.value.appendChild(createRefTag(Number(match[1]) - 1));
-    editorRef.value.appendChild(document.createTextNode("\u200B"));
+    if (match[0] === "\n") {
+      editorRef.value.appendChild(document.createElement("br"));
+    } else {
+      editorRef.value.appendChild(createRefTag(Number(match[1]) - 1));
+      editorRef.value.appendChild(document.createTextNode("\u200B"));
+    }
     lastIndex = regex.lastIndex;
   }
   if (lastIndex < text.length) {
@@ -220,25 +224,50 @@ function handleInput() {
 }
 
 function handleKeydown(e: KeyboardEvent) {
-  if (!showReferences.value || !props.references?.length) return;
-  const maxIndex = props.references.length - 1;
-  switch (e.key) {
-    case "ArrowDown":
-      e.preventDefault();
-      activeIndex.value = Math.min(activeIndex.value + 1, maxIndex);
-      break;
-    case "ArrowUp":
-      e.preventDefault();
-      activeIndex.value = Math.max(activeIndex.value - 1, 0);
-      break;
-    case "Enter":
-    case "Tab":
-      e.preventDefault();
-      selectReference(activeIndex.value);
-      break;
-    case "Escape":
-      showReferences.value = false;
-      break;
+  // 引用弹窗打开时，处理选择交互
+  if (showReferences.value && props.references?.length) {
+    const maxIndex = props.references.length - 1;
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        activeIndex.value = Math.min(activeIndex.value + 1, maxIndex);
+        return;
+      case "ArrowUp":
+        e.preventDefault();
+        activeIndex.value = Math.max(activeIndex.value - 1, 0);
+        return;
+      case "Enter":
+      case "Tab":
+        e.preventDefault();
+        selectReference(activeIndex.value);
+        return;
+      case "Escape":
+        showReferences.value = false;
+        return;
+    }
+  }
+
+  // 普通回车：插入换行符而非 <div>
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
+    const br = document.createElement("br");
+    range.insertNode(br);
+    // 如果 br 是最后一个子节点，需额外插入一个 br 以确保光标换行可见
+    if (!br.nextSibling || (br.nextSibling.nodeType === Node.TEXT_NODE && br.nextSibling.textContent === "")) {
+      const extraBr = document.createElement("br");
+      br.after(extraBr);
+    }
+    const newRange = document.createRange();
+    newRange.setStartAfter(br);
+    newRange.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    editorContent.value = editorRef.value?.textContent || "";
+    syncPrompt();
   }
 }
 
@@ -281,17 +310,33 @@ function selectReference(index: number) {
   syncPrompt();
 }
 
-function syncPrompt() {
-  if (!editorRef.value) return;
+function extractContent(parent: Node): string {
   let result = "";
-  editorRef.value.childNodes.forEach((node) => {
+  parent.childNodes.forEach((node) => {
     if (node.nodeType === Node.TEXT_NODE) {
       result += (node.textContent || "").replace(/\u200B/g, "");
+    } else if (node.nodeName === "BR") {
+      result += "\n";
     } else if ((node as HTMLElement).dataset?.refIndex !== undefined) {
       const refIndex = (node as HTMLElement).dataset.refIndex;
       result += ` @图${Number(refIndex) + 1} `;
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      // 处理 contenteditable 可能产生的 <div>/<p> 等块级元素
+      const inner = extractContent(node);
+      if (result.length > 0 && !result.endsWith("\n")) {
+        result += "\n";
+      }
+      result += inner;
     }
   });
+  return result;
+}
+
+function syncPrompt() {
+  if (!editorRef.value) return;
+  let result = extractContent(editorRef.value);
+  // 移除尾部多余换行
+  result = result.replace(/\n$/, "");
   internalUpdate = true;
   prompt.value = result;
 }

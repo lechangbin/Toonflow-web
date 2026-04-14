@@ -203,7 +203,8 @@
         "saveFailed": "保存に失敗しました：",
         "getAgentListFailed": "Agent設定リストの取得に失敗しました：",
         "toonflowNotFound": "トゥーンフロー公式乗換駅は存在しない"
-      }
+      },
+      "temperature": "温度"
     },
     "memory": {
       "warning": "以下の設定項目には推奨値がプリセットされています。各設定の意味と影響を明確に理解していない限り、現在の設定を維持することをお勧めします。",
@@ -235,6 +236,20 @@
         "cancel": "キャンセル",
         "cleared": "メモリをクリアしました",
         "clearFailed": "メモリのクリアに失敗しました"
+      },
+      "modelMap": {
+        "name": "機種名",
+        "model": "モデル",
+        "type": "タイプ",
+        "editWord": "プロンプトワードをバインドする",
+        "operation": "操作する",
+        "bindingSuccessful": "バインド成功",
+        "bindingFailed": "バインドに失敗しました",
+        "currentBinding": "現在のバインディング",
+        "noBinding": "束縛されていない",
+        "bound": "バウンド",
+        "unbind": "バインドを解除する",
+        "filenName": "ファイル名"
       }
     },
     "login": {
@@ -258,6 +273,22 @@
       "clearDbDesc": "データ構造を保持し、全テーブルのデータをクリアします",
       "clearData": "データをクリア",
       "confirmAction": "操作の確認",
+      "dbInfo": "データベース概要",
+      "dbInfoDesc": "全テーブル名と行数を表示します",
+      "viewInfo": "情報を見る",
+      "tableName": "テーブル名",
+      "rowCount": "行数",
+      "totalTables": "合計 {count} テーブル",
+      "exportDb": "データベースのエクスポート",
+      "exportDbDesc": "全テーブルデータをJSONバックアップファイルとしてエクスポートします",
+      "exportData": "データをエクスポート",
+      "importDb": "データベースのインポート",
+      "importDbDesc": "JSONバックアップファイルからデータを復元します（現在のデータは上書きされます）",
+      "importData": "データをインポート",
+      "clearTable": "指定テーブルをクリア",
+      "clearTableDesc": "テーブルを選択してデータをクリアします",
+      "clearTableBtn": "テーブルをクリア",
+      "selectTable": "テーブルを選択",
       "msg": {
         "clearDbTitle": "データベースのクリア",
         "firstConfirm": "本当にすべてのテーブルをクリアしますか？クリアしたデータは復元できません！",
@@ -267,7 +298,20 @@
         "pleaseInput": "入力してください",
         "cleared": "すべてのテーブルをクリアしました",
         "operationFailed": "操作に失敗しました。再試行してください",
-        "cancelled": "操作がキャンセルされました"
+        "cancelled": "操作がキャンセルされました",
+        "exportSuccess": "データベースのエクスポートに成功しました",
+        "exportFailed": "エクスポートに失敗しました",
+        "importSuccess": "データベースのインポートに成功しました。ログインページに移動します",
+        "importFailed": "インポートに失敗しました",
+        "invalidFile": "無効なバックアップファイル",
+        "clearTableSuccess": "テーブルをクリアしました",
+        "clearTableFailed": "テーブルのクリアに失敗しました",
+        "clearTableConfirm": "テーブル {name} をクリアしますか？この操作は元に戻せません！",
+        "importConfirm": "インポートすると現在のデータがすべて上書きされます。続行しますか？",
+        "importSecondConfirm": "最終確認：インポート後、現在のデータはすべて置き換えられます！",
+        "noTableSelected": "テーブルを選択してください",
+        "loadingDbInfo": "データベース情報を読み込み中...",
+        "loadDbInfoFailed": "データベース情報の取得に失敗しました"
       }
     },
     "other": {
@@ -795,7 +839,10 @@
         }
       },
       "deleteScript": "スクリプトを一括で削除する",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "スクリプト分割ルールをカスタマイズします。デフォルトの分割ルールを使用するには空白のままにしてください (デフォルトはエピソード X 形式に従って分割されます)。"
+      }
     },
     "assets": {
       "addPrefix": "追加",
@@ -1287,7 +1334,7 @@
     "generateText": "AIが生成したプロンプトワード",
     "selectStoryboard": "ストーリーボードを選択",
     "generate": {
-      "noVideo": "まだビデオはありません",
+      "noVideo": "まだデータがありません",
       "generateText": "AIが生成したプロンプトワード",
       "selectStoryboard": "ストーリーボードを選択",
       "generate": "ビデオの生成",
@@ -1299,7 +1346,7 @@
       "batchGenerateText": "プロンプト単語をバッチで生成する",
       "batchGenerateVideo": "バッチでビデオを生成する",
       "importVideo": "編集デスクにインポートする",
-      "emptyTrack": "段落 {インデックス 1}",
+      "emptyTrack": "段落 {index}",
       "del": "消去",
       "delConfirm": "この段落を削除してもよろしいですか?",
       "selectSource": "ソースを選択",
@@ -1307,6 +1354,7 @@
       "cancel": "ストーリーボードから選択",
       "selectVideoFailed": "ビデオの選択に失敗しました",
       "selectVideoSuccess": "ビデオの選択が成功しました",
+      "previewVideo": "動画プレビュー",
       "selectTrackFirst": "最初にストーリーボードを選択してください",
       "noSelectedVideo": "動画が選択されていません",
       "generateConfirm": "世代の確認",
@@ -1328,7 +1376,10 @@
       "assets": "資産",
       "promptText": "ビデオプロンプトワードデータの生成",
       "videoMenu": "ビデオの生成",
-      "videoPreview": "ビデオプレビュー"
+      "videoPreview": "ビデオプレビュー",
+      "referenceImage": "参考写真",
+      "generatePrompt": "プロンプト単語を生成する",
+      "generateVideo": "ビデオの生成"
     }
   },
   "login": {
@@ -1473,5 +1524,13 @@
   "workbench.assets.audioText": "音声コンテンツ",
   "workbench.assets.audio": "オーディオ",
   "workbench.assets.add.sex": "性別",
-  "workbench.assets.add.sexPh": "性別を入力してください"
+  "workbench.assets.add.sexPh": "性別を入力してください",
+  "settings.agent.advanced": "高度な構成",
+  "settings.agent.ordinary": "簡単な設定",
+  "settings.agent.temperature": "温度",
+  "settings.agent.maxOutputTokens": "最大出力トークン",
+  "settings.agent.auto": "自動",
+  "settings.agent.manual": "手動",
+  "settings.agent.autoHint": "モデルが出力長を自動決定",
+  "settings.agent.msg.notmodel": "モデルが選択されていません"
 }

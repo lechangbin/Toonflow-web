@@ -20,25 +20,60 @@
       </div>
     </div>
 
-    <div class="cardGrid">
-      <t-card hoverShadow v-for="(item, index) in modelData" :key="index" class="skillCard" @click="startConfig(item)">
-        <div class="skillCardHeader">
-          <div class="headerLeft">
-            <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
-            <t-avatar v-else shape="round" class="fallbackAvatar">
-              {{ getFallbackText(item.name) }}
-            </t-avatar>
-            <span class="skillName">{{ item.name }}</span>
-          </div>
-          <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
-          <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
-          <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
-            {{ $t("settings.agent.notConfigured") }}
-          </t-tag>
+    <t-tabs :default-value="1">
+      <t-tab-panel :value="1" :label="$t('settings.agent.ordinary')">
+        <div class="cardGrid">
+          <t-card hoverShadow v-for="(item, index) in modelData" :key="index" class="skillCard f" @click="startConfig(item, '普通')">
+            <div class="skillCardHeader">
+              <div class="headerLeft">
+                <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
+                <t-avatar v-else shape="round" class="fallbackAvatar">
+                  {{ getFallbackText(item.name) }}
+                </t-avatar>
+                <span class="skillName">{{ item.name }}</span>
+              </div>
+              <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
+              <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
+              <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
+                {{ $t("settings.agent.notConfigured") }}
+              </t-tag>
+            </div>
+            <div class="skillCardBody">{{ item.desc }}</div>
+          </t-card>
         </div>
-        <div class="skillCardBody">{{ item.desc }}</div>
-      </t-card>
-    </div>
+      </t-tab-panel>
+      <t-tab-panel :value="2" :label="$t('settings.agent.advanced')">
+        <div class="cardGrid">
+          <t-card hoverShadow v-for="(item, index) in advancedModelData" :key="index" class="skillCard f" @click="startConfig(item, '高级')">
+            <div class="skillCardHeader">
+              <div class="headerLeft">
+                <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
+                <t-avatar v-else shape="round" class="fallbackAvatar">
+                  {{ getFallbackText(item.name) }}
+                </t-avatar>
+                <div>
+                  <div class="skillName">{{ item.name }}</div>
+                </div>
+              </div>
+              <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
+              <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
+              <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
+                {{ $t("settings.agent.notConfigured") }}
+              </t-tag>
+            </div>
+            <div class="skillCardBody jb">
+              <div>{{ item.desc }}</div>
+              <div>
+                <t-tag theme="primary" variant="light" size="small" style="margin-left: 5px;">{{$t('settings.agent.temperature')}}：{{ item.temperature }}</t-tag>
+                <t-tag :theme="item.maxOutputTokens === 0 ? 'success' : 'primary'" variant="light" size="small" style="margin-left: 5px;">
+                  {{ $t('settings.agent.maxOutputTokens') }}：{{ item.maxOutputTokens === 0 ? $t('settings.agent.auto') : item.maxOutputTokens }}
+                </t-tag>
+              </div>
+            </div>
+          </t-card>
+        </div>
+      </t-tab-panel>
+    </t-tabs>
 
     <!-- 模型配置弹窗 -->
     <t-dialog
@@ -49,9 +84,28 @@
       :confirm-btn="$t('settings.agent.confirm')"
       :cancel-btn="$t('settings.agent.cancel')">
       <div class="dialogContent">
-        <t-form label-align="left" :label-width="70">
+        <t-form v-if="currentItem" label-align="top" :label-width="70">
           <t-form-item :label="$t('settings.agent.selectModel')">
-            <modelSelect v-model="selectValue" type="text" />
+            <modelSelect v-model="selectValue" v-model:label="selectLabel" type="text" />
+          </t-form-item>
+          <t-form-item :label="$t('settings.agent.temperature')" v-if="type == '高级'">
+            <t-input-number v-model="currentItem.temperature" style="width: 100%" />
+          </t-form-item>
+          <t-form-item :label="$t('settings.agent.maxOutputTokens')" v-if="type == '高级'">
+            <div class="maxTokenRow">
+              <t-radio-group v-model="maxTokenMode" variant="default-filled" size="small">
+                <t-radio-button value="auto">{{ $t('settings.agent.auto') }}</t-radio-button>
+                <t-radio-button value="manual">{{ $t('settings.agent.manual') }}</t-radio-button>
+              </t-radio-group>
+              <t-input-number
+                v-if="maxTokenMode === 'manual'"
+                v-model="currentItem.maxOutputTokens"
+                :min="1"
+                theme="normal"
+                style="flex: 1; margin-left: 12px;"
+              />
+              <span v-else class="autoHint">{{ $t('settings.agent.autoHint') }}</span>
+            </div>
           </t-form-item>
         </t-form>
       </div>
@@ -75,6 +129,8 @@ interface ModelType {
   icon: string;
   desc: string;
   disabled?: boolean;
+  temperature?: number;
+  maxOutputTokens?: number;
 }
 
 const modelData = ref<ModelType[]>([]);
@@ -82,8 +138,7 @@ const modelData = ref<ModelType[]>([]);
 const modelDataShow = ref(false);
 const currentItem = ref<ModelType | null>(null);
 const selectValue = ref<string>("");
-
-
+const selectLabel = ref<string>("");
 
 function getProviderLogo(manufacturer: string) {
   if (!manufacturer) return null;
@@ -94,7 +149,7 @@ function getProviderLogo(manufacturer: string) {
 function inferProviderByModel(modelName?: string, model?: string) {
   const source = `${modelName || ""} ${model || ""}`.trim();
   if (!source) return null;
-  const matchedRule = modelProviderRules.find((rule) => rule.pattern.test(source));
+  const matchedRule = modelProviderRules.find((rule: { pattern: RegExp }) => rule.pattern.test(source));
   return matchedRule ? providersLogo[matchedRule.provider] : null;
 }
 
@@ -105,27 +160,44 @@ function getDisplayLogo(item: ModelType) {
 function getFallbackText(name: string) {
   return name?.slice(0, 1) || "A";
 }
+const type = ref("");
+const maxTokenMode = ref<"auto" | "manual">("auto");
 
-function startConfig(item: ModelType) {
+watch(maxTokenMode, (val) => {
+  if (val === "auto" && currentItem.value) {
+    currentItem.value.maxOutputTokens = 0;
+  }
+  if (val === "manual" && currentItem.value && (currentItem.value.maxOutputTokens === 0 || currentItem.value.maxOutputTokens == null)) {
+    currentItem.value.maxOutputTokens = 8192;
+  }
+});
+
+function startConfig(item: ModelType, source: string) {
   if (item.disabled) return window.$message.warning($t("settings.agent.msg.notAvailable"));
   currentItem.value = item;
-  selectValue.value = item.modelName;
+  selectValue.value = item.modelName || "";
+  selectLabel.value = item.model || "";
+  maxTokenMode.value = (item.maxOutputTokens === 0 || item.maxOutputTokens == null) ? "auto" : "manual";
   modelDataShow.value = true;
+  type.value = source;
 }
 
 const currentVendorId = ref<number | null>(null);
 function confirmConfig() {
   if (currentItem.value) {
+    currentItem.value.model = selectLabel.value;
     currentItem.value.modelName = selectValue.value;
     currentItem.value.vendorId = currentVendorId.value;
   }
   const data = {
     id: currentItem.value?.id,
     name: currentItem.value?.name,
-    model: selectValue.value.split(":")[1] || currentItem.value?.model,
+    model: selectLabel.value || selectValue.value.split(/:(.+)/)[1] || currentItem.value?.model,
     modelName: currentItem.value?.modelName,
-    vendorId: selectValue.value.split(":")[0],
+    vendorId: selectValue.value.split(/:(.+)/)[0],
     desc: currentItem.value?.desc,
+    temperature: currentItem.value?.temperature ?? 1,
+    maxOutputTokens: currentItem.value?.maxOutputTokens ?? 0,
   };
   axios
     .post("/setting/agentDeploy/deployAgentModel", data)
@@ -133,7 +205,7 @@ function confirmConfig() {
       window.$message.success($t("settings.agent.msg.configSuccess"));
       getAgentDeploy();
     })
-    .catch((err) => {
+    .catch((err: { message?: string }) => {
       window.$message.error(`${$t("settings.agent.msg.updateConfigFailed")}${err.message}`);
     })
     .finally(() => {
@@ -154,21 +226,11 @@ const loading = ref(false);
 function getAgentDeploy() {
   axios
     .post("/setting/agentDeploy/getAgentDeploy")
-    .then((res) => {
-      modelData.value = res.data.map((item: any) => {
-        return {
-          id: item.id,
-          model: item.model,
-          modelName: item.modelName,
-          vendorId: item.vendorId,
-          name: item.name,
-          icon: item.icon,
-          desc: item.desc,
-          disabled: item.disabled,
-        };
-      });
+    .then((res: any) => {
+      modelData.value = res.data.qrdinaryData;
+      advancedModelData.value = res.data.advancedData;
     })
-    .catch((err) => {
+    .catch((err: { message?: string }) => {
       window.$message.error(`${$t("settings.agent.msg.getAgentListFailed")}${err.message}`);
     })
     .finally(() => {});
@@ -229,7 +291,7 @@ function submitAgentSetKey(key: string) {
       window.$message.success($t("settings.agent.msg.configSuccess"));
       getAgentDeploy();
     })
-    .catch((err) => {
+    .catch((err: { message?: string }) => {
       window.$message.error(`${$t("settings.agent.msg.updateConfigFailed")}${err.message}`);
     })
     .finally(() => {
@@ -259,6 +321,8 @@ async function getVendorList() {
     window.$message.error(`${$t("settings.vendor.msg.getVendorListFailed")}${err.message}`);
   }
 }
+//高级配置
+const advancedModelData = ref<ModelType[]>([]);
 </script>
 
 <style lang="scss" scoped>
@@ -291,6 +355,7 @@ async function getVendorList() {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+  margin-top: 5px;
 }
 
 .skillCard {
@@ -329,6 +394,19 @@ async function getVendorList() {
 
 .dialogContent {
   padding: 8px 0;
+}
+
+.maxTokenRow {
+  display: flex;
+  align-items: center;
+  width: 100%;
+
+  .autoHint {
+    flex: 1;
+    margin-left: 12px;
+    font-size: 13px;
+    color: var(--td-text-color-placeholder);
+  }
 }
 </style>
 <style lang="scss">

@@ -202,7 +202,8 @@
         "enterKey": "Пожалуйста, введите KEY",
         "saveFailed": "Ошибка сохранения: ",
         "getAgentListFailed": "Не удалось получить список конфигураций Agent: "
-      }
+      },
+      "temperature": "температура"
     },
     "memory": {
       "warning": "Следующие параметры предварительно настроены на рекомендуемые значения. Не изменяйте их, если не понимаете их значения и влияния.",
@@ -234,6 +235,20 @@
         "cancel": "Отмена",
         "cleared": "Память очищена",
         "clearFailed": "Не удалось очистить память"
+      },
+      "modelMap": {
+        "name": "Название модели",
+        "model": "Модель",
+        "type": "тип",
+        "editWord": "Связать подсказку",
+        "operation": "действовать",
+        "bindingSuccessful": "Привязка прошла успешно",
+        "bindingFailed": "Привязка не удалась",
+        "currentBinding": "текущая привязка",
+        "noBinding": "Не связан",
+        "bound": "Граница",
+        "unbind": "Отвязать",
+        "filenName": "Имя файла"
       }
     },
     "login": {
@@ -257,6 +272,22 @@
       "clearDbDesc": "Очистить данные во всех таблицах, сохранив их структуру",
       "clearData": "Очистить данные",
       "confirmAction": "Подтверждение",
+      "dbInfo": "Обзор базы данных",
+      "dbInfoDesc": "Просмотр имён таблиц и количества записей",
+      "viewInfo": "Просмотр",
+      "tableName": "Имя таблицы",
+      "rowCount": "Кол-во записей",
+      "totalTables": "Всего таблиц: {count}",
+      "exportDb": "Экспорт базы данных",
+      "exportDbDesc": "Экспортировать все таблицы в JSON-файл резервной копии",
+      "exportData": "Экспорт",
+      "importDb": "Импорт базы данных",
+      "importDbDesc": "Восстановить данные из JSON-файла (текущие данные будут перезаписаны)",
+      "importData": "Импорт",
+      "clearTable": "Очистить таблицу",
+      "clearTableDesc": "Выберите таблицу и очистите её данные",
+      "clearTableBtn": "Очистить",
+      "selectTable": "Выберите таблицу",
       "msg": {
         "clearDbTitle": "Очистка базы данных",
         "firstConfirm": "Вы уверены, что хотите очистить все таблицы? Данные нельзя будет восстановить!",
@@ -266,7 +297,20 @@
         "pleaseInput": "Пожалуйста, введите",
         "cleared": "Все таблицы очищены",
         "operationFailed": "Ошибка операции, попробуйте снова",
-        "cancelled": "Операция отменена"
+        "cancelled": "Операция отменена",
+        "exportSuccess": "База данных успешно экспортирована",
+        "exportFailed": "Ошибка экспорта",
+        "importSuccess": "База данных успешно импортирована, перенаправление на страницу входа",
+        "importFailed": "Ошибка импорта",
+        "invalidFile": "Недопустимый файл резервной копии",
+        "clearTableSuccess": "Таблица очищена",
+        "clearTableFailed": "Не удалось очистить таблицу",
+        "clearTableConfirm": "Очистить таблицу {name}? Это действие необратимо!",
+        "importConfirm": "Импорт перезапишет все текущие данные. Продолжить?",
+        "importSecondConfirm": "Последнее подтверждение: все текущие данные будут заменены!",
+        "noTableSelected": "Сначала выберите таблицу",
+        "loadingDbInfo": "Загрузка информации о базе данных...",
+        "loadDbInfoFailed": "Не удалось загрузить информацию о базе данных"
       }
     },
     "other": {
@@ -795,7 +839,10 @@
         }
       },
       "deleteScript": "Удаление скриптов в пакетном режиме",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "Настройте правило разделения сценария. Оставьте это поле пустым, чтобы использовать правило разделения по умолчанию (по умолчанию используется разделение в соответствии с форматом Episode X)."
+      }
     },
     "assets": {
       "addPrefix": "Добавить",
@@ -1287,7 +1334,7 @@
     "generateText": "ИИ генерировал слова-подсказки",
     "selectStoryboard": "Выберите раскадровку",
     "generate": {
-      "noVideo": "Видео пока нет",
+      "noVideo": "Данных пока нет",
       "generateText": "ИИ генерировал слова-подсказки",
       "selectStoryboard": "Выберите раскадровку",
       "generate": "Создать видео",
@@ -1299,7 +1346,7 @@
       "batchGenerateText": "Генерируйте подсказки в пакетном режиме",
       "batchGenerateVideo": "Генерируйте видео в пакетном режиме",
       "importVideo": "Импортировать в редакторский стол",
-      "emptyTrack": "Абзац {индекс 1}",
+      "emptyTrack": "Абзац {index}",
       "del": "удалить",
       "delConfirm": "Вы уверены, что хотите удалить этот абзац?",
       "selectSource": "Выберите источник",
@@ -1307,6 +1354,7 @@
       "cancel": "Выбрать из раскадровки",
       "selectVideoFailed": "Не удалось выбрать видео.",
       "selectVideoSuccess": "Видео выбрано успешно",
+      "previewVideo": "Превью видео",
       "selectTrackFirst": "Пожалуйста, сначала выберите раскадровку",
       "noSelectedVideo": "Видео не выбрано",
       "generateConfirm": "Подтвердить генерацию",
@@ -1328,7 +1376,10 @@
       "assets": "ресурсы",
       "promptText": "Генерация данных слов видеоподсказки",
       "videoMenu": "Создать видео",
-      "videoPreview": "Предварительный просмотр видео"
+      "videoPreview": "Предварительный просмотр видео",
+      "referenceImage": "Справочные изображения",
+      "generatePrompt": "Генерируйте слова-подсказки",
+      "generateVideo": "Создать видео"
     }
   },
   "login": {
@@ -1473,5 +1524,13 @@
   "workbench.assets.audioText": "аудиоконтент",
   "workbench.assets.audio": "Аудио",
   "workbench.assets.add.sex": "пол",
-  "workbench.assets.add.sexPh": "Пожалуйста, укажите пол"
+  "workbench.assets.add.sexPh": "Пожалуйста, укажите пол",
+  "settings.agent.advanced": "Расширенная конфигурация",
+  "settings.agent.ordinary": "Простая настройка",
+  "settings.agent.temperature": "температура",
+  "settings.agent.maxOutputTokens": "Максимальный выходной токен",
+  "settings.agent.auto": "Авто",
+  "settings.agent.manual": "Вручную",
+  "settings.agent.autoHint": "Длина вывода определяется моделью",
+  "settings.agent.msg.notmodel": "Модель не выбрана"
 }

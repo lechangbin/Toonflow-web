@@ -203,7 +203,8 @@
         "saveFailed": "บันทึกล้มเหลว:",
         "getAgentListFailed": "ดึงรายการการตั้งค่า Agent ล้มเหลว:",
         "toonflowNotFound": "ไม่มีสถานีรับส่งอย่างเป็นทางการของ Toonflow"
-      }
+      },
+      "temperature": "อุณหภูมิ"
     },
     "memory": {
       "warning": "รายการการตั้งค่าต่อไปนี้ถูกกำหนดล่วงหน้าเป็นค่าที่แนะนำ เว้นแต่คุณจะเข้าใจความหมายและผลกระทบของการตั้งค่าแต่ละรายการอย่างชัดเจน ขอแนะนำให้คงการตั้งค่าปัจจุบันไว้",
@@ -235,6 +236,20 @@
         "cancel": "ยกเลิก",
         "cleared": "ล้างหน่วยความจำแล้ว",
         "clearFailed": "ล้างหน่วยความจำล้มเหลว"
+      },
+      "modelMap": {
+        "name": "ชื่อรุ่น",
+        "model": "แบบอย่าง",
+        "type": "พิมพ์",
+        "editWord": "ผูกคำพร้อมท์",
+        "operation": "ดำเนินงาน",
+        "bindingSuccessful": "การผูกสำเร็จ",
+        "bindingFailed": "การเชื่อมโยงล้มเหลว",
+        "currentBinding": "การเชื่อมโยงปัจจุบัน",
+        "noBinding": "ไม่ผูกมัด",
+        "bound": "ผูกพัน",
+        "unbind": "เลิกผูก",
+        "filenName": "ชื่อไฟล์"
       }
     },
     "login": {
@@ -258,6 +273,22 @@
       "clearDbDesc": "ล้างข้อมูลทั้งหมดในตารางข้อมูล โดยคงไว้เพียงโครงสร้างตาราง",
       "clearData": "ล้างข้อมูล",
       "confirmAction": "ยืนยันการดำเนินการ",
+      "dbInfo": "ภาพรวมฐานข้อมูล",
+      "dbInfoDesc": "ดูชื่อตารางทั้งหมดและจำนวนแถว",
+      "viewInfo": "ดูข้อมูล",
+      "tableName": "ชื่อตาราง",
+      "rowCount": "จำนวนแถว",
+      "totalTables": "ทั้งหมด {count} ตาราง",
+      "exportDb": "ส่งออกฐานข้อมูล",
+      "exportDbDesc": "ส่งออกข้อมูลทั้งหมดเป็นไฟล์สำรอง JSON",
+      "exportData": "ส่งออกข้อมูล",
+      "importDb": "นำเข้าฐานข้อมูล",
+      "importDbDesc": "กู้คืนข้อมูลจากไฟล์สำรอง JSON (จะเขียนทับข้อมูลปัจจุบัน)",
+      "importData": "นำเข้าข้อมูล",
+      "clearTable": "ล้างตารางที่ระบุ",
+      "clearTableDesc": "เลือกตารางข้อมูลและล้างข้อมูลในตาราง",
+      "clearTableBtn": "ล้างตาราง",
+      "selectTable": "เลือกตาราง",
       "msg": {
         "clearDbTitle": "ล้างฐานข้อมูล",
         "firstConfirm": "แน่ใจหรือไม่ว่าต้องการล้างข้อมูลในตารางทั้งหมด? ข้อมูลที่ถูกล้างจะไม่สามารถกู้คืนได้!",
@@ -267,7 +298,20 @@
         "pleaseInput": "โปรดพิมพ์",
         "cleared": "ตารางข้อมูลทั้งหมดถูกล้างเรียบร้อยแล้ว",
         "operationFailed": "การดำเนินการล้มเหลว โปรดลองอีกครั้ง",
-        "cancelled": "ยกเลิกการดำเนินการแล้ว"
+        "cancelled": "ยกเลิกการดำเนินการแล้ว",
+        "exportSuccess": "ส่งออกฐานข้อมูลสำเร็จ",
+        "exportFailed": "ส่งออกล้มเหลว",
+        "importSuccess": "นำเข้าฐานข้อมูลสำเร็จ กำลังไปที่หน้าเข้าสู่ระบบ",
+        "importFailed": "นำเข้าล้มเหลว",
+        "invalidFile": "ไฟล์สำรองไม่ถูกต้อง",
+        "clearTableSuccess": "ล้างตารางเรียบร้อยแล้ว",
+        "clearTableFailed": "ล้างตารางล้มเหลว",
+        "clearTableConfirm": "แน่ใจหรือไม่ว่าต้องการล้างตาราง {name}? การดำเนินการนี้ไม่สามารถย้อนกลับได้!",
+        "importConfirm": "การนำเข้าจะเขียนทับข้อมูลปัจจุบันทั้งหมด แน่ใจหรือไม่?",
+        "importSecondConfirm": "ยืนยันครั้งสุดท้าย: ข้อมูลปัจจุบันทั้งหมดจะถูกแทนที่หลังการนำเข้า!",
+        "noTableSelected": "โปรดเลือกตารางก่อน",
+        "loadingDbInfo": "กำลังโหลดข้อมูลฐานข้อมูล...",
+        "loadDbInfoFailed": "ไม่สามารถโหลดข้อมูลฐานข้อมูล"
       }
     },
     "other": {
@@ -796,7 +840,10 @@
         }
       },
       "deleteScript": "ลบสคริปต์เป็นชุด",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "ปรับแต่งกฎการแยกสคริปต์ ปล่อยว่างไว้เพื่อใช้กฎการแยกเริ่มต้น (ค่าเริ่มต้นคือการแบ่งตามรูปแบบ Episode X)"
+      }
     },
     "assets": {
       "addPrefix": "เพิ่ม",
@@ -1288,7 +1335,7 @@
     "generateText": "AI สร้างคำที่รวดเร็ว",
     "selectStoryboard": "เลือกกระดานเรื่องราว",
     "generate": {
-      "noVideo": "ยังไม่มีวิดีโอ",
+      "noVideo": "ยังไม่มีข้อมูล",
       "generateText": "AI สร้างคำที่รวดเร็ว",
       "selectStoryboard": "เลือกกระดานเรื่องราว",
       "generate": "สร้างวิดีโอ",
@@ -1300,7 +1347,7 @@
       "batchGenerateText": "สร้างคำพร้อมท์เป็นชุด",
       "batchGenerateVideo": "สร้างวิดีโอเป็นชุด",
       "importVideo": "นำเข้าไปยังโต๊ะแก้ไข",
-      "emptyTrack": "ย่อหน้า {ดัชนี 1}",
+      "emptyTrack": "ย่อหน้า {index}",
       "del": "ลบ",
       "delConfirm": "คุณแน่ใจหรือไม่ว่าต้องการลบย่อหน้านี้",
       "selectSource": "เลือกแหล่งที่มา",
@@ -1308,6 +1355,7 @@
       "cancel": "เลือกจากกระดานเรื่องราว",
       "selectVideoFailed": "การเลือกวิดีโอล้มเหลว",
       "selectVideoSuccess": "การเลือกวิดีโอสำเร็จ",
+      "previewVideo": "ตัวอย่างวิดีโอ",
       "selectTrackFirst": "โปรดเลือกกระดานเรื่องราวก่อน",
       "noSelectedVideo": "ไม่ได้เลือกวิดีโอ",
       "generateConfirm": "ยืนยันการสร้าง",
@@ -1329,7 +1377,10 @@
       "assets": "สินทรัพย์",
       "promptText": "สร้างข้อมูลคำพร้อมท์วิดีโอ",
       "videoMenu": "สร้างวิดีโอ",
-      "videoPreview": "ตัวอย่างวิดีโอ"
+      "videoPreview": "ตัวอย่างวิดีโอ",
+      "referenceImage": "รูปภาพอ้างอิง",
+      "generatePrompt": "สร้างคำพร้อมท์",
+      "generateVideo": "สร้างวิดีโอ"
     }
   },
   "login": {
@@ -1461,5 +1512,13 @@
   "workbench.assets.audioText": "เนื้อหาเสียง",
   "workbench.assets.audio": "เสียง",
   "workbench.assets.add.sex": "เพศ",
-  "workbench.assets.add.sexPh": "กรุณากรอกเพศ"
+  "workbench.assets.add.sexPh": "กรุณากรอกเพศ",
+  "settings.agent.advanced": "การกำหนดค่าขั้นสูง",
+  "settings.agent.ordinary": "การกำหนดค่าง่าย",
+  "settings.agent.temperature": "อุณหภูมิ",
+  "settings.agent.maxOutputTokens": "โทเค็นเอาต์พุตสูงสุด",
+  "settings.agent.auto": "อัตโนมัติ",
+  "settings.agent.manual": "กำหนดเอง",
+  "settings.agent.autoHint": "ความยาวเอาต์พุตกำหนดโดยโมเดล",
+  "settings.agent.msg.notmodel": "ไม่ได้เลือกรุ่น"
 }

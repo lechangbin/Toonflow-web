@@ -210,7 +210,8 @@
         "enterKey": "請輸入 KEY",
         "saveFailed": "儲存失敗：",
         "getAgentListFailed": "取得 Agent 設定列表失敗："
-      }
+      },
+      "temperature": "溫度"
     },
     "memory": {
       "warning": "以下設定項目已預設為推薦值。除非您清楚了解各項設定的含義及影響，否則建議維持現有設定",
@@ -242,6 +243,20 @@
         "cancel": "取消",
         "cleared": "記憶已清除",
         "clearFailed": "清除記憶失敗"
+      },
+      "modelMap": {
+        "name": "模型名稱",
+        "model": "模型",
+        "type": "類型",
+        "editWord": "綁定提示詞",
+        "operation": "操作",
+        "bindingSuccessful": "綁定成功",
+        "bindingFailed": "綁定失敗",
+        "currentBinding": "目前綁定",
+        "noBinding": "未綁定",
+        "bound": "已綁定",
+        "unbind": "取消綁定",
+        "filenName": "文件名稱"
       }
     },
     "login": {
@@ -265,6 +280,22 @@
       "clearDbDesc": "清除所有資料表中的資料，保留資料表結構",
       "clearData": "清除資料",
       "confirmAction": "確認操作",
+      "dbInfo": "資料庫概覽",
+      "dbInfoDesc": "查看所有資料表名稱和記錄數",
+      "viewInfo": "查看資訊",
+      "tableName": "表名",
+      "rowCount": "記錄數",
+      "totalTables": "共 {count} 個表",
+      "exportDb": "匯出資料庫",
+      "exportDbDesc": "將所有資料表匯出為 JSON 備份檔案",
+      "exportData": "匯出資料",
+      "importDb": "匯入資料庫",
+      "importDbDesc": "從 JSON 備份檔案恢復資料（將覆蓋當前資料）",
+      "importData": "匯入資料",
+      "clearTable": "清除指定資料表",
+      "clearTableDesc": "選擇一個資料表並清除其中的資料",
+      "clearTableBtn": "清除表",
+      "selectTable": "請選擇表",
       "msg": {
         "clearDbTitle": "清除資料庫",
         "firstConfirm": "確定要清除所有資料表嗎？資料清除後無法復原！",
@@ -274,7 +305,20 @@
         "pleaseInput": "請輸入",
         "cleared": "所有資料表已清除",
         "operationFailed": "操作失敗，請重試",
-        "cancelled": "操作已取消"
+        "cancelled": "操作已取消",
+        "exportSuccess": "資料庫匯出成功",
+        "exportFailed": "匯出失敗",
+        "importSuccess": "資料庫匯入成功，即將跳轉到登入頁",
+        "importFailed": "匯入失敗",
+        "invalidFile": "無效的備份檔案",
+        "clearTableSuccess": "資料表已清除",
+        "clearTableFailed": "清除資料表失敗",
+        "clearTableConfirm": "確定要清除表 {name} 嗎？此操作不可復原！",
+        "importConfirm": "匯入將覆蓋當前所有資料，確定要繼續嗎？",
+        "importSecondConfirm": "最後確認：匯入後當前資料將全部被替換！",
+        "noTableSelected": "請先選擇一個表",
+        "loadingDbInfo": "載入資料庫資訊中...",
+        "loadDbInfoFailed": "取得資料庫資訊失敗"
       }
     },
     "other": {
@@ -799,7 +843,10 @@
         }
       },
       "deleteScript": "大量刪除劇本",
-      "extractAssets": ""
+      "extractAssets": "",
+      "import": {
+        "episodeRegexPh": "自訂劇本拆分正規，留空使用預設拆分正規（預設按 第X集 格式拆分）"
+      }
     },
     "assets": {
       "addPrefix": "新增",
@@ -1292,7 +1339,7 @@
     "generateText": "AI生成提示詞",
     "selectStoryboard": "選擇分鏡",
     "generate": {
-      "noVideo": "暫無影片",
+      "noVideo": "暫無數據",
       "generateText": "AI生成提示詞",
       "selectStoryboard": "選擇分鏡",
       "generate": "產生影片",
@@ -1304,7 +1351,7 @@
       "batchGenerateText": "大量生成提示詞",
       "batchGenerateVideo": "大量生成視頻",
       "importVideo": "導入剪輯台",
-      "emptyTrack": "第{index 1}段",
+      "emptyTrack": "第{index}段",
       "del": "刪除",
       "delConfirm": "確認刪除該段？",
       "selectSource": "選擇來源",
@@ -1312,6 +1359,7 @@
       "cancel": "從分鏡選擇",
       "selectVideoFailed": "視訊選擇失敗",
       "selectVideoSuccess": "影片選擇成功",
+      "previewVideo": "影片預覽",
       "selectTrackFirst": "請先選擇分鏡",
       "noSelectedVideo": "沒有選擇的視頻",
       "generateConfirm": "確認生成",
@@ -1333,7 +1381,10 @@
       "assets": "資產",
       "promptText": "產生影片提示詞數據",
       "videoMenu": "產生影片",
-      "videoPreview": "影片預覽"
+      "videoPreview": "影片預覽",
+      "referenceImage": "參考圖片",
+      "generatePrompt": "產生提示詞",
+      "generateVideo": "產生影片"
     }
   },
   "login": {
@@ -1462,5 +1513,13 @@
   "workbench.assets.sex": "性別",
   "workbench.assets.audioText": "音訊內容",
   "workbench.assets.add.sex": "性別",
-  "workbench.assets.add.sexPh": "請輸入性別"
+  "workbench.assets.add.sexPh": "請輸入性別",
+  "settings.agent.advanced": "進階配置",
+  "settings.agent.ordinary": "簡易配置",
+  "settings.agent.temperature": "溫度",
+  "settings.agent.maxOutputTokens": "最大輸出Token",
+  "settings.agent.auto": "自動",
+  "settings.agent.manual": "手動",
+  "settings.agent.autoHint": "由模型自動決定輸出長度",
+  "settings.agent.msg.notmodel": "未選擇模型"
 }

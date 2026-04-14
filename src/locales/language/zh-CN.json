@@ -54,10 +54,38 @@
   },
   "settings": {
     "title": "ToonFlow设置",
+    "modelMap": {
+      "imageModel": "图像模型",
+      "videoModel": "视频模型",
+      "noModel": "暂无可用的图像或视频模型，请先在「模型服务」中添加",
+      "promptPlaceholder": "请输入该模式的提示词",
+      "save": "保存配置",
+      "col": {
+        "mode": "模式",
+        "prompt": "提示词"
+      },
+      "mode": {
+        "text": "文生图/文生视频",
+        "singleImage": "单图",
+        "multiReference": "多参考图",
+        "startEndRequired": "首尾帧（两张必填）",
+        "endFrameOptional": "首尾帧（尾帧可选）",
+        "startFrameOptional": "首尾帧（首帧可选）",
+        "videoReference": "视频参考",
+        "imageReference": "图片参考",
+        "audioReference": "音频参考",
+        "referenceSuffix": "参考"
+      },
+      "msg": {
+        "saveSuccess": "模型提示词映射已保存",
+        "saveFailed": "保存失败，请稍后重试"
+      }
+    },
     "menu": {
       "ui": "界面设置",
       "language": "语言设置",
       "vendorConfig": "模型服务",
+      "modelMap": "模型映射",
       "agentConfig": "Agent配置",
       "promptManage": "提示词管理",
       "skillManagement": "Skills技能管理",
@@ -216,7 +244,8 @@
         "saveFailed": "保存失败：",
         "getAgentListFailed": "获取Agent配置列表失败：",
         "toonflowNotFound": "Toonflow官方中转站不存在"
-      }
+      },
+      "temperature": "温度"
     },
     "memory": {
       "warning": "以下配置项已预设为推荐值。除非您清楚了解各项配置的含义及影响，否则建议维持现有设置",
@@ -248,6 +277,20 @@
         "cancel": "取消",
         "cleared": "记忆已清空",
         "clearFailed": "清空记忆失败"
+      },
+      "modelMap": {
+        "name": "模型名称",
+        "model": "模型",
+        "type": "类型",
+        "editWord": "绑定提示词",
+        "operation": "操作",
+        "bindingSuccessful": "绑定成功",
+        "bindingFailed": "绑定失败",
+        "currentBinding": "当前绑定",
+        "noBinding": "未绑定",
+        "bound": "已绑定",
+        "unbind": "取消绑定",
+        "filenName": "文件名称"
       }
     },
     "login": {
@@ -271,6 +314,22 @@
       "clearDbDesc": "清空所有数据表中的数据，保留表结构",
       "clearData": "清空数据",
       "confirmAction": "确认操作",
+      "dbInfo": "数据库概览",
+      "dbInfoDesc": "查看所有数据表名称和记录数",
+      "viewInfo": "查看信息",
+      "tableName": "表名",
+      "rowCount": "记录数",
+      "totalTables": "共 {count} 个表",
+      "exportDb": "导出数据库",
+      "exportDbDesc": "将所有数据表导出为 JSON 备份文件",
+      "exportData": "导出数据",
+      "importDb": "导入数据库",
+      "importDbDesc": "从 JSON 备份文件恢复数据（将覆盖当前数据）",
+      "importData": "导入数据",
+      "clearTable": "清空指定表",
+      "clearTableDesc": "选择一个数据表并清空其中的数据",
+      "clearTableBtn": "清空表",
+      "selectTable": "请选择表",
       "msg": {
         "clearDbTitle": "清空数据库",
         "firstConfirm": "确定要清空所有数据表吗？数据清空后无法恢复！",
@@ -280,7 +339,20 @@
         "pleaseInput": "请输入",
         "cleared": "所有数据表已清空",
         "operationFailed": "操作失败，请重试",
-        "cancelled": "操作已取消"
+        "cancelled": "操作已取消",
+        "exportSuccess": "数据库导出成功",
+        "exportFailed": "导出失败",
+        "importSuccess": "数据库导入成功，即将跳转到登录页",
+        "importFailed": "导入失败",
+        "invalidFile": "无效的备份文件",
+        "clearTableSuccess": "表已清空",
+        "clearTableFailed": "清空表失败",
+        "clearTableConfirm": "确定要清空表 {name} 吗？此操作不可恢复！",
+        "importConfirm": "导入将覆盖当前所有数据，确定要继续吗？",
+        "importSecondConfirm": "最后确认：导入后当前数据将全部被替换！",
+        "noTableSelected": "请先选择一个表",
+        "loadingDbInfo": "加载数据库信息中...",
+        "loadDbInfoFailed": "获取数据库信息失败"
       }
     },
     "skill": {
@@ -367,7 +439,10 @@
       "scroll": "滚动",
       "isInteracting": "生产页无限画布拖拽性能优化",
       "closeIsInteracting": "关闭",
-      "openIsInteracting": "开启"
+      "openIsInteracting": "开启",
+      "scriptEpisodeLength": "剧本单集长度限制",
+      "chars": "字",
+      "inputChars": "请输入字数"
     },
     "request": {
       "warning": "如非特殊情况，不需要修改或者配置",
@@ -443,7 +518,9 @@
         "web": "data/web",
         "webDesc": "Web 相关资源，如前端构建产物等。",
         "serve": "data/serve",
-        "serveDesc": "后端服务相关文件。"
+        "serveDesc": "后端服务相关文件。",
+        "vendor": "data/vendor",
+        "vendorDesc": "供应商目录。"
       },
       "openFailed": "打开文件夹失败"
     },
@@ -451,13 +528,57 @@
       "aiDevtool": "切换桌面端模式",
       "devtool": "打开控制台",
       "switchAiDevTool": "关闭/开启 {'@'}ai-sdk/devtools",
+      "localStorage": "浏览器 localStorage 管理",
+      "localStorageSearchPlaceholder": "按 key 或 value 搜索",
+      "localStorageKey": "Key",
+      "localStorageValue": "Value",
+      "localStorageKeyPlaceholder": "输入 localStorage 的 key",
+      "localStorageValuePlaceholder": "输入 localStorage 的 value",
+      "actions": "操作",
+      "refresh": "刷新",
+      "add": "新增",
+      "update": "更新",
+      "clearAll": "清空全部",
+      "copyKey": "复制 Key",
+      "copyValue": "复制 Value",
+      "format": "格式化 JSON",
+      "localStorageCount": "共 {total} 条，当前显示 {filtered} 条",
+      "creating": "正在新增",
+      "editing": "正在编辑：{key}",
+      "edit": "编辑",
+      "delete": "删除",
+      "save": "保存",
+      "reset": "重置",
       "warning": "以下为开发者工具，谨慎操作！",
       "openDevtool": "打开",
       "devtoolsDoc": "文档地址",
       "devtoolsDesc": "开启后会在Toonflow安装目录创建.devtools文件夹，请确保Toonflow有写入权限（管理员身份运行）。",
       "devtoolsDesc2": "在该目录运行 npx {'@'}ai-sdk/devtools 开启遥测调试",
       "openDevtoolFailed": "打开开发者工具失败，请确保已安装Toonflow桌面端",
-      "notInElectron": "WEB环境请手动打开浏览器控制台"
+      "notInElectron": "WEB环境请手动打开浏览器控制台",
+      "msg": {
+        "localStorageKeyRequired": "请输入 localStorage 的 key",
+        "localStorageKeyExists": "该 key 已存在，请更换后再保存",
+        "localStorageSaved": "localStorage 已保存",
+        "localStorageDeleted": "localStorage 已删除",
+        "localStorageCleared": "localStorage 已清空",
+        "localStorageKeyCopied": "Key 已复制",
+        "localStorageValueCopied": "Value 已复制",
+        "copyFailed": "复制失败",
+        "localStorageValueEmpty": "当前 value 为空，无法格式化",
+        "localStorageFormatted": "JSON 格式化成功",
+        "localStorageFormatFailed": "格式化失败，请检查是否为合法 JSON",
+        "deleteConfirmTitle": "确认删除 localStorage",
+        "deleteConfirmBody": "确认删除 key：{key} 吗？",
+        "confirmDelete": "确认删除",
+        "clearConfirmTitle": "确认清空 localStorage",
+        "clearConfirmBody": "该操作会清空当前站点下所有 localStorage 数据，且不可恢复，是否继续？",
+        "confirmClear": "确认清空",
+        "cancel": "取消"
+      }
+    },
+    "generate": {
+      "modelChnageSure": "确认清空"
     }
   },
   "workbench": {
@@ -752,7 +873,14 @@
         "confirmDelete": "确认删除",
         "scriptDeleted": "脚本已删除"
       },
-      "reconnect": "重新连接"
+      "reconnect": "重新连接",
+      "deepThink": "深度思考",
+      "thinkLevel": {
+        "off": "关闭思考",
+        "light": "轻度思考",
+        "deep": "深度思考",
+        "extreme": "极致思考"
+      }
     },
     "cornerScape": {
       "batchSettings": "批量生成设置",
@@ -893,7 +1021,11 @@
         }
       },
       "deleteScript": "批量删除剧本",
-      "extractAssets": "提取资产"
+      "extractAssets": "提取资产",
+      "import": {
+        "getAiRegex": "AI解析正则",
+        "episodeRegexPh": "自定义剧本拆分正则"
+      }
     },
     "assets": {
       "addPrefix": "新增",
@@ -1422,6 +1554,7 @@
       "generateSuccess": "视频生成成功",
       "selectVideoFailed": "视频选择失败",
       "selectVideoSuccess": "视频选择成功",
+      "previewVideo": "视频预览",
       "selectTrackFirst": "请先选择分镜",
       "noSelectedVideo": "没有选择的视频",
       "generateConfirm": "确认生成",
@@ -1443,7 +1576,12 @@
       "assets": "资产",
       "promptText": "生成视频提示词数据",
       "videoMenu": "生成视频",
-      "videoPreview": "视频预览"
+      "videoPreview": "视频预览",
+      "referenceImage": "参考图片",
+      "generatePrompt": "生成提示词",
+      "generateVideo": "生成视频",
+      "modeChange": "清空内容",
+      "modeChangeConfirm": "切换模式将会清空当前选中的图片和提示词"
     }
   },
   "login": {
@@ -1604,6 +1742,14 @@
   "workbench.assets.add.audioNamePh": "请输入音色",
   "workbench.assets.add.audioFile": "音频文件",
   "workbench.cornerScape.batchBingAudio": "一键绑定音频",
-  "workbench.cornerScape.msg.selectAtLeastBindOne": "请至少选择一个资产进行绑定"
+  "workbench.cornerScape.msg.selectAtLeastBindOne": "请至少选择一个资产进行绑定",
+  "settings.generate.delConfirmBtn": "确认删除",
+  "settings.agent.advanced": "高级配置",
+  "settings.agent.ordinary": "简易配置",
+  "settings.agent.temperature": "温度",
+  "settings.agent.maxOutputTokens": "最大输出Token",
+  "settings.agent.auto": "自动",
+  "settings.agent.manual": "手动",
+  "settings.agent.autoHint": "由模型自动决定输出长度",
+  "settings.agent.msg.notmodel": "未选择模型"
 }
-

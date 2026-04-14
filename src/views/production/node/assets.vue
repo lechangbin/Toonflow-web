@@ -116,6 +116,7 @@ async function save({ imageUrl, flowId }: { imageUrl: string; flowId: number }) 
   for (const i of assets.value) {
     const target = i.derive.find((s) => s.id === currentAssetsId.value);
     if (target) {
+      target.state = '已完成'
       target.src = imageUrl;
       target.flowId = flowId;
       break;

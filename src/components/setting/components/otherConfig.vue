@@ -38,6 +38,15 @@
           :allowInputOverLimit="false"
           :placeholder="$t('settings.other.inputCount')" />
       </t-form-item>
+      <t-form-item :label="$t('settings.other.scriptEpisodeLength')" name="scriptEpisodeLength">
+        <t-input-number
+          auto-width
+          :suffix="$t('settings.other.chars')"
+          :min="100"
+          v-model="otherSetting.scriptEpisodeLength"
+          :allowInputOverLimit="false"
+          :placeholder="$t('settings.other.inputChars')" />
+      </t-form-item>
     </t-form>
   </div>
 </template>

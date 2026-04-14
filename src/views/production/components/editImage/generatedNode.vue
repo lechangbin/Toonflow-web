@@ -86,7 +86,8 @@ import type { DropdownOption } from "tdesign-vue-next/es/dropdown";
 import type { Storyboard } from "../../utils/flowBuilder";
 import openAssetsSelector from "@/utils/assetsCheck";
 import { useFileDialog } from "@vueuse/core";
-
+import projectStore from "@/stores/project";
+const { project } = storeToRefs(projectStore());
 const openStoryboardCheck = inject<() => Promise<Storyboard[]>>("openStoryboardCheck")!;
 const { open, onChange, onCancel } = useFileDialog({ multiple: false, reset: true, accept: ".png,.jpg,.jpeg" });
 
@@ -111,7 +112,6 @@ const props = defineProps<{
   id: string;
   data: GeneratedNodeData;
   projectId: number;
-  imageDefaultModle: any;
 }>();
 
 function selectedFn() {
@@ -123,7 +123,6 @@ function clickHandler(data: DropdownOption) {
   } else if (data.value == 2) {
     getStoryboardImage();
   } else if (data.value == 3) {
-    console.log("%c Line:124 🍷", "background:#4fff4B");
     lensImage();
   }
 }
@@ -200,11 +199,9 @@ function handleKeep() {
   emit("keep", props.data.generatedImage);
 }
 onMounted(() => {
-  if (props.imageDefaultModle) {
-    props.data.model = props.imageDefaultModle?.imageModel ?? "";
-    props.data.quality = props.imageDefaultModle?.imageQuality ?? "";
-    props.data.ratio = "16:9";
-  }
+  props.data.model = project.value?.imageModel ?? "";
+  props.data.quality = project.value?.imageQuality ?? "";
+  props.data.ratio = project.value?.videoRatio ?? "16:9";
 });
 </script>
 
