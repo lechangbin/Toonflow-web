@@ -16,7 +16,7 @@
               {{ $t("workbench.generate.generateText") }}
             </t-button>
           </template>
-          <div class="promptData">
+          <div class="promptData fc">
             <div class="promptInput" @focusout="handlePromptBlur">
               <promptEditor v-model="currentTrack.prompt" :references="references" :placeholder="$t('workbench.generate.promptPlaceholder')" />
             </div>
@@ -97,7 +97,6 @@ const imageList = computed({
     // 触发对 urlMap 的依赖追踪，当 warmUpUrls 更新 urlMap 后自动重新计算
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     urlMap.value;
-
     const trackId = currentTrack.value?.id;
     const pid = project.value?.id;
     const sid = episodesId.value;
@@ -303,8 +302,8 @@ const genTextLoadingMap = ref<Record<number, boolean>>({}); // trackId -> 是否
 async function genText() {
   if (currentTrack.value.id == null || genTextLoadingMap.value[currentTrack.value.id]) return;
   let info = [];
-  const currentTrackId = currentTrack.value.id
-  const changeTrack = currentTrack.value
+  const currentTrackId = currentTrack.value.id;
+  const changeTrack = currentTrack.value;
   if (modelParmas.value.mode == "text") {
     info = changeTrack?.medias.map(({ id, sources }) => ({ id, sources }));
   } else {
@@ -492,7 +491,6 @@ watch(
 onUnmounted(() => {
   stopPoll();
 });
-
 </script>
 
 <style lang="scss" scoped>
@@ -506,11 +504,13 @@ onUnmounted(() => {
   }
   .generate {
     flex: 1;
+    min-height: 0;
     width: 100%;
     gap: 5px;
     .prompt {
       width: 50%;
       height: 100%;
+      min-height: 0;
       .videoPrompt {
         width: 100%;
         height: 100%;
@@ -520,18 +520,20 @@ onUnmounted(() => {
         :deep(.t-card__body) {
           flex: 1;
           min-height: 0;
-          overflow: auto;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
         }
         .promptData {
           width: 100%;
-          height: 100%;
+          flex: 1;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
           .promptInput {
-            border: 1px solid var(--td-component-border);
-            border-radius: 8px;
-            min-height: 100px;
-            height: 300px;
-            overflow: auto;
-            resize: vertical;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
           }
         }
       }
@@ -539,6 +541,7 @@ onUnmounted(() => {
     .video {
       width: 50%;
       height: 100%;
+      min-height: 0;
     }
   }
   .track {

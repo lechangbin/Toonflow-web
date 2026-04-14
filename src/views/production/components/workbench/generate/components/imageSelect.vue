@@ -4,13 +4,18 @@
     <template v-if="mode == 'singleImage' || Array.isArray(parseMode(mode as string))">
       <div class="uploadBtn c fc" v-for="(item, index) in imageList" :key="index">
         <template v-if="item.src">
-          <img class="uploadPreview" :src="item.src" />
+          <t-image :src="item.src" fit="contain" class="uploadPreview">
+            <template #overlayContent></template>
+          </t-image>
         </template>
         <template v-else>
           <t-tooltip theme="primary" :content="item?.prompt || ''">
             <span style="font-size: 20px">文</span>
           </t-tooltip>
         </template>
+        <div class="imageToolsWrap" v-if="item.sources == 'storyboard' && item.index">
+          {{ `P${item.index + 1}` }}
+        </div>
         <div class="clearBtn" @click="splitImage(index)">
           <i-close size="12" />
         </div>
@@ -22,20 +27,25 @@
       </div>
     </template>
     <template v-else-if="mode == 'endFrameOptional' || mode == 'startFrameOptional' || mode == 'startEndRequired'">
-      <div class="uploadBtn c fc" v-for="(item, index) in buildLable" :key="index" @click="handleMixedAdd(item.value)">
-        <div v-if="imageList?.[index] && imageList?.[index].id" style="flex: 1">
-          <template v-if="imageList?.[index].src">
+      <div class="uploadBtn c fc" v-for="(item, index) in buildLabel" :key="item.value" @click="handleMixedAdd(item.value as 'start' | 'end')">
+        <div v-if="!isEmptySlot(imageList?.[index])" style="flex: 1" class="ac">
+          <template v-if="imageList?.[index]?.src">
             <img class="uploadPreview" :src="imageList?.[index].src" />
           </template>
           <template v-else>
-            <span style="font-size: 20px">文</span>
+            <t-tooltip theme="primary" :content="imageList?.[index]?.prompt || ''">
+              <span style="font-size: 20px">文</span>
+            </t-tooltip>
           </template>
+          <div class="imageToolsWrap" v-if="imageList?.[index]?.sources == 'storyboard' && imageList?.[index]?.index">
+            {{ `P${imageList[index]?.index + 1}` }}
+          </div>
           <div class="clearBtn" @click.stop="clearImage(index)">
             <i-close size="12" />
           </div>
           <div class="source">
             <t-tag size="small">
-              {{ imageList?.[index].sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}
+              {{ imageList?.[index]?.sources == "storyboard" ? $t("workbench.generate.storyboard") : $t("workbench.generate.assets") }}
             </t-tag>
           </div>
         </div>
@@ -62,7 +72,7 @@
           <img v-if="sb.src" :src="sb.src" />
           <div v-else class="textBox ac jc">
             <t-tooltip theme="primary" :content="sb?.videoDesc || ''">
-              <span style="font-size: 20px">文</span>
+              <span style="font-size: 20px">{{ `分镜 ${sb?.index + 1 || ""}` }}</span>
             </t-tooltip>
           </div>
         </div>
@@ -86,7 +96,13 @@ const imageList = defineModel<UploadItem[]>({
 //分镜选择弹窗
 const storyboardDialogVisible = ref(false);
 
-const buildLable = computed(() => {
+/** 空占位项，用于首尾帧模式中未设置的槽位 */
+const EMPTY_SLOT: UploadItem = { fileType: "image", id: null, src: "" } as any;
+function isEmptySlot(item: UploadItem | undefined): boolean {
+  return !item || !item.id;
+}
+
+const buildLabel = computed(() => {
   const startOptional = props.mode === "startFrameOptional";
   const endOptional = props.mode === "endFrameOptional";
   return [
@@ -94,6 +110,21 @@ const buildLable = computed(() => {
     { label: endOptional ? "尾帧(可选)" : "尾帧", value: "end" },
   ];
 });
+
+/** 确保 imageList 始终有两个槽位（首帧 index=0，尾帧 index=1） */
+function ensureFrameSlots(): UploadItem[] {
+  const list = [...imageList.value];
+  while (list.length < 2) list.push({ ...EMPTY_SLOT });
+  return list;
+}
+
+/** 将 item 设置到首帧或尾帧槽位 */
+function setFrameSlot(slot: "start" | "end", item: UploadItem) {
+  const list = ensureFrameSlots();
+  list[slot === "start" ? 0 : 1] = item;
+  imageList.value = list;
+}
+
 /** 解析模式值（字符串或 JSON 数组） */
 function parseMode(value: string): VideoMode | null {
   if (!value) return null;
@@ -134,9 +165,9 @@ const mixedClipMediaTypes = computed<ClipMediaType[]>(() => {
   const map: Record<string, ClipMediaType> = { audioReference: "audio", imageReference: "image", videoReference: "video" };
   return mode.filter((m) => m in map).map((m) => map[m]);
 });
-let currentLocal = "";
-function handleMixedAdd(local: string = "") {
-  currentLocal = local ?? "";
+let currentSlot: "start" | "end" | "" = "";
+function handleMixedAdd(slot: "start" | "end" | "" = "") {
+  currentSlot = slot;
   const multiple = Array.isArray(parseMode(props.mode as string));
   const dlg = DialogPlugin.confirm({
     header: $t("workbench.generate.selectSource"),
@@ -158,25 +189,8 @@ function handleMixedAdd(local: string = "") {
           prompt: asset.prompt,
         };
       });
-      if (local) {
-        const list = [...imageList.value];
-        if (list.length >= 2) {
-          const index = local == "start" ? 0 : 1;
-          list[index] = newItems[0];
-        } else if (list.length == 1) {
-          if (local == "start") {
-            list.unshift(newItems[0]);
-          } else {
-            list.push(newItems[0]);
-          }
-        } else {
-          if (local == "start") {
-            list.unshift(newItems[0]);
-          } else {
-            list.push({ id: "" } as any, newItems[0]);
-          }
-        }
-        imageList.value = list;
+      if (slot === "start" || slot === "end") {
+        setFrameSlot(slot, newItems[0]);
       } else {
         imageList.value = [...imageList.value, ...newItems];
       }
@@ -188,8 +202,8 @@ function handleMixedAdd(local: string = "") {
   });
 }
 function clearImage(index: number) {
-  const list = [...imageList.value];
-  list[index] = { id: null, src: "" } as any;
+  const list = ensureFrameSlots();
+  list[index] = { ...EMPTY_SLOT };
   imageList.value = list;
 }
 /** 分镜弹窗选中回调 */
@@ -201,29 +215,12 @@ function pickStoryboard(sb: StoryboardItem) {
     sources: "storyboard",
     src: sb.src,
     id: sb.id,
-    prompt: sb.prompt ?? undefined,
+    prompt: sb.videoDesc ?? undefined,
     index: sb.index,
   } as UploadItem;
 
-  if (currentLocal) {
-    const list = [...imageList.value];
-    if (list.length >= 2) {
-      const index = currentLocal == "start" ? 0 : 1;
-      list[index] = newItem;
-    } else if (list.length == 1) {
-      if (currentLocal == "start") {
-        list.unshift(newItem);
-      } else {
-        list.push(newItem);
-      }
-    } else {
-      if (currentLocal == "start") {
-        list.unshift(newItem);
-      } else {
-        list.push({ id: "" } as any, newItem);
-      }
-    }
-    imageList.value = list;
+  if (currentSlot === "start" || currentSlot === "end") {
+    setFrameSlot(currentSlot, newItem);
   } else {
     imageList.value = [...imageList.value, newItem];
   }
@@ -245,11 +242,8 @@ function splitImage(index: number) {
     height: 6px;
   }
   &::-webkit-scrollbar-thumb {
-    background-color: var(--td-scrollbar-color);
+    background: #696969;
     border-radius: 4px;
-    &:hover {
-      background-color: var(--td-scrollbar-hover-color);
-    }
   }
   &::-webkit-scrollbar-track {
     background-color: var(--td-bg-color-secondarycontainer);
@@ -266,6 +260,20 @@ function splitImage(index: number) {
     &:hover {
       border-color: var(--td-text-color);
       cursor: pointer;
+    }
+    .imageToolsWrap {
+      position: absolute;
+      left: 4px;
+      top: 4px;
+      padding: 0 5px;
+      font-size: 11px;
+      line-height: 18px;
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      border-radius: 4px;
+      backdrop-filter: blur(4px);
+      user-select: none;
+      white-space: nowrap;
     }
     .uploadPreview {
       width: 100%;
