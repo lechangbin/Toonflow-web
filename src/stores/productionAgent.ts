@@ -67,8 +67,6 @@ function makeProductionAgentStore(projectId: string) {
         } else if (tag === "storyboardItem") {
           if (status === "complete") {
             const prompt = attrs.prompt ?? "";
-
-
             const duration = Number(attrs.duration) || 0;
             const track = attrs.track || "";
             const shouldGenerateImage =
@@ -76,8 +74,6 @@ function makeProductionAgentStore(projectId: string) {
                 String(attrs.shouldGenerateImage).toLowerCase() == "true"
                 ? 1
                 : 0;
-
-
             const videoDesc = attrs?.videoDesc ?? "";
             const existingIndex = flowData.value.storyboard.findIndex(
               (s) => s.prompt == prompt && s.duration == duration && videoDesc == s.videoDesc,

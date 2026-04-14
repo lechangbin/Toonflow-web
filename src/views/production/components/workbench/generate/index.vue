@@ -6,7 +6,7 @@
       </div>
     </div>
     <div class="modelSelect">
-      <modeMenu v-model="modelParmas" :modeOptions="modeOptions" :modeList="modeList" @modeChange="modeChange" />
+      <modeMenu v-model="modelParmas" :modeOptions="modeOptions" :trackId="currentTrack?.id" :modeList="modeList" @modeChange="modeChange" />
     </div>
     <div class="generate ac">
       <div class="prompt" v-if="currentTrack">
@@ -289,7 +289,7 @@ async function getGenerateData() {
     trackList.value = [...data.trackList];
   }
 
-  modelParmas.value.duration = clampDuration(data.trackList[activeTrackIndex.value].duration);
+  modelParmas.value.duration = clampDuration(data.trackList?.[activeTrackIndex.value]?.duration);
 }
 /** 提示词失焦时保存到后端 */
 function handlePromptBlur() {
@@ -361,7 +361,7 @@ function trackChange(prevIndex?: number) {
   if (modelParmas.value.mode == "singleImage" && imageList.value.length > 1) {
     imageList.value = imageList.value.slice(0, 1);
   }
-  modelParmas.value.duration = clampDuration(trackList.value[activeTrackIndex.value].duration);
+  modelParmas.value.duration = clampDuration(trackList.value?.[activeTrackIndex.value]?.duration);
 }
 /** 监听当前轨道的 medias 变化，实时同步到缓存 */
 watch(
@@ -382,6 +382,9 @@ onMounted(() => {
   modelParmas.value.model = project.value?.videoModel || "";
   modelParmas.value.mode = project.value?.mode || "";
   getGenerateData();
+  if (hasGenerateVideoIds.value && hasGenerateVideoIds.value.length) {
+    startPoll();
+  }
 });
 /** 单个轨道生成视频 */
 async function generateVideo() {
@@ -431,6 +434,63 @@ async function generateVideo() {
     onCancel: () => dlg.destroy(),
   });
 }
+let pollTimer: NodeJS.Timeout | null = null;
+
+function startPoll() {
+  if (pollTimer !== null) return;
+  pollTimer = setInterval(() => getVideoList(), 3000);
+}
+
+function stopPoll() {
+  if (pollTimer) {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+}
+const hasGenerateVideoIds = computed(() => {
+  return trackList.value
+    .map((track) => {
+      return track.videoList.filter((i) => i.state == "生成中").map((i) => i.id);
+    })
+    .flatMap((i) => i);
+});
+
+/** 查询所有视频列表，并检测生成完成/失败状态 */
+async function getVideoList() {
+  const { data } = await axios.post("/production/workbench/checkVideoStateList", {
+    projectId: project.value?.id,
+    scriptId: episodesId.value ?? 0,
+    videoIds: hasGenerateVideoIds.value,
+  });
+  if (data && data.length) {
+    data.forEach((item: { id: number; state: "生成中" | "未生成" | "已完成" | "生成失败"; src?: string; errorReason?: string }) => {
+      for (const track of trackList.value) {
+        const findData = track.videoList.find((i) => i.id == item.id);
+        if (findData) {
+          findData.state = item.state;
+          findData.src = item?.src ?? "";
+          findData.errorReason = item?.errorReason ?? "";
+          break;
+        }
+      }
+    });
+  }
+}
+watch(
+  () => hasGenerateVideoIds.value,
+  (newVal) => {
+    if (newVal && newVal.length > 0) {
+      startPoll();
+    } else {
+      stopPoll();
+    }
+  },
+);
+
+onUnmounted(() => {
+  stopPoll();
+});
+
 </script>
 
 <style lang="scss" scoped>

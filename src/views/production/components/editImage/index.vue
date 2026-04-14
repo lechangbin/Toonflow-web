@@ -13,7 +13,7 @@
     </div>
     <VueFlow
       id="editImage"
-      class="editImage"
+      class="editImageCls"
       v-model:nodes="nodes"
       v-model:edges="edges"
       :min-zoom="0.01"
@@ -90,7 +90,7 @@ let storyboardResolve: ((rows: Storyboard[]) => void) | null = null;
 
 provide("openStoryboardCheck", openStoryboardCheck);
 
-const { toObject, fromObject, fitView } = useVueFlow("editImage");
+const { toObject, fromObject, fitView } = useVueFlow({ id: "editImage" });
 const { layout } = useLayout("editImage");
 
 const props = withDefaults(
@@ -252,19 +252,8 @@ async function sureNode(imageUrl: string) {
     window.$message.error((e as any).message || $t("workbench.production.editImage.saveFailed"));
   }
 }
-// const imageDefaultModle = ref({
-//   imageModel: "",
-//   imageQuality: "",
-// });
 onMounted(async () => {
   try {
-    // const { data: imageModel } = await axios.post("/production/editImage/getImageDefaultModle", {
-    //   projectId: project.value!.id,
-    // });
-    // if (imageModel) {
-    //   imageDefaultModle.value = imageModel;
-    // }
-
     if (!props.flowData.flowId) return buildFlow();
     const { data } = await axios.post("/production/editImage/getImageFlow", {
       id: props.flowData.flowId,
@@ -272,6 +261,8 @@ onMounted(async () => {
     if (!data) return buildFlow();
     edges.value = data.edges.map((e: any) => ({ ...e, ...DEFAULT_EDGE_OPTIONS }));
     nodes.value = data.nodes;
+    await nextTick();
+    setTimeout(() => fitView({ duration: 300 }), 100);
   } catch (e) {
     window.$message.error((e as any).message || $t("workbench.production.editImage.fetchFailed"));
   }
@@ -297,7 +288,10 @@ function buildFlow() {
       });
     }
   }
-  nextTick(syncReferences);
+  nextTick(() => {
+    syncReferences();
+    setTimeout(() => fitView({ duration: 300 }), 100);
+  });
 }
 
 function closeFn() {
@@ -339,7 +333,7 @@ async function layoutGraph(direction: "LR" | "TB") {
     z-index: 9999;
     cursor: pointer;
   }
-  .editImage {
+  .editImageCls {
     width: 100%;
   }
 }

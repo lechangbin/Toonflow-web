@@ -208,60 +208,7 @@ function previewVideo(v: HistoryVideoItem) {
   if (v.state === "生成中" || v.state === "生成失败") return;
 }
 
-const hasGenerateVideoIds = computed(() => {
-  return currentTrack.value.videoList.filter((i) => i.state == "生成中").map((i) => i.id);
-});
-let pollTimer: NodeJS.Timeout | null = null;
 
-function startPoll() {
-  if (pollTimer !== null) return;
-  pollTimer = setInterval(() => getVideoList(), 3000);
-}
-
-function stopPoll() {
-  if (pollTimer) {
-    clearInterval(pollTimer);
-    pollTimer = null;
-  }
-}
-
-/** 查询所有视频列表，并检测生成完成/失败状态 */
-async function getVideoList() {
-  const { data } = await axios.post("/production/workbench/checkVideoStateList", {
-    projectId: project.value?.id,
-    scriptId: episodesId.value ?? 0,
-    videoIds: hasGenerateVideoIds.value,
-  });
-  if (data && data.length) {
-    data.forEach((item: { id: number; state: "生成中" | "未生成" | "已完成" | "生成失败"; src?: string; errorReason?: string }) => {
-      const findData = currentTrack.value.videoList.find((i) => i.id == item.id);
-      if (findData) {
-        findData.state = item.state;
-        findData.src = item?.src ?? "";
-        findData.errorReason = item?.errorReason ?? "";
-      }
-    });
-  }
-}
-watch(
-  () => hasGenerateVideoIds.value,
-  (newVal) => {
-    if (newVal && newVal.length > 0) {
-      startPoll();
-    } else {
-      stopPoll();
-    }
-  },
-);
-
-onUnmounted(() => {
-  stopPoll();
-});
-onMounted(() => {
-  if (hasGenerateVideoIds.value && hasGenerateVideoIds.value.length) {
-    startPoll();
-  }
-});
 </script>
 
 <style lang="scss" scoped>

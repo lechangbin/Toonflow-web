@@ -2,6 +2,7 @@
   <VueFlow
     class="flowMain"
     :class="{ 'is-interacting': isInteracting && otherSetting.interacting, 'space-dragging': isSpacePressed }"
+    id="mainFlowBox"
     @mousedown="onSpaceMouseDown"
     :nodes="episodesId ? nodes : []"
     :edges="episodesId ? edges : []"
@@ -122,7 +123,7 @@ const {
   getNodes,
   getViewport,
   setViewport,
-} = useVueFlow();
+} = useVueFlow({ id: "mainFlowBox" });
 
 // 按住空格+左键拖拽画布（即使在节点上）
 const isSpacePressed = ref(false);
@@ -173,7 +174,7 @@ function stopInteracting() {
 onNodeDragStart(() => startInteracting());
 onMoveStart(() => startInteracting());
 onMoveEnd(() => stopInteracting());
-const { layout } = useLayout();
+const { layout } = useLayout("mainFlowBox");
 
 import productionAgentStore from "@/stores/productionAgent";
 const { episodesId, flowData, status } = storeToRefs(productionAgentStore());
