@@ -97,7 +97,6 @@ const imageList = computed({
     // 触发对 urlMap 的依赖追踪，当 warmUpUrls 更新 urlMap 后自动重新计算
     // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     urlMap.value;
-
     const trackId = currentTrack.value?.id;
     const pid = project.value?.id;
     const sid = episodesId.value;
@@ -303,8 +302,8 @@ const genTextLoadingMap = ref<Record<number, boolean>>({}); // trackId -> 是否
 async function genText() {
   if (currentTrack.value.id == null || genTextLoadingMap.value[currentTrack.value.id]) return;
   let info = [];
-  const currentTrackId = currentTrack.value.id
-  const changeTrack = currentTrack.value
+  const currentTrackId = currentTrack.value.id;
+  const changeTrack = currentTrack.value;
   if (modelParmas.value.mode == "text") {
     info = changeTrack?.medias.map(({ id, sources }) => ({ id, sources }));
   } else {
@@ -492,7 +491,6 @@ watch(
 onUnmounted(() => {
   stopPoll();
 });
-
 </script>
 
 <style lang="scss" scoped>

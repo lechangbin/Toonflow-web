@@ -50,7 +50,7 @@
               </template>
             </template>
           </div>
-          <span v-else class="emptyTrack">{{ $t("workbench.generate.emptyTrack", { index }) }}</span>
+          <span v-else class="emptyTrack">{{ $t("workbench.generate.emptyTrack", { index: index + 1 }) }}</span>
           <div class="deleteBtn" @click.stop="confirmDeleteTrack(index)">
             <i-close size="14" />
           </div>
