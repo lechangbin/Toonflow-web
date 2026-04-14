@@ -316,7 +316,7 @@ async function genText() {
               : modelParmas.value.mode === "singleImage"
                 ? imageList.value.slice(0, 1)
                 : imageList.value;
-            const filtered = preSliced.filter((item) => Boolean(item.src) && item.id).map(({ id, sources }) => ({ id, sources }));
+            const filtered = preSliced.filter((item) => item.id).map(({ id, sources }) => ({ id, sources }));
             if (frameMode.includes(modelParmas.value.mode)) return filtered.slice(0, 2);
             if (modelParmas.value.mode === "singleImage") return filtered.slice(0, 1);
             return filtered;

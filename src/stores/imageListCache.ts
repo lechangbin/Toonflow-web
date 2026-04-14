@@ -17,6 +17,17 @@ type CachedUploadItem = Omit<UploadItem, "src"> & { src?: string };
 
 type ImageListCacheData = Record<CacheKey, Record<CacheKey, Record<CacheKey, CachedUploadItem[]>>>;
 
+/** 用于向后端请求 URL 的标识信息 */
+interface ResolveUrlItem {
+    id: number | null | undefined;
+    sources: string | undefined;
+}
+
+/** 生成 urlMap 的复合键: "id:sources" */
+function makeUrlKey(id: number | null | undefined, sources: string | undefined): string {
+    return `${id ?? ""}:${sources ?? ""}`;
+}
+
 /** 从完整 URL 中提取路径部分（去掉 origin） */
 function extractPath(url: string | undefined): string {
     if (!url) return "";
@@ -44,42 +55,52 @@ export default defineStore(
     () => {
         const cacheData = ref<ImageListCacheData>({});
 
-        /** URL 解析缓存: filePath -> 后端返回的完整 URL，避免重复请求 */
+        /** URL 解析缓存: "id:sources" -> 后端返回的完整 URL，避免重复请求 */
         const urlMap = ref<Record<string, string>>({});
 
         /**
-         * ========== TODO: 后端接口 ==========
-         * 批量通过文件路径获取当前可用的完整 URL
+         * 批量通过 id + sources 获取当前可用的完整 URL
          *
          * 请求示例:
-         *   POST /file/resolveUrls
-         *   Body: { paths: ["/uploads/images/xxx.png", "/uploads/images/yyy.png"] }
+         *   POST /production/workbench/getFileUrl
+         *   Body: { items: [{ id: 1, sources: "storyboard" }, { id: 2, sources: "assets" }] }
          *
          * 期望响应:
-         *   { data: { "/uploads/images/xxx.png": "http://localhost:12345/uploads/images/xxx.png", ... } }
-         *
-         * 你需要在后端实现这个接口，根据文件路径返回当前可访问的完整 URL。
-         * =====================================
+         *   { data: [{ id: 1, sources: "storyboard", url: "http://..." }, ...] }
+         *   或 { data: { "1:storyboard": "http://...", ... } }
          */
-        async function resolveUrls(paths: string[]): Promise<Record<string, string>> {
-            if (!paths.length) return {};
-            // 过滤掉已经解析过的、空路径、以及特殊协议
-            const needResolve = paths.filter((p) => p && !urlMap.value[p] && !p.startsWith("data:") && !p.startsWith("blob:"));
+        async function resolveUrls(items: ResolveUrlItem[]): Promise<Record<string, string>> {
+
+            if (!items.length) return {};
+            // 过滤掉已经解析过的、id 无效的项
+            const needResolve = items.filter((item) => {
+                if (item.id == null) return false;
+                const key = makeUrlKey(item.id, item.sources);
+                return !urlMap.value[key];
+            });
+
             if (needResolve.length) {
                 try {
-                    const { data } = await axios.post("/production/workbench/getFileUrl", { paths: needResolve });
+                    const { data } = await axios.post("/production/workbench/getFileUrl", {
+                        items: needResolve.map((item) => ({ id: item.id, sources: item.sources })),
+                    });
                     // axios 拦截器已返回 response.data，后端可能再包一层 { data: { ... } }
                     const rawData = data.data;
 
                     // 兼容多种后端响应格式
-                    let resolved: Record<string, string> = {};
-                    if (rawData && typeof rawData === "object" && !Array.isArray(rawData)) {
-                        // 格式: { [path]: fullUrl }
-                        resolved = rawData;
-                    } else if (Array.isArray(rawData)) {
-                        // 格式: [{ path: "...", url: "..." }, ...]
+                    const resolved: Record<string, string> = {};
+                    if (Array.isArray(rawData)) {
+                        // 格式: [{ id: 1, sources: "storyboard", url: "http://..." }, ...]
                         rawData.forEach((item: any) => {
-                            if (item.path && item.url) resolved[item.path] = item.url;
+                            if (item.id != null && item.url) {
+                                const key = makeUrlKey(item.id, item.sources);
+                                resolved[key] = item.url;
+                            }
+                        });
+                    } else if (rawData && typeof rawData === "object" && !Array.isArray(rawData)) {
+                        // 格式: { "id:sources": fullUrl } 或 { [compositeKey]: fullUrl }
+                        Object.entries(rawData).forEach(([key, url]) => {
+                            resolved[key] = url as string;
                         });
                     }
 
@@ -89,31 +110,30 @@ export default defineStore(
                     console.warn("[imageListCache] resolveUrls 请求失败，降级使用路径", e);
                 }
             }
-            // 返回所有请求路径的映射（含之前缓存的）
+            // 返回所有请求项的映射（含之前缓存的）
             const result: Record<string, string> = {};
-            paths.forEach((p) => {
-                result[p] = urlMap.value[p] || p;
+            items.forEach((item) => {
+                const key = makeUrlKey(item.id, item.sources);
+                result[key] = urlMap.value[key] || item.id?.toString() || "";
             });
             return result;
         }
 
-        /** 将单个路径解析为完整 URL（优先走内存缓存） */
-        function resolveUrlSync(path: string | undefined): string {
-            if (!path) return "";
-            if (path.startsWith("data:") || path.startsWith("blob:")) return path;
-            // 直接命中
-            if (urlMap.value[path]) return urlMap.value[path];
-            // 如果传入的是完整 URL，尝试用提取后的路径匹配
-            const extracted = extractPath(path);
-            if (extracted !== path && urlMap.value[extracted]) return urlMap.value[extracted];
-            return path;
+        /** 通过 id + sources 同步解析为完整 URL（优先走内存缓存） */
+        function resolveUrlSync(id: number | null | undefined, sources: string | undefined, fallbackPath?: string): string {
+            if (id != null) {
+                const key = makeUrlKey(id, sources);
+                if (urlMap.value[key]) return urlMap.value[key];
+            }
+            // 降级返回原始路径
+            return fallbackPath || "";
         }
 
         /** 将缓存项还原为带完整 URL 的 UploadItem[]（同步版，需先调用 resolveUrls） */
         function toFullItems(items: CachedUploadItem[]): UploadItem[] {
             return items.map((item) => ({
                 ...item,
-                src: resolveUrlSync(item.src),
+                src: resolveUrlSync(item.id, (item as any).sources, item.src),
             })) as UploadItem[];
         }
 
@@ -134,9 +154,11 @@ export default defineStore(
         async function getCacheWithResolve(projectId: CacheKey, scriptId: CacheKey, trackId: CacheKey): Promise<UploadItem[] | undefined> {
             const cached = cacheData.value[projectId]?.[scriptId]?.[trackId];
             if (!cached) return undefined;
-            // 收集所有需要解析的路径
-            const paths = cached.map((item) => item.src).filter(Boolean) as string[];
-            await resolveUrls(paths);
+            // 收集所有需要解析的 id + sources
+            const resolveItems: ResolveUrlItem[] = cached
+                .filter((item) => item.id != null)
+                .map((item) => ({ id: item.id, sources: (item as any).sources }));
+            await resolveUrls(resolveItems);
             return toFullItems(cached);
         }
 
@@ -158,14 +180,13 @@ export default defineStore(
             if (!cacheData.value[projectId][scriptId]) {
                 cacheData.value[projectId][scriptId] = {};
             }
-            // 将带完整 URL 的 src 写入 urlMap（path → fullUrl）
+            // 将带完整 URL 的 src 通过 id:sources 写入 urlMap
             let urlMapDirty = false;
             imageList.forEach((item) => {
-                if (!item.src) return;
-                const path = extractPath(item.src);
-                // src 本身是完整 URL 且和提取的路径不同，说明可以建立映射
-                if (path !== item.src && !urlMap.value[path]) {
-                    urlMap.value[path] = item.src;
+                if (!item.src || item.id == null) return;
+                const key = makeUrlKey(item.id, (item as any).sources);
+                if (!urlMap.value[key]) {
+                    urlMap.value[key] = item.src;
                     urlMapDirty = true;
                 }
             });
@@ -229,17 +250,19 @@ export default defineStore(
         async function warmUpUrls(projectId: CacheKey, scriptId: CacheKey): Promise<void> {
             const scriptCache = cacheData.value[projectId]?.[scriptId];
             if (!scriptCache) return;
-            const allPaths: string[] = [];
+            const allItems: ResolveUrlItem[] = [];
+            const seen = new Set<string>();
             Object.values(scriptCache).forEach((items) => {
                 items.forEach((item) => {
-                    if (item.src && !item.src.startsWith("data:") && !item.src.startsWith("blob:")) {
-                        allPaths.push(item.src);
+                    if (item.id == null) return;
+                    const key = makeUrlKey(item.id, (item as any).sources);
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        allItems.push({ id: item.id, sources: (item as any).sources });
                     }
                 });
             });
-            // 去重
-            const uniquePaths = [...new Set(allPaths)];
-            await resolveUrls(uniquePaths);
+            await resolveUrls(allItems);
         }
 
         /**
