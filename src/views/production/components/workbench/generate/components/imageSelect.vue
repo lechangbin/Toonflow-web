@@ -72,7 +72,7 @@
           <img v-if="sb.src" :src="sb.src" />
           <div v-else class="textBox ac jc">
             <t-tooltip theme="primary" :content="sb?.videoDesc || ''">
-              <span style="font-size: 20px">文</span>
+              <span style="font-size: 20px">{{ `分镜 ${sb?.index + 1 || ""}` }}</span>
             </t-tooltip>
           </div>
         </div>
