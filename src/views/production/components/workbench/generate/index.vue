@@ -16,7 +16,7 @@
               {{ $t("workbench.generate.generateText") }}
             </t-button>
           </template>
-          <div class="promptData">
+          <div class="promptData fc">
             <div class="promptInput" @focusout="handlePromptBlur">
               <promptEditor v-model="currentTrack.prompt" :references="references" :placeholder="$t('workbench.generate.promptPlaceholder')" />
             </div>
@@ -504,11 +504,13 @@ onUnmounted(() => {
   }
   .generate {
     flex: 1;
+    min-height: 0;
     width: 100%;
     gap: 5px;
     .prompt {
       width: 50%;
       height: 100%;
+      min-height: 0;
       .videoPrompt {
         width: 100%;
         height: 100%;
@@ -518,18 +520,20 @@ onUnmounted(() => {
         :deep(.t-card__body) {
           flex: 1;
           min-height: 0;
-          overflow: auto;
+          overflow: hidden;
+          display: flex;
+          flex-direction: column;
         }
         .promptData {
           width: 100%;
-          height: 100%;
+          flex: 1;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
           .promptInput {
-            border: 1px solid var(--td-component-border);
-            border-radius: 8px;
-            min-height: 100px;
-            height: 300px;
-            overflow: auto;
-            resize: vertical;
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
           }
         }
       }
@@ -537,6 +541,7 @@ onUnmounted(() => {
     .video {
       width: 50%;
       height: 100%;
+      min-height: 0;
     }
   }
   .track {

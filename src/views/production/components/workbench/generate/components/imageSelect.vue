@@ -242,11 +242,8 @@ function splitImage(index: number) {
     height: 6px;
   }
   &::-webkit-scrollbar-thumb {
-    background-color: var(--td-scrollbar-color);
+    background: #696969;
     border-radius: 4px;
-    &:hover {
-      background-color: var(--td-scrollbar-hover-color);
-    }
   }
   &::-webkit-scrollbar-track {
     background-color: var(--td-bg-color-secondarycontainer);
