@@ -18,7 +18,7 @@
           class="item"
           :class="{ active: index === activeTrackIndex }"
           v-for="(track, index) in trackList"
-          :key="index"
+          :key="track.id"
           @click="changeIndex(index)">
           <t-checkbox
             class="trackCheck"
@@ -159,6 +159,7 @@ async function deleteTrack(index: number) {
   const track = trackList.value[index];
   if (!track) return;
   await axios.post("/production/workbench/deleteTrack", { id: track.id });
+  checkedTrackIds.value = checkedTrackIds.value.filter((id) => id !== track.id);
   // 删除该轨道的图片缓存
   const pid = project.value?.id;
   const sid = episodesId.value;
@@ -335,6 +336,8 @@ function handleCheckAll(val: boolean) {
 
 /** 单个勾选轨道 */
 function toggleCheck(trackId: number | undefined, val: boolean) {
+  console.log("%c Line:338 🍿 val", "background:#93c0a4", val);
+  console.log("%c Line:338 🍫 trackId", "background:#465975", trackId);
   if (trackId == null) return;
   if (val) {
     if (!checkedTrackIds.value.includes(trackId)) checkedTrackIds.value.push(trackId);

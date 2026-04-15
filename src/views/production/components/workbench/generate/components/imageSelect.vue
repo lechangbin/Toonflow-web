@@ -262,6 +262,7 @@ function splitImage(index: number) {
       cursor: pointer;
     }
     .imageToolsWrap {
+      z-index: 999999999999999;
       position: absolute;
       left: 4px;
       top: 4px;
@@ -282,6 +283,7 @@ function splitImage(index: number) {
       border-radius: 8px;
     }
     .clearBtn {
+      z-index: 999999999999999;
       position: absolute;
       top: 2px;
       right: 2px;
