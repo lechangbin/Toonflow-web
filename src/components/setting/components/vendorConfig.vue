@@ -273,9 +273,8 @@
         </t-radio-group>
         <div class="linkAdd" v-if="addMode == 'linkAdd'">
           <t-alert theme="warning" style="margin-bottom: 20px">
-            请勿输入api地址！链接内容需为ts代码。
-            请勿输入不可靠的地址！点击“确定”后，Toonflow
-            将自动从该地址拉取代码并添加为供应商。如果地址存在安全隐患，可能导致引入存在风险的供应商代码。建议仅输入来自可信来源的地址。
+            ⚠️ 仅支持 TypeScript 代码文件地址（.ts），API 地址或其他链接将无法正常使用。
+            点击"确定"后，Toonflow 将自动拉取该地址的代码并注册为供应商，请确保来源可信，避免引入风险代码。
           </t-alert>
           <t-input v-model="link" :placeholder="$t('settings.vendor.linkAddPlaceholder')"></t-input>
           <div style="margin-top: 10px; text-align: right; width: 100%">
