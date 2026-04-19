@@ -2,7 +2,7 @@
   <div class="imageUploadBox ac">
     <!-- 单图模式 -->
     <template v-if="mode == 'singleImage' || Array.isArray(parseMode(mode as string))">
-      <div class="uploadBtn c fc" v-for="(item, index) in imageList" :key="index">
+      <div class="uploadBtn c fc" v-for="(item, index) in (mode == 'singleImage' ? imageList.slice(0, 1) : imageList)" :key="index">
         <template v-if="item.src">
           <t-image :src="item.src" fit="contain" class="uploadPreview">
             <template #overlayContent></template>
@@ -13,7 +13,7 @@
             <span style="font-size: 20px">文</span>
           </t-tooltip>
         </template>
-        <div class="imageToolsWrap" v-if="item.sources == 'storyboard' && item.index">
+        <div class="imageToolsWrap" v-if="item.sources == 'storyboard' && item.index != null">
           {{ `P${item.index + 1}` }}
         </div>
         <div class="clearBtn" @click="splitImage(index)">
@@ -195,6 +195,8 @@ function handleMixedAdd(slot: "start" | "end" | "" = "") {
       });
       if (slot === "start" || slot === "end") {
         setFrameSlot(slot, newItems[0]);
+      } else if (props.mode === "singleImage") {
+        imageList.value = [newItems[0]];
       } else {
         imageList.value = [...imageList.value, ...newItems];
       }
