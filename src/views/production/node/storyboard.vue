@@ -27,16 +27,13 @@
                     width: `${200 * gridScale}px`,
                     height: `${200 * gridScale}px`,
                   }">
-                  <t-checkbox
-                    class="frameCheckbox"
-                    :checked="selectedIds.includes(item.id!)"
-                    @click.stop
-                    :style="{ transform: `scale(${styleMaxSize})` }"
-                    :key="item?.id || index"
-                    :value="item.id" />
-                  <t-tag class="frameTypeTag" :style="{ backgroundColor: tagColors[index % tagColors.length], transform: `scale(${styleMaxSize})` }">
-                    S{{ String(index + 1).padStart(2, "0") }}
-                  </t-tag>
+                  <div class="ac frameCheckbox" :style="{ transform: `scale(${styleMaxSize})` }">
+                    <t-checkbox :checked="selectedIds.includes(item.id!)" @click.stop :key="item?.id || index" :value="item.id" />
+                    <t-tag class="frameTypeTag" :style="{ backgroundColor: tagColors[index % tagColors.length] }">
+                      S{{ String(index + 1).padStart(2, "0") }}
+                    </t-tag>
+                  </div>
+
                   <t-image
                     v-if="item.src && item.state == '已完成'"
                     :src="item.src"
@@ -95,6 +92,7 @@
         <t-button size="small" :disabled="!storyboard.length" theme="default" variant="outline" @click="selectAll">
           {{ $t("workbench.production.node.storyboard.selectAll") }}
         </t-button>
+        <t-button theme="danger" size="small"  :disabled="!storyboard.length || !selectedIds.length" @click="handleDeleteSelected">批量删除</t-button>
       </div>
       <div class="ac" style="gap: 10px">
         <t-button block @click="previewAll" :disabled="!storyboard.length">{{ $t("workbench.production.node.storyboard.gridPreview") }}</t-button>
@@ -164,7 +162,13 @@ function toggleSelect(id: number) {
 function selectAll() {
   selectedIds.value = storyboard.value.map((s) => s.id!).filter(Boolean);
 }
-
+function handleDeleteSelected() {
+  axios.post("/production/storyboard/batchGenerateImage", {
+    ids: selectedIds.value,
+    projectId: project.value?.id,
+  });
+  selectedIds.value = storyboard.value.map((s) => s.id!).filter(Boolean);
+}
 const currentRow = ref<{
   flowId?: number | null;
   resultImages: { src: string; prompt: string }[];
@@ -538,6 +542,7 @@ function editInfo(item: Storyboard) {
       background-color: rgba(220, 50, 50, 0.7);
       cursor: pointer;
       opacity: 0;
+      transform-origin: top right;
       &:hover {
         background-color: rgba(220, 50, 50, 1);
       }
@@ -551,6 +556,7 @@ function editInfo(item: Storyboard) {
       border-radius: 10px;
       background-color: rgba(24, 144, 255, 0.7);
       cursor: pointer;
+      transform-origin: bottom left;
       opacity: 0;
       &:hover {
         background-color: rgba(24, 144, 255, 1);
@@ -590,15 +596,13 @@ function editInfo(item: Storyboard) {
 
   .frameCheckbox {
     position: absolute;
-    left: 6px;
-    top: 6px;
+    left: 3px;
+    top: 3px;
     z-index: 3;
+    transform-origin: top left;
   }
 
   .frameTypeTag {
-    position: absolute;
-    left: 28px;
-    top: 6px;
     color: #fff;
     font-size: 10px;
     font-weight: 600;
