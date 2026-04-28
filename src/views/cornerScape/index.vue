@@ -59,12 +59,12 @@
                   {{ $t("workbench.cornerScape.selectedCount", { count: selectedIds.length }) }}
                 </t-tag>
               </div>
-              <!-- <div class="ac jb"> -->
-              <t-button theme="primary" block @click="batchGenerationPrompt">{{ $t("workbench.cornerScape.batchGenerationPrompt") }}</t-button>
-              <!-- <t-button theme="primary" style="margin-left: 10px" block @click="batchSelectBindAudio">
+              <div class="ac jb" style="width: 100%">
+                <t-button theme="primary" block @click="batchGenerationPrompt">{{ $t("workbench.cornerScape.batchGenerationPrompt") }}</t-button>
+                <t-button theme="primary" style="margin-left: 10px" block @click="batchSelectBindAudio">
                   {{ $t("workbench.cornerScape.batchBingAudio") }}
                 </t-button>
-              </div> -->
+              </div>
               <t-button theme="primary" block @click="batchGenerationImage">
                 {{ $t("workbench.cornerScape.startBatch") }}
               </t-button>
@@ -210,7 +210,7 @@
                 @blur="savePromptOnBlur" />
             </t-loading>
           </t-form-item>
-          <!-- <t-form-item :label="$t('workbench.cornerScape.assetsAudioLabel')">
+          <t-form-item :label="$t('workbench.cornerScape.assetsAudioLabel')">
             <div>
               <div>
                 <t-button size="small" theme="primary" variant="outline" @click="selectAudio">
@@ -225,7 +225,7 @@
               </div>
               <div v-else class="assets-empty">{{ $t("workbench.cornerScape.noAudio") }}</div>
             </div>
-          </t-form-item> -->
+          </t-form-item>
           <t-form-item>
             <div class="drawerActions">
               <t-button
@@ -882,8 +882,12 @@ watch(generatingData, (val) => {
   }
 });
 
-function removeAudio(id: number) {
+async function removeAudio(id: number) {
   editForm.relepedAudio = editForm.relepedAudio.filter((a) => a.id !== id);
+  await axios.post("/cornerScape/updateAssetsAudio", {
+    assetsId: editForm.assetsId,
+    audioIds: editForm.relepedAudio.map((i) => i.id),
+  });
 }
 async function selectAudio() {
   const assets = await openAssetsSelector({ title: $t("workbench.script.add.msg.selectAssetsTitle"), types: ["audio"] });
