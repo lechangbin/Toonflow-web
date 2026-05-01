@@ -106,6 +106,7 @@
 import { ref } from "vue";
 import "@/views/production/components/workbench/type/type";
 import assetsCheck, { type AssetType, type ClipMediaType } from "@/utils/assetsCheck";
+import axios from "@/utils/axios";
 
 const props = defineProps<{
   mode: VideoMode;
@@ -230,7 +231,11 @@ function handleMixedAdd(slot: "start" | "end" | "" = "") {
       } else if (props.mode === "singleImage") {
         imageList.value = [newItems[0]];
       } else {
-        imageList.value = [...imageList.value, ...newItems];
+        const assetsNotAudioIds = newItems.filter((i) => i.fileType !== "audio");
+        const { data } = await axios.post("/production/workbench/getAudioBindAssetsList", {
+          assetsIds: assetsNotAudioIds.map((i) => i.id),
+        });
+        imageList.value = [...imageList.value, ...newItems, ...data];
       }
     },
     onCancel: () => {
