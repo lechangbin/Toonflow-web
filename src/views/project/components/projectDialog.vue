@@ -115,13 +115,13 @@
                           <img :src="item.images && item.images[0]" :alt="item.name" class="artImage" loading="lazy" />
                           <div class="text">{{ item.name }}</div>
                         </div>
-                        <t-button class="editBtn" shape="square"  @click.stop="openDirectorManualDialog(item)">
+                        <t-button class="editBtn" shape="square" @click.stop="openDirectorManualDialog(item)">
                           <i-edit theme="outline" size="14" />
                         </t-button>
-                        <t-button class="delBtn" shape="square"  @click.stop="deleteDirectorManual(item)">
+                        <t-button class="delBtn" shape="square" @click.stop="deleteDirectorManual(item)">
                           <i-delete theme="outline" size="14" />
                         </t-button>
-                        <t-button class="preview" shape="square"  @click.stop="handlePreview(item.images && item.images[0])">
+                        <t-button class="preview" shape="square" @click.stop="handlePreview(item.images && item.images[0])">
                           <i-preview-open theme="outline" size="14" />
                         </t-button>
                       </div>
@@ -686,7 +686,7 @@ const MODE_LABEL: Record<string, string> = {
 // 模式转换为统一的 key 形式，方便后续处理
 function getModeLabel(mode?: VideoMode): string {
   if (!mode) return "";
-  if (Array.isArray(mode)) return mode.map((r) => MODE_LABEL[r.replace(/:.*$/, '')] ?? r).join("、");
+  if (Array.isArray(mode)) return mode.map((r) => MODE_LABEL[r.replace(/:.*$/, "")] ?? r).join("、");
   return MODE_LABEL[mode] ?? mode;
 }
 //模式数组转换为字符串 key，方便在前端使用和比较
@@ -912,21 +912,36 @@ function handleDirectorManualCoverFileChange(e: Event) {
 
     &:hover {
       transform: scale(1.03);
-      z-index: 1;
-
       .editBtn {
+        z-index: 2;
         opacity: 1;
       }
       .delBtn {
+        z-index: 2;
         opacity: 1;
       }
       .preview {
+        z-index: 2;
         opacity: 1;
       }
     }
 
     &.active {
       border-color: var(--td-brand-color);
+      position: relative;
+      &::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-color: #0000006b;
+        color: rgb(109, 226, 109);
+        line-height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        height: 100%;
+      }
     }
 
     .imageWrapper {

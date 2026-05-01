@@ -334,6 +334,7 @@ async function genText() {
       trackId: currentTrackId,
       info: info,
       model: modelParmas.value.model,
+      mode: modelParmas.value.mode,
     });
     changeTrack.prompt = data;
   } catch (e) {

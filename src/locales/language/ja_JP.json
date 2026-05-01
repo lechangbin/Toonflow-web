@@ -1540,5 +1540,9 @@
   "workbench.production.node.storyboard.deleteSuccess": "ストーリーボードが正常に削除されました",
   "workbench.production.node.storyboard.pleaseSelectImage": "最初にストーリーボードを選択してください",
   "workbench.cornerScape.audioState": "バインディング",
-  "workbench.generate.generateError": "ビルドリクエストの開始に失敗しました"
+  "workbench.generate.generateError": "ビルドリクエストの開始に失敗しました",
+  "settings.vendor.videoGenerating": "ビデオの生成が遅いので、しばらくお待ちください",
+  "settings.memory.modelMap.editRefeshWord": "再バインド",
+  "settings.memory.modelMap.delPrompt": "消去",
+  "settings.vendor.testModel": "テスト"
 }

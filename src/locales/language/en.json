@@ -1681,5 +1681,9 @@
   "workbench.production.node.storyboard.deleteSuccess": "Storyboard deleted successfully",
   "workbench.production.node.storyboard.pleaseSelectImage": "Please select the storyboard first",
   "workbench.cornerScape.audioState": "Binding",
-  "workbench.generate.generateError": "Failed to initiate build request"
+  "workbench.generate.generateError": "Failed to initiate build request",
+  "settings.vendor.videoGenerating": "Video generation is slow, please wait patiently",
+  "settings.memory.modelMap.editRefeshWord": "rebind",
+  "settings.memory.modelMap.delPrompt": "delete",
+  "settings.vendor.testModel": "test"
 }

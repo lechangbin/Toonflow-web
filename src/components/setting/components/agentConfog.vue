@@ -20,60 +20,64 @@
       </div>
     </div>
 
-    <t-tabs :default-value="1">
-      <t-tab-panel :value="1" :label="$t('settings.agent.ordinary')">
-        <div class="cardGrid">
-          <t-card hoverShadow v-for="(item, index) in modelData" :key="index" class="skillCard f" @click="startConfig(item, '普通')">
-            <div class="skillCardHeader">
-              <div class="headerLeft">
-                <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
-                <t-avatar v-else shape="round" class="fallbackAvatar">
-                  {{ getFallbackText(item.name) }}
-                </t-avatar>
-                <span class="skillName">{{ item.name }}</span>
-              </div>
-              <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
-              <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
-              <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
-                {{ $t("settings.agent.notConfigured") }}
-              </t-tag>
-            </div>
-            <div class="skillCardBody">{{ item.desc }}</div>
-          </t-card>
+    <div class="modeRadioGroup">
+      <t-radio-group v-model="agentUseModeVal" variant="default-filled" @change="(val: string) => updateUseMode(val)">
+        <t-radio value="0">{{ $t('settings.agent.ordinary') }}</t-radio>
+        <t-radio value="1">{{ $t('settings.agent.advanced') }}</t-radio>
+      </t-radio-group>
+    </div>
+
+    <div v-if="agentUseModeVal === '0'" class="cardGrid">
+      <t-card hoverShadow v-for="(item, index) in modelData" :key="index" class="skillCard f" @click="startConfig(item, '普通')">
+        <div class="skillCardHeader">
+          <div class="headerLeft">
+            <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
+            <t-avatar v-else shape="round" class="fallbackAvatar">
+              {{ getFallbackText(item.name) }}
+            </t-avatar>
+            <span class="skillName">{{ item.name }}</span>
+          </div>
+          <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
+          <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
+          <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
+            {{ $t("settings.agent.notConfigured") }}
+          </t-tag>
         </div>
-      </t-tab-panel>
-      <t-tab-panel :value="2" :label="$t('settings.agent.advanced')">
-        <div class="cardGrid">
-          <t-card hoverShadow v-for="(item, index) in advancedModelData" :key="index" class="skillCard f" @click="startConfig(item, '高级')">
-            <div class="skillCardHeader">
-              <div class="headerLeft">
-                <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
-                <t-avatar v-else shape="round" class="fallbackAvatar">
-                  {{ getFallbackText(item.name) }}
-                </t-avatar>
-                <div>
-                  <div class="skillName">{{ item.name }}</div>
-                </div>
-              </div>
-              <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
-              <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
-              <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
-                {{ $t("settings.agent.notConfigured") }}
-              </t-tag>
+        <div class="skillCardBody">{{ item.desc }}</div>
+      </t-card>
+    </div>
+
+    <div v-else class="cardGrid">
+      <t-card hoverShadow v-for="(item, index) in advancedModelData" :key="index" class="skillCard f" @click="startConfig(item, '高级')">
+        <div class="skillCardHeader">
+          <div class="headerLeft">
+            <t-avatar v-if="getDisplayLogo(item)" :image="getDisplayLogo(item)!" shape="round" />
+            <t-avatar v-else shape="round" class="fallbackAvatar">
+              {{ getFallbackText(item.name) }}
+            </t-avatar>
+            <div>
+              <div class="skillName">{{ item.name }}</div>
             </div>
-            <div class="skillCardBody jb">
-              <div>{{ item.desc }}</div>
-              <div>
-                <t-tag theme="primary" variant="light" size="small" style="margin-left: 5px;">{{$t('settings.agent.temperature')}}：{{ item.temperature }}</t-tag>
-                <t-tag :theme="item.maxOutputTokens === 0 ? 'success' : 'primary'" variant="light" size="small" style="margin-left: 5px;">
-                  {{ $t('settings.agent.maxOutputTokens') }}：{{ item.maxOutputTokens === 0 ? $t('settings.agent.auto') : item.maxOutputTokens }}
-                </t-tag>
-              </div>
-            </div>
-          </t-card>
+          </div>
+          <t-tag v-if="item.model && !item.disabled" theme="primary" variant="light" size="small">{{ item.model }}</t-tag>
+          <t-tag v-else-if="item.disabled" variant="light" size="small">{{ $t("settings.agent.notOpen") }}</t-tag>
+          <t-tag v-else-if="!item.disabled && !item.model" theme="warning" variant="light" size="small">
+            {{ $t("settings.agent.notConfigured") }}
+          </t-tag>
         </div>
-      </t-tab-panel>
-    </t-tabs>
+        <div class="skillCardBody jb">
+          <div>{{ item.desc }}</div>
+          <div>
+            <t-tag theme="primary" variant="light" size="small" style="margin-left: 5px">
+              {{ $t("settings.agent.temperature") }}：{{ item.temperature }}
+            </t-tag>
+            <t-tag :theme="item.maxOutputTokens === 0 ? 'success' : 'primary'" variant="light" size="small" style="margin-left: 5px">
+              {{ $t("settings.agent.maxOutputTokens") }}：{{ item.maxOutputTokens === 0 ? $t("settings.agent.auto") : item.maxOutputTokens }}
+            </t-tag>
+          </div>
+        </div>
+      </t-card>
+    </div>
 
     <!-- 模型配置弹窗 -->
     <t-dialog
@@ -94,17 +98,16 @@
           <t-form-item :label="$t('settings.agent.maxOutputTokens')" v-if="type == '高级'">
             <div class="maxTokenRow">
               <t-radio-group v-model="maxTokenMode" variant="default-filled" size="small">
-                <t-radio-button value="auto">{{ $t('settings.agent.auto') }}</t-radio-button>
-                <t-radio-button value="manual">{{ $t('settings.agent.manual') }}</t-radio-button>
+                <t-radio-button value="auto">{{ $t("settings.agent.auto") }}</t-radio-button>
+                <t-radio-button value="manual">{{ $t("settings.agent.manual") }}</t-radio-button>
               </t-radio-group>
               <t-input-number
                 v-if="maxTokenMode === 'manual'"
                 v-model="currentItem.maxOutputTokens"
                 :min="1"
                 theme="normal"
-                style="flex: 1; margin-left: 12px;"
-              />
-              <span v-else class="autoHint">{{ $t('settings.agent.autoHint') }}</span>
+                style="flex: 1; margin-left: 12px" />
+              <span v-else class="autoHint">{{ $t("settings.agent.autoHint") }}</span>
             </div>
           </t-form-item>
         </t-form>
@@ -177,7 +180,7 @@ function startConfig(item: ModelType, source: string) {
   currentItem.value = item;
   selectValue.value = item.modelName || "";
   selectLabel.value = item.model || "";
-  maxTokenMode.value = (item.maxOutputTokens === 0 || item.maxOutputTokens == null) ? "auto" : "manual";
+  maxTokenMode.value = item.maxOutputTokens === 0 || item.maxOutputTokens == null ? "auto" : "manual";
   modelDataShow.value = true;
   type.value = source;
 }
@@ -323,6 +326,20 @@ async function getVendorList() {
 }
 //高级配置
 const advancedModelData = ref<ModelType[]>([]);
+const agentUseModeVal = ref("0");
+async function getUseModeVal() {
+  const { data } = await axios.get("/setting/agentDeploy/getAgentUseMode");
+  console.log("%c Line:330 🍑 data", "background:#2eafb0", data);
+  agentUseModeVal.value = data;
+}
+async function updateUseMode(val: string) {
+  await axios.post("/setting/agentDeploy/updateUseMode", {
+    agentUseMode: val,
+  });
+}
+onMounted(() => {
+  getUseModeVal();
+});
 </script>
 
 <style lang="scss" scoped>
@@ -349,6 +366,10 @@ const advancedModelData = ref<ModelType[]>([]);
       }
     }
   }
+}
+
+.modeRadioGroup {
+  margin-bottom: 16px;
 }
 
 .cardGrid {

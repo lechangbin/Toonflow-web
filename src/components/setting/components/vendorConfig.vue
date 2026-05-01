@@ -92,9 +92,9 @@
                 <span class="modelCardName">{{ item.name }}</span>
               </div>
               <div class="actionBtns">
-                <t-button size="small" variant="text" :loading="!!testingModels[item.modelName]" @click="handleTestModel(item)">
+                <t-button size="small" variant="text" @click="handleTestModel(item)">
                   <template #icon><i-lightning theme="outline" /></template>
-                  {{ $t("settings.vendor.test") }}
+                  {{ $t("settings.vendor.testModel") }}
                 </t-button>
                 <t-button variant="text" size="small" @click="handleEditModel(item)">
                   <template #icon><i-pencil theme="outline" /></template>
@@ -236,25 +236,28 @@
       </div>
     </t-dialog>
 
-    <!-- 测试结果弹窗 -->
-    <t-dialog
-      width="50vw"
-      placement="center"
-      v-model:visible="testResultVisible"
-      :header="$t('settings.vendor.testResult') + ' - ' + testModelName"
-      :footer="false">
-      <div class="testResult">
-        <div v-if="testResultType === 'image'" class="resultContent">
-          <img :src="testResultUrl" alt="generated image" />
-        </div>
-        <div v-else-if="testResultType === 'video'" class="resultContent">
-          <video :src="testResultUrl" controls autoplay loop></video>
-        </div>
-        <div v-else class="resultContent">
-          <t-loading size="large" :text="$t('settings.vendor.generating')" />
-        </div>
-      </div>
-    </t-dialog>
+    <!-- 文本模型测试弹窗 -->
+    <TextModelTest
+      v-if="testingModel?.type === 'text' && textTestVisible"
+      v-model:modelVisible="textTestVisible"
+      :vendorId="currentVendor!.id"
+      :modelName="testingModel.modelName" />
+
+    <!-- 图像模型测试弹窗 -->
+    <ImageModelTest
+      v-if="testingModel?.type === 'image' && imageTestVisible"
+      v-model:modelVisible="imageTestVisible"
+      :vendorId="currentVendor!.id"
+      :modelName="testingModel.modelName"
+      :supportedModes="(testingModel as any).mode || []" />
+
+    <!-- 视频模型测试弹窗 -->
+    <VideoModelTest
+      v-if="testingModel?.type === 'video' && videoTestVisible"
+      v-model:modelVisible="videoTestVisible"
+      :vendorId="currentVendor!.id"
+      :modelName="testingModel.modelName"
+      :rawModes="(testingModel as any).mode || []" />
 
     <!-- 添加供应商弹窗 -->
     <t-dialog
@@ -344,6 +347,9 @@ import { providersLogo, modelProviderRules } from "@/utils/providersLogo";
 import type { UploadFile } from "tdesign-vue-next";
 import { LoadingPlugin } from "tdesign-vue-next";
 import settingStore from "@/stores/setting";
+import TextModelTest from "./vendorTest/TextModelTest.vue";
+import ImageModelTest from "./vendorTest/ImageModelTest.vue";
+import VideoModelTest from "./vendorTest/VideoModelTest.vue";
 const { themeSetting } = storeToRefs(settingStore());
 
 // ── 类型 ──
@@ -532,12 +538,11 @@ const AUTO_SAVE_DELAY = 700;
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null;
 let pendingAutoSave = false;
 
-// ── 测试结果弹窗 ──
-const testResultVisible = ref(false);
-const testResultUrl = ref("");
-const testResultType = ref<"image" | "video" | "">("");
-const testModelName = ref("");
-const testingModels = reactive<Record<string, boolean>>({});
+// ── 测试弹窗状态 ──
+const testingModel = ref<VendorModel | null>(null);
+const textTestVisible = ref(false);
+const imageTestVisible = ref(false);
+const videoTestVisible = ref(false);
 
 function getInputIcon(type: VendorInput["type"]) {
   if (type === "password") return "secured";
@@ -978,31 +983,14 @@ function handleEditModel(model: VendorModel) {
   modelDialogVisible.value = true;
 }
 
-async function handleTestModel(item: (typeof vendorModels.value)[number]) {
-  testingModels[item.modelName] = true;
-  try {
-    const { data } = await axios.post(`/setting/vendorConfig/modelTest`, {
-      type: item.type,
-      modelName: item.modelName,
-      id: currentVendor.value!.id,
-    });
-
-    if (item.type === "text") {
-      window.$message.success(
-        `${item.modelName} ${$t("settings.vendor.msg.testSuccess")}: ${typeof data === "string" ? data : JSON.stringify(data)}`,
-      );
-    } else if (item.type === "image" || item.type === "video") {
-      testModelName.value = item.modelName;
-      testResultType.value = item.type;
-      testResultUrl.value = data;
-      testResultVisible.value = true;
-      window.$message.success(`${item.type === "image" ? $t("settings.vendor.msg.imageGenSuccess") : $t("settings.vendor.msg.videoGenSuccess")}`);
-    }
-  } catch (e: any) {
-    const errMsg = e?.response?.data?.message || e?.response?.data || e?.message || String(e);
-    window.$message.error(`${$t("settings.vendor.msg.requestFailed")}${typeof errMsg === "string" ? errMsg : JSON.stringify(errMsg)}`);
-  } finally {
-    delete testingModels[item.modelName];
+function handleTestModel(item: (typeof vendorModels.value)[number]) {
+  testingModel.value = item;
+  if (item.type === "text") {
+    textTestVisible.value = true;
+  } else if (item.type === "image") {
+    imageTestVisible.value = true;
+  } else if (item.type === "video") {
+    videoTestVisible.value = true;
   }
 }
 

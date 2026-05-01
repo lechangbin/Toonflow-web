@@ -17,9 +17,7 @@ function makeProductionAgentStore(projectId: string) {
           {
             type: "suggestion",
             status: "complete",
-            data: [
-              { title: $t("workbench.production.chatBox.startMakingVideo"), prompt: $t("workbench.production.chatBox.startMakingVideoPrompt") },
-            ],
+            data: [{ title: $t("workbench.production.chatBox.startMakingVideo"), prompt: $t("workbench.production.chatBox.startMakingVideoPrompt") }],
           },
         ],
       },
@@ -71,7 +69,7 @@ function makeProductionAgentStore(projectId: string) {
             const track = attrs.track || "";
             const shouldGenerateImage =
               (typeof attrs.shouldGenerateImage == "boolean" && attrs.shouldGenerateImage) ||
-                String(attrs.shouldGenerateImage).toLowerCase() == "true"
+              String(attrs.shouldGenerateImage).toLowerCase() == "true"
                 ? 1
                 : 0;
 
@@ -213,33 +211,33 @@ function makeProductionAgentStore(projectId: string) {
       });
       flowData.value = data;
     }
-    async function batchGenerateStoryboard(allIds: number[]) {
-      flowData.value.storyboard.forEach((item) => {
-        if (allIds.includes(item.id!)) {
-          item.state = "生成中" as "未生成" | "生成中" | "已完成" | "生成失败";
+    async function batchGenerateStoryboard(allIds: number[], compulsory: boolean = false) {
+      try {
+        const { data } = await axios.post("/production/storyboard/batchGenerateImage", {
+          scriptId: episodesId.value,
+          projectId: projectId,
+          storyboardIds: allIds,
+          concurrentCount: settingStore().otherSetting.assetsBatchGenereateSize,
+          compulsory,
+        });
+        if (data) {
+          if (flowData.value.storyboard.length === 0) {
+            flowData.value.storyboard = data;
+            return data;
+          } else {
+            flowData.value.storyboard.forEach((item) => {
+              const findData = data.find((i: any) => i.id == item.id);
+              if (findData) {
+                item.state = findData.state;
+                item.src = findData.src;
+              }
+            });
+          }
         }
-      });
-      const { data } = await axios.post("/production/storyboard/batchGenerateImage", {
-        scriptId: episodesId.value,
-        projectId: projectId,
-        storyboardIds: allIds,
-        concurrentCount: settingStore().otherSetting.assetsBatchGenereateSize,
-      });
-      if (data) {
-        if (flowData.value.storyboard.length === 0) {
-          flowData.value.storyboard = data;
-          return data;
-        } else {
-          flowData.value.storyboard.forEach((item) => {
-            const findData = data.find((i: any) => i.id == item.id);
-            if (findData) {
-              item.state = findData.state;
-              item.src = findData.src;
-            }
-          });
-        }
+        return data;
+      } catch (e) {
+        window.$message.error((e as any)?.message);
       }
-      return data;
     }
     async function batchGenerateAssets(allIds: number[]) {
       flowData.value.assets.forEach((asset) => {
@@ -273,7 +271,7 @@ function makeProductionAgentStore(projectId: string) {
           });
         }
         return data;
-      } catch (e) { }
+      } catch (e) {}
     }
     const assetsNotStateImageIds = computed(() => {
       const ids: number[] = [];

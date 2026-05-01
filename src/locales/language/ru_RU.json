@@ -1539,5 +1539,9 @@
   "workbench.generate.notSelectMode": "Пожалуйста, сначала выберите модель",
   "workbench.production.node.storyboard.pleaseSelectImage": "Пожалуйста, сначала выберите раскадровку",
   "workbench.cornerScape.audioState": "Связывание",
-  "workbench.generate.generateError": "Не удалось инициировать запрос на сборку."
+  "workbench.generate.generateError": "Не удалось инициировать запрос на сборку.",
+  "settings.vendor.videoGenerating": "Создание видео происходит медленно, пожалуйста, подождите терпеливо",
+  "settings.memory.modelMap.editRefeshWord": "перевязать",
+  "settings.memory.modelMap.delPrompt": "удалить",
+  "settings.vendor.testModel": "тест"
 }

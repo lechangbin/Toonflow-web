@@ -44,14 +44,9 @@
                 { label: '4K', value: '4K' },
               ]"></t-select>
           </t-form-item>
-          <!-- <t-form-item :label="$t('workbench.cornerScape.concurrency')">
-            <t-input-number
-              v-model="concurrentCount"
-              :min="1"
-              :allowInputOverLimit="false"
-              autoWidth
-              :placeholder="$t('workbench.cornerScape.concurrencyPh')"></t-input-number>
-          </t-form-item> -->
+          <t-form-item :label="$t('workbench.cornerScape.textPromptInput')">
+            <t-textarea v-model="otherTextPrompt" :placeholder="$t('workbench.cornerScape.textPromptPh')"></t-textarea>
+          </t-form-item>
           <t-form-item>
             <div class="btnGap ac">
               <div class="selectedInfo" v-if="selectedIds.length > 0">
@@ -284,6 +279,7 @@ const checkboxValue = ref<string[]>([]);
 const { project } = storeToRefs(projectStore());
 const selectValue = ref(project.value?.imageModel ?? "");
 const resolution = ref("1K");
+const otherTextPrompt = ref("");
 const resolutionOptions = [
   { label: "1K", value: "1K" },
   { label: "2K", value: "2K" },
@@ -644,6 +640,7 @@ async function batchGenerationPrompt() {
         describe: item.describe,
       })),
       concurrentCount: otherSetting.value.assetsBatchGenereateSize,
+      otherTextPrompt: otherTextPrompt.value,
     });
   } catch (e: any) {
     window.$message.error(e.message ?? $t("workbench.cornerScape.msg.promptGenFail"));
@@ -982,9 +979,8 @@ async function selectAudio() {
   min-height: 0;
   align-items: flex-start;
   .left {
-    overflow: hidden;
     width: clamp(240px, 22vw, 320px);
-    height: fit-content;
+    height: 100%;
     min-height: 0;
     flex-shrink: 0;
     margin-right: 16px;
@@ -1005,6 +1001,7 @@ async function selectAudio() {
       min-height: 0;
       display: flex;
       flex-direction: column;
+      overflow: auto;
       :deep(.t-card__body) {
         flex: 1;
         min-height: 0;

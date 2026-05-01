@@ -268,7 +268,7 @@ async function batchGenerateImage() {
   if (!selectedIds.value.length) return window.$message.warning("请先选择分镜面板");
   generateLoading.value = true;
   try {
-    await productionAgentStore().batchGenerateStoryboard(selectedIds.value);
+    await productionAgentStore().batchGenerateStoryboard(selectedIds.value, true);
     window.$message.success($t("workbench.production.node.storyboard.batchGenerateSuccess"));
     selectedIds.value = [];
   } catch (e) {

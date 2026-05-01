@@ -1532,5 +1532,9 @@
   "workbench.production.node.storyboard.deleteSuccess": "Đã xóa bảng phân cảnh thành công",
   "workbench.production.node.storyboard.pleaseSelectImage": "Vui lòng chọn bảng phân cảnh trước",
   "workbench.cornerScape.audioState": "Ràng buộc",
-  "workbench.generate.generateError": "Không thể bắt đầu yêu cầu xây dựng"
+  "workbench.generate.generateError": "Không thể bắt đầu yêu cầu xây dựng",
+  "settings.vendor.videoGenerating": "Quá trình tạo video chậm, vui lòng kiên nhẫn chờ đợi",
+  "settings.memory.modelMap.editRefeshWord": "buộc lại",
+  "settings.memory.modelMap.delPrompt": "xóa bỏ",
+  "settings.vendor.testModel": "Bài kiểm tra"
 }

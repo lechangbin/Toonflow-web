@@ -10,7 +10,13 @@
           </template>
           <template #operation="{ row }">
             <t-space :size="0">
-              <t-button theme="primary" variant="text" @click="promptEditor(item, row)">
+              <t-button theme="danger" v-if="row?.path" variant="text" @click="promptEditor(item, row)">
+                <template #icon>
+                  <t-icon name="edit" />
+                </template>
+                {{ $t("settings.memory.modelMap.editRefeshWord") }}
+              </t-button>
+              <t-button theme="primary" v-else variant="text" @click="promptEditor(item, row)">
                 <template #icon>
                   <t-icon name="edit" />
                 </template>
@@ -21,38 +27,91 @@
         </t-table>
       </t-collapse-panel>
     </t-collapse>
+
+    <!-- 绑定提示词弹窗 -->
     <t-dialog
       v-model:visible="visible"
       :header="$t('workbench.project.dialog.prompt.title')"
       width="70%"
       :close-on-overlay-click="false"
       @confirm="onConfirm"
-      top="9vh">
+      placement="center">
       <div class="prompt-select">
-        <div class="prompt-current">
-          <span class="label">{{ $t("settings.memory.modelMap.currentBinding") }}：</span>
-          <t-tag v-if="promptForm.prompt" theme="primary" variant="light">{{ promptForm.prompt }}</t-tag>
-          <t-tag v-else theme="warning" variant="light">{{ $t("settings.memory.modelMap.noBinding") }}</t-tag>
+        <div class="prompt-select-header">
+          <div class="prompt-current">
+            <span class="label">{{ $t("settings.memory.modelMap.currentBinding") }}：</span>
+            <t-tag v-if="promptForm.fileName" theme="primary" variant="light">{{ promptForm.fileName }}</t-tag>
+            <t-tag v-else theme="warning" variant="light">{{ $t("settings.memory.modelMap.noBinding") }}</t-tag>
+          </div>
+          <t-button theme="primary" variant="outline" size="small" @click="openAddPrompt">
+            <template #icon><t-icon name="add" /></template>
+            {{ $t("settings.memory.modelMap.addPrompt") }}
+          </t-button>
         </div>
-        <t-table row-key="id" :data="promptList" :columns="promptColumns" :hover="true" max-height="50vh" style="margin-top: 12px">
+        <t-table row-key="name" :data="promptList" :columns="promptColumns" :hover="true" max-height="50vh" style="margin-top: 12px">
           <template #name="{ row }">
             <div style="display: flex; align-items: center; gap: 6px">
               <span>{{ row.name }}</span>
-              <t-tag v-if="promptForm.prompt === row.name" size="small" theme="success">{{ $t("settings.memory.modelMap.bound") }}</t-tag>
+              <t-tag v-if="promptForm.path === row.path" size="small" theme="success">{{ $t("settings.memory.modelMap.bound") }}</t-tag>
             </div>
           </template>
-          <template #data="{ row }">
-            <div class="prompt-preview">{{ row.data }}</div>
-          </template>
           <template #bindOperation="{ row }">
-            <t-button v-if="promptForm.prompt !== row.name" theme="primary" variant="text" @click="selectPrompt(row)">
-              {{ $t("settings.memory.modelMap.editWord") }}
-            </t-button>
-            <t-button v-else theme="danger" variant="text" @click="unselectPrompt">
-              {{ $t("settings.memory.modelMap.unbind") }}
-            </t-button>
+            <t-space :size="0">
+              <t-button v-if="promptForm.path !== row.path" theme="primary" variant="text" @click="selectPrompt(row)">
+                {{ $t("settings.memory.modelMap.editWord") }}
+              </t-button>
+              <t-button v-else theme="danger" variant="text" @click="unselectPrompt">
+                {{ $t("settings.memory.modelMap.unbind") }}
+              </t-button>
+              <t-button theme="primary" variant="text" @click="openEditPrompt(row)">
+                {{ $t("settings.memory.modelMap.editPrompt") }}
+              </t-button>
+              <t-button theme="danger" variant="text" @click="delPrompt(row)">
+                {{ $t("settings.memory.modelMap.delPrompt") }}
+              </t-button>
+            </t-space>
           </template>
         </t-table>
+      </div>
+    </t-dialog>
+
+    <!-- 新增/编辑提示词弹窗 -->
+    <t-dialog
+      v-model:visible="addPromptVisible"
+      :header="editingPrompt.isEdit ? $t('settings.memory.modelMap.editPromptTitle') : $t('settings.memory.modelMap.addPromptTitle')"
+      width="75%"
+      :close-on-overlay-click="false"
+      @confirm="onAddPromptConfirm"
+      top="5vh">
+      <div class="add-prompt-form">
+        <t-form label-align="top">
+          <t-form-item :label="$t('settings.memory.modelMap.filenName')">
+            <t-input
+              v-model="editingPrompt.name"
+              :disabled="editingPrompt.isEdit"
+              :placeholder="$t('settings.memory.modelMap.promptNamePlaceholder')" />
+          </t-form-item>
+          <t-form-item :label="$t('settings.memory.modelMap.type')">
+            <t-select
+              v-model="editingPrompt.type"
+              :disabled="editingPrompt.isEdit"
+              :placeholder="$t('settings.memory.modelMap.promptTypePlaceholder')">
+              <!-- <t-option value="text" :label="$t('settings.memory.modelMap.typeText')" />
+              <t-option value="image" :label="$t('settings.memory.modelMap.typeImage')" /> -->
+              <t-option value="video" :label="$t('settings.memory.modelMap.typeVideo')" />
+            </t-select>
+          </t-form-item>
+          <t-form-item :label="$t('promptManage.prompt')">
+            <MdEditor
+              :theme="themeSetting.mode === 'auto' ? 'light' : themeSetting.mode"
+              v-model="editingPrompt.data"
+              :toolbars="promptToolbars"
+              :footers="[]"
+              style="height: 55vh; width: 100%"
+              :placeholder="$t('workbench.project.dialog.prompt.placeholder')"
+              @onUploadImg="() => {}" />
+          </t-form-item>
+        </t-form>
       </div>
     </t-dialog>
   </div>
@@ -62,11 +121,30 @@
 import { ref } from "vue";
 import type { TableProps } from "tdesign-vue-next";
 import axios from "@/utils/axios";
+import { MdEditor, MdPreview } from "md-editor-v3";
+import type { ToolbarNames } from "md-editor-v3";
+import settingStore from "@/stores/setting";
+const { themeSetting } = storeToRefs(settingStore());
+
+const promptToolbars: ToolbarNames[] = [
+  "bold",
+  "italic",
+  "strikeThrough",
+  "-",
+  "unorderedList",
+  "orderedList",
+  "-",
+  "revoke",
+  "next",
+  "=",
+  "preview",
+];
 interface PromptList {
   name: string;
   type: string;
   model: string;
-  prompt: string;
+  path: string;
+  fileName: string;
 }
 interface ModelMap {
   id: string;
@@ -76,38 +154,23 @@ interface ModelMap {
 const modelMap = ref<ModelMap[]>([]);
 
 interface PromptItem {
-  id: number;
   name: string;
   type: string;
   data: string;
+  path: string;
 }
-const promptList = ref<PromptItem[]>([
-  {
-    id: 1,
-    name: "prompt1",
-    type: "text",
-    data: "promp第三方速度防守打法水电费水电费水电费水电费水电费水电费水电费速度是单个速度水电费速度水电费水电费水电费水电费水电费速度防守打法水电费水电费地方t1",
-  },
-  {
-    id: 2,
-    name: "prompt2",
-    type: "text",
-    data: "prompt2",
-  },
-  {
-    id: 3,
-    name: "prompt3",
-    type: "text",
-    data: "prompt3",
-  },
-]);
+const promptList = ref<PromptItem[]>([]);
 
 onMounted(() => {
   queryModelMap();
 });
 
 //获取提示词列表
-function getPromptList() {}
+function getPromptList() {
+  axios.get("/setting/modelMap/getPromptList").then((res) => {
+    promptList.value = res.data;
+  });
+}
 //查询模型映射提示词
 function queryModelMap() {
   axios.post("/setting/modelMap/getImageAndVideoModel").then((res) => {
@@ -148,7 +211,8 @@ const promptForm = ref<PromptList>({
   name: "",
   type: "",
   model: "",
-  prompt: "",
+  path: "",
+  fileName: "",
 });
 //当前选中的供应商
 const currentSupplier = ref("");
@@ -156,6 +220,7 @@ function promptEditor(item: ModelMap, value: PromptList) {
   visible.value = true;
   promptForm.value = value;
   currentSupplier.value = item.id;
+  getPromptList();
 }
 
 //提示词列表表格列
@@ -178,7 +243,7 @@ const promptColumns: TableProps["columns"] = [
     title: $t("promptManage.prompt"),
     align: "left",
     cell: "data",
-    ellipsisTitle: true,
+    ellipsis: true,
   },
   {
     colKey: "bindOperation",
@@ -192,19 +257,66 @@ const promptColumns: TableProps["columns"] = [
 
 //选择提示词绑定
 function selectPrompt(row: PromptItem) {
-  promptForm.value.prompt = row.name;
+  promptForm.value.fileName = row.name;
+  promptForm.value.path = row.path;
 }
 
 //取消绑定
 function unselectPrompt() {
-  promptForm.value.prompt = "";
+  promptForm.value.fileName = "";
+  promptForm.value.path = "";
 }
+
+// 新增/编辑提示词弹窗
+const addPromptVisible = ref(false);
+const editingPrompt = ref({ isEdit: false, name: "", type: "video", data: "" });
+
+function openAddPrompt() {
+  editingPrompt.value = { isEdit: false, name: "", type: "video", data: "" };
+  addPromptVisible.value = true;
+}
+
+function openEditPrompt(row: PromptItem) {
+  editingPrompt.value = { isEdit: true, ...row };
+  addPromptVisible.value = true;
+}
+function delPrompt(row: PromptItem) {
+  axios
+    .post("/setting/modelMap/deletePrompt", {
+      path: row.path,
+    })
+    .then((res) => {});
+}
+async function onAddPromptConfirm() {
+  if (!editingPrompt.value.name.trim()) {
+    window.$message.warning($t("settings.memory.modelMap.promptNameRequired"));
+    return;
+  }
+  if (editingPrompt.value.isEdit) {
+    await axios.post("/setting/modelMap/updatePrompt", {
+      name: editingPrompt.value.name,
+      type: editingPrompt.value.type,
+      data: editingPrompt.value.data,
+    });
+  } else {
+    await axios.post("/setting/modelMap/savePrompt", {
+      name: editingPrompt.value.name,
+      type: editingPrompt.value.type,
+      data: editingPrompt.value.data,
+    });
+  }
+  window.$message.success($t("settings.memory.modelMap.promptSaveSuccess"));
+  addPromptVisible.value = false;
+  getPromptList();
+}
+
 //更新提示词
 function onConfirm() {
   const data = {
     vendorId: currentSupplier.value,
     model: promptForm.value.model,
-    prompt: promptForm.value.prompt,
+    path: promptForm.value.path,
+    fileName: promptForm.value.fileName,
   };
   axios
     .post("/setting/modelMap/bindingPrompt", data)
@@ -224,6 +336,11 @@ function onConfirm() {
 <style lang="scss" scoped>
 .modelMap {
   .prompt-select {
+    .prompt-select-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
     .prompt-current {
       display: flex;
       align-items: center;
@@ -235,11 +352,19 @@ function onConfirm() {
     }
     .prompt-preview {
       font-size: 13px;
-      color: var(--td-text-color-secondary);
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
+      max-height: 80px;
       overflow: hidden;
+      :deep(.md-editor-preview-wrapper) {
+        padding: 0;
+      }
+      :deep(p) {
+        margin: 0;
+      }
+    }
+  }
+  .add-prompt-form {
+    .t-form__item {
+      margin-bottom: 16px;
     }
   }
 }

@@ -1529,5 +1529,9 @@
   "workbench.production.node.storyboard.deleteSuccess": "分鏡刪除成功",
   "workbench.production.node.storyboard.pleaseSelectImage": "請先選擇分鏡",
   "workbench.cornerScape.audioState": "綁定中",
-  "workbench.generate.generateError": "發起產生請求失敗"
+  "workbench.generate.generateError": "發起產生請求失敗",
+  "settings.vendor.videoGenerating": "影片產生較慢，請耐心等待",
+  "settings.memory.modelMap.editRefeshWord": "重新綁定",
+  "settings.memory.modelMap.delPrompt": "刪除",
+  "settings.vendor.testModel": "測試"
 }
