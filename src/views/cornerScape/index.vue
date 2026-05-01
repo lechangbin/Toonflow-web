@@ -676,10 +676,10 @@ async function batchSelectBindAudio() {
     });
   } catch (e: any) {
     window.$message.error(e.message ?? $t("workbench.cornerScape.msg.promptGenFail"));
-    // 生成失败时重置 promptState
+    // 生成失败时重置 audioBindState
     items.forEach((item) => {
       const target = dataList.value.find((row) => row.id === item.id);
-      if (target) target.promptState = "";
+      if (target) target.audioBindState = "";
     });
   }
 }

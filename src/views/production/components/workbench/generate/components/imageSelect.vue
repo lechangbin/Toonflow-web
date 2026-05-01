@@ -235,7 +235,7 @@ function handleMixedAdd(slot: "start" | "end" | "" = "") {
         const { data } = await axios.post("/production/workbench/getAudioBindAssetsList", {
           assetsIds: assetsNotAudioIds.map((i) => i.id),
         });
-        imageList.value = [...imageList.value, ...newItems, ...data];
+        imageList.value = [...imageList.value, ...newItems, ...(data ?? [])];
       }
     },
     onCancel: () => {
