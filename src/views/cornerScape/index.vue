@@ -607,8 +607,8 @@ async function polishPrompts() {
       editForm.prompt = data.prompt;
     }
     getFilteredData();
-  } catch {
-    window.$message.error($t("workbench.cornerScape.msg.polishFailed"));
+  } catch(e) {
+    window.$message.error(e?.message ?? $t("workbench.cornerScape.msg.polishFailed"));
   } finally {
     polishing.value = false;
   }
@@ -643,7 +643,7 @@ async function batchGenerationPrompt() {
       otherTextPrompt: otherTextPrompt.value,
     });
   } catch (e: any) {
-    window.$message.error(e.message ?? $t("workbench.cornerScape.msg.promptGenFail"));
+    window.$message.error(e?.message ?? $t("workbench.cornerScape.msg.promptGenFail"));
     // 生成失败时重置 promptState
     items.forEach((item) => {
       const target = dataList.value.find((row) => row.id === item.id);

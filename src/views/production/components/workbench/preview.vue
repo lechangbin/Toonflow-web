@@ -410,7 +410,7 @@ async function exportImage() {
     .filter((shot) => shot.selected)
     .map((shot) => ({
       id: shot.id,
-      filePath: shot.filePath,
+      filePath: shot.filePath?.split("?")[0] || shot.filePath,
     }));
   if (selectedShots.length === 0) {
     DialogPlugin.alert({

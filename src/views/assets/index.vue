@@ -726,7 +726,7 @@ async function handleBatchGeneratePrompt() {
       })),
     });
   } catch (e: any) {
-    window.$message.error($t("workbench.assets.promptGenFail"));
+    window.$message.error(e?.message ?? $t("workbench.assets.promptGenFail"));
   }
 }
 // 批量生成图片
