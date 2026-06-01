@@ -87,8 +87,9 @@ function openEdit() {
 }
 
 function onConfirm() {
-  productionAgentStore().setFlowData();
   scriptPlan.value = editContent.value;
+  productionAgentStore().setFlowData();
+
   dialogVisible.value = false;
 }
 
