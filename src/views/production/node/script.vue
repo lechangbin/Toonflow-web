@@ -41,6 +41,7 @@ import { Handle, Position } from "@vue-flow/core";
 import { MdEditor, MdPreview } from "md-editor-v3";
 import type { ToolbarNames } from "md-editor-v3";
 import settingStore from "@/stores/setting";
+import productionAgentStore from "@/stores/productionAgent";
 const { themeSetting } = storeToRefs(settingStore());
 
 const props = defineProps<{
@@ -86,6 +87,8 @@ function openEdit() {
 
 function onConfirm() {
   script.value = editContent.value;
+  productionAgentStore().setFlowData();
+
   dialogVisible.value = false;
 }
 
