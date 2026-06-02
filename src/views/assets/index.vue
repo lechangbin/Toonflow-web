@@ -805,11 +805,14 @@ async function handleBatchGenerateImage() {
 }
 // 批量删除
 function handleBatchDelete() {
-  const selectedAssets = tableData.value.filter((item: any) => selectedRowKeys.value.includes(item.id));
+  const selectedParentAssets = tableData.value.filter((item: any) => selectedRowKeys.value.includes(item.id));
+  const selectedSubAssets = getSelectedSubAssets();
+  const selectedAssets = [...selectedParentAssets, ...selectedSubAssets];
   if (selectedAssets.length === 0) {
     window.$message.warning($t("workbench.assets.selectAtLeastOne"));
     return;
   }
+
   const dialog = DialogPlugin.confirm({
     header: $t("workbench.assets.confirmDeleteHeader"),
     body: $t("workbench.assets.confirmBatchDeleteBody"),

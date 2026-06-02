@@ -1,11 +1,11 @@
 <template>
   <div class="aiConfog" v-loading="loading">
-
-    <div class="modeRadioGroup">
-      <t-radio-group v-model="agentUseModeVal" variant="default-filled" @change="(val: string) => updateUseMode(val)">
-        <t-radio value="0">{{ $t('settings.agent.ordinary') }}</t-radio>
-        <t-radio value="1">{{ $t('settings.agent.advanced') }}</t-radio>
+    <div class="modeRadioGroup ac jb">
+      <t-radio-group v-model="agentUseModeVal" variant="default-filled" @change="onUseModeChange">
+        <t-radio value="0">{{ $t("settings.agent.ordinary") }}</t-radio>
+        <t-radio value="1">{{ $t("settings.agent.advanced") }}</t-radio>
       </t-radio-group>
+      <t-button v-if="agentUseModeVal == '1'" theme="primary" @click="batchSetting">批量设置</t-button>
     </div>
 
     <div v-if="agentUseModeVal === '0'" class="cardGrid">
@@ -85,6 +85,47 @@
               <t-input-number
                 v-if="maxTokenMode === 'manual'"
                 v-model="currentItem.maxOutputTokens"
+                :min="1"
+                theme="normal"
+                style="flex: 1; margin-left: 12px" />
+              <span v-else class="autoHint">{{ $t("settings.agent.autoHint") }}</span>
+            </div>
+          </t-form-item>
+        </t-form>
+      </div>
+    </t-dialog>
+    <!-- 批量高级配置弹窗 -->
+    <t-dialog
+      v-model:visible="batchDialogVisible"
+      header="批量设置（高级）"
+      width="640px"
+      :on-confirm="applyBatchSettings"
+      :confirm-btn="$t('settings.agent.confirm')"
+      :cancel-btn="$t('settings.agent.cancel')"
+      :loading="batchLoading">
+      <div class="dialogContent">
+        <t-form label-align="top">
+          <t-form-item label="选择agent">
+            <t-select multiple v-model="batchSelectedRaw" @change="onBatchAgentsChange" placeholder="请选择">
+              <t-option :value="'全部'">全部</t-option>
+              <t-option v-for="item in advancedModelData" :key="item.id" :value="item.id" :label="item.name">{{ item.name }}</t-option>
+            </t-select>
+          </t-form-item>
+          <t-form-item :label="$t('settings.agent.selectModel')">
+            <modelSelect v-model="batchGlobalModel" v-model:label="batchGlobalLabel" type="text" />
+          </t-form-item>
+          <t-form-item :label="$t('settings.agent.temperature')">
+            <t-input-number v-model="batchSettings.temperature" style="width: 100%" />
+          </t-form-item>
+          <t-form-item :label="$t('settings.agent.maxOutputTokens')">
+            <div class="maxTokenRow">
+              <t-radio-group v-model="batchMaxTokenMode" variant="default-filled" size="small">
+                <t-radio-button value="auto">{{ $t("settings.agent.auto") }}</t-radio-button>
+                <t-radio-button value="manual">{{ $t("settings.agent.manual") }}</t-radio-button>
+              </t-radio-group>
+              <t-input-number
+                v-if="batchMaxTokenMode === 'manual'"
+                v-model="batchSettings.maxOutputTokens"
                 :min="1"
                 theme="normal"
                 style="flex: 1; margin-left: 12px" />
@@ -196,14 +237,6 @@ function confirmConfig() {
       modelDataShow.value = false;
     });
 }
-//跳转官方网站
-async function jumpToWebsite() {
-  if (isElectron.value) {
-    await fetch(`toonflow://openurlwithbrowser?url=https://api.toonflow.net`);
-  } else {
-    window.open("https://api.toonflow.net", "_blank");
-  }
-}
 const loading = ref(false);
 
 //查询Agent配置列表
@@ -222,67 +255,6 @@ function getAgentDeploy() {
 onMounted(() => {
   getAgentDeploy();
 });
-//一键填入
-async function oneClickToFillIn() {
-  loading.value = true;
-  await getVendorList();
-  const toonflow = vendorList.value.find((item) => item.id === "toonflow");
-  if (!toonflow) {
-    window.$message.error($t("settings.agent.msg.toonflowNotFound"));
-    loading.value = false;
-    return;
-  }
-  if (!toonflow.inputValues.apiKey) {
-    // key 不存在，弹窗让用户填入
-    loading.value = false;
-    const inputKey = ref("");
-    const dialogInstance = DialogPlugin({
-      theme: "warning",
-      header: $t("settings.agent.fillKeyHeader"),
-      body: () =>
-        h("div", { style: "padding: 8px 0" }, [
-          h(resolveComponent("t-input") as any, {
-            modelValue: inputKey.value,
-            "onUpdate:modelValue": (val: string) => (inputKey.value = val),
-            placeholder: $t("settings.agent.keyPlaceholder"),
-            type: "password",
-          }),
-        ]),
-      confirmBtn: $t("settings.agent.confirm"),
-      cancelBtn: $t("settings.agent.cancel"),
-      onConfirm: () => {
-        if (!inputKey.value) {
-          window.$message.warning($t("settings.agent.msg.enterKey"));
-          return;
-        }
-        dialogInstance.hide();
-        submitAgentSetKey(inputKey.value);
-      },
-      onClose: () => {
-        dialogInstance.hide();
-      },
-    });
-    return;
-  }
-  submitAgentSetKey(toonflow.inputValues.apiKey);
-}
-
-function submitAgentSetKey(key: string) {
-  loading.value = true;
-  axios
-    .post("/setting/agentDeploy/agentSetKey", { key })
-    .then(() => {
-      window.$message.success($t("settings.agent.msg.configSuccess"));
-      getAgentDeploy();
-    })
-    .catch((err: { message?: string }) => {
-      window.$message.error(`${$t("settings.agent.msg.updateConfigFailed")}${err.message}`);
-    })
-    .finally(() => {
-      modelDataShow.value = false;
-      loading.value = false;
-    });
-}
 
 // ── 供应商列表 ──
 interface VendorItem {
@@ -308,9 +280,91 @@ async function getVendorList() {
 //高级配置
 const advancedModelData = ref<ModelType[]>([]);
 const agentUseModeVal = ref("0");
+
+// 批量设置状态
+const batchDialogVisible = ref(false);
+const batchSelectedIds = ref<number[]>([]);
+const batchApplyToAll = ref(false);
+const batchSelectedRaw = ref<(number | string)[]>([]);
+const batchModelValues = reactive<any>({});
+const batchModelLabels = reactive<any>({});
+const batchGlobalModel = ref<string>("");
+const batchGlobalLabel = ref<string>("");
+const batchSettings = ref({ temperature: 1, maxOutputTokens: 0 });
+const batchMaxTokenMode = ref<"auto" | "manual">("auto");
+const batchLoading = ref(false);
+
+watch(batchMaxTokenMode, (val) => {
+  if (val === "auto") {
+    batchSettings.value.maxOutputTokens = 0;
+  }
+  if (val === "manual" && (batchSettings.value.maxOutputTokens === 0 || batchSettings.value.maxOutputTokens == null)) {
+    batchSettings.value.maxOutputTokens = 8192;
+  }
+});
+
+watch(batchApplyToAll, (val) => {
+  if (val) batchSelectedIds.value = [];
+});
+
+function onBatchAgentsChange(value: any) {
+  const val: Array<number | string> = Array.isArray(value) ? value : value == null ? [] : [value];
+  if (!val || val.length === 0) {
+    batchSelectedIds.value = [];
+    batchApplyToAll.value = false;
+    return;
+  }
+  if (val.includes("全部")) {
+    batchApplyToAll.value = true;
+    batchSelectedIds.value = advancedModelData.value.map((m) => m.id);
+    // show only ALL in UI
+    batchSelectedRaw.value = ["全部"];
+  } else {
+    batchApplyToAll.value = false;
+    batchSelectedIds.value = val.filter((v) => v !== "全部").map((v) => Number(v));
+  }
+}
+
+async function applyBatchSettings() {
+  const targetIds = batchApplyToAll.value ? advancedModelData.value.map((m) => m.id) : batchSelectedIds.value;
+  if (!targetIds || targetIds.length === 0) {
+    return window.$message.warning("请选择要设置的模型");
+  }
+  batchLoading.value = true;
+  const promises = targetIds.map((id) => {
+    const item = advancedModelData.value.find((m) => m.id === id);
+    if (!item) return Promise.resolve();
+    // use the batch-global model select value for all selected agents
+    const selectedValue = batchGlobalModel.value || item.modelName;
+    const selectedLabel = batchGlobalLabel.value || item.model;
+    const vendorId = selectedValue ? String(selectedValue).split(/:(.+)/)[0] : ((item.vendorId as any) ?? "");
+    const modelVal = selectedLabel || (selectedValue ? String(selectedValue).split(/:(.+)/)[1] : "") || item.model;
+    const data = {
+      id: item.id,
+      name: item.name,
+      model: modelVal,
+      modelName: selectedValue || item.modelName,
+      vendorId: vendorId,
+      desc: item.desc,
+      temperature: batchSettings.value.temperature ?? 1,
+      maxOutputTokens: batchMaxTokenMode.value === "auto" ? 0 : (batchSettings.value.maxOutputTokens ?? 0),
+    };
+    return axios.post("/setting/agentDeploy/deployAgentModel", data);
+  });
+  try {
+    await Promise.all(promises);
+    window.$message.success($t("settings.agent.msg.configSuccess"));
+    getAgentDeploy();
+    batchDialogVisible.value = false;
+  } catch (err: any) {
+    window.$message.error(`${$t("settings.agent.msg.updateConfigFailed")}${err.message ?? ""}`);
+  } finally {
+    batchLoading.value = false;
+  }
+}
+
 async function getUseModeVal() {
   const { data } = await axios.get("/setting/agentDeploy/getAgentUseMode");
-  console.log("%c Line:330 🍑 data", "background:#2eafb0", data);
   agentUseModeVal.value = data;
 }
 async function updateUseMode(val: string) {
@@ -318,6 +372,35 @@ async function updateUseMode(val: string) {
     agentUseMode: val,
   });
 }
+function onUseModeChange(val: any) {
+  // wrapper to avoid returning Promise from template handler
+  updateUseMode(String(val));
+}
+
+function batchSetting() {
+  batchSelectedIds.value = [];
+  batchApplyToAll.value = false;
+  batchSelectedRaw.value = [];
+  if (advancedModelData.value && advancedModelData.value.length) {
+    const first = advancedModelData.value[0];
+    batchSettings.value.temperature = first.temperature ?? 1;
+    batchSettings.value.maxOutputTokens = first.maxOutputTokens ?? 0;
+    batchMaxTokenMode.value = batchSettings.value.maxOutputTokens === 0 ? "auto" : "manual";
+    // 初始化每个模型的选择值
+    advancedModelData.value.forEach((it) => {
+      batchModelValues[it.id] = it.modelName ?? "";
+      batchModelLabels[it.id] = it.model ?? "";
+    });
+    batchGlobalModel.value = first.modelName ?? "";
+    batchGlobalLabel.value = first.model ?? "";
+  } else {
+    batchSettings.value.temperature = 1;
+    batchSettings.value.maxOutputTokens = 0;
+    batchMaxTokenMode.value = "auto";
+  }
+  batchDialogVisible.value = true;
+}
+
 onMounted(() => {
   getUseModeVal();
 });
@@ -409,6 +492,19 @@ onMounted(() => {
     font-size: 13px;
     color: var(--td-text-color-placeholder);
   }
+}
+
+.batchModels {
+  max-height: 240px;
+  overflow: auto;
+}
+.batchModelItem {
+  padding: 6px 0;
+}
+.batchModelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 </style>
 <style lang="scss">

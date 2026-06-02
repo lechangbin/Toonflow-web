@@ -607,8 +607,8 @@ async function polishPrompts() {
       editForm.prompt = data.prompt;
     }
     getFilteredData();
-  } catch(e) {
-    window.$message.error(e?.message ?? $t("workbench.cornerScape.msg.polishFailed"));
+  } catch (e) {
+    window.$message.error((e as any)?.message ?? $t("workbench.cornerScape.msg.polishFailed"));
   } finally {
     polishing.value = false;
   }

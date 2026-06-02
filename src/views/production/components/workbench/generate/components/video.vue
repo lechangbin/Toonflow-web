@@ -137,16 +137,39 @@ function handleDeleteVideo(value: HistoryVideoItem) {
 }
 
 /** 单个视频下载 */
+const downloadingSet = new Set<string>();
+
 async function downloadVideo(value: HistoryVideoItem) {
-  const response = await fetch(value.src);
-  const blob = await response.blob();
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "视频.mp4";
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(link.href);
+  if (!value?.src) return;
+  if (downloadingSet.has(value.src)) {
+    window.$message.info("下载进行中，请稍候");
+    return;
+  }
+  downloadingSet.add(value.src);
+  try {
+    const response = await fetch(value.src);
+    if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
+    const blob = await response.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = objectUrl;
+    // 使用时间戳保证文件名唯一，避免浏览器提示覆盖
+    link.download = `视频_${Date.now()}.mp4`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    // 延迟撤销，确保浏览器有时间开始下载（避免立即 revoke 导致问题）
+    setTimeout(() => {
+      try {
+        URL.revokeObjectURL(objectUrl);
+      } catch {}
+    }, 60000);
+  } catch (err) {
+    console.error(err);
+    window.$message.error("下载失败");
+  } finally {
+    downloadingSet.delete(value.src);
+  }
 }
 
 /** 捕获视频封面（绘制 0.5s 帧到 canvas） */

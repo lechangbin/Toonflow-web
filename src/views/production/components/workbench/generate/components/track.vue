@@ -74,7 +74,9 @@ import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import imageListCacheStore from "@/stores/imageListCache";
 import JSZip from "jszip";
+import settingStore from "@/stores/setting";
 
+const { otherSetting } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
 const { removeCache } = imageListCacheStore();
 const episodesId = inject<Ref<number>>("episodesId")!;
@@ -89,9 +91,6 @@ const activeTrackIndex = defineModel("activeTrackIndex", {
 const checkedTrackIds = ref<number[]>([]); // 已勾选的轨道 id
 const trackList = defineModel<TrackItem[]>({
   default: () => [],
-});
-const genTextLoadingMap = defineModel<Record<number, boolean>>("genTextLoadingMap", {
-  default: () => {},
 });
 const emit = defineEmits<{
   getData: [];
@@ -244,6 +243,7 @@ async function batchDownloadVideo(): Promise<void> {
 const generateTextLoad = ref(false);
 function batchGenText() {
   generateTextLoad.value = true;
+  const trackData: any[] = [];
   trackList.value.forEach((track, index) => {
     if (!checkedTrackIds.value.includes(track.id)) return;
     const trackId = track.id;
@@ -253,31 +253,33 @@ function batchGenText() {
     } else {
       info = getTrackUploadInfo(track);
     }
-    if (genTextLoadingMap.value[trackId]) return;
-    genTextLoadingMap.value[trackId] = true;
-    axios
-      .post("/production/workbench/generateVideoPrompt", {
-        projectId: project.value?.id,
-        trackId,
-        info,
-        model: props.modelParmas.model,
-        mode: props.modelParmas.mode,
-      })
-      .then(({ data }) => {
-        const targetTrack = trackList.value.find((item) => item.id === trackId);
-        if (targetTrack) targetTrack.prompt = data;
-      })
-      .catch((e) => {
-        window.$message.error(`第${index + 1}段 提示词生成失败,${(e as Error)?.message ?? "提示词生成失败"}`);
-      })
-      .finally(() => {
-        genTextLoadingMap.value[trackId] = false;
-      });
+    trackData.push({
+      trackId,
+      info: info.filter((i) => i.id),
+    });
+    track.state = "生成中";
   });
-  window.$message.success("开始生成提示词");
-  generateTextLoad.value = false;
-  checkedTrackIds.value = [];
-  checkAll.value = false;
+  axios
+    .post("/production/workbench/batchGeneratePrompt", {
+      projectId: project.value?.id,
+      trackData,
+      model: props.modelParmas.model,
+      mode: props.modelParmas.mode,
+      concurrentCount: otherSetting.value.assetsBatchGenereateSize,
+    })
+    .then(({ data }) => {
+      window.$message.success("开始生成提示词");
+      generateTextLoad.value = false;
+      checkedTrackIds.value = [];
+      checkAll.value = false;
+    })
+    .catch((e) => {
+      window.$message.error(e?.message ?? "生成提示词失败");
+      trackList.value.forEach((i) => {
+        i.state = "生成失败";
+      });
+    })
+    .finally(() => {});
 }
 /**
  * 获取指定轨道的上传数据：

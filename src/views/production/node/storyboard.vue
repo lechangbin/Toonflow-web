@@ -108,6 +108,7 @@
     <editImage v-model="visible" v-if="visible" :flowData="currentRow" type="storyboard" @save="save" />
     <t-image-viewer
       v-model:visible="previewVisible"
+      v-if="previewVisible"
       :images="previewImages"
       :onClose="closePreview"
       :onDownload="downLoadImage"
@@ -148,15 +149,6 @@ const selectedIds = ref<number[]>([]);
 
 function setHoveredFrame(index: number | null) {
   hoveredIndex.value = index;
-}
-
-function toggleSelect(id: number) {
-  const idx = selectedIds.value.indexOf(id);
-  if (idx === -1) {
-    selectedIds.value.push(id);
-  } else {
-    selectedIds.value.splice(idx, 1);
-  }
 }
 
 function selectAll() {

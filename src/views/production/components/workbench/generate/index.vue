@@ -12,7 +12,7 @@
       <div class="prompt" v-if="currentTrack">
         <t-card :title="'#' + (activeTrackIndex + 1) + $t('workbench.generate.generateText')" header-bordered class="videoPrompt">
           <template #actions>
-            <t-button size="small" class="genTextbtn" :loading="activeTrackGenTextLoading" @click="genText">
+            <t-button size="small" class="genTextbtn" :loading="currentTrack.state == '生成中'" @click="genText">
               {{ $t("workbench.generate.generateText") }}
             </t-button>
           </template>
@@ -35,7 +35,6 @@
     <div class="track">
       <newTrack
         v-model:activeTrackIndex="activeTrackIndex"
-        v-model:genTextLoadingMap="genTextLoadingMap"
         v-model="trackList"
         :image-list="imageList"
         @change="trackChange"
@@ -184,11 +183,7 @@ const currentTrack = computed({
     trackList.value[activeTrackIndex.value] = val;
   },
 });
-/** 当前轨道是否正在生成提示词 */
-const activeTrackGenTextLoading = computed(() => {
-  const trackId = trackList.value[activeTrackIndex.value]?.id;
-  return trackId != null ? !!genTextLoadingMap.value[trackId] : false;
-});
+
 /** 将时长限制在模型支持的范围内 */
 function clampDuration(trackDuration: number): number {
   const drMap = modeOptions.value?.durationResolutionMap;
@@ -300,11 +295,10 @@ function handlePromptBlur() {
   if (trackId == null) return;
   axios.post("/production/workbench/updateVideoPrompt", { id: trackId, prompt: currentTrack.value?.prompt });
 }
-const genTextLoadingMap = ref<Record<number, boolean>>({}); // trackId -> 是否正在生成提示词
 
 /** 单个轨道生成提示词 */
 async function genText() {
-  if (currentTrack.value.id == null || genTextLoadingMap.value[currentTrack.value.id]) return;
+  if (currentTrack.value.id == null) return;
   let info = [];
   const currentTrackId = currentTrack.value.id;
   const changeTrack = currentTrack.value;
@@ -327,7 +321,7 @@ async function genText() {
             return filtered;
           })();
   }
-  genTextLoadingMap.value[currentTrackId] = true;
+  currentTrack.value.state = "生成中";
   try {
     const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
       projectId: project.value?.id,
@@ -337,10 +331,11 @@ async function genText() {
       mode: modelParmas.value.mode,
     });
     changeTrack.prompt = data;
+    currentTrack.value.state = "已完成";
   } catch (e) {
+    currentTrack.value.state = "生成失败";
     window.$message.error((e as Error)?.message ?? "提示词生成失败");
   } finally {
-    genTextLoadingMap.value[currentTrackId] = false;
   }
 }
 function trackChange(prevIndex?: number) {
@@ -441,7 +436,7 @@ async function generateVideo() {
   });
 }
 let pollTimer: NodeJS.Timeout | null = null;
-
+let promptPollTimer: NodeJS.Timeout | null = null;
 function startPoll() {
   if (pollTimer !== null) return;
   pollTimer = setInterval(() => getVideoList(), 3000);
@@ -460,7 +455,10 @@ const hasGenerateVideoIds = computed(() => {
     })
     .flatMap((i) => i);
 });
-
+const hasGeneratePromptIds = computed(() => {
+  const trackIds = trackList.value.filter((t) => t.state == "生成中").map((t) => t.id);
+  return trackIds;
+});
 /** 查询所有视频列表，并检测生成完成/失败状态 */
 async function getVideoList() {
   const { data } = await axios.post("/production/workbench/checkVideoStateList", {
@@ -482,6 +480,38 @@ async function getVideoList() {
     });
   }
 }
+function startPromptPoll() {
+  if (promptPollTimer !== null) return;
+  promptPollTimer = setInterval(() => getTrackPromptList(), 3000);
+}
+
+function stopPromptPoll() {
+  if (promptPollTimer) {
+    clearInterval(promptPollTimer);
+    promptPollTimer = null;
+  }
+}
+/** 查询所有视频列表，并检测生成完成/失败状态 */
+async function getTrackPromptList() {
+  const { data } = await axios.post("/production/workbench/checkVideoPrompt", {
+    projectId: project.value?.id,
+    scriptId: episodesId.value ?? 0,
+    trackIds: hasGeneratePromptIds.value,
+  });
+  if (data && data.length) {
+    data.forEach((item: { id: number; state: "生成中" | "未生成" | "已完成" | "生成失败"; prompt?: string; reason?: string }) => {
+      const findData = trackList.value.find((t) => t.id == item.id);
+      if (findData) {
+        findData.state = item.state;
+        findData.prompt = item?.prompt ?? "";
+        findData.reason = item?.reason ?? "";
+        if (item.state === "生成失败") {
+          window.$message.error(`提示词生成失败，${item.reason ?? "未知原因"}`);
+        }
+      }
+    });
+  }
+}
 watch(
   () => hasGenerateVideoIds.value,
   (newVal) => {
@@ -492,9 +522,19 @@ watch(
     }
   },
 );
-
+watch(
+  () => hasGeneratePromptIds.value,
+  (newVal) => {
+    if (newVal && newVal.length > 0) {
+      startPromptPoll();
+    } else {
+      stopPromptPoll();
+    }
+  },
+);
 onUnmounted(() => {
   stopPoll();
+  stopPromptPoll();
 });
 </script>
 
