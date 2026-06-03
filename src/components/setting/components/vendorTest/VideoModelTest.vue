@@ -20,7 +20,6 @@
         <t-icon name="info-circle-filled" size="14px" />
         {{ currentModeInfo.desc }}
       </div>
-      {{ selectedMode }}
 
       <!-- 动态输入区 -->
       <div class="inputSection" v-if="selectedMode">
