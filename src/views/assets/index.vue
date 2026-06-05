@@ -1315,10 +1315,7 @@ watch(generatingData, (val) => {
 });
 
 async function getBigImageUrl(row: Asset, fn: Function) {
-  const { data } = await axios.post("/common/getBigImage", {
-    url: row.src,
-  });
-  row.src = data;
+  row.src = `${row.src.split("?") ? row.src.split("?")[0] : row.src}`;
   nextTick(() => {
     fn();
   });

@@ -1,8 +1,13 @@
 <template>
-  <titleBar v-if="isElectron" />
-  <t-config-provider :global-config="globalConfig">
-    <router-view></router-view>
-  </t-config-provider>
+  <div v-if="loading" class="app-loading">
+    <t-loading :loading="true" size="large" text="加载中..." />
+  </div>
+  <template v-else>
+    <titleBar v-if="isElectron" />
+    <t-config-provider :global-config="globalConfig">
+      <router-view></router-view>
+    </t-config-provider>
+  </template>
 </template>
 
 <script setup lang="ts">
@@ -10,11 +15,16 @@ import settingStore from "@/stores/setting";
 import { merge } from "lodash";
 import zhConfig from "tdesign-vue-next/es/locale/zh_CN";
 import enConfig from "tdesign-vue-next/es/locale/en_US";
-import { cachedLocale } from "@/locales";
+import { cachedLocale, languageList } from "@/locales";
 import { initTheme } from "@/utils/theme";
 import { type GlobalConfigProvider } from "tdesign-vue-next";
+import { useI18n } from "vue-i18n";
+
+const { locale } = useI18n();
 const { baseUrl, isElectron } = storeToRefs(settingStore());
 import { config } from "md-editor-v3";
+
+const loading = ref(true);
 
 watch(
   () => isElectron.value,
@@ -38,7 +48,7 @@ onBeforeMount(() => {
 });
 
 // 初始化主题
-onMounted(() => {
+onMounted(async () => {
   getPort();
 });
 
@@ -77,6 +87,8 @@ async function getPort() {
     }
   } catch (error) {}
 
+  loading.value = false;
+
   config({
     markdownItConfig(md) {
       // 自定义链接渲染
@@ -103,6 +115,28 @@ async function getPort() {
       };
     },
   });
+
+  if (isElectron.value) {
+    try {
+      const response = await fetch(`toonflow://getLocalLanguage`);
+      if (!response.ok) {
+        console.error(await response.text());
+        return;
+      }
+      const data = await response.json();
+      if (languageList.some((item) => item.value === data.local)) {
+        cachedLocale.value = data.local;
+      }
+    } catch (e) {
+      console.error("获取语言失败", e);
+    }
+  } else {
+    const language = navigator.language || "zh-CN";
+    if (languageList.some((item) => item.value === language)) {
+      cachedLocale.value = language;
+      locale.value = language;
+    }
+  }
 }
 
 const tdesignLocaleMap: Record<string, object> = {
@@ -122,4 +156,13 @@ onBeforeMount(() => {
 });
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  background: var(--td-bg-color-page, #f5f5f5);
+}
+</style>

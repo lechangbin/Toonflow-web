@@ -1544,5 +1544,6 @@
   "settings.vendor.videoGenerating": "ビデオの生成が遅いので、しばらくお待ちください",
   "settings.memory.modelMap.editRefeshWord": "再バインド",
   "settings.memory.modelMap.delPrompt": "消去",
-  "settings.vendor.testModel": "テスト"
+  "settings.vendor.testModel": "テスト",
+  "storyboard.assets.addStoryboardFailed": "ストーリーボードの追加に失敗しました"
 }

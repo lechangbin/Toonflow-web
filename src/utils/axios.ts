@@ -36,10 +36,11 @@ instance.interceptors.response.use(
         content: h("div", [
           h("div", [
             "请尝试安装 Visual C++ 运行库：",
-            h("br"),
-            h("a", { href: "https://aka.ms/vs/17/release/vc_redist.x86.exe", target: "_blank", rel: "noopener noreferrer" }, "32位系统下载"),
-            h("br"),
-            h("a", { href: "https://aka.ms/vs/17/release/vc_redist.x64.exe", target: "_blank", rel: "noopener noreferrer" }, "64位系统下载"),
+            h("div", { style: { display: "flex", gap: "8px" } }, [
+              h("a", { href: "https://aka.ms/vs/17/release/vc_redist.x86.exe", target: "_blank", rel: "noopener noreferrer" }, "32位系统下载"),
+              h("a", { href: "https://aka.ms/vs/17/release/vc_redist.x64.exe", target: "_blank", rel: "noopener noreferrer" }, "64位系统下载"),
+            ]),
+            h("div", "或检查后端服务是否开启"),
           ]),
         ]) as unknown as TNode,
       });

@@ -334,6 +334,7 @@ onUnmounted(() => {
     justify-content: space-between;
     margin-bottom: 24px;
     gap: 16px;
+    margin-top: 1.25rem;
     .actionBar-left {
       gap: 10px;
     }

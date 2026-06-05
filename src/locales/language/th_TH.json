@@ -1532,5 +1532,6 @@
   "settings.vendor.videoGenerating": "การสร้างวิดีโอช้า โปรดอดทนรอ",
   "settings.memory.modelMap.editRefeshWord": "ย้อนกลับ",
   "settings.memory.modelMap.delPrompt": "ลบ",
-  "settings.vendor.testModel": "ทดสอบ"
+  "settings.vendor.testModel": "ทดสอบ",
+  "storyboard.assets.addStoryboardFailed": "ไม่สามารถเพิ่มสตอรี่บอร์ดได้"
 }

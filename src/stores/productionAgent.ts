@@ -62,50 +62,51 @@ function makeProductionAgentStore(projectId: string) {
           flowData.value.scriptPlan = value ?? "";
         } else if (tag === "storyboardTable") {
           flowData.value.storyboardTable = value ?? "";
-        } else if (tag === "storyboardItem") {
-          if (status === "complete") {
-            const prompt = attrs.prompt ?? "";
-            const duration = Number(attrs.duration) || 0;
-            const track = attrs.track || "";
-            const shouldGenerateImage =
-              (typeof attrs.shouldGenerateImage == "boolean" && attrs.shouldGenerateImage) ||
-              String(attrs.shouldGenerateImage).toLowerCase() == "true"
-                ? 1
-                : 0;
-
-            const videoDesc = attrs?.videoDesc ?? "";
-            const existingIndex = flowData.value.storyboard.findIndex(
-              (s) => s.prompt == prompt && s.duration == duration && videoDesc == s.videoDesc,
-            );
-            if (existingIndex !== -1) {
-              // 已存在则更新 content，保留 id
-              flowData.value.storyboard[existingIndex].prompt = prompt;
-            } else {
-              // 不存在则追加新条目
-              flowData.value.storyboard.push({
-                prompt: prompt || "",
-                duration: Number(duration) || 0,
-                state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
-                src: null,
-                associateAssetsIds: JSON.parse(attrs.associateAssetsIds) || [],
-                videoDesc: videoDesc,
-                shouldGenerateImage: shouldGenerateImage,
-              });
-              await addStoryboardInfo([
-                {
-                  prompt: prompt || "",
-                  duration: Number(duration) || 0,
-                  track: track || "",
-                  state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
-                  src: null,
-                  videoDesc,
-                  shouldGenerateImage,
-                  associateAssetsIds: JSON.parse(attrs.associateAssetsIds) || [],
-                },
-              ]);
-            }
-          }
         }
+        // else if (tag === "storyboardItem") {
+        //   if (status === "complete") {
+        //     const prompt = attrs.prompt ?? "";
+        //     const duration = Number(attrs.duration) || 0;
+        //     const track = attrs.track || "";
+        //     const shouldGenerateImage =
+        //       (typeof attrs.shouldGenerateImage == "boolean" && attrs.shouldGenerateImage) ||
+        //       String(attrs.shouldGenerateImage).toLowerCase() == "true"
+        //         ? 1
+        //         : 0;
+
+        //     const videoDesc = attrs?.videoDesc ?? "";
+        //     const existingIndex = flowData.value.storyboard.findIndex(
+        //       (s) => s.prompt == prompt && s.duration == duration && videoDesc == s.videoDesc,
+        //     );
+        //     if (existingIndex !== -1) {
+        //       // 已存在则更新 content，保留 id
+        //       flowData.value.storyboard[existingIndex].prompt = prompt;
+        //     } else {
+        //       // 不存在则追加新条目
+        //       flowData.value.storyboard.push({
+        //         prompt: prompt || "",
+        //         duration: Number(duration) || 0,
+        //         state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
+        //         src: null,
+        //         associateAssetsIds: JSON.parse(attrs.associateAssetsIds) || [],
+        //         videoDesc: videoDesc,
+        //         shouldGenerateImage: shouldGenerateImage,
+        //       });
+        //       await addStoryboardInfo([
+        //         {
+        //           prompt: prompt || "",
+        //           duration: Number(duration) || 0,
+        //           track: track || "",
+        //           state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
+        //           src: null,
+        //           videoDesc,
+        //           shouldGenerateImage,
+        //           associateAssetsIds: JSON.parse(attrs.associateAssetsIds) || [],
+        //         },
+        //       ]);
+        //     }
+        //   }
+        // }
         if (status == "complete") {
           throttledFn();
         }
@@ -190,6 +191,24 @@ function makeProductionAgentStore(projectId: string) {
           s.on("generateStoryboard", async (data, callback) => {
             const storyData = await batchGenerateStoryboard(data.ids);
             callback({ success: true, message: storyData });
+          });
+          s.on("addStoryboard", async (data, callback) => {
+            const insertVal = {
+              prompt: data.prompt || "",
+              duration: Number(data.duration) || 0,
+              track: data.track || "",
+              state: "未生成" as "未生成" | "生成中" | "已完成" | "生成失败",
+              src: null,
+              videoDesc: data.videoDesc,
+              shouldGenerateImage:
+                (typeof data.shouldGenerateImage == "boolean" && data.shouldGenerateImage) || String(data.shouldGenerateImage).toLowerCase() == "true"
+                  ? 1
+                  : 0,
+              associateAssetsIds: data.associateAssetsIds || [],
+            };
+            flowData.value.storyboard.push(insertVal);
+            await addStoryboardInfo([insertVal]);
+            callback({ success: true, message: $t("storyboard.assets.derivativeAddSuccess") });
           });
         }
       },

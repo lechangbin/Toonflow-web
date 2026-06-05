@@ -11,11 +11,12 @@
         <div class="frameGrid">
           <template v-for="(item, index) in storyboard" :key="item.id">
             <div class="frameItem" @mouseenter="setHoveredFrame(index)" @mouseleave="setHoveredFrame(null)">
-              <div
-                class="addBetween addBetween--left"
-                :class="{ expanded: hoveredIndex === index }"
-                @click.stop="editStoryboaryImage(item, [index > 0 ? storyboard[index - 1]?.src || '' : '', item.src || ''], index - 1)">
-                <t-button theme="primary" variant="outline" shape="circle">
+              <div class="addBetween addBetween--left" :class="{ expanded: hoveredIndex === index }">
+                <t-button
+                  theme="primary"
+                  variant="outline"
+                  shape="circle"
+                  @click.stop="editStoryboaryImage(item, [index > 0 ? storyboard[index - 1]?.src || '' : '', item.src || ''], index - 1)">
                   <template #icon><i-plus /></template>
                 </t-button>
               </div>
@@ -65,13 +66,14 @@
                   </t-tooltip>
                 </div>
               </div>
-              <div
-                class="addBetween addBetween--right"
-                :class="{ expanded: hoveredIndex === index }"
-                @click.stop="
-                  editStoryboaryImage(item, [item.src || '', index < (storyboard?.length ?? 0) - 1 ? storyboard[index + 1]?.src || '' : ''], index)
-                ">
-                <t-button theme="primary" variant="outline" shape="circle">
+              <div class="addBetween addBetween--right" :class="{ expanded: hoveredIndex === index }">
+                <t-button
+                  theme="primary"
+                  variant="outline"
+                  shape="circle"
+                  @click.stop="
+                    editStoryboaryImage(item, [item.src || '', index < (storyboard?.length ?? 0) - 1 ? storyboard[index + 1]?.src || '' : ''], index)
+                  ">
                   <template #icon><i-plus /></template>
                 </t-button>
               </div>

@@ -246,7 +246,11 @@ function parseMode(value: string): VideoMode | null {
 /** uploadBox 作为 promptEditor 的引用预览 */
 const references = computed(() => {
   function getFileTypeByExt(src: string | undefined): "image" | "video" | "audio" {
-    const ext = src?.split(".").pop()?.toLowerCase() ?? "";
+    if (!src) return "image";
+    // 去掉 query 和 hash 部分
+    const cleanSrc = src.split("?")[0].split("#")[0];
+    const ext = cleanSrc.split(".").pop()?.toLowerCase() ?? "";
+
     if (["mp4", "webm", "mov", "avi", "mkv"].includes(ext)) return "video";
     if (["mp3", "wav", "ogg", "aac", "flac", "m4a"].includes(ext)) return "audio";
     return "image";
@@ -315,7 +319,7 @@ async function genText() {
               : modelParmas.value.mode === "singleImage"
                 ? imageList.value.slice(0, 1)
                 : imageList.value;
-            const filtered = preSliced.filter((item) => item.id).map(({ id, sources }) => ({ id, sources }));
+            const filtered = preSliced.filter((item) => typeof item.id === "number" && !isNaN(item.id)).map(({ id, sources }) => ({ id, sources }));
             if (frameMode.includes(modelParmas.value.mode)) return filtered.slice(0, 2);
             if (modelParmas.value.mode === "singleImage") return filtered.slice(0, 1);
             return filtered;
@@ -408,7 +412,9 @@ async function generateVideo() {
                     : modelParmas.value.mode === "singleImage"
                       ? imageList.value.slice(0, 1)
                       : imageList.value;
-                  const filtered = preSliced.filter((item) => Boolean(item.src) && item.id).map(({ id, sources }) => ({ id, sources }));
+                  const filtered = preSliced
+                    .filter((item) => Boolean(item.src) && typeof item.id === "number" && !isNaN(item.id))
+                    .map(({ id, sources }) => ({ id, sources }));
                   if (frameMode.includes(modelParmas.value.mode)) return filtered.slice(0, 2);
                   if (modelParmas.value.mode === "singleImage") return filtered.slice(0, 1);
                   return filtered;

@@ -1685,5 +1685,6 @@
   "settings.vendor.videoGenerating": "Video generation is slow, please wait patiently",
   "settings.memory.modelMap.editRefeshWord": "rebind",
   "settings.memory.modelMap.delPrompt": "delete",
-  "settings.vendor.testModel": "test"
+  "settings.vendor.testModel": "test",
+  "storyboard.assets.addStoryboardFailed": "Failed to add storyboard"
 }

@@ -1533,5 +1533,6 @@
   "settings.vendor.videoGenerating": "影片產生較慢，請耐心等待",
   "settings.memory.modelMap.editRefeshWord": "重新綁定",
   "settings.memory.modelMap.delPrompt": "刪除",
-  "settings.vendor.testModel": "測試"
+  "settings.vendor.testModel": "測試",
+  "storyboard.assets.addStoryboardFailed": "分鏡添加失敗"
 }

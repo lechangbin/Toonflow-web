@@ -1257,10 +1257,10 @@
         "selectImage": "选择图片",
         "imageGeneration": "图片生成",
         "promptPlaceholder": "描述你想要生成的图片...",
-        "imageRef": "图{index}",
+        "imageRef": "图片{index}",
         "videoRef": "视频{index}",
         "audioRef": "音频{index}",
-        "reference": "参考{index}",
+        "reference": "图{index}",
         "noReferences": "暂无可引用的参考文件",
         "selectModel": "请先选择模型",
         "selectQuality": "请选择画质",
@@ -1815,7 +1815,6 @@
   "workbench.production.node.storyboard.confirmBatchDeleteBody": "确认是否删除当前选中的{index}个分镜",
   "workbench.production.node.storyboard.deleteSuccess": "分镜删除成功",
   "workbench.production.node.storyboard.pleaseSelectImage": "请先选择分镜",
-  "workbench.production.editImage.reference": "图片{index}",
   "workbench.cornerScape.audioState": "绑定中",
   "workbench.generate.generateError": "发起生成请求失败",
   "settings.vendor.videoGenerating": "视频生成较慢，请耐心等待",
@@ -1823,5 +1822,6 @@
   "settings.memory.modelMap.delPrompt": "删除",
   "workbench.cornerScape.textPromptInput": "提示词附加指令",
   "workbench.cornerScape.textPromptPh": "请输入提示词附加指令（可选）",
-  "settings.vendor.testModel": "测试"
+  "settings.vendor.testModel": "测试",
+  "storyboard.assets.addStoryboardFailed": "分镜添加失败"
 }

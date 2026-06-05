@@ -143,7 +143,6 @@ import modelSelect from "@/components/modelSelect.vue";
 import { providersLogo, modelProviderRules } from "@/utils/providersLogo";
 import axios from "@/utils/axios";
 import settingStore from "@/stores/setting";
-const { isElectron } = storeToRefs(settingStore());
 
 interface ModelType {
   id: number;

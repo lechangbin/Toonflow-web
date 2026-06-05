@@ -1543,5 +1543,6 @@
   "settings.vendor.videoGenerating": "Создание видео происходит медленно, пожалуйста, подождите терпеливо",
   "settings.memory.modelMap.editRefeshWord": "перевязать",
   "settings.memory.modelMap.delPrompt": "удалить",
-  "settings.vendor.testModel": "тест"
+  "settings.vendor.testModel": "тест",
+  "storyboard.assets.addStoryboardFailed": "Не удалось добавить раскадровку."
 }

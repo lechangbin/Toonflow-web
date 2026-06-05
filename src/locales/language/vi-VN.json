@@ -1536,5 +1536,6 @@
   "settings.vendor.videoGenerating": "Quá trình tạo video chậm, vui lòng kiên nhẫn chờ đợi",
   "settings.memory.modelMap.editRefeshWord": "buộc lại",
   "settings.memory.modelMap.delPrompt": "xóa bỏ",
-  "settings.vendor.testModel": "Bài kiểm tra"
+  "settings.vendor.testModel": "Bài kiểm tra",
+  "storyboard.assets.addStoryboardFailed": "Không thể thêm bảng phân cảnh"
 }

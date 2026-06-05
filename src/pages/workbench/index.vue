@@ -280,7 +280,7 @@ onUnmounted(() => {
     padding-left: 32px;
     padding-right: 32px;
     .topMenu {
-      height: 6vh;
+      height: 50px;
       .rightBtnList {
         .item {
           margin-bottom: 0px !important;

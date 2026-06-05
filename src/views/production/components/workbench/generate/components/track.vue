@@ -255,7 +255,7 @@ function batchGenText() {
     }
     trackData.push({
       trackId,
-      info: info.filter((i) => i.id),
+      info: info.filter((i) => typeof i.id === "number" && !isNaN(i.id)),
     });
     track.state = "生成中";
   });
