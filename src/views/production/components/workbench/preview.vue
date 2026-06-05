@@ -174,7 +174,8 @@ import { VueDraggable } from "vue-draggable-plus";
 import { DialogPlugin } from "tdesign-vue-next";
 import axios from "@/utils/axios";
 import JSZip from "jszip";
-
+import projectStore from "@/stores/project";
+const { project } = storeToRefs(projectStore());
 interface ShotCharacter {
   name: string;
   type: string;
@@ -209,6 +210,7 @@ onMounted(() => {
 //查询分镜数据
 async function getShotList() {
   const { data } = await axios.post("/production/getStoryboardData", {
+    projectId: project.value?.id,
     scriptId: episodesId!.value,
   });
   shotList.value = data;

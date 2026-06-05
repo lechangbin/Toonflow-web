@@ -208,6 +208,7 @@ function makeProductionAgentStore(projectId: string) {
             };
             flowData.value.storyboard.push(insertVal);
             await addStoryboardInfo([insertVal]);
+            throttledFn();
             callback({ success: true, message: $t("storyboard.assets.derivativeAddSuccess") });
           });
         }
