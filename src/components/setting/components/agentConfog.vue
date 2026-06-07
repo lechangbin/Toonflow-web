@@ -224,7 +224,7 @@ function confirmConfig() {
     maxOutputTokens: currentItem.value?.maxOutputTokens ?? 0,
   };
   axios
-    .post("/setting/agentDeploy/deployAgentModel", data)
+    .post("/setting/agentDeploy/updateAgentModel", data)
     .then(() => {
       window.$message.success($t("settings.agent.msg.configSuccess"));
       getAgentDeploy();
@@ -330,28 +330,29 @@ async function applyBatchSettings() {
     return window.$message.warning("请选择要设置的模型");
   }
   batchLoading.value = true;
-  const promises = targetIds.map((id) => {
-    const item = advancedModelData.value.find((m) => m.id === id);
-    if (!item) return Promise.resolve();
-    // use the batch-global model select value for all selected agents
-    const selectedValue = batchGlobalModel.value || item.modelName;
-    const selectedLabel = batchGlobalLabel.value || item.model;
-    const vendorId = selectedValue ? String(selectedValue).split(/:(.+)/)[0] : ((item.vendorId as any) ?? "");
-    const modelVal = selectedLabel || (selectedValue ? String(selectedValue).split(/:(.+)/)[1] : "") || item.model;
-    const data = {
-      id: item.id,
-      name: item.name,
-      model: modelVal,
-      modelName: selectedValue || item.modelName,
-      vendorId: vendorId,
-      desc: item.desc,
-      temperature: batchSettings.value.temperature ?? 1,
-      maxOutputTokens: batchMaxTokenMode.value === "auto" ? 0 : (batchSettings.value.maxOutputTokens ?? 0),
-    };
-    return axios.post("/setting/agentDeploy/deployAgentModel", data);
-  });
+  const items = targetIds
+    .map((id) => {
+      const item = advancedModelData.value.find((m) => m.id === id);
+      if (!item) return null;
+      // use the batch-global model select value for all selected agents
+      const selectedValue = batchGlobalModel.value || item.modelName;
+      const selectedLabel = batchGlobalLabel.value || item.model;
+      const vendorId = selectedValue ? String(selectedValue).split(/:(.+)/)[0] : ((item.vendorId as any) ?? "");
+      const modelVal = selectedLabel || (selectedValue ? String(selectedValue).split(/:(.+)/)[1] : "") || item.model;
+      return {
+        id: item.id,
+        name: item.name,
+        model: modelVal,
+        modelName: selectedValue || item.modelName,
+        vendorId: vendorId,
+        desc: item.desc,
+        temperature: batchSettings.value.temperature ?? 1,
+        maxOutputTokens: batchMaxTokenMode.value === "auto" ? 0 : (batchSettings.value.maxOutputTokens ?? 0),
+      };
+    })
+    .filter(Boolean);
   try {
-    await Promise.all(promises);
+    await axios.post("/setting/agentDeploy/deployAgentModel", { items });
     window.$message.success($t("settings.agent.msg.configSuccess"));
     getAgentDeploy();
     batchDialogVisible.value = false;

@@ -188,6 +188,11 @@ onMounted(async () => {
     showThink.value = true;
   }
 });
+watch(connected, (newVal) => {
+  if (status.value != "idle" && newVal) {
+    status.value = "idle";
+  }
+});
 </script>
 
 <style lang="scss" scoped>

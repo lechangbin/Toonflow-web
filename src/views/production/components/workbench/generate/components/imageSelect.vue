@@ -5,7 +5,11 @@
       <div class="uploadBtn c fc" v-for="(item, index) in mode == 'singleImage' ? imageList.slice(0, 1) : imageList" :key="index">
         <template v-if="item.src">
           <t-image v-if="item.fileType == 'image'" :src="item.src" fit="contain" class="uploadPreview">
-            <template #overlayContent></template>
+            <template #overlayContent>
+              <div class="imageToolsWrap">
+                <ImageTools :src="item.src!" position="br" />
+              </div>
+            </template>
           </t-image>
           <t-tooltip theme="primary" v-else-if="item.fileType == 'audio'" :content="item?.prompt || ''">
             <div class="mediaPreview audioPreview">
@@ -22,7 +26,7 @@
             <span style="font-size: 20px">文</span>
           </t-tooltip>
         </template>
-        <div class="imageToolsWrap" v-if="item.sources == 'storyboard' && item.index != null">
+        <div class="imageTitleWrap" v-if="item.sources == 'storyboard' && item.index != null">
           {{ `P${item.index + 1}` }}
         </div>
         <div class="clearBtn" @click="splitImage(index)">
@@ -40,7 +44,11 @@
         <div v-if="!isEmptySlot(imageList?.[index])" style="flex: 1; width: 100%" class="ac">
           <template v-if="imageList?.[index]?.src">
             <t-image v-if="imageList?.[index]?.fileType == 'image'" :src="imageList?.[index]!.src" fit="contain" class="uploadPreview">
-              <template #overlayContent></template>
+              <template #overlayContent>
+                <div class="imageToolsWrap">
+                  <ImageTools :src="imageList?.[index]!.src" position="br" />
+                </div>
+              </template>
             </t-image>
             <div v-else-if="imageList?.[index]?.fileType == 'audio'" class="mediaPreview audioPreview">
               <i-acoustic size="20" />
@@ -55,7 +63,7 @@
               <span style="font-size: 20px">文</span>
             </t-tooltip>
           </template>
-          <div class="imageToolsWrap" v-if="imageList?.[index]?.sources == 'storyboard' && imageList?.[index]?.index != null">
+          <div class="imageTitleWrap" v-if="imageList?.[index]?.sources == 'storyboard' && imageList?.[index]?.index != null">
             {{ `P${imageList[index]?.index + 1}` }}
           </div>
           <div class="clearBtn" @click.stop="clearImage(index)">
@@ -87,7 +95,7 @@
       placement="center">
       <div class="storyboardGrid">
         <div class="storyboardItem" v-for="sb in storyboardList" :key="sb.id" @click="pickStoryboard(sb)">
-          <div class="imageToolsWrap" v-if="sb?.index != null">
+          <div class="imageTitleWrap" v-if="sb?.index != null">
             {{ `P${sb?.index + 1}` }}
           </div>
           <img v-if="sb.src" :src="sb.src" />
@@ -292,8 +300,8 @@ function splitImage(index: number) {
     background-color: var(--td-bg-color-secondarycontainer);
     border-radius: 4px;
   }
-  .imageToolsWrap {
-    z-index: 99999;
+  .imageTitleWrap {
+    z-index: 999;
     position: absolute;
     left: 4px;
     top: 4px;
@@ -325,6 +333,21 @@ function splitImage(index: number) {
       height: 100%;
       object-fit: cover;
       border-radius: 8px;
+      position: relative;
+      .imageToolsWrap {
+        height: 100%;
+        transform: scale(0.6);
+        transform-origin: bottom right;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+      &:hover {
+        .imageToolsWrap {
+          opacity: 1;
+          pointer-events: auto;
+        }
+      }
     }
     .mediaPreview {
       width: 100%;

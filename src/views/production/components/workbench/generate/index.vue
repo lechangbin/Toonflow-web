@@ -104,15 +104,12 @@ const imageList = computed({
       const cached = getCache(pid, sid, trackId);
 
       if (cached?.length) {
-        cached.sort((a, b) => getImageItemPriority(a) - getImageItemPriority(b));
-        return cached;
+        return [...cached].sort((a, b) => getImageItemPriority(a) - getImageItemPriority(b));
       }
     }
     const medias = currentTrack.value?.medias;
     if (!medias?.length) return [];
-    (medias as UploadItem[]).sort((a, b) => getImageItemPriority(a) - getImageItemPriority(b));
-
-    return medias as UploadItem[];
+    return [...(medias as UploadItem[])].sort((a, b) => getImageItemPriority(a) - getImageItemPriority(b));
   },
   set(val: UploadItem[]) {
     if (currentTrack.value) {
@@ -302,30 +299,26 @@ function handlePromptBlur() {
 
 /** 单个轨道生成提示词 */
 async function genText() {
-  if (currentTrack.value.id == null) return;
-  let info = [];
-  const currentTrackId = currentTrack.value.id;
-  const changeTrack = currentTrack.value;
+  const track = currentTrack.value;
+  if (track.id == null || track.state === "生成中") return;
+  let info: { id: number; sources: string }[] = [];
+  const currentTrackId = track.id;
+  const rawMedias = (track.medias ?? []) as UploadItem[];
   if (modelParmas.value.mode == "text") {
-    info = changeTrack?.medias.map(({ id, sources }) => ({ id, sources }));
+    info = rawMedias.map(({ id, sources }) => ({ id: id!, sources }));
   } else {
-    info =
-      modelParmas.value.mode === "text"
-        ? []
-        : (() => {
-            const frameMode = ["startEndRequired", "endFrameOptional", "startFrameOptional"];
-            const preSliced = frameMode.includes(modelParmas.value.mode)
-              ? imageList.value.slice(0, 2)
-              : modelParmas.value.mode === "singleImage"
-                ? imageList.value.slice(0, 1)
-                : imageList.value;
-            const filtered = preSliced.filter((item) => typeof item.id === "number" && !isNaN(item.id)).map(({ id, sources }) => ({ id, sources }));
-            if (frameMode.includes(modelParmas.value.mode)) return filtered.slice(0, 2);
-            if (modelParmas.value.mode === "singleImage") return filtered.slice(0, 1);
-            return filtered;
-          })();
+    const frameMode = ["startEndRequired", "endFrameOptional", "startFrameOptional"];
+    const preSliced = frameMode.includes(modelParmas.value.mode)
+      ? rawMedias.slice(0, 2)
+      : modelParmas.value.mode === "singleImage"
+        ? rawMedias.slice(0, 1)
+        : rawMedias;
+    const filtered = preSliced.filter((item) => typeof item.id === "number" && !isNaN(item.id)).map(({ id, sources }) => ({ id: id!, sources }));
+    if (frameMode.includes(modelParmas.value.mode)) info = filtered.slice(0, 2);
+    else if (modelParmas.value.mode === "singleImage") info = filtered.slice(0, 1);
+    else info = filtered;
   }
-  currentTrack.value.state = "生成中";
+  track.state = "生成中";
   try {
     const { data } = await axios.post("/production/workbench/generateVideoPrompt", {
       projectId: project.value?.id,
@@ -334,12 +327,11 @@ async function genText() {
       model: modelParmas.value.model,
       mode: modelParmas.value.mode,
     });
-    changeTrack.prompt = data;
-    currentTrack.value.state = "已完成";
+    track.prompt = data;
+    track.state = "已完成";
   } catch (e) {
-    currentTrack.value.state = "生成失败";
+    track.state = "生成失败";
     window.$message.error((e as Error)?.message ?? "提示词生成失败");
-  } finally {
   }
 }
 function trackChange(prevIndex?: number) {

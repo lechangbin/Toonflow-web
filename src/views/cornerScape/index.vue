@@ -894,6 +894,7 @@ function stopPolling() {
 
 function startImagePolling() {
   if (imagePollingTimer) return;
+
   imagePollingTimer = setInterval(async () => {
     if (generatingData.value.length === 0) {
       stopImagePolling();
@@ -910,9 +911,9 @@ function stopImagePolling() {
   }
 }
 function stopAudioPolling() {
-  if (imagePollingTimer) {
-    clearInterval(imagePollingTimer);
-    imagePollingTimer = null;
+  if (audioBindPollingTimer) {
+    clearInterval(audioBindPollingTimer);
+    audioBindPollingTimer = null;
   }
 }
 function startAudioPolling() {
