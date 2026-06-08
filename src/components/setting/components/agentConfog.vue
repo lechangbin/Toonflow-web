@@ -1,5 +1,22 @@
 <template>
   <div class="aiConfog" v-loading="loading">
+    <div class="banner">
+      <div class="content f ac jb">
+        <div class="textContent ac">
+          <i-good-two class="icon" theme="filled" size="24" fill="currentColor" />
+          <span>{{ $t("settings.agent.bannerDesc") }}</span>
+        </div>
+        <div class="btnList f w">
+          <t-button @click="jumpToWebsite">
+            {{ $t("settings.agent.visitWebsite") }}
+            <template #suffix>
+              <i-share theme="outline" />
+            </template>
+          </t-button>
+        </div>
+      </div>
+    </div>
+
     <div class="modeRadioGroup ac jb">
       <t-radio-group v-model="agentUseModeVal" variant="default-filled" @change="onUseModeChange">
         <t-radio value="0">{{ $t("settings.agent.ordinary") }}</t-radio>
@@ -143,6 +160,7 @@ import modelSelect from "@/components/modelSelect.vue";
 import { providersLogo, modelProviderRules } from "@/utils/providersLogo";
 import axios from "@/utils/axios";
 import settingStore from "@/stores/setting";
+const { isElectron } = storeToRefs(settingStore());
 
 interface ModelType {
   id: number;
@@ -404,6 +422,15 @@ function batchSetting() {
 onMounted(() => {
   getUseModeVal();
 });
+
+//跳转官方网站
+async function jumpToWebsite() {
+  if (isElectron.value) {
+    await fetch(`toonflow://openurlwithbrowser?url=https://platform.deepseek.com`);
+  } else {
+    window.open("https://platform.deepseek.com", "_blank");
+  }
+}
 </script>
 
 <style lang="scss" scoped>

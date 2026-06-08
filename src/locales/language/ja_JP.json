@@ -180,7 +180,7 @@
       "linkAdd": "確認する"
     },
     "agent": {
-      "bannerDesc": "Toonflow公式中継サイトを使用すると、設定をワンクリックで入力でき、手動設定なしですぐに使用できます。",
+      "bannerDesc": "公式の DeepSeek V4 を使用することをお勧めします。",
       "visitWebsite": "サイトへ移動",
       "fillKey": "KEYを入力",
       "oneClickFill": "ワンクリック入力",

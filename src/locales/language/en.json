@@ -181,7 +181,7 @@
       "linkAdd": "confirm"
     },
     "agent": {
-      "bannerDesc": "Use the official Toonflow relay site for one-click configuration. Ready out-of-the-box, no manual setup needed.",
+      "bannerDesc": "It is recommended to use the official DeepSeek V4",
       "visitWebsite": "Visit Website",
       "fillKey": "Enter KEY",
       "oneClickFill": "One-Click Fill",
