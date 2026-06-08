@@ -116,26 +116,14 @@ async function getPort() {
     },
   });
 
-  if (isElectron.value) {
-    try {
-      const response = await fetch(`toonflow://getLocalLanguage`);
-      if (!response.ok) {
-        console.error(await response.text());
-        return;
-      }
-      const data = await response.json();
-      if (languageList.some((item) => item.value === data.local)) {
-        cachedLocale.value = data.local;
-      }
-    } catch (e) {
-      console.error("获取语言失败", e);
-    }
-  } else {
-    const language = navigator.language || "zh-CN";
-    if (languageList.some((item) => item.value === language)) {
+  try {
+    const language = navigator.language;
+    if (language && languageList.some((item) => item.value === language)) {
       cachedLocale.value = language;
       locale.value = language;
     }
+  } catch (e) {
+    console.error("获取语言失败", e);
   }
 }
 
