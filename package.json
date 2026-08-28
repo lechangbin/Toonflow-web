@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite --host",
     "preview": "vite preview",
+    "test:contract": "node --experimental-strip-types --test tests/videoContract.test.ts",
     "build": "vue-tsc --build --force && vite build",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",

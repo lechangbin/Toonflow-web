@@ -1,173 +1,159 @@
 <template>
-  <div class="modeMenu">
-    <div class="left f ac">
-      <div class="model">
-        <modelSelect v-model="modelParmas.model" type="video" size="small" />
-      </div>
-      <t-select size="small" class="mode" :value="modelParmas.mode" :onChange="handleBeforeChange">
-        <t-option v-for="(item, index) in modeList" :key="index" :value="item.value" :label="item.label"></t-option>
-      </t-select>
-      <t-button
-        size="small"
-        variant="outline"
-        :theme="modelParmas.audio ? 'success' : 'danger'"
-        class="audio"
-        @click="modelParmas.audio = !modelParmas.audio">
-        <template #icon>
-          <i-volume-notice v-if="modelParmas.audio" size="16" />
-          <i-volume-mute v-else size="16" />
-        </template>
-      </t-button>
-      <div class="status">
-        <t-popup
-          trigger="click"
-          placement="top"
-          overlay-class-name="resDurPickerPopup"
-          :overlay-inner-style="{ padding: '16px', borderRadius: '8px' }">
-          <t-tag class="btn" variant="outline">{{ modelParmas.resolution }}·{{ modelParmas.duration }}s</t-tag>
-          <template #content>
-            <div class="resolutionDurationPicker">
-              <div
-                v-if="
-                  Array.isArray(modeOptions.durationResolutionMap) &&
-                  modeOptions.durationResolutionMap.length > 0 &&
-                  modeOptions.durationResolutionMap[0].resolution &&
-                  modeOptions.durationResolutionMap[0].resolution.length > 0
-                "
-                class="pickerSection">
-                <div class="pickerLabel">{{ $t("workbench.generate.resolution") }}</div>
-                <div class="pickerOptions">
-                  <div
-                    v-for="res in modeOptions.durationResolutionMap[0].resolution"
-                    :key="res"
-                    class="pickerOption"
-                    :class="{ active: modelParmas.resolution == res }"
-                    @click="modelParmas.resolution = res">
-                    {{ res }}
-                  </div>
-                </div>
-              </div>
-              <div
-                v-if="
-                  Array.isArray(modeOptions.durationResolutionMap) &&
-                  modeOptions.durationResolutionMap.length > 0 &&
-                  modeOptions.durationResolutionMap[0].duration &&
-                  modeOptions.durationResolutionMap[0].duration.length > 0
-                "
-                class="pickerSection">
-                <div class="pickerLabel">{{ $t("workbench.generate.duration") }}</div>
-                <div class="pickerOptions">
-                  <div
-                    v-for="dur in modeOptions.durationResolutionMap[0].duration"
-                    :key="dur"
-                    class="pickerOption"
-                    :class="{ active: modelParmas.duration == dur }"
-                    @click="updateDuration(dur)">
-                    {{ dur }}s
-                  </div>
-                </div>
-              </div>
-            </div>
-          </template>
-        </t-popup>
-      </div>
-    </div>
+  <div class="modeMenu ac">
+    <modelSelect
+      v-model="modelParmas.modelSelection"
+      type="video"
+      size="small"
+      :changeConfig="true"
+      @change="handleModelChange" />
+    <t-select v-model="modelParmas.capabilityId" size="small" class="selector" @change="handleCapabilityChange">
+      <t-option v-for="capability in modelParmas.model?.capabilities ?? []" :key="capability.id" :value="capability.id" :label="capabilityLabel(capability.id)" />
+    </t-select>
+    <t-select :value="modelParmas.output?.presetId" size="small" class="selector" @change="handlePresetChange">
+      <t-option v-for="preset in modelParmas.capability?.outputPresets ?? []" :key="preset.id" :value="preset.id" :label="`${preset.resolution} · ${preset.id}`" />
+    </t-select>
+    <t-select :value="modelParmas.output?.aspectRatio" size="small" class="ratio" @change="handleRatioChange">
+      <t-option v-for="ratio in selectedPreset?.aspectRatios ?? []" :key="ratio" :value="ratio" :label="ratio" />
+    </t-select>
+    <t-select :value="modelParmas.output?.duration" size="small" class="duration" @change="handleDurationChange">
+      <t-option v-for="duration in durations" :key="duration" :value="duration" :label="`${duration}s`" />
+    </t-select>
+    <t-button
+      size="small"
+      variant="outline"
+      :theme="audioEnabled ? 'success' : 'default'"
+      :disabled="audioLocked"
+      @click="toggleAudio">
+      <template #icon>
+        <i-volume-notice v-if="audioEnabled" size="16" />
+        <i-volume-mute v-else size="16" />
+      </template>
+      {{ audioLabel }}
+    </t-button>
   </div>
 </template>
 
 <script setup lang="ts">
 import "@/views/production/components/workbench/type/type";
 import axios from "@/utils/axios";
+import {
+  createAudioSelection,
+  getPresetDurations,
+  type VideoAspectRatio,
+  type VideoCapabilityId,
+  type VideoModelContract,
+} from "@/videoContract";
 
-const props = defineProps<{
-  modeOptions: VideoModel;
-  modeList: { value: string; label: string }[];
-  trackId: number | undefined;
+const props = defineProps<{ trackId?: number }>();
+const modelParmas = defineModel<ModelSetting>({ required: true });
+const emit = defineEmits<{
+  modelChange: [value: string, model: VideoModelContract];
+  selectionChange: [kind: "capability" | "output" | "audio"];
 }>();
-const modelParmas = defineModel<ModelSetting>({
-  default: {
-    mode: "",
-    model: "",
-    resolution: "480p",
-    duration: 8,
-    audio: false,
-  },
+
+const selectedPreset = computed(() =>
+  modelParmas.value.capability?.outputPresets.find((preset) => preset.id === modelParmas.value.output?.presetId),
+);
+const durations = computed(() => (selectedPreset.value ? getPresetDurations(selectedPreset.value) : []));
+const audioEnabled = computed(() => modelParmas.value.audio.generation === "native" && modelParmas.value.audio.enabled);
+const audioLocked = computed(() => modelParmas.value.capability?.audio.policy !== "optional");
+const audioLabel = computed(() => {
+  const policy = modelParmas.value.capability?.audio.policy;
+  if (policy === "always") return "原生音频（始终）";
+  if (policy === "none") return "无原生音频";
+  return audioEnabled.value ? "原生音频" : "静音";
 });
-const emit = defineEmits(["modeChange"]);
-function handleBeforeChange(newVal: string) {
-  emit("modeChange", newVal);
+
+function capabilityLabel(id: VideoCapabilityId): string {
+  return {
+    "text-to-video": "文生视频",
+    "image-to-video": "图生视频",
+    "first-last-frame": "首尾帧",
+    "keyframe-to-video": "关键帧动画",
+  }[id];
 }
-function updateDuration(newDuration: number) {
-  modelParmas.value.duration = newDuration;
-  if (props.trackId) axios.post("/production/workbench/updateVideoDuration", { id: props.trackId, duration: newDuration });
+
+function handleModelChange(value: string, model: VideoModelContract) {
+  emit("modelChange", value, model);
+}
+
+function handleCapabilityChange(value: unknown) {
+  const capabilityId = String(value) as VideoCapabilityId;
+  const capability = modelParmas.value.model?.capabilities.find((item) => item.id === capabilityId) ?? null;
+  modelParmas.value.capability = capability;
+  modelParmas.value.capabilityId = capability?.id ?? "";
+  modelParmas.value.audio = capability ? createAudioSelection(capability.audio) : { generation: "none" };
+  const preset = capability?.outputPresets[0];
+  modelParmas.value.output = preset
+    ? {
+        presetId: preset.id,
+        resolution: preset.resolution,
+        duration: getPresetDurations(preset)[0],
+        aspectRatio: preset.aspectRatios[0],
+      }
+    : null;
+  persistDuration();
+  emit("selectionChange", "capability");
+}
+
+function handlePresetChange(value: unknown) {
+  const presetId = String(value);
+  const preset = modelParmas.value.capability?.outputPresets.find((item) => item.id === presetId);
+  if (!preset) return;
+  modelParmas.value.output = {
+    presetId: preset.id,
+    resolution: preset.resolution,
+    duration: getPresetDurations(preset)[0],
+    aspectRatio: preset.aspectRatios.includes(modelParmas.value.output?.aspectRatio as VideoAspectRatio)
+      ? (modelParmas.value.output!.aspectRatio as VideoAspectRatio)
+      : preset.aspectRatios[0],
+  };
+  persistDuration();
+  emit("selectionChange", "output");
+}
+
+function handleRatioChange(value: unknown) {
+  const aspectRatio = String(value) as VideoAspectRatio;
+  if (modelParmas.value.output) modelParmas.value.output.aspectRatio = aspectRatio;
+  emit("selectionChange", "output");
+}
+
+function handleDurationChange(value: unknown) {
+  const duration = Number(value);
+  if (modelParmas.value.output) modelParmas.value.output.duration = duration;
+  persistDuration();
+  emit("selectionChange", "output");
+}
+
+function toggleAudio() {
+  if (modelParmas.value.capability?.audio.policy !== "optional") return;
+  modelParmas.value.audio = { generation: "native", enabled: !audioEnabled.value };
+  emit("selectionChange", "audio");
+}
+
+function persistDuration() {
+  if (props.trackId && modelParmas.value.output) {
+    void axios.post("/production/workbench/updateVideoDuration", {
+      id: props.trackId,
+      duration: modelParmas.value.output.duration,
+    });
+  }
 }
 </script>
 
 <style lang="scss" scoped>
 .modeMenu {
+  gap: 8px;
   width: 100%;
-  .left {
-    flex: 1;
-    gap: 8px;
-    .mode {
-      width: 280px;
-    }
-    .status {
-      .btn {
-        cursor: pointer;
-        &:hover {
-          background-color: var(--td-bg-color-secondarycontainer);
-        }
-      }
-    }
+  flex-wrap: wrap;
+
+  .selector {
+    width: 220px;
   }
-}
-</style>
-<style lang="scss">
-.resolutionDurationPicker {
-  min-width: 240px;
-  .pickerSection {
-    margin-bottom: 16px;
 
-    &:last-child {
-      margin-bottom: 0;
-    }
-
-    .pickerLabel {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--td-text-color-primary);
-      margin-bottom: 10px;
-    }
-
-    .pickerOptions {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-
-      .pickerOption {
-        padding: 6px 0;
-        border-radius: 8px;
-        border: 1.5px solid var(--td-border-level-1-color);
-        font-size: 13px;
-        color: var(--td-text-color-primary);
-        cursor: pointer;
-        transition: all 0.15s;
-        user-select: none;
-        text-align: center;
-        background: var(--td-bg-color-container);
-
-        &:hover {
-          border-color: var(--td-border-level-2-color);
-        }
-
-        &.active {
-          border-color: var(--td-text-color-primary);
-          color: var(--td-text-color-primary);
-          font-weight: 500;
-        }
-      }
-    }
+  .ratio,
+  .duration {
+    width: 96px;
   }
 }
 </style>
