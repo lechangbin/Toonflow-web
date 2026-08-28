@@ -146,6 +146,7 @@
         "fillModelId": "โปรดกรอกรหัสโมเดล",
         "selectImageMode": "โปรดเลือกโหมดรูปภาพ",
         "selectVideoMode": "โปรดเลือกโหมดวิดีโอ",
+        "videoModelManagedInCode": "ต้องจัดการโมเดลวิดีโอผ่านสัญญา capabilities ในโค้ด Vendor",
         "groupPrefix": "กลุ่มที่ {n}:",
         "addDuration": "โปรดเพิ่มความยาว",
         "addResolution": "โปรดเพิ่มความละเอียด",

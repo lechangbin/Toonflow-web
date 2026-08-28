@@ -1,7 +1,7 @@
 <template>
   <div class="modeMenu ac">
     <modelSelect
-      v-model="modelParmas.modelSelection"
+      v-model="candidateSelection"
       type="video"
       size="small"
       :changeConfig="true"
@@ -41,15 +41,22 @@ import {
   getPresetDurations,
   type VideoAspectRatio,
   type VideoCapabilityId,
-  type VideoModelContract,
 } from "@/videoContract";
 
 const props = defineProps<{ trackId?: number }>();
 const modelParmas = defineModel<ModelSetting>({ required: true });
 const emit = defineEmits<{
-  modelChange: [value: string, model: VideoModelContract];
+  modelChange: [value: string];
   selectionChange: [kind: "capability" | "output" | "audio"];
 }>();
+
+const candidateSelection = ref(modelParmas.value.modelSelection);
+watch(
+  () => modelParmas.value,
+  (committed) => {
+    candidateSelection.value = committed.modelSelection;
+  },
+);
 
 const selectedPreset = computed(() =>
   modelParmas.value.capability?.outputPresets.find((preset) => preset.id === modelParmas.value.output?.presetId),
@@ -73,8 +80,8 @@ function capabilityLabel(id: VideoCapabilityId): string {
   }[id];
 }
 
-function handleModelChange(value: string, model: VideoModelContract) {
-  emit("modelChange", value, model);
+function handleModelChange(value: string) {
+  emit("modelChange", value);
 }
 
 function handleCapabilityChange(value: unknown) {

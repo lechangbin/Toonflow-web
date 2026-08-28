@@ -227,6 +227,7 @@
         "fillModelId": "请填写模型标识",
         "selectImageMode": "请选择图像模式",
         "selectVideoMode": "请选择视频模式",
+        "videoModelManagedInCode": "视频模型必须通过 Vendor 代码中的 capabilities 契约维护",
         "groupPrefix": "第 {n} 组：",
         "addDuration": "请添加时长",
         "addResolution": "请添加分辨率",

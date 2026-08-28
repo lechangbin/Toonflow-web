@@ -6,6 +6,7 @@ import {
   buildPromptRequest,
   buildSemanticInputReferences,
   createVideoSelection,
+  getDefaultCapabilityInputs,
   getPresetDurations,
   hydrateTrackMediaFromActualInputs,
   findCatalogModel,
@@ -151,4 +152,34 @@ test("missing required semantic roles fail before an HTTP request", () => {
     () => buildSemanticInputReferences(agnes.capabilities[0], [frames[0]]),
     /last-frame/,
   );
+});
+
+test("default capability inputs come from one shared contract for prompt and generation", () => {
+  assert.deepEqual(getDefaultCapabilityInputs("text-to-video"), []);
+  assert.deepEqual(getDefaultCapabilityInputs("image-to-video"), [
+    { role: "source-image", mediaType: "image", required: true },
+  ]);
+  assert.deepEqual(getDefaultCapabilityInputs("first-last-frame"), [
+    { role: "first-frame", mediaType: "image", required: true },
+    { role: "last-frame", mediaType: "image", required: true },
+  ]);
+  assert.deepEqual(getDefaultCapabilityInputs("keyframe-to-video"), [
+    { role: "first-frame", mediaType: "image", required: true },
+    { role: "intermediate-keyframe", mediaType: "image", required: false },
+    { role: "last-frame", mediaType: "image", required: true },
+  ]);
+
+  const selection = {
+    vendorId: "agnes",
+    modelId: "agnes-video-v2.0",
+    capabilityId: "image-to-video" as const,
+    output: { presetId: "720p", duration: 5, resolution: "720p", aspectRatio: "16:9" as const },
+    audio: { generation: "none" as const },
+  };
+  const sourceImage: TrackMediaContract = { id: 21, sources: "assets", fileType: "image", inputRole: "source-image" };
+  const promptRequest = buildPromptRequest({ projectId: 1, trackId: 2, selection, medias: [sourceImage], subject: "主体运动" });
+  const generationItem = buildGenerationItem({ trackId: 2, promptRevisionId: 9, selection, medias: [sourceImage] });
+
+  assert.deepEqual(promptRequest.brief.references.map((reference) => reference.role), ["source-image"]);
+  assert.deepEqual(generationItem.inputs, [{ role: "source-image", source: "asset", sourceId: 21 }]);
 });

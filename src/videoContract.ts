@@ -194,6 +194,36 @@ export function getCapability(model: VideoModelContract, capabilityId: VideoCapa
   return capability;
 }
 
+export function getDefaultCapabilityInputs(capabilityId: VideoCapabilityId): VideoInputContract[] {
+  switch (capabilityId) {
+    case "text-to-video":
+      return [];
+    case "image-to-video":
+      return [{ role: "source-image", mediaType: "image", required: true }];
+    case "first-last-frame":
+      return [
+        { role: "first-frame", mediaType: "image", required: true },
+        { role: "last-frame", mediaType: "image", required: true },
+      ];
+    case "keyframe-to-video":
+      return [
+        { role: "first-frame", mediaType: "image", required: true },
+        { role: "intermediate-keyframe", mediaType: "image", required: false },
+        { role: "last-frame", mediaType: "image", required: true },
+      ];
+  }
+}
+
+export function createRuntimeCapability(capabilityId: VideoCapabilityId): VideoCapabilityContract {
+  return {
+    id: capabilityId,
+    promptProfileId: "runtime",
+    inputs: getDefaultCapabilityInputs(capabilityId),
+    audio: { generation: "none", policy: "none" },
+    outputPresets: [],
+  };
+}
+
 export function createAudioSelection(contract: VideoAudioContract, requested = true): VideoAudioSelection {
   if (contract.generation === "none") return { generation: "none" };
   return { generation: "native", enabled: contract.policy === "always" ? true : requested };
@@ -302,28 +332,7 @@ export function buildPromptRequest(input: {
   const subject = input.subject.trim();
   if (!subject) throw new Error("Prompt Brief subject 不能为空");
   if (input.selection.capabilityId !== "text-to-video") {
-    buildSemanticInputReferences(
-      {
-        id: input.selection.capabilityId,
-        promptProfileId: "runtime",
-        inputs:
-          input.selection.capabilityId === "image-to-video"
-            ? [{ role: "source-image", mediaType: "image", required: true }]
-            : input.selection.capabilityId === "first-last-frame"
-              ? [
-                  { role: "first-frame", mediaType: "image", required: true },
-                  { role: "last-frame", mediaType: "image", required: true },
-                ]
-              : [
-                  { role: "first-frame", mediaType: "image", required: true },
-                  { role: "intermediate-keyframe", mediaType: "image", required: false },
-                  { role: "last-frame", mediaType: "image", required: true },
-                ],
-        audio: { generation: "none", policy: "none" },
-        outputPresets: [],
-      },
-      input.medias,
-    );
+    buildSemanticInputReferences(createRuntimeCapability(input.selection.capabilityId), input.medias);
   }
   const references = input.medias
     .filter((media): media is TrackMediaContract & { inputRole: VideoInputRole } => !!media.inputRole)
@@ -363,27 +372,7 @@ export function buildGenerationItem(input: {
   medias: TrackMediaContract[];
   capability?: VideoCapabilityContract;
 }): VideoGenerationItem {
-  const capability = input.capability ?? {
-    id: input.selection.capabilityId,
-    promptProfileId: "runtime",
-    inputs:
-      input.selection.capabilityId === "text-to-video"
-        ? []
-        : input.selection.capabilityId === "image-to-video"
-          ? [{ role: "source-image" as const, mediaType: "image" as const, required: true }]
-          : input.selection.capabilityId === "first-last-frame"
-            ? [
-                { role: "first-frame" as const, mediaType: "image" as const, required: true },
-                { role: "last-frame" as const, mediaType: "image" as const, required: true },
-              ]
-            : [
-                { role: "first-frame" as const, mediaType: "image" as const, required: true },
-                { role: "intermediate-keyframe" as const, mediaType: "image" as const, required: false },
-                { role: "last-frame" as const, mediaType: "image" as const, required: true },
-              ],
-    audio: { generation: "none" as const, policy: "none" as const },
-    outputPresets: [],
-  };
+  const capability = input.capability ?? createRuntimeCapability(input.selection.capabilityId);
   return {
     trackId: input.trackId,
     vendorId: input.selection.vendorId,

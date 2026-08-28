@@ -146,6 +146,7 @@
         "fillModelId": "Пожалуйста, введите ID модели",
         "selectImageMode": "Пожалуйста, выберите режим изображения",
         "selectVideoMode": "Пожалуйста, выберите режим видео",
+        "videoModelManagedInCode": "Видеомодели должны управляться через контракт capabilities в коде Vendor",
         "groupPrefix": "Группа {n}: ",
         "addDuration": "Пожалуйста, добавьте длительность",
         "addResolution": "Пожалуйста, добавьте разрешение",
