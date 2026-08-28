@@ -34,10 +34,17 @@ import { Handle, Position } from "@vue-flow/core";
 const visible = ref(false);
 
 interface WorkbenchData {
-  name: string;
-  duration: string;
-  resolution: string;
-  fps: string;
+  videoList: Array<{
+    id: number;
+    prompt: string;
+    duration: number;
+    storyboardId: number;
+    trackId: number;
+  }>;
+  name?: string;
+  duration?: string;
+  resolution?: string;
+  fps?: string;
   cover?: string;
   gradient?: string;
 }

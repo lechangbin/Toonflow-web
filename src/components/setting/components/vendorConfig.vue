@@ -41,7 +41,7 @@
             :message="$t('settings.vendor.msg.vendorNeedsUpdate')"
             style="margin-bottom: 12px" />
           <t-form-item>
-            <MdPreview v-model="currentVendor.description" :theme="themeSetting.mode" />
+            <MdPreview v-model="currentVendor.description" :theme="themeSetting.mode === 'auto' ? 'light' : themeSetting.mode" />
           </t-form-item>
           <t-form-item v-for="input in requiredInputs" :key="input.key" :name="input.key">
             <template #label>
@@ -253,11 +253,10 @@
 
     <!-- 视频模型测试弹窗 -->
     <VideoModelTest
-      v-if="testingModel?.type === 'video' && videoTestVisible"
+      v-if="testingVideoModel && videoTestVisible"
       v-model:modelVisible="videoTestVisible"
       :vendorId="currentVendor!.id"
-      :modelName="testingModel.modelName"
-      :rawModes="(testingModel as any).mode || []" />
+      :model="testingVideoModel" />
 
     <!-- 添加供应商弹窗 -->
     <t-dialog
@@ -350,6 +349,7 @@ import settingStore from "@/stores/setting";
 import TextModelTest from "./vendorTest/TextModelTest.vue";
 import ImageModelTest from "./vendorTest/ImageModelTest.vue";
 import VideoModelTest from "./vendorTest/VideoModelTest.vue";
+import type { VideoCapabilityContract, VideoModelContract } from "@/videoContract";
 const { themeSetting } = storeToRefs(settingStore());
 
 // ── 类型 ──
@@ -381,6 +381,7 @@ interface VideoModel {
   )[];
   audio: "optional" | false | true;
   durationResolutionMap: { duration: number[]; resolution: string[] }[];
+  capabilities?: VideoCapabilityContract[];
 }
 
 type VendorModel = TextModel | ImageModel | VideoModel;
@@ -540,6 +541,16 @@ let pendingAutoSave = false;
 
 // ── 测试弹窗状态 ──
 const testingModel = ref<VendorModel | null>(null);
+const testingVideoModel = computed<VideoModelContract | null>(() => {
+  const model = testingModel.value;
+  if (model?.type !== "video" || !model.capabilities?.length) return null;
+  return {
+    name: model.name,
+    modelName: model.modelName,
+    type: "video",
+    capabilities: model.capabilities,
+  };
+});
 const textTestVisible = ref(false);
 const imageTestVisible = ref(false);
 const videoTestVisible = ref(false);
@@ -990,6 +1001,10 @@ function handleTestModel(item: (typeof vendorModels.value)[number]) {
   } else if (item.type === "image") {
     imageTestVisible.value = true;
   } else if (item.type === "video") {
+    if (!item.capabilities?.length) {
+      window.$message.error("该视频模型仍使用旧 mode 配置，请先将 Vendor 模型迁移为 capabilities 契约");
+      return;
+    }
     videoTestVisible.value = true;
   }
 }

@@ -1,4 +1,4 @@
-interface Project {
+export interface Project {
   id: string;
   name: string;
   intro: string;
@@ -8,10 +8,12 @@ interface Project {
   createTime: number;
   updatedAt: number;
   imageModel: string;
-  videoModel: string;
+  videoVendorId: string;
+  videoModelId: string;
+  videoCapabilityId: import("@/videoContract").VideoCapabilityId;
+  videoOutputPresetId: string;
   projectType: string;
   imageQuality: "1K" | "2K" | "4K" | "";
-  mode: string;
   directorManual: string;
 }
 

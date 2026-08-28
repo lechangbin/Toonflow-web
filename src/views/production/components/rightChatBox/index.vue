@@ -65,7 +65,7 @@
               </template>
             </t-popup>
             <t-popup trigger="click" placement="top" v-if="showThink">
-              <t-button size="small" variant="outline" :theme="['default', 'success', 'warning', 'danger'][thinkLevel] || 'default'">
+              <t-button size="small" variant="outline" :theme="thinkLevelThemes[thinkLevel] || 'default'">
                 <template #icon>
                   <i-tips size="16" />
                 </template>
@@ -105,6 +105,7 @@ const thinkLevelOptions = [
   { label: $t("workbench.scriptAgent.thinkLevel.deep"), value: 2 },
   { label: $t("workbench.scriptAgent.thinkLevel.extreme"), value: 3 },
 ];
+const thinkLevelThemes: Array<"default" | "success" | "warning" | "danger"> = ["default", "success", "warning", "danger"];
 
 const props = defineProps({ title: String });
 
