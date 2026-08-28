@@ -146,6 +146,7 @@
         "fillModelId": "Please enter a model ID",
         "selectImageMode": "Please select an image mode",
         "selectVideoMode": "Please select a video mode",
+        "videoModelManagedInCode": "Video models must be maintained through the capabilities contract in Vendor code",
         "groupPrefix": "Group {n}: ",
         "addDuration": "Please add a duration",
         "addResolution": "Please add a resolution",

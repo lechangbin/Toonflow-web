@@ -145,6 +145,7 @@
         "fillModelId": "Vui lòng điền mã mô hình",
         "selectImageMode": "Vui lòng chọn chế độ hình ảnh",
         "selectVideoMode": "Vui lòng chọn chế độ video",
+        "videoModelManagedInCode": "Mô hình video phải được quản lý qua hợp đồng capabilities trong mã Vendor",
         "groupPrefix": "Nhóm thứ {n}:",
         "addDuration": "Vui lòng thêm thời lượng",
         "addResolution": "Vui lòng thêm độ phân giải",

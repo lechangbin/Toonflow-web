@@ -87,8 +87,12 @@ function handleModelChange(value: string) {
     }
   };
   if (modelParmas.value.modelSelection && modelParmas.value.modelSelection !== value && (imageList.value.length || currentTrack.value?.prompt)) {
-    const dialog = DialogPlugin.confirm({ header: $t("workbench.generate.modeChange"), body: $t("workbench.generate.modeChangeConfirm"), onConfirm: () => { apply(); dialog.destroy(); }, onCancel: () => dialog.destroy() });
+    const dialog = DialogPlugin.confirm({ header: $t("workbench.generate.modeChange"), body: $t("workbench.generate.modeChangeConfirm"), onConfirm: () => { apply(); dialog.destroy(); }, onCancel: () => { revertModelSelection(); dialog.destroy(); } });
   } else apply();
+}
+
+function revertModelSelection() {
+  modelParmas.value = { ...modelParmas.value };
 }
 
 function applySelectionToTrack(track: TrackItem) {
@@ -158,12 +162,12 @@ const imageList = computed({
 const references = computed(() => imageList.value.filter((item) => item.src).map((item) => ({ type: "image" as const, src: item.src ?? "" })));
 
 function hydrateInputRoles(track: any): TrackItem {
-  const serverInputs = track.actual?.inputs as VideoTrackInputReference[] | null | undefined;
+  const serverInputs = track.actual?.inputRefs as VideoTrackInputReference[] | null | undefined;
   const inputs = serverInputs ?? [];
   const medias = serverInputs == null
     ? ([...(track.medias ?? [])] as UploadItem[])
     : (hydrateTrackMediaFromActualInputs(track.medias ?? [], serverInputs) as UploadItem[]);
-  return { ...track, promptRevisionId: track.actual?.promptRevisionId ?? track.promptRevision?.id ?? null, vendorId: track.actual?.vendorId ?? null, modelId: track.actual?.modelId ?? null, capabilityId: track.actual?.capabilityId ?? null, outputSelection: track.actual?.output ?? null, audioSelection: track.actual?.audio ?? null, inputReferences: inputs, medias };
+  return { ...track, promptRevisionId: track.actual?.promptRevisionId ?? track.promptRevision?.id ?? null, vendorId: track.actual?.vendorId ?? null, modelId: track.actual?.modelId ?? null, capabilityId: track.actual?.capabilityId ?? null, outputSelection: track.actual?.outputSelection ?? null, audioSelection: track.actual?.audioSelection ?? null, inputReferences: inputs, medias };
 }
 
 async function getGenerateData() {
@@ -180,7 +184,7 @@ async function getGenerateData() {
   const tracks = (data.trackList ?? []).map(hydrateInputRoles);
   initCacheFromTrackList(project.value.id, episodesId.value, tracks);
   for (const track of tracks) {
-    const serverInputs = track.actual?.inputs;
+    const serverInputs = track.actual?.inputRefs;
     if (serverInputs !== null && serverInputs !== undefined) {
       setCache(project.value.id, episodesId.value, track.id, track.medias);
     }

@@ -146,6 +146,7 @@
         "fillModelId": "モデルIDを入力してください",
         "selectImageMode": "画像モードを選択してください",
         "selectVideoMode": "動画モードを選択してください",
+        "videoModelManagedInCode": "動画モデルは Vendor コードの capabilities 契約で管理する必要があります",
         "groupPrefix": "第 {n} グループ：",
         "addDuration": "デュレーションを追加してください",
         "addResolution": "解像度を追加してください",

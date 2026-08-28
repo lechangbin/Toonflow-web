@@ -154,6 +154,7 @@
         "fillModelId": "請填寫模型 ID",
         "selectImageMode": "請選擇圖片模式",
         "selectVideoMode": "請選擇影片模式",
+        "videoModelManagedInCode": "影片模型必須透過 Vendor 程式碼中的 capabilities 契約維護",
         "groupPrefix": "第 {n} 組：",
         "addDuration": "請新增時長",
         "addResolution": "請新增解析度",
