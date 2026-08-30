@@ -5,6 +5,9 @@ import type {
   VideoInputRole,
   VideoModelContract,
   VideoOutputSelection,
+  VideoTrackActualSelection,
+  VideoTrackInputProjection,
+  VideoWorkbenchTrackProjection,
 } from "@/videoContract";
 
 declare global {
@@ -52,28 +55,17 @@ declare global {
     videoDesc?: string | null;
   }
 
-  interface TrackItem {
-    id: number;
-    prompt: string;
+  interface TrackItem extends Omit<VideoWorkbenchTrackProjection, "medias" | "videoList"> {
     promptRevisionId?: number | null;
     vendorId?: string | null;
     modelId?: string | null;
     capabilityId?: VideoCapabilityId | null;
     outputSelection?: VideoOutputSelection | null;
     audioSelection?: VideoAudioSelection | null;
-    inputReferences?: Array<{
-      role: VideoInputRole;
-      source: "storyboard" | "asset" | "uploaded-media";
-      sourceId?: number;
-      filePath?: string;
-      displayUrl?: string;
-    }>;
-    state: "未生成" | "生成中" | "已完成" | "生成失败";
-    reason?: string;
-    selectVideoId?: number | null;
+    inputReferences?: VideoTrackInputProjection[];
+    actual: VideoTrackActualSelection;
     medias: TrackMedia[];
     videoList: VideoItem[];
-    duration: number;
   }
 
   interface VideoItem {
@@ -81,8 +73,10 @@ declare global {
     src: string;
     state: "未生成" | "生成中" | "已完成" | "生成失败" | "生成成功";
     errorReason?: string | null;
+    generationTaskId?: number | null;
     artifactRevisionId?: number | null;
     artifactStatus?: "draft" | "generated" | "accepted" | "rejected" | null;
+    artifactRevision?: import("@/videoContract").ArtifactRevision | null;
   }
 
   interface TrackMediaBase {
