@@ -9,13 +9,9 @@ export interface VideoInputContract {
   required: boolean;
 }
 
-export type VideoAudioContract =
-  | { generation: "none"; policy: "none" }
-  | { generation: "native"; policy: "always" | "optional" };
+export type VideoAudioContract = { generation: "none"; policy: "none" } | { generation: "native"; policy: "always" | "optional" };
 
-export type VideoDurationContract =
-  | { kind: "values"; values: number[] }
-  | { kind: "integer-range"; min: number; max: number; step: number };
+export type VideoDurationContract = { kind: "values"; values: number[] } | { kind: "integer-range"; min: number; max: number; step: number };
 
 export interface VideoOutputPreset {
   id: string;
@@ -58,9 +54,7 @@ export interface VideoOutputSelection {
   aspectRatio: VideoAspectRatio;
 }
 
-export type VideoAudioSelection =
-  | { generation: "none" }
-  | { generation: "native"; enabled: boolean };
+export type VideoAudioSelection = { generation: "none" } | { generation: "native"; enabled: boolean };
 
 export interface VideoSelection {
   vendorId: string;
@@ -87,7 +81,119 @@ export interface VideoTrackInputReference {
   source: "storyboard" | "asset" | "uploaded-media";
   sourceId?: number;
   filePath?: string;
+}
+
+export interface VideoTrackInputProjection extends VideoTrackInputReference {
   displayUrl?: string;
+}
+
+export type ProductionActionStatus = "running" | "succeeded" | "failed" | "partial";
+export type GenerationTaskStatus = "running" | "succeeded" | "failed";
+export type ArtifactRevisionStatus = "draft" | "generated" | "accepted" | "rejected";
+
+export interface ProductionAction {
+  id: number;
+  projectId: number;
+  actionType: "generate-video-prompt" | "edit-video-prompt" | "generate-video";
+  requestedBy: "user" | "project-agent";
+  status: ProductionActionStatus;
+  createdAt: number;
+  completedAt?: number | null;
+}
+
+export interface GenerationTask {
+  id: number;
+  actionId: number;
+  projectId: number;
+  videoTrackId: number;
+  vendorId: string;
+  modelId: string;
+  capabilityId: VideoCapabilityId;
+  promptRevisionId: number;
+  status: GenerationTaskStatus;
+  artifactRevisionId?: number | null;
+  startedAt: number;
+  completedAt?: number | null;
+  error?: string | null;
+}
+
+export interface ArtifactRevision {
+  id: number;
+  revision: number;
+  status: ArtifactRevisionStatus;
+  videoId: number;
+  generationTaskId: number;
+  createdAt: number;
+}
+
+export interface PromptRevision {
+  id: number;
+  profileId: string;
+  strategy: PromptStrategy | "custom";
+  brief: VideoPromptBrief | null;
+  draft: unknown | null;
+  renderedPrompt: string;
+  status: "active" | "superseded";
+  createdAt: number;
+}
+
+export interface VideoTrackActualSelection {
+  vendorId: string | null;
+  modelId: string | null;
+  capabilityId: VideoCapabilityId | null;
+  inputRefs: VideoTrackInputProjection[] | null;
+  outputSelection: VideoOutputSelection | null;
+  audioSelection: VideoAudioSelection | null;
+  promptRevisionId: number | null;
+}
+
+export interface VideoTrackVideoProjection {
+  id: number;
+  src: string;
+  state: "未生成" | "生成中" | "已完成" | "生成失败";
+  errorReason: string;
+  generationTaskId: number | null;
+  artifactRevision: ArtifactRevision | null;
+}
+
+/** Server-owned projection returned by getGenerateData. `actual` is authoritative after refresh. */
+export interface VideoWorkbenchTrackProjection {
+  id: number;
+  duration: number;
+  prompt: string;
+  promptRevision: PromptRevision | null;
+  state: "未生成" | "生成中" | "已完成" | "生成失败";
+  reason: string;
+  selectVideoId: number | null;
+  selectedArtifact: ArtifactRevision | null;
+  currentArtifact: ArtifactRevision | null;
+  actual: VideoTrackActualSelection;
+  videoList: VideoTrackVideoProjection[];
+  medias: TrackMediaContract[];
+}
+
+export interface VideoWorkbenchProjectDefaults {
+  vendorId: string;
+  modelId: string;
+  capabilityId: VideoCapabilityId;
+  outputPresetId: string;
+  aspectRatio: VideoAspectRatio;
+}
+
+export interface VideoWorkbenchData {
+  projectDefaults: VideoWorkbenchProjectDefaults | null;
+  storyboardList: unknown[];
+  trackList: VideoWorkbenchTrackProjection[];
+}
+
+export interface HydratedVideoWorkbenchTrack extends VideoWorkbenchTrackProjection {
+  promptRevisionId: number | null;
+  vendorId: string | null;
+  modelId: string | null;
+  capabilityId: VideoCapabilityId | null;
+  outputSelection: VideoOutputSelection | null;
+  audioSelection: VideoAudioSelection | null;
+  inputReferences: VideoTrackInputProjection[];
 }
 
 export interface VideoPromptReference {
@@ -119,7 +225,23 @@ export interface GenerateVideoPromptRequest {
   capabilityId: VideoCapabilityId;
   requestedBy: "user" | "project-agent";
   strategy: PromptStrategy;
+  inputs: VideoTrackInputReference[];
+  output: VideoOutputSelection;
+  audio: VideoAudioSelection;
   brief: VideoPromptBrief;
+}
+
+export interface UpdateVideoPromptRequest {
+  trackId: number;
+  projectId: number;
+  vendorId: string;
+  modelId: string;
+  capabilityId: VideoCapabilityId;
+  requestedBy: "user" | "project-agent";
+  renderedPrompt: string;
+  inputs: VideoTrackInputReference[];
+  output: VideoOutputSelection;
+  audio: VideoAudioSelection;
 }
 
 export interface VideoGenerationItem {
@@ -266,15 +388,13 @@ function toTrackReference(media: TrackMediaContract): VideoTrackInputReference {
     if (!media.id) throw new Error(`${media.inputRole} 缺少 Asset ID`);
     return { role: media.inputRole, source: "asset", sourceId: media.id };
   }
-  const filePath = media.filePath || media.src;
+  if (media.sources !== "uploaded-media") throw new Error(`${media.inputRole} 的输入来源无效`);
+  const filePath = media.filePath;
   if (!filePath) throw new Error(`${media.inputRole} 缺少上传文件路径`);
   return { role: media.inputRole, source: "uploaded-media", filePath };
 }
 
-export function buildSemanticInputReferences(
-  capability: VideoCapabilityContract,
-  medias: TrackMediaContract[],
-): VideoTrackInputReference[] {
+export function buildSemanticInputReferences(capability: VideoCapabilityContract, medias: TrackMediaContract[]): VideoTrackInputReference[] {
   const declared = new Map(capability.inputs.map((input) => [input.role, input]));
   const references = medias.filter((media) => media.inputRole).map(toTrackReference);
   const seen = new Set<VideoInputRole>();
@@ -289,10 +409,7 @@ export function buildSemanticInputReferences(
   return capability.inputs.flatMap((input) => references.filter((reference) => reference.role === input.role));
 }
 
-export function hydrateTrackMediaFromActualInputs(
-  medias: TrackMediaContract[],
-  inputs: VideoTrackInputReference[],
-): TrackMediaContract[] {
+export function hydrateTrackMediaFromActualInputs(medias: TrackMediaContract[], inputs: VideoTrackInputProjection[]): TrackMediaContract[] {
   const hydrated = medias.map((media) => {
     const { inputRole: _staleRole, ...rest } = media;
     return rest as TrackMediaContract;
@@ -321,6 +438,23 @@ export function hydrateTrackMediaFromActualInputs(
   return hydrated;
 }
 
+/** Projects the persisted Track-owned configuration into editable UI state without consulting Project defaults. */
+export function hydrateVideoWorkbenchTrackProjection(track: VideoWorkbenchTrackProjection): HydratedVideoWorkbenchTrack {
+  const inputs = track.actual.inputRefs ?? [];
+  const medias = track.actual.inputRefs == null ? [...track.medias] : hydrateTrackMediaFromActualInputs(track.medias, track.actual.inputRefs);
+  return {
+    ...track,
+    promptRevisionId: track.actual.promptRevisionId ?? track.promptRevision?.id ?? null,
+    vendorId: track.actual.vendorId,
+    modelId: track.actual.modelId,
+    capabilityId: track.actual.capabilityId,
+    outputSelection: track.actual.outputSelection,
+    audioSelection: track.actual.audioSelection,
+    inputReferences: inputs,
+    medias,
+  };
+}
+
 export function buildPromptRequest(input: {
   projectId: number;
   trackId: number;
@@ -331,9 +465,7 @@ export function buildPromptRequest(input: {
 }): GenerateVideoPromptRequest {
   const subject = input.subject.trim();
   if (!subject) throw new Error("Prompt Brief subject 不能为空");
-  if (input.selection.capabilityId !== "text-to-video") {
-    buildSemanticInputReferences(createRuntimeCapability(input.selection.capabilityId), input.medias);
-  }
+  const inputRefs = buildSemanticInputReferences(createRuntimeCapability(input.selection.capabilityId), input.medias);
   const references = input.medias
     .filter((media): media is TrackMediaContract & { inputRole: VideoInputRole } => !!media.inputRole)
     .map((media) => ({
@@ -350,6 +482,9 @@ export function buildPromptRequest(input: {
     capabilityId: input.selection.capabilityId,
     requestedBy: "user",
     strategy: input.strategy ?? "standard-with-guidance",
+    inputs: inputRefs,
+    output: input.selection.output,
+    audio: input.selection.audio,
     brief: {
       subject,
       ...(input.selection.capabilityId === "image-to-video" ? { motion: "描述主体应发生的运动，并保持关键主体元素稳定" } : {}),
@@ -362,6 +497,29 @@ export function buildPromptRequest(input: {
       constraints: [],
       references,
     },
+  };
+}
+
+export function buildUpdatePromptRequest(input: {
+  projectId: number;
+  trackId: number;
+  selection: VideoSelection;
+  medias: TrackMediaContract[];
+  renderedPrompt: string;
+}): UpdateVideoPromptRequest {
+  const renderedPrompt = input.renderedPrompt.trim();
+  if (!renderedPrompt) throw new Error("renderedPrompt 不能为空");
+  return {
+    projectId: input.projectId,
+    trackId: input.trackId,
+    vendorId: input.selection.vendorId,
+    modelId: input.selection.modelId,
+    capabilityId: input.selection.capabilityId,
+    requestedBy: "user",
+    renderedPrompt,
+    inputs: buildSemanticInputReferences(createRuntimeCapability(input.selection.capabilityId), input.medias),
+    output: input.selection.output,
+    audio: input.selection.audio,
   };
 }
 

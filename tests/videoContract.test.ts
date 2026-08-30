@@ -5,10 +5,12 @@ import {
   buildGenerationItem,
   buildPromptRequest,
   buildSemanticInputReferences,
+  buildUpdatePromptRequest,
   createVideoSelection,
   getDefaultCapabilityInputs,
   getPresetDurations,
   hydrateTrackMediaFromActualInputs,
+  hydrateVideoWorkbenchTrackProjection,
   findCatalogModel,
   normalizeStartedTasks,
   type TrackMediaContract,
@@ -130,15 +132,106 @@ test("prompt and generation requests use Prompt Revision and never send legacy m
 
   assert.equal(promptRequest.vendorId, "agnes");
   assert.equal(promptRequest.strategy, "standard-with-guidance");
-  assert.deepEqual(promptRequest.brief.references.map((reference) => reference.role), [
-    "first-frame",
-    "intermediate-keyframe",
-    "last-frame",
-  ]);
+  assert.deepEqual(promptRequest.inputs, buildSemanticInputReferences(agnes.capabilities[0], frames));
+  assert.deepEqual(promptRequest.output, selection.output);
+  assert.deepEqual(promptRequest.audio, { generation: "native", enabled: true });
+  assert.deepEqual(
+    promptRequest.brief.references.map((reference) => reference.role),
+    ["first-frame", "intermediate-keyframe", "last-frame"],
+  );
   assert.equal("mode" in promptRequest, false);
   assert.equal("prompt" in generationItem, false);
   assert.equal(generationItem.promptRevisionId, 99);
   assert.deepEqual(generationItem.inputs, buildSemanticInputReferences(agnes.capabilities[0], frames));
+});
+
+test("custom Prompt Revision edits persist the same Track-owned selection as generated revisions", () => {
+  const selection = createVideoSelection("agnes:agnes-video-v2.0", agnes, "keyframe-to-video", "720p", "9:16", 10);
+  const request = buildUpdatePromptRequest({
+    projectId: 1,
+    trackId: 2,
+    selection,
+    medias: frames,
+    renderedPrompt: "  从第一帧经中间关键帧自然过渡到尾帧  ",
+  });
+
+  assert.deepEqual(request, {
+    projectId: 1,
+    trackId: 2,
+    vendorId: "agnes",
+    modelId: "agnes-video-v2.0",
+    capabilityId: "keyframe-to-video",
+    requestedBy: "user",
+    renderedPrompt: "从第一帧经中间关键帧自然过渡到尾帧",
+    inputs: buildSemanticInputReferences(agnes.capabilities[0], frames),
+    output: selection.output,
+    audio: { generation: "native", enabled: true },
+  });
+});
+
+test("refresh restores the authoritative Track selection and selected output without Project defaults", () => {
+  const actual = {
+    vendorId: "agnes",
+    modelId: "agnes-video-v2.0",
+    capabilityId: "keyframe-to-video" as const,
+    inputRefs: [
+      { role: "first-frame" as const, source: "storyboard" as const, sourceId: 11 },
+      { role: "last-frame" as const, source: "uploaded-media" as const, filePath: "/1/last.png", displayUrl: "https://media/last" },
+    ],
+    outputSelection: { presetId: "720p", duration: 10, resolution: "720p", aspectRatio: "9:16" as const },
+    audioSelection: { generation: "native" as const, enabled: true },
+    promptRevisionId: 41,
+  };
+  const hydrated = hydrateVideoWorkbenchTrackProjection({
+    id: 2,
+    duration: 5,
+    prompt: "current prompt",
+    promptRevision: {
+      id: 40,
+      profileId: "agnes/keyframe-to-video-v1",
+      strategy: "standard-with-guidance",
+      brief: null,
+      draft: null,
+      renderedPrompt: "stale prompt",
+      status: "active",
+      createdAt: 1,
+    },
+    state: "已完成",
+    reason: "",
+    selectVideoId: 72,
+    selectedArtifact: { id: 81, revision: 1, status: "accepted", videoId: 72, generationTaskId: 61, createdAt: 2 },
+    currentArtifact: { id: 82, revision: 2, status: "generated", videoId: 73, generationTaskId: 62, createdAt: 3 },
+    actual,
+    videoList: [],
+    medias: frames,
+  });
+
+  assert.equal(hydrated.promptRevisionId, 41);
+  assert.equal(hydrated.vendorId, "agnes");
+  assert.equal(hydrated.modelId, "agnes-video-v2.0");
+  assert.equal(hydrated.capabilityId, "keyframe-to-video");
+  assert.deepEqual(hydrated.outputSelection, actual.outputSelection);
+  assert.deepEqual(hydrated.audioSelection, actual.audioSelection);
+  assert.equal(hydrated.selectVideoId, 72);
+  assert.deepEqual(
+    hydrated.medias.map((media) => [media.inputRole, media.filePath ?? media.id]),
+    [
+      ["first-frame", 11],
+      [undefined, 12],
+      [undefined, 13],
+      ["last-frame", "/1/last.png"],
+    ],
+  );
+});
+
+test("uploaded inputs fail early when only a display URL is available", () => {
+  assert.throws(
+    () =>
+      buildSemanticInputReferences({ ...agnes.capabilities[0], inputs: [{ role: "first-frame", mediaType: "image", required: true }] }, [
+        { id: null, sources: "uploaded-media", fileType: "image", inputRole: "first-frame", src: "https://display-only" },
+      ]),
+    /上传文件路径/,
+  );
 });
 
 test("single and batch generation responses normalize to the same task list", () => {
@@ -148,17 +241,12 @@ test("single and batch generation responses normalize to the same task list", ()
 });
 
 test("missing required semantic roles fail before an HTTP request", () => {
-  assert.throws(
-    () => buildSemanticInputReferences(agnes.capabilities[0], [frames[0]]),
-    /last-frame/,
-  );
+  assert.throws(() => buildSemanticInputReferences(agnes.capabilities[0], [frames[0]]), /last-frame/);
 });
 
 test("default capability inputs come from one shared contract for prompt and generation", () => {
   assert.deepEqual(getDefaultCapabilityInputs("text-to-video"), []);
-  assert.deepEqual(getDefaultCapabilityInputs("image-to-video"), [
-    { role: "source-image", mediaType: "image", required: true },
-  ]);
+  assert.deepEqual(getDefaultCapabilityInputs("image-to-video"), [{ role: "source-image", mediaType: "image", required: true }]);
   assert.deepEqual(getDefaultCapabilityInputs("first-last-frame"), [
     { role: "first-frame", mediaType: "image", required: true },
     { role: "last-frame", mediaType: "image", required: true },
@@ -180,6 +268,9 @@ test("default capability inputs come from one shared contract for prompt and gen
   const promptRequest = buildPromptRequest({ projectId: 1, trackId: 2, selection, medias: [sourceImage], subject: "主体运动" });
   const generationItem = buildGenerationItem({ trackId: 2, promptRevisionId: 9, selection, medias: [sourceImage] });
 
-  assert.deepEqual(promptRequest.brief.references.map((reference) => reference.role), ["source-image"]);
+  assert.deepEqual(
+    promptRequest.brief.references.map((reference) => reference.role),
+    ["source-image"],
+  );
   assert.deepEqual(generationItem.inputs, [{ role: "source-image", source: "asset", sourceId: 21 }]);
 });
