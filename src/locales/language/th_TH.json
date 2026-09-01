@@ -146,6 +146,7 @@
         "fillModelId": "โปรดกรอกรหัสโมเดล",
         "selectImageMode": "โปรดเลือกโหมดรูปภาพ",
         "selectVideoMode": "โปรดเลือกโหมดวิดีโอ",
+        "videoModelManagedInCode": "ต้องจัดการโมเดลวิดีโอผ่านสัญญา capabilities ในโค้ด Vendor",
         "groupPrefix": "กลุ่มที่ {n}:",
         "addDuration": "โปรดเพิ่มความยาว",
         "addResolution": "โปรดเพิ่มความละเอียด",
@@ -941,6 +942,46 @@
         "imageSaved": "บันทึกรูปภาพแล้ว",
         "completed": "สมบูรณ์"
       },
+      "config": {
+        "header": "การตั้งค่าแอสเซต",
+        "entryBtn": "ตั้งค่า",
+        "refTitle": "ภาพอ้างอิง",
+        "empty": "ยังไม่มีภาพอ้างอิง ระบบจะสร้างภาพจากพรอมต์ข้อความเพียงอย่างเดียว",
+        "uploadBtn": "อัปโหลดภาพอ้างอิง",
+        "limitReached": "รองรับภาพอ้างอิงสูงสุด 6 ภาพต่อแอสเซต",
+        "descLabel": "คำอธิบาย (จำเป็น)",
+        "descPh": "อธิบายวัตถุประสงค์ของภาพ เช่น ภาพเต็มตัวชุดเครื่องแต่งกายด้านหน้า",
+        "roleLabel": "บทบาททางภาพ",
+        "rolePh": "เช่น แผ่นเครื่องแต่งกาย ภาพอ้างอิงสไตล์",
+        "transfersLabel": "องค์ประกอบที่ต้องส่งต่อ (คั่นด้วยจุลภาค)",
+        "transfersPh": "เช่น เครื่องแต่งกายสีแดง มงกุฎทองดำ",
+        "exclusionsLabel": "รายการที่แยกออก (คั่นด้วยจุลภาค)",
+        "exclusionsPh": "เช่น พื้นหลัง ข้อความ",
+        "moveUp": "ขึ้น",
+        "moveDown": "ลง",
+        "save": "บันทึก",
+        "remove": "ลบ",
+        "cancel": "ยกเลิก",
+        "promptTitle": "พรอมต์ภาพสุดท้าย",
+        "promptPh": "แก้ไขพรอมต์สุดท้ายที่ส่งให้บริการสร้างภาพ",
+        "savePrompt": "บันทึกพรอมต์",
+        "promptSaved": "บันทึกพรอมต์แล้ว",
+        "conflictAlert": "องค์ประกอบต่อไปนี้ปรากฏทั้งในส่วนต้องส่งต่อและส่วนแยกออก โปรดแก้ไขก่อน: {dimensions}",
+        "createSuccess": "อัปโหลดภาพอ้างอิงสำเร็จ",
+        "updateSuccess": "อัปเดตภาพอ้างอิงสำเร็จ",
+        "deleteSuccess": "ลบภาพอ้างอิงสำเร็จ",
+        "reorderSuccess": "อัปเดตลำดับภาพอ้างอิงแล้ว",
+        "confirmDeleteBody": "ลบภาพอ้างอิงนี้หรือไม่? ไม่สามารถย้อนกลับได้",
+        "sourceManual": "คำอธิบายโดยผู้ใช้",
+        "sourceAi": "คำอธิบายโดย AI",
+        "retryHint": "การแก้ไขของคุณยังคงอยู่ ปรับแก้แล้วลองใหม่ได้",
+        "analysis": {
+          "not_requested": "ยังไม่ขอวิเคราะห์",
+          "pending": "กำลังวิเคราะห์",
+          "completed": "วิเคราะห์เสร็จ",
+          "failed": "วิเคราะห์ไม่สำเร็จ"
+        }
+      },
       "batch": {
         "header": "สร้างเป็นชุด",
         "selected": "เลือกแล้ว {count} รายการ",
@@ -1412,7 +1453,9 @@
   "components.storyboardImageCheck.createTime": "เวลาสร้าง",
   "workbench.script.extractAssets": "ดึงทรัพยากร",
   "promptManage": {
-    "prompt": "คำพูดที่รวดเร็ว"
+    "prompt": "พรอมต์",
+    "searchPlaceholder": "ค้นหาพรอมต์หรือพาธ", "allCategories": "ทุกหมวดหมู่", "promptCount": "{count} พรอมต์", "refresh": "รีเฟรช", "catalogAriaLabel": "แค็ตตาล็อกพรอมต์", "customized": "กำหนดเอง", "unsaved": "ยังไม่บันทึก", "restoreDefault": "คืนค่าเริ่มต้น", "save": "บันทึก", "profileNotice": "Video Prompt Profile จะถูกตรวจสอบก่อนบันทึก", "editorPlaceholder": "ป้อนพรอมต์", "selectPrompt": "เลือกพรอมต์ทางซ้าย", "empty": "ไม่พบพรอมต์", "loadFailed": "โหลดไม่สำเร็จ", "saveSuccess": "บันทึกแล้ว", "saveFailed": "บันทึกไม่สำเร็จ", "discardConfirm": "ละทิ้งการแก้ไขหรือไม่", "restoreConfirm": "คืนค่าเริ่มต้นหรือไม่", "restoreSuccess": "คืนค่าแล้ว", "restoreFailed": "คืนค่าไม่สำเร็จ", "cancel": "ยกเลิก",
+    "categories": { "system": "ระบบ", "scriptAgent": "Script Agent", "productionAgent": "Production Agent", "agentSkill": "Agent Skill", "visualSkill": "Visual Skill", "storySkill": "Director Skill", "videoProfile": "Video Prompt Profile", "modelPrompt": "Model Prompt" }
   },
   "hello": {
     "welcomeTitle": "ยินดีต้อนรับสู่ ToonFlow",

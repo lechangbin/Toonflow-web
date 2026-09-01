@@ -56,24 +56,29 @@ function parseNumber(numStr: string): number {
  * 将正则字符串解析为 RegExp 对象
  */
 function parseRegStr(regStr: string): RegExp {
-  const match = regStr.match(/^\/(.*)\/([ igmuy]*)$/);
+  const match = regStr.match(/^\/([\s\S]*)\/([dgimsuvy]*)$/);
   if (match) {
     return new RegExp(match[1], match[2].includes("g") ? match[2] : match[2] + "g");
   }
   return new RegExp(regStr, "g");
 }
 
+export interface ParseScriptOptions {
+  customRegex?: string;
+  configuredRegex?: string;
+}
+
 /**
  * 解析剧本文本，提取各集的集数、标题和正文内容
  * @param text 剧本原始文本
- * @param customRegStr 自定义正则字符串（优先级最高），留空则依次回退到设置中的正则和默认正则
+ * @param options 自定义正则和设置正则；自定义正则优先级最高
  * @returns 解析后的剧本分组列表（每组包含若干集）
  */
-export default function parseScript(text: string, customRegStr?: string): Episode[] {
+export default function parseScript(text: string, options: ParseScriptOptions = {}): Episode[] {
   let EPISODE_REGEX: RegExp;
 
-  // 优先级：调用方传入 > 默认正则
-  const regStr = customRegStr?.trim();
+  // 优先级：调用方传入 > 设置正则 > 默认正则
+  const regStr = options.customRegex?.trim() || options.configuredRegex?.trim();
   if (regStr) {
     EPISODE_REGEX = parseRegStr(regStr);
   } else {
@@ -108,5 +113,3 @@ export default function parseScript(text: string, customRegStr?: string): Episod
 
   return episodes;
 }
-
-

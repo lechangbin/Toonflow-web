@@ -146,6 +146,7 @@
         "fillModelId": "モデルIDを入力してください",
         "selectImageMode": "画像モードを選択してください",
         "selectVideoMode": "動画モードを選択してください",
+        "videoModelManagedInCode": "動画モデルは Vendor コードの capabilities 契約で管理する必要があります",
         "groupPrefix": "第 {n} グループ：",
         "addDuration": "デュレーションを追加してください",
         "addResolution": "解像度を追加してください",
@@ -940,6 +941,46 @@
         "imageSaved": "画像を保存しました",
         "completed": "完了"
       },
+      "config": {
+        "header": "アセット設定",
+        "entryBtn": "設定",
+        "refTitle": "参照画像",
+        "empty": "参照画像はありません。テキストプロンプトのみで画像を生成します。",
+        "uploadBtn": "参照画像をアップロード",
+        "limitReached": "参照画像は最大 6 枚です",
+        "descLabel": "説明（必須）",
+        "descPh": "この参照画像の用途を説明してください。例：正面全身衣装",
+        "roleLabel": "視覚的役割",
+        "rolePh": "例：衣装設定、スタイル参照",
+        "transfersLabel": "必須要素（カンマ区切り）",
+        "transfersPh": "例：紅の官服、金黒の冠",
+        "exclusionsLabel": "除外項目（カンマ区切り）",
+        "exclusionsPh": "例：背景、文字",
+        "moveUp": "上へ",
+        "moveDown": "下へ",
+        "save": "保存",
+        "remove": "削除",
+        "cancel": "キャンセル",
+        "promptTitle": "最終画像プロンプト",
+        "promptPh": "画像生成に送信する最終プロンプトを編集",
+        "savePrompt": "プロンプトを保存",
+        "promptSaved": "プロンプトを保存しました",
+        "conflictAlert": "以下の要素が必須と除外の両方に含まれています。先に修正してください：{dimensions}",
+        "createSuccess": "参照画像をアップロードしました",
+        "updateSuccess": "参照画像を更新しました",
+        "deleteSuccess": "参照画像を削除しました",
+        "reorderSuccess": "参照画像の並び順を更新しました",
+        "confirmDeleteBody": "この参照画像を削除しますか？元に戻せません。",
+        "sourceManual": "手動の説明",
+        "sourceAi": "AI の説明",
+        "retryHint": "編集内容は保持されています。修正して再試行できます",
+        "analysis": {
+          "not_requested": "解析未リクエスト",
+          "pending": "解析中",
+          "completed": "解析完了",
+          "failed": "解析失敗"
+        }
+      },
       "batch": {
         "header": "一括生成",
         "selected": "{count} 件選択中",
@@ -1424,7 +1465,9 @@
   "components.storyboardImageCheck.createTime": "作成日時",
   "workbench.script.extractAssets": "アセットを抽出",
   "promptManage": {
-    "prompt": "即効性のある言葉"
+    "prompt": "プロンプト",
+    "searchPlaceholder": "プロンプトまたはパスを検索", "allCategories": "すべてのカテゴリ", "promptCount": "{count} 件", "refresh": "更新", "catalogAriaLabel": "プロンプト一覧", "customized": "カスタム", "unsaved": "未保存", "restoreDefault": "既定値に戻す", "save": "保存", "profileNotice": "Video Prompt Profile は保存前に検証されます。", "editorPlaceholder": "プロンプトを入力", "selectPrompt": "左からプロンプトを選択", "empty": "一致するプロンプトはありません", "loadFailed": "読み込みに失敗しました", "saveSuccess": "保存しました", "saveFailed": "保存に失敗しました", "discardConfirm": "未保存の変更を破棄しますか？", "restoreConfirm": "既定値に戻しますか？", "restoreSuccess": "既定値に戻しました", "restoreFailed": "復元に失敗しました", "cancel": "キャンセル",
+    "categories": { "system": "システム", "scriptAgent": "Script Agent", "productionAgent": "Production Agent", "agentSkill": "Agent Skill", "visualSkill": "Visual Skill", "storySkill": "Director Skill", "videoProfile": "Video Prompt Profile", "modelPrompt": "Model Prompt" }
   },
   "hello": {
     "welcomeTitle": "トゥーンフローへようこそ",

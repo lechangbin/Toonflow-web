@@ -24,6 +24,7 @@
 import { ref, onMounted } from "vue";
 import { type FormRules } from "tdesign-vue-next";
 import settingStore from "@/stores/setting";
+import { getInitialApiBaseUrl, legacyLocalApiBaseUrl } from "@/runtimeBaseUrl";
 const { baseUrl, isElectron } = storeToRefs(settingStore());
 
 interface RequestForm {
@@ -55,7 +56,7 @@ function handleSubmit() {
 }
 
 function handleReset() {
-  formData.value.baseUrl = "http://localhost:10588";
+  formData.value.baseUrl = isElectron.value ? legacyLocalApiBaseUrl : getInitialApiBaseUrl(window.location);
   baseUrl.value = formData.value.baseUrl;
   window.$message.success($t("settings.request.msg.reset"));
 }

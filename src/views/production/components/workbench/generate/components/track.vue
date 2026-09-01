@@ -75,16 +75,12 @@ import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import imageListCacheStore from "@/stores/imageListCache";
 import JSZip from "jszip";
-import settingStore from "@/stores/setting";
-
-const { otherSetting } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
 const { removeCache } = imageListCacheStore();
 const episodesId = inject<Ref<number>>("episodesId")!;
 const props = defineProps<{
   modelParmas: ModelSetting;
   imageList: UploadItem[];
-  clampDuration: (trackDuration: number) => number;
 }>();
 const activeTrackIndex = defineModel("activeTrackIndex", {
   default: 0,
@@ -97,6 +93,8 @@ const emit = defineEmits<{
   getData: [];
   change: [prevIndex: number];
   saveImageList: [trackId: number];
+  batchPrompt: [trackIds: number[]];
+  batchVideo: [trackIds: number[]];
 }>();
 const checkAll = ref(false); // 全选状态
 
@@ -233,11 +231,9 @@ function batchDeleteTracks() {
   });
 }
 async function addTrack() {
-  const { data: modelData } = await axios.post("/modelSelect/getModelDetail", { modelId: props.modelParmas.model });
-  const drMap = modelData.durationResolutionMap;
-  if (!Array.isArray(drMap) || drMap.length === 0 || !drMap[0].duration?.length) return;
-  const duration = drMap[0].duration[0];
-  const { data } = await axios.post("/production/workbench/addTrack", {
+  const duration = props.modelParmas.output?.duration;
+  if (!duration) return window.$message.warning("请先选择视频输出预设");
+  await axios.post("/production/workbench/addTrack", {
     projectId: project.value?.id,
     scriptId: episodesId.value ?? 0,
     duration,
@@ -281,65 +277,10 @@ async function batchDownloadVideo(): Promise<void> {
 }
 const generateTextLoad = ref(false);
 function batchGenText() {
-  generateTextLoad.value = true;
-  const trackData: any[] = [];
-  trackList.value.forEach((track, index) => {
-    if (!checkedTrackIds.value.includes(track.id)) return;
-    const trackId = track.id;
-    let info = [];
-    if (props.modelParmas.mode == "text") {
-      info = track?.medias.map(({ id, sources, fileType }) => ({ id, sources, fileType }));
-    } else {
-      info = getTrackUploadInfo(track);
-    }
-    trackData.push({
-      trackId,
-      info: info.filter((i) => typeof i.id === "number" && !isNaN(i.id)),
-    });
-    track.state = "生成中";
-  });
-  axios
-    .post("/production/workbench/batchGeneratePrompt", {
-      projectId: project.value?.id,
-      trackData,
-      model: props.modelParmas.model,
-      mode: props.modelParmas.mode,
-      concurrentCount: otherSetting.value.assetsBatchGenereateSize,
-    })
-    .then(({ data }) => {
-      window.$message.success("开始生成提示词");
-      generateTextLoad.value = false;
-      checkedTrackIds.value = [];
-      checkAll.value = false;
-    })
-    .catch((e) => {
-      window.$message.error(e?.message ?? "生成提示词失败");
-      trackList.value.forEach((i) => {
-        i.state = "生成失败";
-      });
-    })
-    .finally(() => {});
-}
-/**
- * 获取指定轨道的上传数据：
- * 当前活动轨道 → uploadBox（含未保存的最新编辑）
- * 其他轨道 → uploadBoxCache（含切换前的编辑）→ 降级 track.medias
- * @param filterEmpty 是否过滤掉没有 src 的项（生成视频时需要过滤，生成提示词时不需要）
- */
-function getTrackUploadInfo(track: TrackItem, filterEmpty = false) {
-  const activeTrackId = trackList.value[activeTrackIndex.value]?.id;
-
-  if (track.id === activeTrackId) {
-    const items = props.imageList as UploadItem[];
-    return (filterEmpty ? items.filter((item) => Boolean(item.src)) : items).map(({ id, sources, fileType }) => ({
-      id,
-      sources: (sources ?? "storyboard") as string,
-      fileType,
-    }));
-  }
-  return track.medias
-    .filter((m) => !filterEmpty || Boolean(m.src))
-    .map(({ id, sources, fileType }) => ({ id, sources: (sources ?? "storyboard") as string, fileType }));
+  if (!checkedTrackIds.value.length) return window.$message.warning($t("workbench.generate.selectTrackFirst"));
+  emit("batchPrompt", [...checkedTrackIds.value]);
+  checkedTrackIds.value = [];
+  checkAll.value = false;
 }
 const generateVideoLoad = ref(false);
 /** 批量为已勾选轨道生成视频 */
@@ -347,53 +288,12 @@ function batchGenVideo() {
   const dlg = DialogPlugin.confirm({
     header: $t("workbench.generate.generateConfirm"),
     body: $t("workbench.generate.generateVideosInBatches"),
-    onConfirm: async () => {
+    onConfirm: () => {
       dlg.destroy();
-
-      const checkedTrackData = trackList.value.filter((track) => checkedTrackIds.value.includes(track.id));
-      const notHasPrompt = checkedTrackData.filter((i) => !i.prompt);
-      if (notHasPrompt.length) return window.$message.warning($t("workbench.generate.skipDataWithEmptyVideoPromptWords"));
-
-      const trackData = checkedTrackData.map((track) => {
-        const trackId = track.id;
-        const uploadData = props.modelParmas.mode === "text" ? [] : getTrackUploadInfo(track, true);
-        return {
-          duration: props.clampDuration(track.duration || props.modelParmas.duration),
-          prompt: track.prompt,
-          uploadData,
-          trackId,
-        };
-      });
-      const requestData = {
-        projectId: project.value?.id,
-        scriptId: episodesId.value,
-        model: props.modelParmas.model,
-        mode: props.modelParmas.mode,
-        resolution: props.modelParmas.resolution,
-        audio: Boolean(props.modelParmas.audio),
-        trackData,
-      };
-      try {
-        const { data } = await axios.post("/production/workbench/batchGenerateVideo", requestData);
-        const videoRecordId: Record<number, number> = {};
-        data.forEach((item: { videoId: number; trackId: number }) => {
-          videoRecordId[item.trackId] = item.videoId;
-        });
-        checkedTrackData.forEach((i) => {
-          if (videoRecordId[i.id])
-            i.videoList.push({
-              id: videoRecordId[i.id],
-              state: "生成中",
-              src: "",
-            });
-        });
-        checkedTrackIds.value = [];
-        window.$message.success($t("workbench.generate.generateStarted"));
-      } catch (e) {
-        window.$message.error((e as any)?.message ?? $t("workbench.generate.generateError"));
-      } finally {
-        generateVideoLoad.value = false;
-      }
+      if (!checkedTrackIds.value.length) return window.$message.warning($t("workbench.generate.selectTrackFirst"));
+      emit("batchVideo", [...checkedTrackIds.value]);
+      checkedTrackIds.value = [];
+      checkAll.value = false;
     },
     onCancel: () => dlg.destroy(),
   });

@@ -41,7 +41,7 @@
             :message="$t('settings.vendor.msg.vendorNeedsUpdate')"
             style="margin-bottom: 12px" />
           <t-form-item>
-            <MdPreview v-model="currentVendor.description" :theme="themeSetting.mode" />
+            <MdPreview v-model="currentVendor.description" :theme="themeSetting.mode === 'auto' ? 'light' : themeSetting.mode" />
           </t-form-item>
           <t-form-item v-for="input in requiredInputs" :key="input.key" :name="input.key">
             <template #label>
@@ -166,72 +166,6 @@
             </t-form-item>
           </template>
 
-          <template v-if="modelFormData.type === 'video'">
-            <t-form-item name="mode" :label="$t('settings.vendor.videoMode')">
-              <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 0">
-                <t-checkbox-group v-model="modelFormData.mode">
-                  <t-checkbox v-for="opt in videoModeOptions" :key="opt.value" :value="opt.value">{{ $t(opt.label) }}</t-checkbox>
-                </t-checkbox-group>
-                <div
-                  v-if="modelFormData.mode.includes('multiReference')"
-                  style="border: 1px solid #ddd; border-radius: 6px; padding: 6px 12px; margin-top: 6px">
-                  <t-checkbox-group
-                    v-model="modelFormData.mixedMode"
-                    style="display: flex; flex-direction: row; gap: 8px; flex-wrap: wrap; align-items: center">
-                    <template v-for="opt in referenceOptions" :key="opt.value">
-                      <t-checkbox :value="opt.value">{{ $t(opt.label) }}</t-checkbox>
-                      <t-input-number
-                        v-if="modelFormData.mixedMode.includes(opt.value)"
-                        v-model="modelFormData.mixedModeCount[opt.value]"
-                        :min="1"
-                        :max="99"
-                        size="small"
-                        style="width: 80px"
-                        :placeholder="$t('settings.vendor.count')" />
-                    </template>
-                  </t-checkbox-group>
-                </div>
-              </div>
-            </t-form-item>
-            <t-form-item name="audio" :label="$t('settings.vendor.audioOutput')">
-              <t-radio-group v-model="modelFormData.audio">
-                <t-radio v-for="item in audioOptions" :key="String(item.value)" :value="item.value">{{ $t(item.label) }}</t-radio>
-              </t-radio-group>
-            </t-form-item>
-            <t-form-item name="durationResolutionMap" :label="$t('settings.vendor.durationResolution')">
-              <div class="drmEditor">
-                <div class="drmHeader">
-                  <div class="drmHeaderIndex"></div>
-                  <div class="drmHeaderLabel">{{ $t("settings.vendor.durationSec") }}</div>
-                  <div class="drmHeaderArrow"></div>
-                  <div class="drmHeaderLabel">{{ $t("settings.vendor.resolution") }}</div>
-                  <div class="drmHeaderAction"></div>
-                </div>
-                <div v-for="(row, rowIndex) in modelFormData.durationResolutionMap" :key="rowIndex" class="drmRow">
-                  <div class="drmRowIndex">{{ rowIndex + 1 }}</div>
-                  <t-tag-input v-model="row.duration" :placeholder="$t('settings.vendor.enterAndPress')" class="drmInput" />
-                  <div class="drmArrow">→</div>
-                  <t-tag-input v-model="row.resolution" :placeholder="$t('settings.vendor.enterAndPress')" class="drmInput" />
-                  <t-button
-                    variant="text"
-                    theme="danger"
-                    size="small"
-                    :disabled="modelFormData.durationResolutionMap.length === 1"
-                    @click="modelFormData.durationResolutionMap.splice(rowIndex, 1)">
-                    <template #icon><i-delete theme="outline" /></template>
-                  </t-button>
-                </div>
-                <t-button
-                  style="margin-top: 16px"
-                  variant="dashed"
-                  block
-                  @click="modelFormData.durationResolutionMap.push({ duration: [], resolution: [] })">
-                  <template #icon><i-plus theme="outline" /></template>
-                  {{ $t("settings.vendor.addDurationResolution") }}
-                </t-button>
-              </div>
-            </t-form-item>
-          </template>
         </t-form>
       </div>
     </t-dialog>
@@ -253,11 +187,10 @@
 
     <!-- 视频模型测试弹窗 -->
     <VideoModelTest
-      v-if="testingModel?.type === 'video' && videoTestVisible"
+      v-if="testingVideoModel && videoTestVisible"
       v-model:modelVisible="videoTestVisible"
       :vendorId="currentVendor!.id"
-      :modelName="testingModel.modelName"
-      :rawModes="(testingModel as any).mode || []" />
+      :model="testingVideoModel" />
 
     <!-- 添加供应商弹窗 -->
     <t-dialog
@@ -350,6 +283,7 @@ import settingStore from "@/stores/setting";
 import TextModelTest from "./vendorTest/TextModelTest.vue";
 import ImageModelTest from "./vendorTest/ImageModelTest.vue";
 import VideoModelTest from "./vendorTest/VideoModelTest.vue";
+import type { VideoModelContract } from "@/videoContract";
 const { themeSetting } = storeToRefs(settingStore());
 
 // ── 类型 ──
@@ -367,21 +301,7 @@ interface ImageModel {
   mode: ("text" | "singleImage" | "multiReference")[];
 }
 
-interface VideoModel {
-  name: string;
-  modelName: string;
-  type: "video";
-  mode: (
-    | "singleImage"
-    | "startEndRequired"
-    | "endFrameOptional"
-    | "startFrameOptional"
-    | "text"
-    | (`videoReference:${number}` | `imageReference:${number}` | `audioReference:${number}`)[]
-  )[];
-  audio: "optional" | false | true;
-  durationResolutionMap: { duration: number[]; resolution: string[] }[];
-}
+type VideoModel = VideoModelContract;
 
 type VendorModel = TextModel | ImageModel | VideoModel;
 
@@ -457,33 +377,12 @@ const editorOptions = {
 const modelTypeOptions = [
   { value: "text", label: "settings.vendor.textModel" },
   { value: "image", label: "settings.vendor.imageModel" },
-  { value: "video", label: "settings.vendor.videoModel" },
 ];
 
 const imageModeOptions = [
   { label: "settings.vendor.textToImage", value: "text" },
   { label: "settings.vendor.singleImage", value: "singleImage" },
   { label: "settings.vendor.multiReference", value: "multiReference" },
-];
-
-const videoModeOptions = [
-  { label: "settings.vendor.singleImage", value: "singleImage" },
-  { label: "settings.vendor.startEndRequired", value: "startEndRequired" },
-  { label: "settings.vendor.endFrameOptional", value: "endFrameOptional" },
-  { label: "settings.vendor.startFrameOptional", value: "startFrameOptional" },
-  { label: "settings.vendor.textToVideo", value: "text" },
-  { label: "settings.vendor.multiReferenceMode", value: "multiReference" },
-];
-const referenceOptions = [
-  { label: "settings.vendor.videoRef", value: "videoReference" },
-  { label: "settings.vendor.imageRef", value: "imageReference" },
-  { label: "settings.vendor.audioRef", value: "audioReference" },
-];
-
-const audioOptions: { label: string; value: "optional" | false | true }[] = [
-  { label: "settings.vendor.audioOptional", value: "optional" },
-  { label: "settings.vendor.audioOnly", value: true },
-  { label: "settings.vendor.noAudio", value: false },
 ];
 
 // ── 供应商列表 ──
@@ -540,6 +439,16 @@ let pendingAutoSave = false;
 
 // ── 测试弹窗状态 ──
 const testingModel = ref<VendorModel | null>(null);
+const testingVideoModel = computed<VideoModelContract | null>(() => {
+  const model = testingModel.value;
+  if (model?.type !== "video" || !model.capabilities?.length) return null;
+  return {
+    name: model.name,
+    modelName: model.modelName,
+    type: "video",
+    capabilities: model.capabilities,
+  };
+});
 const textTestVisible = ref(false);
 const imageTestVisible = ref(false);
 const videoTestVisible = ref(false);
@@ -737,34 +646,21 @@ function handleConfirmVendor() {
 const modelDialogVisible = ref(false);
 const editingModelIndex = ref<number | null>(null);
 const editingModelName = ref<string | null>(null);
-interface DrmRow {
-  duration: string[];
-  resolution: string[];
-}
-
 const modelFormData = ref({
   name: "",
   modelName: "",
-  type: "text" as "text" | "image" | "video",
+  type: "text" as "text" | "image",
   think: false,
   mode: [] as string[],
-  mixedMode: [] as string[], // referenceOptions 选中项，单独存放，构建时作为数组元素加入 mode
-  mixedModeCount: {} as Record<string, number>, // 每个 reference 的数量限制
-  audio: "optional" as "optional" | false | true,
-  durationResolutionMap: [{ duration: [] as string[], resolution: [] as string[] }] as DrmRow[],
 });
 
-function resetModelForm(type: "text" | "image" | "video" = "text") {
+function resetModelForm(type: "text" | "image" = "text") {
   modelFormData.value = {
     name: "",
     modelName: "",
     type,
     think: false,
     mode: [],
-    mixedMode: [],
-    mixedModeCount: {},
-    audio: "optional",
-    durationResolutionMap: [{ duration: [], resolution: [] }],
   };
 }
 
@@ -811,44 +707,8 @@ function buildModelFromForm(): VendorModel | null {
     };
   }
 
-  // 把 mixedMode（referenceOptions 选中项）作为带数量的数组元素追加到 mode
-  const mode = [...modelFormData.value.mode].filter((m) => m !== "multiReference") as VideoModel["mode"];
-  if (modelFormData.value.mixedMode.length > 0) {
-    const refs = modelFormData.value.mixedMode.map((ref) => {
-      const count = modelFormData.value.mixedModeCount[ref] ?? 1;
-      return `${ref}:${count}`;
-    });
-    (mode as any[]).push(refs);
-  }
-  if (!mode.length) {
-    window.$message.error($t("settings.vendor.msg.selectVideoMode"));
-    return null;
-  }
-
-  const durationResolutionMap: VideoModel["durationResolutionMap"] = [];
-  for (let i = 0; i < modelFormData.value.durationResolutionMap.length; i++) {
-    const row = modelFormData.value.durationResolutionMap[i];
-    const duration = row.duration.map(Number).filter((n) => Number.isFinite(n) && n > 0);
-    const resolution = row.resolution.filter(Boolean);
-    if (!duration.length) {
-      window.$message.error(`${$t("settings.vendor.msg.groupPrefix", { n: i + 1 })}${$t("settings.vendor.msg.addDuration")}`);
-      return null;
-    }
-    if (!resolution.length) {
-      window.$message.error(`${$t("settings.vendor.msg.groupPrefix", { n: i + 1 })}${$t("settings.vendor.msg.addResolution")}`);
-      return null;
-    }
-    durationResolutionMap.push({ duration, resolution });
-  }
-
-  return {
-    name,
-    modelName,
-    type: "video",
-    mode,
-    audio: modelFormData.value.audio,
-    durationResolutionMap,
-  };
+  window.$message.error($t("settings.vendor.msg.videoModelManagedInCode"));
+  return null;
 }
 
 function handleAddModel() {
@@ -910,6 +770,10 @@ async function handleConfirmModel() {
 }
 
 function handleEditModel(model: VendorModel) {
+  if (model.type === "video") {
+    window.$message.warning($t("settings.vendor.msg.videoModelManagedInCode"));
+    return;
+  }
   const list = ensureVendorModels();
   editingModelIndex.value = list.findIndex((item) => item.modelName === model.modelName);
   editingModelName.value = model.modelName;
@@ -921,10 +785,6 @@ function handleEditModel(model: VendorModel) {
       type: "text",
       think: model.think,
       mode: [],
-      mixedMode: [],
-      mixedModeCount: {},
-      audio: "optional",
-      durationResolutionMap: [{ duration: [], resolution: [] }],
     };
   }
 
@@ -935,48 +795,6 @@ function handleEditModel(model: VendorModel) {
       type: "image",
       think: false,
       mode: [...model.mode],
-      mixedMode: [],
-      mixedModeCount: {},
-      audio: "optional",
-      durationResolutionMap: [{ duration: [], resolution: [] }],
-    };
-  }
-
-  if (model.type === "video") {
-    const rows: DrmRow[] =
-      model.durationResolutionMap?.length > 0
-        ? model.durationResolutionMap.map((map) => ({
-            duration: map.duration.map(String),
-            resolution: [...map.resolution],
-          }))
-        : [{ duration: [], resolution: [] }];
-    // 反解：把 mode 中数组类型的元素提取为 mixedMode，其余为普通 mode
-    const flatMode: string[] = [];
-    let mixedMode: string[] = [];
-    const mixedModeCount: Record<string, number> = {};
-    for (const m of model.mode) {
-      if (Array.isArray(m)) {
-        for (const ref of m) {
-          const match = String(ref).match(/^(videoReference|imageReference|audioReference):(\d+)$/);
-          if (match) {
-            mixedMode.push(match[1]);
-            mixedModeCount[match[1]] = Number(match[2]);
-          }
-        }
-      } else {
-        flatMode.push(m);
-      }
-    }
-    modelFormData.value = {
-      name: model.name,
-      modelName: model.modelName,
-      type: "video",
-      think: false,
-      mode: mixedMode.length > 0 ? [...flatMode, "multiReference"] : flatMode,
-      mixedMode,
-      mixedModeCount,
-      audio: model.audio,
-      durationResolutionMap: rows,
     };
   }
 
@@ -990,6 +808,10 @@ function handleTestModel(item: (typeof vendorModels.value)[number]) {
   } else if (item.type === "image") {
     imageTestVisible.value = true;
   } else if (item.type === "video") {
+    if (!item.capabilities?.length) {
+      window.$message.error($t("settings.vendor.msg.videoModelManagedInCode"));
+      return;
+    }
     videoTestVisible.value = true;
   }
 }

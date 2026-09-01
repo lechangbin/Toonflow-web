@@ -146,6 +146,7 @@
         "fillModelId": "Пожалуйста, введите ID модели",
         "selectImageMode": "Пожалуйста, выберите режим изображения",
         "selectVideoMode": "Пожалуйста, выберите режим видео",
+        "videoModelManagedInCode": "Видеомодели должны управляться через контракт capabilities в коде Vendor",
         "groupPrefix": "Группа {n}: ",
         "addDuration": "Пожалуйста, добавьте длительность",
         "addResolution": "Пожалуйста, добавьте разрешение",
@@ -940,6 +941,46 @@
         "imageSaved": "Изображение сохранено",
         "completed": "Завершенный"
       },
+      "config": {
+        "header": "Настройка актива",
+        "entryBtn": "Настроить",
+        "refTitle": "Референсы",
+        "empty": "Референсов нет. Изображение будет создано только по текстовому промпту.",
+        "uploadBtn": "Загрузить референс",
+        "limitReached": "Не более 6 референсов на актив",
+        "descLabel": "Описание (обязательно)",
+        "descPh": "Опишите назначение, например: кадр в полный рост спереди",
+        "roleLabel": "Визуальная роль",
+        "rolePh": "например: лист костюма, референс стиля",
+        "transfersLabel": "Обязательные элементы (через запятую)",
+        "transfersPh": "например: багряный халат, золочёная корона",
+        "exclusionsLabel": "Исключения (через запятую)",
+        "exclusionsPh": "например: фон, текст",
+        "moveUp": "Выше",
+        "moveDown": "Ниже",
+        "save": "Сохранить",
+        "remove": "Удалить",
+        "cancel": "Отмена",
+        "promptTitle": "Итоговый промпт изображения",
+        "promptPh": "Редактируйте итоговый промпт для генерации изображения",
+        "savePrompt": "Сохранить промпт",
+        "promptSaved": "Промпт сохранён",
+        "conflictAlert": "Эти элементы встречаются и в обязательных, и в исключениях — исправьте: {dimensions}",
+        "createSuccess": "Референс загружен",
+        "updateSuccess": "Референс обновлён",
+        "deleteSuccess": "Референс удалён",
+        "reorderSuccess": "Порядок референсов обновлён",
+        "confirmDeleteBody": "Удалить этот референс? Отменить нельзя.",
+        "sourceManual": "Ручное описание",
+        "sourceAi": "Описание от ИИ",
+        "retryHint": "Правки сохранены — измените и повторите",
+        "analysis": {
+          "not_requested": "Анализ не запрошен",
+          "pending": "Идёт анализ",
+          "completed": "Анализ завершён",
+          "failed": "Анализ не удался"
+        }
+      },
       "batch": {
         "header": "Пакетная генерация",
         "selected": "Выбрано {count} шт.",
@@ -1424,7 +1465,9 @@
   "components.storyboardImageCheck.createTime": "Дата создания",
   "workbench.script.extractAssets": "Извлечь ресурсы",
   "promptManage": {
-    "prompt": "подсказать слово"
+    "prompt": "Промпт",
+    "searchPlaceholder": "Поиск промптов или путей", "allCategories": "Все категории", "promptCount": "Промптов: {count}", "refresh": "Обновить", "catalogAriaLabel": "Каталог промптов", "customized": "Изменён", "unsaved": "Не сохранено", "restoreDefault": "По умолчанию", "save": "Сохранить", "profileNotice": "Video Prompt Profile проверяется перед сохранением.", "editorPlaceholder": "Введите промпт", "selectPrompt": "Выберите промпт слева", "empty": "Ничего не найдено", "loadFailed": "Ошибка загрузки", "saveSuccess": "Промпт сохранён", "saveFailed": "Ошибка сохранения", "discardConfirm": "Отменить несохранённые изменения?", "restoreConfirm": "Восстановить значение по умолчанию?", "restoreSuccess": "Значение восстановлено", "restoreFailed": "Ошибка восстановления", "cancel": "Отмена",
+    "categories": { "system": "Системные", "scriptAgent": "Script Agent", "productionAgent": "Production Agent", "agentSkill": "Agent Skill", "visualSkill": "Visual Skill", "storySkill": "Director Skill", "videoProfile": "Video Prompt Profile", "modelPrompt": "Model Prompt" }
   },
   "hello": {
     "welcomeTitle": "Добро пожаловать в ToonFlow",

@@ -46,7 +46,10 @@ function extractPath(url: string | undefined): string {
 function toCachedItems(items: (UploadItem | TrackMedia)[]): CachedUploadItem[] {
   return items.map((item) => ({
     ...JSON.parse(JSON.stringify(item)),
-    src: extractPath(item.src),
+    // Uploaded media has no database id that getFileUrl can resolve. Keep the
+    // URL returned by uploadVideoInputImage/getGenerateData until the next
+    // authoritative refresh supplies a fresh displayUrl.
+    src: item.sources === "uploaded-media" ? item.src : extractPath(item.src),
   }));
 }
 

@@ -55,26 +55,17 @@ import projectDialog from "./components/projectDialog.vue";
 import dayjs from "dayjs";
 import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
+import type { Project } from "@/stores/project";
 import imageListCacheStore from "@/stores/imageListCache";
+import { getVideoCapabilityCatalog } from "@/utils/videoCapabilityCatalog";
+import { findCatalogModel } from "@/videoContract";
 
 const { clearProjectCache } = imageListCacheStore();
 const { allProject, project } = storeToRefs(projectStore());
 
 const dialogShow = ref(false);
-const editProjectData = ref<{
-  id: string;
-  name: string;
-  intro: string;
-  type: string;
-  artStyle: string | null;
-  videoRatio: string | null;
-  imageModel: string;
-  videoModel: string;
-  projectType: string;
-  imageQuality: "1K" | "2K" | "4K" | "";
-  mode: string;
-  directorManual: string;
-} | null>(null);
+const editProjectData = ref<Project | null>(null);
+type ProjectPayload = Omit<Project, "id" | "createTime" | "updatedAt">;
 
 async function getAllProject() {
   axios.post("/project/getProject").then(({ data }) => {
@@ -94,7 +85,13 @@ async function openProject(projectId: string | undefined) {
 
   if (!item) return window.$message.error($t("workbench.project.msg.notFound"));
 
-  if (!item.imageModel || !item.videoModel) {
+  if (
+    !item.imageModel ||
+    !item.videoVendorId ||
+    !item.videoModelId ||
+    !item.videoCapabilityId ||
+    !item.videoOutputPresetId
+  ) {
     window.$message.warning($t("workbench.project.msg.modelProviderDisabled"));
     return openEdit(item);
   }
@@ -105,10 +102,10 @@ async function openProject(projectId: string | undefined) {
         modelId: item.imageModel,
       });
     }
-    if (item.videoModel) {
-      await axios.post("/modelSelect/getModelDetail", {
-        modelId: item.videoModel,
-      });
+    if (item.videoModelId) {
+      const model = findCatalogModel(await getVideoCapabilityCatalog(), `${item.videoVendorId}:${item.videoModelId}`).model;
+      const capability = model.capabilities.find((candidate) => candidate.id === item.videoCapabilityId);
+      if (!capability?.outputPresets.some((preset) => preset.id === item.videoOutputPresetId)) throw new Error("视频配置已失效");
     }
   } catch {
     window.$message.warning($t("workbench.project.msg.modelProviderDisabled"));
@@ -120,39 +117,14 @@ async function openProject(projectId: string | undefined) {
   else if (item.projectType === "script") router.push(`/script`);
 }
 
-function openEdit(item: {
-  id: string;
-  name: string;
-  intro: string;
-  type: string;
-  artStyle: string | null;
-  directorManual: string;
-  videoRatio: string | null;
-  imageModel: string;
-  videoModel: string;
-  imageQuality: "1K" | "2K" | "4K" | "";
-  projectType: string;
-  mode: string;
-}) {
+function openEdit(item: Project) {
   editProjectData.value = {
     ...item,
   };
   dialogShow.value = true;
 }
 
-function editProjectFn(data: {
-  id: string;
-  name: string;
-  intro: string;
-  type: string;
-  artStyle: string;
-  directorManual: string;
-  videoRatio: string;
-  imageModel: string;
-  videoModel: string;
-  imageQuality: "1K" | "2K" | "4K" | "";
-  mode: string;
-}) {
+function editProjectFn(data: ProjectPayload & { id: string }) {
   axios
     .post("/project/editProject", data)
     .then(() => {
@@ -164,19 +136,7 @@ function editProjectFn(data: {
     });
 }
 
-function addProjectFn(data: {
-  projectType: string;
-  name: string;
-  intro: string;
-  type: string;
-  artStyle: string;
-  directorManual: string;
-  videoRatio: string;
-  imageModel: string;
-  videoModel: string;
-  imageQuality: string;
-  mode: string;
-}) {
+function addProjectFn(data: ProjectPayload) {
   axios
     .post("/project/addProject", data)
     .then(() => {

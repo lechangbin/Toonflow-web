@@ -127,8 +127,8 @@ watch(customRegStr, (val) => {
     return;
   }
   try {
-    const m = val.match(/^\/(.*)\/([ igmuy]*)$/);
-    new RegExp(m ? m[1] : val);
+    const m = val.match(/^\/([\s\S]*)\/([dgimsuvy]*)$/);
+    new RegExp(m ? m[1] : val, m?.[2]);
     regexError.value = "";
   } catch {
     regexError.value = $t("workbench.script.import.regexInvalid");
@@ -146,7 +146,10 @@ const columns: PrimaryTableCol<TableRowData>[] = [
 const tableData = computed<ChapterItem[]>(() => {
   if (!content.value) return [];
   try {
-    return parseScript(content.value, customRegStr.value || undefined).map((ep) => ({
+    return parseScript(content.value, {
+      customRegex: customRegStr.value,
+      configuredRegex: otherSetting.value.chapterReg,
+    }).map((ep) => ({
       index: ep.index,
       scriptName: ep.chapter,
       scriptData: ep.text,

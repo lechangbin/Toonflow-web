@@ -122,6 +122,12 @@
                             </template>
                             {{ $t("workbench.assets.generate") }}
                           </t-button>
+                          <t-button theme="primary" variant="text" @click="handleConfig(subRow)">
+                            <template #icon>
+                              <t-icon name="setting" />
+                            </template>
+                            {{ $t("workbench.assets.config.entryBtn") }}
+                          </t-button>
                           <t-button theme="primary" variant="text" @click="handleEdit(subRow)">
                             <template #icon>
                               <t-icon name="edit" />
@@ -195,6 +201,12 @@
                         <i-magic :size="18" />
                       </template>
                       {{ $t("workbench.assets.generate") }}
+                    </t-button>
+                    <t-button theme="primary" variant="text" @click="handleConfig(row)">
+                      <template #icon>
+                        <t-icon name="setting" />
+                      </template>
+                      {{ $t("workbench.assets.config.entryBtn") }}
                     </t-button>
                     <t-button theme="primary" variant="text" @click="handleEdit(row)">
                       <template #icon>
@@ -382,6 +394,7 @@
       :formData="formData"
       @getFilteredData="getFilteredData(assetOptions)" />
     <generateImage v-model="generateImageShow" @update="loadCurrentTabData" :formData="currentAssetData" />
+    <assetConfig v-model="assetConfigShow" :formData="configAssetData" @refresh="loadCurrentTabData" />
 
     <addAudioAssets v-model="addAudioShow" v-if="addAudioShow" :formData="audioFormData" @getFilteredData="getFilteredData(assetOptions)" />
     <t-dialog
@@ -440,6 +453,7 @@ import type { TabValue, TableProps } from "tdesign-vue-next";
 import addAssets from "./components/addAssets.vue";
 import addAudioAssets from "./components/addAudioAssets.vue";
 import generateImage from "./components/generateImage.vue";
+import assetConfig from "./components/assetConfig.vue";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 const { otherSetting } = storeToRefs(settingStore());
@@ -1114,6 +1128,31 @@ function generate(row: any) {
     src: row.src,
   };
   generateImageShow.value = true;
+}
+// 资产配置（参考图 + 最终提示词）
+const assetConfigShow = ref(false);
+const configAssetData = ref<{
+  id: number;
+  name: string;
+  describe: string;
+  remark: string;
+  prompt: string;
+}>({
+  id: 0,
+  name: "",
+  describe: "",
+  remark: "",
+  prompt: "",
+});
+function handleConfig(row: any) {
+  configAssetData.value = {
+    id: row.id,
+    name: row.name ?? "",
+    describe: row.describe ?? "",
+    remark: row.remark ?? "",
+    prompt: typeof row.prompt === "string" ? row.prompt : "",
+  };
+  assetConfigShow.value = true;
 }
 // 编辑
 function handleEdit(row: any) {
