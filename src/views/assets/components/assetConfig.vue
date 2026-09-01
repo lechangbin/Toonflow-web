@@ -149,7 +149,7 @@ import settingStore from "@/stores/setting";
 import projectStore from "@/stores/project";
 import {
   ASSET_REFERENCE_LIMIT,
-  findControlledDimensionConflicts,
+  findTransferExclusionConflicts,
   hydrateAssetConfig,
   normalizeTagInput,
   referenceMediaUrl,
@@ -205,7 +205,7 @@ const editDrafts = ref<Record<number, ReferenceDraftInput>>({});
 const uploadDraft = ref<UploadDraft | null>(null);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
-/** 把编辑缓冲与已保存记录合成为有效契约，用于冲突校验。 */
+/** 把编辑缓冲与已保存记录合成为有效契约，用于包含/排除矛盾检查。 */
 const effectiveReferences = computed(() =>
   references.value.map((item) => {
     const draft = editDrafts.value[item.id];
@@ -220,7 +220,7 @@ const effectiveReferences = computed(() =>
   }),
 );
 
-/** 上传草稿同样参与受控维度冲突校验，保证提交前可见。 */
+/** 上传草稿同样参与包含/排除矛盾检查，保证提交前可见。 */
 const conflictSources = computed<Pick<AssetReferenceRecord, "id" | "requiredTransfers" | "exclusions">[]>(() => {
   const sources: Pick<AssetReferenceRecord, "id" | "requiredTransfers" | "exclusions">[] = effectiveReferences.value.map(
     (item) => ({ id: item.id, requiredTransfers: item.requiredTransfers, exclusions: item.exclusions }),
@@ -236,7 +236,7 @@ const conflictSources = computed<Pick<AssetReferenceRecord, "id" | "requiredTran
 });
 
 const conflictMessage = computed(() => {
-  const conflicts = findControlledDimensionConflicts(conflictSources.value);
+  const conflicts = findTransferExclusionConflicts(conflictSources.value);
   if (conflicts.length === 0) return "";
   return $t("workbench.assets.config.conflictAlert", {
     dimensions: conflicts.map((conflict) => conflict.dimension).join("、"),

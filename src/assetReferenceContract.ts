@@ -248,18 +248,23 @@ export function parseReferenceError(error: unknown): { kind?: AssetReferenceFail
   return { message: "请求失败，请重试" };
 }
 
-export interface ControlledDimensionConflict {
+export interface TransferExclusionConflict {
   dimension: string;
   referenceIds: number[];
 }
 
 /**
- * 提交前的受控维度冲突校验：同一维度同时出现在某张参考图的必传要素与
- * 排除项中（含跨参考图互斥）时返回冲突列表，由界面在提交前提示。
+ * 提交前的包含/排除矛盾检查：同一要素同时出现在必传要素与排除项中
+ * （含跨参考图互斥）时返回矛盾列表，由界面在提交前提示。
+ *
+ * 规格差距说明：Issue #34 的 controlledDimensions 冲突指多张参考图争夺
+ * 同一视觉维度的控制权。#30 后端契约没有为维度所有权模型提供持久化
+ * 字段（仅 visualRole/requiredTransfers/exclusions），该规则在本版本
+ * 无法表达，作为 #33/#35 集成依赖记录；本函数只检测包含/排除矛盾。
  */
-export function findControlledDimensionConflicts(
+export function findTransferExclusionConflicts(
   references: ReadonlyArray<Pick<AssetReferenceRecord, "id" | "requiredTransfers" | "exclusions">>,
-): ControlledDimensionConflict[] {
+): TransferExclusionConflict[] {
   const required = new Map<string, Set<number>>();
   const excluded = new Map<string, Set<number>>();
   const touch = (map: Map<string, Set<number>>, dimension: string, id: number) => {
@@ -273,7 +278,7 @@ export function findControlledDimensionConflicts(
     for (const dimension of reference.requiredTransfers ?? []) touch(required, dimension, reference.id);
     for (const dimension of reference.exclusions ?? []) touch(excluded, dimension, reference.id);
   }
-  const conflicts: ControlledDimensionConflict[] = [];
+  const conflicts: TransferExclusionConflict[] = [];
   for (const [dimension, requiredIds] of required) {
     const excludedIds = excluded.get(dimension);
     if (!excludedIds) continue;

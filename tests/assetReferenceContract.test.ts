@@ -11,7 +11,7 @@ import {
   buildUpdateAssetPromptRequest,
   buildUpdateReferenceRequest,
   canAddReference,
-  findControlledDimensionConflicts,
+  findTransferExclusionConflicts,
   hydrateAssetConfig,
   isAssetReferenceErrorEnvelope,
   normalizeTagInput,
@@ -220,20 +220,20 @@ test("预留的分析生命周期值被容忍且不触发任何 AI 分析行为"
   assert.equal(parsed[0].analysisState, "pending");
 });
 
-test("同一 controlledDimension 同时出现在必传与排除中时，提交前给出冲突", () => {
-  const sameReference = findControlledDimensionConflicts([
+test("同一要素同时出现在必传与排除中时，提交前给出包含/排除矛盾提示", () => {
+  const sameReference = findTransferExclusionConflicts([
     makeRecord({ id: 1, requiredTransfers: ["红色官袍", "黑金头冠"], exclusions: ["红色官袍"] }),
   ]);
   assert.deepEqual(sameReference, [{ dimension: "红色官袍", referenceIds: [1] }]);
 
-  const acrossReferences = findControlledDimensionConflicts([
+  const acrossReferences = findTransferExclusionConflicts([
     makeRecord({ id: 1, requiredTransfers: ["红色官袍"], exclusions: [] }),
     makeRecord({ id: 2, requiredTransfers: [], exclusions: ["红色官袍"] }),
   ]);
   assert.deepEqual(acrossReferences, [{ dimension: "红色官袍", referenceIds: [1, 2] }]);
 
   assert.deepEqual(
-    findControlledDimensionConflicts([
+    findTransferExclusionConflicts([
       makeRecord({ id: 1, requiredTransfers: ["红色官袍"], exclusions: ["背景"] }),
       makeRecord({ id: 2, requiredTransfers: ["黑金头冠"], exclusions: ["道具"] }),
     ]),
