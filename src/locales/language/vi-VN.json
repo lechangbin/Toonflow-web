@@ -930,7 +930,42 @@
         "imageSelected": "Đã chọn hình ảnh này",
         "imageDeleted": "Đã xóa hình ảnh này",
         "imageSaved": "Hình ảnh đã được lưu",
-        "completed": "Hoàn thành"
+        "completed": "Hoàn thành",
+        "refsTitle": "Ảnh tham chiếu (đã cấu hình)",
+        "refsManageHint": "Ảnh tham chiếu và prompt cuối cùng được quản lý trong «Cấu hình tài sản» và gửi theo thứ tự hiện tại",
+        "errors": {
+          "projectNotFound": "Dự án không tồn tại hoặc đã được chuyển. Vui lòng làm mới rồi thử lại",
+          "assetNotFound": "Tài sản không tồn tại hoặc đã bị xóa. Vui lòng làm mới rồi thử lại",
+          "assetProjectMismatch": "Tài sản không khớp với dự án hiện tại. Vui lòng làm mới rồi thử lại",
+          "referenceNotFound": "Ảnh tham chiếu không tồn tại hoặc đã bị xóa. Vui lòng kiểm tra trong Cấu hình tài sản",
+          "referenceLimitExceeded": "Số ảnh tham chiếu vượt giới hạn (tối đa 6). Vui lòng xóa bớt trong Cấu hình tài sản",
+          "descriptionRequired": "Ảnh tham chiếu thiếu mô tả. Vui lòng bổ sung trong Cấu hình tài sản",
+          "invalidMedia": "Tệp ảnh tham chiếu không hợp lệ hoặc không đọc được. Vui lòng tải lên lại",
+          "orderMismatch": "Thứ tự ảnh tham chiếu không khớp với máy chủ. Vui lòng mở lại rồi thử",
+          "promptRequired": "Vui lòng nhập prompt",
+          "invalidRequest": "Tham số yêu cầu không hợp lệ",
+          "unsupportedAssetType": "Loại tài sản không được hỗ trợ",
+          "scriptNotFound": "Kịch bản liên kết không tồn tại",
+          "visualManualMissing": "Thiếu cẩm nang thị giác",
+          "skillContractMissing": "Thiếu hợp đồng kỹ năng tạo",
+          "malformedOutput": "Kết quả mô hình không đúng định dạng",
+          "missingAssetResult": "Kết quả mô hình thiếu một số tài sản",
+          "duplicateAssetResult": "Kết quả mô hình chứa tài sản trùng lặp",
+          "unknownAssetResult": "Kết quả mô hình chứa tài sản không xác định",
+          "assetTypeMismatch": "Loại tài sản trong kết quả mô hình không khớp với cơ sở dữ liệu",
+          "derivedMismatch": "Danh tính phái sinh trong kết quả mô hình không khớp với cơ sở dữ liệu",
+          "referenceBindingMismatch": "Liên kết ảnh tham chiếu trong kết quả mô hình không khớp với hợp đồng thủ công",
+          "analysisFailed": "Gọi phân tích tài sản hàng loạt thất bại",
+          "languageProfileNotAvailable": "Ngôn ngữ được yêu cầu chưa khả dụng",
+          "promptNotGenerated": "Vui lòng tạo prompt trước rồi mới tạo ảnh",
+          "stalePromptRecord": "Prompt đã hết hạn, vui lòng tạo lại prompt",
+          "referenceMediaUnreadable": "Tệp ảnh tham chiếu bị thiếu hoặc không đọc được",
+          "referenceMediaInvalid": "Tệp ảnh tham chiếu không hợp lệ",
+          "imageGenerationFailed": "Tạo ảnh thất bại, vui lòng thử lại",
+          "imagePersistenceFailed": "Lưu ảnh đã tạo thất bại",
+          "cancelled": "Đã hủy việc tạo"
+        }
+
       },
       "config": {
         "header": "Cấu hình tài sản",
@@ -989,7 +1024,9 @@
         "imageDone": "Tạo hình ảnh hoàn tất",
         "imageGenFail": "Tạo hình ảnh thất bại",
         "unknownError": "Lỗi không xác định",
-        "promptGenCancelled": "Thế hệ bị hủy"
+        "promptGenCancelled": "Thế hệ bị hủy",
+        "skippedAssets": "Đã bỏ qua {count} tài sản: {detail}"
+
       },
       "confirmCancellation": "Xác nhận hủy",
       "confirmAgain": "Xác nhận hủy? Sau khi hủy, AI phụ trợ sẽ tiếp tục yêu cầu khấu trừ.",

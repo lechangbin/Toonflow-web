@@ -939,7 +939,42 @@
         "imageSelected": "この画像を選択しました",
         "imageDeleted": "この画像を削除しました",
         "imageSaved": "画像を保存しました",
-        "completed": "完了"
+        "completed": "完了",
+        "refsTitle": "参照画像（設定済み）",
+        "refsManageHint": "参照画像と最終プロンプトは「アセット設定」で管理され、現在の順序で送信されます",
+        "errors": {
+          "projectNotFound": "プロジェクトが存在しないか切り替わりました。更新して再試行してください",
+          "assetNotFound": "アセットが存在しないか削除されました。更新して再試行してください",
+          "assetProjectMismatch": "アセットが現在のプロジェクトと一致しません。更新して再試行してください",
+          "referenceNotFound": "参照画像が存在しないか削除されました。アセット設定で確認してください",
+          "referenceLimitExceeded": "参照画像が上限（最大 6 枚）を超えています。アセット設定で削除してください",
+          "descriptionRequired": "参照画像の説明がありません。アセット設定で入力してください",
+          "invalidMedia": "参照画像ファイルが無効か読み取れません。再アップロードしてください",
+          "orderMismatch": "参照画像の順序がサーバーと一致しません。開き直して再試行してください",
+          "promptRequired": "プロンプトを入力してください",
+          "invalidRequest": "リクエストパラメータが無効です",
+          "unsupportedAssetType": "サポートされていないアセットタイプです",
+          "scriptNotFound": "関連するスクリプトが存在しません",
+          "visualManualMissing": "ビジュアルマニュアルが未定義です",
+          "skillContractMissing": "生成スキル契約が不足しています",
+          "malformedOutput": "モデル出力がスキーマに一致しません",
+          "missingAssetResult": "モデル出力に一部のアセットが含まれていません",
+          "duplicateAssetResult": "モデル出力に重複したアセットが含まれています",
+          "unknownAssetResult": "モデル出力に不明なアセットが含まれています",
+          "assetTypeMismatch": "モデル出力のアセットタイプがデータベースと一致しません",
+          "derivedMismatch": "モデル出力の派生情報がデータベースと一致しません",
+          "referenceBindingMismatch": "モデル出力の参照バインディングが手動契約と一致しません",
+          "analysisFailed": "一括アセット分析の呼び出しに失敗しました",
+          "languageProfileNotAvailable": "要求された言語はまだ利用できません",
+          "promptNotGenerated": "先にプロンプトを生成してから画像を生成してください",
+          "stalePromptRecord": "プロンプトの有効期限が切れています。プロンプトを再生成してください",
+          "referenceMediaUnreadable": "参照画像ファイルが存在しないか読み取れません",
+          "referenceMediaInvalid": "参照画像ファイルが無効です",
+          "imageGenerationFailed": "画像生成に失敗しました。再試行してください",
+          "imagePersistenceFailed": "生成画像の保存に失敗しました",
+          "cancelled": "生成はキャンセルされました"
+        }
+
       },
       "config": {
         "header": "アセット設定",
@@ -998,7 +1033,9 @@
         "imageDone": "画像の生成が完了しました",
         "imageGenFail": "画像の生成に失敗しました",
         "unknownError": "不明なエラー",
-        "promptGenCancelled": "生成がキャンセルされました"
+        "promptGenCancelled": "生成がキャンセルされました",
+        "skippedAssets": "{count} 件のアセットをスキップしました：{detail}"
+
       },
       "confirmCancellation": "キャンセルの確認",
       "confirmAgain": "キャンセルを確認しますか?キャンセル後も、バックエンド AI は控除を要求し続けます。",

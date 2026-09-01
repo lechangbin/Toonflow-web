@@ -324,3 +324,288 @@ export function referenceMediaUrl(apiBaseUrl: string, mediaPath: string): string
   const path = (mediaPath ?? "").replace(/^\/+/, "");
   return origin + "/oss/" + path;
 }
+
+/* ---------------------------------------------------------------------------
+ * Issue #35：Asset 图片生成契约（单个与批量）。
+ *
+ * 单个与批量图片生成由后端从同一领域契约解析持久化的最终 prompt 与
+ * 有序 Asset References（服务端解析），前端不再走 legacy 临时参考图
+ * 上传路径（本地 FileReader → base64）：
+ * - 生成请求沿用既有端点 /assetsGenerate/generateAssets 与
+ *   /assetsGenerate/batchGenerateImageAssets 的字段形状，不携带 base64，
+ *   也不携带任何参考图占位字段；0 张参考图的资产保持纯文本请求。
+ * - buildGenerationReferenceInputs 的输出在发送前做本地校验与形状归一：
+ *   0 张返回空数组（调用方整体省略参考图字段），1~6 张保持用户排序与
+ *   人工意图，第 7 张或描述缺失在提交前被阻止。
+ * - 后端稳定错误信封 kind 经 ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS
+ *   映射为用户可理解的 i18n 文案键（7 个语言文件同步维护）。
+ * ------------------------------------------------------------------------- */
+
+/** 生成参考图输入（buildGenerationReferenceInputs 的输出形状）。 */
+export type GenerationReferenceInput = ReturnType<typeof buildGenerationReferenceInputs>[number];
+
+/**
+ * 后端 Asset Prompt 域稳定错误 kind（assetBriefContract.ts 的
+ * AssetPromptFailureKind 镜像）。图片生成链路经提示词记录解析可达。
+ */
+export type AssetPromptFailureKind =
+  | "invalidRequest"
+  | "projectNotFound"
+  | "assetNotFound"
+  | "assetProjectMismatch"
+  | "unsupportedAssetType"
+  | "scriptNotFound"
+  | "visualManualMissing"
+  | "skillContractMissing"
+  | "malformedOutput"
+  | "missingAssetResult"
+  | "duplicateAssetResult"
+  | "unknownAssetResult"
+  | "assetTypeMismatch"
+  | "derivedMismatch"
+  | "referenceBindingMismatch"
+  | "analysisFailed"
+  | "languageProfileNotAvailable"
+  | "promptNotGenerated"
+  | "stalePromptRecord"
+  | "referenceLimitExceeded";
+
+/** 后端图片生成专属稳定错误 kind（assetImageGeneration.ts 的扩展 kind）。 */
+export type AssetImageGenerationBackendFailureKind =
+  | AssetPromptFailureKind
+  | "referenceMediaUnreadable"
+  | "referenceMediaInvalid"
+  | "imageGenerationFailed"
+  | "imagePersistenceFailed"
+  | "cancelled";
+
+/** 生成流程本地校验失败 kind：后端稳定错误 kind + 前端提示词校验。 */
+export type AssetImageGenerationFailureKind =
+  | AssetReferenceFailureKind
+  | AssetImageGenerationBackendFailureKind
+  | "promptRequired";
+
+/** 生成流程失败（含本地校验与后端稳定错误）。 */
+export interface AssetImageGenerationFailure {
+  kind: AssetImageGenerationFailureKind;
+  message: string;
+}
+
+/** 稳定错误 kind → 用户可理解文案的 i18n 键（7 个语言文件同步维护）。 */
+export const ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS: Record<AssetImageGenerationFailureKind, string> = {
+  // Asset Reference 域（Issue #34）
+  projectNotFound: "workbench.assets.gen.errors.projectNotFound",
+  assetNotFound: "workbench.assets.gen.errors.assetNotFound",
+  assetProjectMismatch: "workbench.assets.gen.errors.assetProjectMismatch",
+  referenceNotFound: "workbench.assets.gen.errors.referenceNotFound",
+  referenceLimitExceeded: "workbench.assets.gen.errors.referenceLimitExceeded",
+  descriptionRequired: "workbench.assets.gen.errors.descriptionRequired",
+  invalidMedia: "workbench.assets.gen.errors.invalidMedia",
+  orderMismatch: "workbench.assets.gen.errors.orderMismatch",
+  // Asset Prompt 域（生成链路经提示词记录解析可达，Issue #35）
+  invalidRequest: "workbench.assets.gen.errors.invalidRequest",
+  unsupportedAssetType: "workbench.assets.gen.errors.unsupportedAssetType",
+  scriptNotFound: "workbench.assets.gen.errors.scriptNotFound",
+  visualManualMissing: "workbench.assets.gen.errors.visualManualMissing",
+  skillContractMissing: "workbench.assets.gen.errors.skillContractMissing",
+  malformedOutput: "workbench.assets.gen.errors.malformedOutput",
+  missingAssetResult: "workbench.assets.gen.errors.missingAssetResult",
+  duplicateAssetResult: "workbench.assets.gen.errors.duplicateAssetResult",
+  unknownAssetResult: "workbench.assets.gen.errors.unknownAssetResult",
+  assetTypeMismatch: "workbench.assets.gen.errors.assetTypeMismatch",
+  derivedMismatch: "workbench.assets.gen.errors.derivedMismatch",
+  referenceBindingMismatch: "workbench.assets.gen.errors.referenceBindingMismatch",
+  analysisFailed: "workbench.assets.gen.errors.analysisFailed",
+  languageProfileNotAvailable: "workbench.assets.gen.errors.languageProfileNotAvailable",
+  promptNotGenerated: "workbench.assets.gen.errors.promptNotGenerated",
+  stalePromptRecord: "workbench.assets.gen.errors.stalePromptRecord",
+  // 图片生成专属（Issue #35）
+  referenceMediaUnreadable: "workbench.assets.gen.errors.referenceMediaUnreadable",
+  referenceMediaInvalid: "workbench.assets.gen.errors.referenceMediaInvalid",
+  imageGenerationFailed: "workbench.assets.gen.errors.imageGenerationFailed",
+  imagePersistenceFailed: "workbench.assets.gen.errors.imagePersistenceFailed",
+  cancelled: "workbench.assets.gen.errors.cancelled",
+  // 本地校验
+  promptRequired: "workbench.assets.gen.errors.promptRequired",
+};
+
+/**
+ * 把失败 kind 经注入的翻译函数（调用方传 window.$t）映射为用户可理解
+ * 文案；未知 kind、无 kind 或翻译缺失时回退到原始 message。
+ */
+export function assetImageGenerationFailureText(
+  failure: { kind?: AssetImageGenerationFailureKind | string; message?: string },
+  translate: (key: string) => string,
+): string {
+  const kind = failure.kind;
+  if (kind && typeof kind === "string" && kind in ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS) {
+    const key = ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS[kind as AssetImageGenerationFailureKind];
+    const text = translate(key);
+    if (text && text !== key) return text;
+  }
+  return failure.message ?? "请求失败，请重试";
+}
+
+/** 单资产生成请求体（POST /assetsGenerate/generateAssets）。参考图由服务端解析。 */
+export interface SingleAssetImageGenerationRequest {
+  type: string;
+  projectId: number;
+  name: string;
+  prompt: string;
+  model: string;
+  id: number;
+  resolution: string;
+}
+
+/** 批量生成请求体（POST /assetsGenerate/batchGenerateImageAssets）。 */
+export interface BatchAssetImageGenerationRequest {
+  projectId: number;
+  model: string;
+  resolution: string;
+  concurrentCount: number;
+  items: Array<{ id: number; type: string; name: string; prompt: string }>;
+}
+
+/**
+ * 发送前的参考图本地校验与形状归一（#35）。
+ * 0 张参考图返回空数组（调用方整体省略参考图字段，不发送占位引用）；
+ * 1~6 张保持用户排序与人工意图；第 7 张与描述缺失在提交前被阻止。
+ */
+export function resolveGenerationReferences(
+  references: readonly AssetReferenceRecord[],
+): { ok: true; inputs: GenerationReferenceInput[] } | { ok: false; failure: AssetImageGenerationFailure } {
+  if (references.length > ASSET_REFERENCE_LIMIT) {
+    return { ok: false, failure: { kind: "referenceLimitExceeded", message: "单个资产最多支持 6 张参考图" } };
+  }
+  for (const reference of references) {
+    if (typeof reference.description !== "string" || reference.description.trim().length === 0) {
+      return { ok: false, failure: { kind: "descriptionRequired", message: "参考图描述为必填项，本版本必须由人工撰写" } };
+    }
+  }
+  return { ok: true, inputs: buildGenerationReferenceInputs(references) };
+}
+
+function resolveGenerationPrompt(prompt: string): { ok: true; prompt: string } | { ok: false; failure: AssetImageGenerationFailure } {
+  const trimmed = typeof prompt === "string" ? prompt.trim() : "";
+  if (!trimmed) {
+    return { ok: false, failure: { kind: "promptRequired", message: "请填写提示词" } };
+  }
+  return { ok: true, prompt: trimmed };
+}
+
+/**
+ * 单资产生成请求构建（发送前本地校验）。
+ * 校验失败返回稳定失败，不产生请求；成功时请求保持既有端点字段形状，
+ * 不携带 base64 与任何参考图占位字段（参考图由服务端解析持久化配置）。
+ */
+export function buildSingleAssetImageGenerationRequest(
+  input: {
+    projectId: number;
+    id: number;
+    type: string;
+    name: string;
+    prompt: string;
+    model: string;
+    resolution: string;
+    references: readonly AssetReferenceRecord[];
+  },
+): { ok: true; request: SingleAssetImageGenerationRequest; referenceInputs: GenerationReferenceInput[] } | { ok: false; failure: AssetImageGenerationFailure } {
+  const prompt = resolveGenerationPrompt(input.prompt);
+  if (!prompt.ok) return prompt;
+  const references = resolveGenerationReferences(input.references);
+  if (!references.ok) return references;
+  return {
+    ok: true,
+    request: {
+      type: input.type,
+      projectId: input.projectId,
+      name: input.name,
+      prompt: prompt.prompt,
+      model: input.model,
+      id: input.id,
+      resolution: input.resolution,
+    },
+    referenceInputs: references.inputs,
+  };
+}
+
+/** 批量生成中单个资产的输入（含发送前加载的持久化参考图）。 */
+export interface BatchGenerationAssetInput {
+  id: number;
+  type: string;
+  name: string;
+  prompt: string;
+  references: readonly AssetReferenceRecord[];
+}
+
+export interface BatchGenerationResolvedAsset {
+  id: number;
+  type: string;
+  name: string;
+  prompt: string;
+  referenceInputs: GenerationReferenceInput[];
+}
+
+export interface BatchGenerationSkippedAsset {
+  name: string;
+  failure: AssetImageGenerationFailure;
+}
+
+/**
+ * 批量生成发送前的逐资产校验（#35）：参考图配置或提示词无效的资产进入
+ * skipped（调用方提示并保留其配置，可修正后重试），其余资产保序进入
+ * submittable。全部无效时 submittable 为空，调用方据此不发送请求。
+ */
+export function resolveBatchGenerationAssets(assets: readonly BatchGenerationAssetInput[]): {
+  submittable: BatchGenerationResolvedAsset[];
+  skipped: BatchGenerationSkippedAsset[];
+} {
+  const submittable: BatchGenerationResolvedAsset[] = [];
+  const skipped: BatchGenerationSkippedAsset[] = [];
+  for (const asset of assets) {
+    const prompt = resolveGenerationPrompt(asset.prompt);
+    if (!prompt.ok) {
+      skipped.push({ name: asset.name, failure: prompt.failure });
+      continue;
+    }
+    const references = resolveGenerationReferences(asset.references);
+    if (!references.ok) {
+      skipped.push({ name: asset.name, failure: references.failure });
+      continue;
+    }
+    submittable.push({ id: asset.id, type: asset.type, name: asset.name, prompt: prompt.prompt, referenceInputs: references.inputs });
+  }
+  return { submittable, skipped };
+}
+
+/**
+ * 批量生成请求构建（输入应为 resolveBatchGenerationAssets 的 submittable）。
+ * 沿用既有 batchGenerateImageAssets 字段形状，不携带 base64 与参考图数据。
+ */
+export function buildBatchAssetImageGenerationRequest(input: {
+  projectId: number;
+  model: string;
+  resolution: string;
+  concurrentCount: number;
+  assets: ReadonlyArray<BatchGenerationResolvedAsset>;
+}): { ok: true; request: BatchAssetImageGenerationRequest; referenceInputs: GenerationReferenceInput[] } | { ok: false; failure: AssetImageGenerationFailure } {
+  if (input.assets.length === 0) {
+    return { ok: false, failure: { kind: "promptRequired", message: "没有可提交的资产" } };
+  }
+  const referenceInputs: GenerationReferenceInput[] = [];
+  const items: BatchAssetImageGenerationRequest["items"] = input.assets.map((asset) => {
+    referenceInputs.push(...asset.referenceInputs);
+    return { id: asset.id, type: asset.type, name: asset.name, prompt: asset.prompt };
+  });
+  return {
+    ok: true,
+    request: {
+      projectId: input.projectId,
+      model: input.model,
+      resolution: input.resolution,
+      concurrentCount: input.concurrentCount,
+      items,
+    },
+    referenceInputs,
+  };
+}

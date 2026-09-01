@@ -1174,7 +1174,42 @@
         "imageSelected": "已选择该图片",
         "imageDeleted": "已删除该图片",
         "imageSaved": "图片已保存",
-        "completed": "已完成"
+        "completed": "已完成",
+        "refsTitle": "参考图（已配置）",
+        "refsManageHint": "参考图与最终提示词在「资产配置」中管理，生成时按当前顺序提交",
+        "errors": {
+          "projectNotFound": "所属项目不存在或已切换，请刷新后重试",
+          "assetNotFound": "资产不存在或已被删除，请刷新后重试",
+          "assetProjectMismatch": "资产与当前项目不匹配，请刷新后重试",
+          "referenceNotFound": "参考图不存在或已被删除，请在资产配置中检查",
+          "referenceLimitExceeded": "参考图数量超过上限（最多 6 张），请在资产配置中删除多余参考图",
+          "descriptionRequired": "参考图描述缺失，请在资产配置中补充人工描述",
+          "invalidMedia": "参考图媒体文件无效或不可读，请重新上传",
+          "orderMismatch": "参考图顺序与服务器不一致，请重新打开后重试",
+          "promptRequired": "请填写提示词",
+          "invalidRequest": "请求参数无效",
+          "unsupportedAssetType": "资产类型不支持",
+          "scriptNotFound": "关联剧本不存在",
+          "visualManualMissing": "视觉手册缺失",
+          "skillContractMissing": "生成技能契约缺失",
+          "malformedOutput": "模型输出不符合规范",
+          "missingAssetResult": "模型输出缺失部分资产",
+          "duplicateAssetResult": "模型输出包含重复资产",
+          "unknownAssetResult": "模型输出包含未知资产",
+          "assetTypeMismatch": "模型输出的资产类型与数据库不一致",
+          "derivedMismatch": "模型输出的衍生身份与数据库不一致",
+          "referenceBindingMismatch": "模型输出的参考图绑定与人工契约不一致",
+          "analysisFailed": "批量资产分析调用失败",
+          "languageProfileNotAvailable": "请求的语言尚未启用",
+          "promptNotGenerated": "请先生成提示词后再生成图片",
+          "stalePromptRecord": "提示词已过期，请重新生成提示词",
+          "referenceMediaUnreadable": "参考图文件缺失或无法读取",
+          "referenceMediaInvalid": "参考图文件无效",
+          "imageGenerationFailed": "图片生成失败，请重试",
+          "imagePersistenceFailed": "生成图片保存失败",
+          "cancelled": "生成已取消"
+        }
+
       },
       "config": {
         "header": "资产配置",
@@ -1233,7 +1268,9 @@
         "imageDone": "图片生成完成",
         "imageGenFail": "图片生成失败",
         "unknownError": "未知错误",
-        "promptGenCancelled": "已取消生成"
+        "promptGenCancelled": "已取消生成",
+        "skippedAssets": "已跳过 {count} 个资产：{detail}"
+
       },
       "confirmCancellation": "确定取消",
       "confirmAgain": "确认取消吗？取消之后后台AI会继续调取扣费",
