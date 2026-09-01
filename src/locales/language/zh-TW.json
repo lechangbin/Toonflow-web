@@ -943,7 +943,21 @@
         "imageSelected": "已選擇該圖片",
         "imageDeleted": "已刪除該圖片",
         "imageSaved": "圖片已儲存",
-        "completed": "已完成"
+        "completed": "已完成",
+        "refsTitle": "參考圖（已配置）",
+        "refsManageHint": "參考圖與最終提示詞在「資產配置」中管理，生成時按目前順序提交",
+        "errors": {
+          "projectNotFound": "所屬專案不存在或已切換，請重新整理後重試",
+          "assetNotFound": "資產不存在或已被刪除，請重新整理後重試",
+          "assetProjectMismatch": "資產與目前專案不符，請重新整理後重試",
+          "referenceNotFound": "參考圖不存在或已被刪除，請在資產配置中檢查",
+          "referenceLimitExceeded": "參考圖數量超過上限（最多 6 張），請在資產配置中刪除多餘參考圖",
+          "descriptionRequired": "參考圖描述缺失，請在資產配置中補充人工描述",
+          "invalidMedia": "參考圖媒體檔案無效或無法讀取，請重新上傳",
+          "orderMismatch": "參考圖順序與伺服器不一致，請重新開啟後重試",
+          "promptRequired": "請填寫提示詞"
+        }
+
       },
       "config": {
         "header": "資產配置",
@@ -1002,7 +1016,9 @@
         "imageDone": "圖片生成完成",
         "imageGenFail": "圖片生成失敗",
         "unknownError": "未知錯誤",
-        "promptGenCancelled": "已取消生成"
+        "promptGenCancelled": "已取消生成",
+        "skippedAssets": "已跳過 {count} 個資產：{detail}"
+
       },
       "confirmCancellation": "確定取消",
       "confirmAgain": "確認取消嗎？\n取消之後後台AI會繼續調取扣費",
