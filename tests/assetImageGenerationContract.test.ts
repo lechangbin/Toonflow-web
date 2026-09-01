@@ -9,6 +9,7 @@ import {
   buildSingleAssetImageGenerationRequest,
   resolveBatchGenerationAssets,
   resolveGenerationReferences,
+  type AssetImageGenerationFailureKind,
   type AssetReferenceFailureKind,
   type AssetReferenceRecord,
 } from "../src/assetReferenceContract.ts";
@@ -230,8 +231,9 @@ test("批量生成在提示词为空时把该资产判定为跳过项（stale pr
   );
 });
 
-test("稳定错误 kind 与 i18n 键一一对应，覆盖全部后端 Asset Reference 错误", () => {
-  const backendKinds: AssetReferenceFailureKind[] = [
+test("稳定错误 kind 与 i18n 键一一对应，覆盖生成链路全部后端错误", () => {
+  const backendKinds: AssetImageGenerationFailureKind[] = [
+    // Asset Reference 域
     "projectNotFound",
     "assetNotFound",
     "assetProjectMismatch",
@@ -240,11 +242,35 @@ test("稳定错误 kind 与 i18n 键一一对应，覆盖全部后端 Asset Refe
     "descriptionRequired",
     "invalidMedia",
     "orderMismatch",
+    // Asset Prompt 域（生成链路经提示词记录解析可达）
+    "invalidRequest",
+    "unsupportedAssetType",
+    "scriptNotFound",
+    "visualManualMissing",
+    "skillContractMissing",
+    "malformedOutput",
+    "missingAssetResult",
+    "duplicateAssetResult",
+    "unknownAssetResult",
+    "assetTypeMismatch",
+    "derivedMismatch",
+    "referenceBindingMismatch",
+    "analysisFailed",
+    "languageProfileNotAvailable",
+    "promptNotGenerated",
+    "stalePromptRecord",
+    // 图片生成专属
+    "referenceMediaUnreadable",
+    "referenceMediaInvalid",
+    "imageGenerationFailed",
+    "imagePersistenceFailed",
+    "cancelled",
   ];
   for (const kind of backendKinds) {
     const key = ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS[kind];
     assert.equal(typeof key, "string", `kind ${kind} 缺少 i18n 键`);
     assert.ok(key.startsWith("workbench.assets.gen.errors."), `kind ${kind} 的 i18n 键应位于 workbench.assets.gen.errors 下`);
+    assert.equal(key, `workbench.assets.gen.errors.${kind}`, `kind ${kind} 的 i18n 键应与 kind 一一对应`);
   }
   // 本地校验 kind 同样提供可展示文案键
   assert.equal(ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS.promptRequired, "workbench.assets.gen.errors.promptRequired");
