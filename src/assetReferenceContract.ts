@@ -344,8 +344,46 @@ export function referenceMediaUrl(apiBaseUrl: string, mediaPath: string): string
 /** 生成参考图输入（buildGenerationReferenceInputs 的输出形状）。 */
 export type GenerationReferenceInput = ReturnType<typeof buildGenerationReferenceInputs>[number];
 
+/**
+ * 后端 Asset Prompt 域稳定错误 kind（assetBriefContract.ts 的
+ * AssetPromptFailureKind 镜像）。图片生成链路经提示词记录解析可达。
+ */
+export type AssetPromptFailureKind =
+  | "invalidRequest"
+  | "projectNotFound"
+  | "assetNotFound"
+  | "assetProjectMismatch"
+  | "unsupportedAssetType"
+  | "scriptNotFound"
+  | "visualManualMissing"
+  | "skillContractMissing"
+  | "malformedOutput"
+  | "missingAssetResult"
+  | "duplicateAssetResult"
+  | "unknownAssetResult"
+  | "assetTypeMismatch"
+  | "derivedMismatch"
+  | "referenceBindingMismatch"
+  | "analysisFailed"
+  | "languageProfileNotAvailable"
+  | "promptNotGenerated"
+  | "stalePromptRecord"
+  | "referenceLimitExceeded";
+
+/** 后端图片生成专属稳定错误 kind（assetImageGeneration.ts 的扩展 kind）。 */
+export type AssetImageGenerationBackendFailureKind =
+  | AssetPromptFailureKind
+  | "referenceMediaUnreadable"
+  | "referenceMediaInvalid"
+  | "imageGenerationFailed"
+  | "imagePersistenceFailed"
+  | "cancelled";
+
 /** 生成流程本地校验失败 kind：后端稳定错误 kind + 前端提示词校验。 */
-export type AssetImageGenerationFailureKind = AssetReferenceFailureKind | "promptRequired";
+export type AssetImageGenerationFailureKind =
+  | AssetReferenceFailureKind
+  | AssetImageGenerationBackendFailureKind
+  | "promptRequired";
 
 /** 生成流程失败（含本地校验与后端稳定错误）。 */
 export interface AssetImageGenerationFailure {
@@ -355,6 +393,7 @@ export interface AssetImageGenerationFailure {
 
 /** 稳定错误 kind → 用户可理解文案的 i18n 键（7 个语言文件同步维护）。 */
 export const ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS: Record<AssetImageGenerationFailureKind, string> = {
+  // Asset Reference 域（Issue #34）
   projectNotFound: "workbench.assets.gen.errors.projectNotFound",
   assetNotFound: "workbench.assets.gen.errors.assetNotFound",
   assetProjectMismatch: "workbench.assets.gen.errors.assetProjectMismatch",
@@ -363,6 +402,30 @@ export const ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS: Record<AssetImageGenerati
   descriptionRequired: "workbench.assets.gen.errors.descriptionRequired",
   invalidMedia: "workbench.assets.gen.errors.invalidMedia",
   orderMismatch: "workbench.assets.gen.errors.orderMismatch",
+  // Asset Prompt 域（生成链路经提示词记录解析可达，Issue #35）
+  invalidRequest: "workbench.assets.gen.errors.invalidRequest",
+  unsupportedAssetType: "workbench.assets.gen.errors.unsupportedAssetType",
+  scriptNotFound: "workbench.assets.gen.errors.scriptNotFound",
+  visualManualMissing: "workbench.assets.gen.errors.visualManualMissing",
+  skillContractMissing: "workbench.assets.gen.errors.skillContractMissing",
+  malformedOutput: "workbench.assets.gen.errors.malformedOutput",
+  missingAssetResult: "workbench.assets.gen.errors.missingAssetResult",
+  duplicateAssetResult: "workbench.assets.gen.errors.duplicateAssetResult",
+  unknownAssetResult: "workbench.assets.gen.errors.unknownAssetResult",
+  assetTypeMismatch: "workbench.assets.gen.errors.assetTypeMismatch",
+  derivedMismatch: "workbench.assets.gen.errors.derivedMismatch",
+  referenceBindingMismatch: "workbench.assets.gen.errors.referenceBindingMismatch",
+  analysisFailed: "workbench.assets.gen.errors.analysisFailed",
+  languageProfileNotAvailable: "workbench.assets.gen.errors.languageProfileNotAvailable",
+  promptNotGenerated: "workbench.assets.gen.errors.promptNotGenerated",
+  stalePromptRecord: "workbench.assets.gen.errors.stalePromptRecord",
+  // 图片生成专属（Issue #35）
+  referenceMediaUnreadable: "workbench.assets.gen.errors.referenceMediaUnreadable",
+  referenceMediaInvalid: "workbench.assets.gen.errors.referenceMediaInvalid",
+  imageGenerationFailed: "workbench.assets.gen.errors.imageGenerationFailed",
+  imagePersistenceFailed: "workbench.assets.gen.errors.imagePersistenceFailed",
+  cancelled: "workbench.assets.gen.errors.cancelled",
+  // 本地校验
   promptRequired: "workbench.assets.gen.errors.promptRequired",
 };
 
