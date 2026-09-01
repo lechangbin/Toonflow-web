@@ -1426,7 +1426,19 @@
   "workbench.script.extractAssets": "アセットを抽出",
   "promptManage": {
     "prompt": "プロンプト",
-    "searchPlaceholder": "プロンプトまたはパスを検索", "allCategories": "すべてのカテゴリ", "promptCount": "{count} 件", "refresh": "更新", "catalogAriaLabel": "プロンプト一覧", "customized": "カスタム", "unsaved": "未保存", "restoreDefault": "既定値に戻す", "save": "保存", "profileNotice": "Video Prompt Profile は保存前に検証されます。", "editorPlaceholder": "プロンプトを入力", "selectPrompt": "左からプロンプトを選択", "empty": "一致するプロンプトはありません", "loadFailed": "読み込みに失敗しました", "saveSuccess": "保存しました", "saveFailed": "保存に失敗しました", "discardConfirm": "未保存の変更を破棄しますか？", "restoreConfirm": "既定値に戻しますか？", "restoreSuccess": "既定値に戻しました", "restoreFailed": "復元に失敗しました", "cancel": "キャンセル",
+    "customized": "カスタム",
+    "restoreDefault": "既定値に戻す",
+    "save": "保存",
+    "profileNotice": "Video Prompt Profile は保存前に検証されます。",
+    "editorPlaceholder": "プロンプトを入力",
+    "empty": "プロンプトはありません",
+    "loadFailed": "読み込みに失敗しました",
+    "saveSuccess": "保存しました",
+    "saveFailed": "保存に失敗しました",
+    "restoreConfirm": "既定値に戻しますか？",
+    "restoreSuccess": "既定値に戻しました",
+    "restoreFailed": "復元に失敗しました",
+    "cancel": "キャンセル",
     "categories": { "system": "システム", "scriptAgent": "Script Agent", "productionAgent": "Production Agent", "agentSkill": "Agent Skill", "visualSkill": "Visual Skill", "storySkill": "Director Skill", "videoProfile": "Video Prompt Profile", "modelPrompt": "Model Prompt" }
   },
   "hello": {
