@@ -7,13 +7,14 @@
 // 类型定义
 // ============================================================
 
-type VideoMode =
-  | "singleImage" //单图参考
-  | "startEndRequired" //首尾帧（两张都得有）
-  | "endFrameOptional" //首尾帧（尾帧可选）
-  | "startFrameOptional" //首尾帧（首帧可选）
-  | "text" //文本
-  | (`videoReference:${number}` | `imageReference:${number}` | `audioReference:${number}`)[]; //多参考（数字代表限制数量）
+type VideoCapabilityId = "text-to-video" | "image-to-video" | "first-last-frame" | "keyframe-to-video";
+type VideoInputRole = "source-image" | "first-frame" | "intermediate-keyframe" | "last-frame";
+type VideoAudioContract =
+  | { generation: "none"; policy: "none" }
+  | { generation: "native"; policy: "always" | "optional" };
+type VideoDurations =
+  | { kind: "integer-range"; min: number; max: number; step: number }
+  | { kind: "values"; values: number[] };
 
 interface TextModel {
   name: string;
@@ -34,10 +35,20 @@ interface VideoModel {
   name: string;
   modelName: string;
   type: "video";
-  mode: VideoMode[];
   associationSkills?: string;
-  audio: "optional" | false | true;
-  durationResolutionMap: { duration: number[]; resolution: string[] }[];
+  capabilities: {
+    id: VideoCapabilityId;
+    promptProfileId: string;
+    inputs: { role: VideoInputRole; mediaType: "image"; required: boolean }[];
+    transitions?: { kind: "adjacent-keyframes" };
+    audio: VideoAudioContract;
+    outputPresets: {
+      id: string;
+      resolution: `${number}p`;
+      durations: VideoDurations;
+      aspectRatios: ("16:9" | "9:16")[];
+    }[];
+  }[];
 }
 
 interface TTSModel {
@@ -71,15 +82,39 @@ interface ImageConfig {
   aspectRatio: `${number}:${number}`;
 }
 
-interface VideoConfig {
-  duration: number;
-  resolution: string;
-  aspectRatio: "16:9" | "9:16";
-  prompt: string;
-  referenceList?: ReferenceList[];
-  audio?: boolean;
-  mode: VideoMode[];
+interface ResolvedImage {
+  mediaType: "image";
+  base64: string;
 }
+
+interface VideoCommandBase {
+  modelId: string;
+  prompt: string;
+  output: {
+    presetId: string;
+    duration: number;
+    resolution: `${number}p`;
+    aspectRatio: "16:9" | "9:16";
+  };
+  audio: { generation: "none" } | { generation: "native"; enabled: boolean };
+  resumeTask?: { videoId?: string; taskId?: string; retry?: number };
+  onTaskCheckpoint?: (checkpoint: unknown) => Promise<void> | void;
+}
+
+type VideoGenerationCommand =
+  | (VideoCommandBase & { capabilityId: "text-to-video" })
+  | (VideoCommandBase & { capabilityId: "image-to-video"; sourceImage: ResolvedImage })
+  | (VideoCommandBase & {
+      capabilityId: "first-last-frame";
+      firstFrame: ResolvedImage;
+      lastFrame: ResolvedImage;
+    })
+  | (VideoCommandBase & {
+      capabilityId: "keyframe-to-video";
+      firstFrame: ResolvedImage;
+      intermediateKeyframe?: ResolvedImage;
+      lastFrame: ResolvedImage;
+    });
 
 interface TTSConfig {
   text: string;
@@ -121,7 +156,7 @@ declare const exports: {
   vendor: VendorConfig;
   textRequest: (m: TextModel) => any; //文本模型
   imageRequest: (c: ImageConfig, m: ImageModel) => Promise<string>; //图片模型，返回有头base64字符串
-  videoRequest: (c: VideoConfig, m: VideoModel) => Promise<string>; //视频模型，返回有头base64字符串
+  videoRequest: (c: VideoGenerationCommand, m: VideoModel) => Promise<string>; //视频模型，返回有头base64字符串或结果URL
   ttsRequest: (c: TTSConfig, m: TTSModel) => Promise<string>; //（暂未开放）语音模型，返回有头base64字符串
   checkForUpdates?: () => Promise<{ hasUpdate: boolean; latestVersion: string; notice: string }>; //检查更新函数，返回是否有更新和最新版本号和更公告（支持Markdown格式）
   updateVendor?: () => Promise<string>; //更新函数，返回最新的代码文本
@@ -159,7 +194,7 @@ const imageRequest = async (config: ImageConfig, model: ImageModel): Promise<str
   return "";
 };
 
-const videoRequest = async (config: VideoConfig, model: VideoModel): Promise<string> => {
+const videoRequest = async (config: VideoGenerationCommand, model: VideoModel): Promise<string> => {
   return "";
 };
 
@@ -232,7 +267,7 @@ export {};
  *    所有变量、函数一律使用小驼峰命名（camelCase），禁止使用 UPPER_SNAKE_CASE。
  *
  * 5. 不需要重新声明类型
- *    本文件顶部已完整定义了所有接口和类型（VendorConfig、ImageConfig、VideoConfig、
+ *    本文件顶部已完整定义了所有接口和类型（VendorConfig、ImageConfig、VideoGenerationCommand、
  *    TTSConfig、TextModel、ImageModel、VideoModel、TTSModel、ReferenceList、PollResult 等），
  *    AI 生成代码时直接使用即可，不要重复声明。
  *
@@ -241,32 +276,29 @@ export {};
  *    - imageRequest(config, model)：返回有头 base64 字符串（如 "data:image/png;base64,..."）。
  *      config.referenceList 为 Extract<ReferenceList, { type: "image" }>[] 类型，
  *      每个引用条目均为 base64 形式（sourceType 固定为 "base64"）。
- *    - videoRequest(config, model)：返回有头 base64 字符串（如 "data:video/mp4;base64,..."）。
- *      config.referenceList 为 ReferenceList[] 类型，可包含 image / video / audio 三种引用，
- *      每个引用条目均为 base64 形式（sourceType 固定为 "base64"）。
- *      config.mode 为当前激活的视频模式数组，需根据 mode 决定如何使用 referenceList。
+ *    - videoRequest(config, model)：返回有头 base64 字符串或视频结果 URL。
+ *      config 是按 capabilityId 区分的 VideoGenerationCommand；通过 sourceImage、firstFrame、
+ *      intermediateKeyframe、lastFrame 读取显式语义输入，不得按数组顺序猜测角色。
  *    - ttsRequest(config, model)：返回有头 base64 字符串（如 "data:audio/mp3;base64,..."）。
  *      config.referenceList 为 Extract<ReferenceList, { type: "audio" }>[] 类型（音频参考）。
  *    当 API 返回的是 URL 而非二进制数据时，使用 urlToBase64(url) 转换。
  *
- * 7. ReferenceList 与 VideoMode 说明
+ * 7. Video Capability 与语义输入说明
  *    ReferenceList 是统一的多媒体引用类型，每个条目包含：
  *      - type: "image" | "audio" | "video"（媒体类型）
  *      - sourceType: "base64"（当前模板固定为 base64）
  *      - base64（对应的数据）
  *
- *    VideoMode 定义了视频模型支持的输入模式：
- *      - "text"：纯文本生成视频
- *      - "singleImage"：单张首帧图片
- *      - "startEndRequired"：首尾帧（两张都必须提供）
- *      - "endFrameOptional"：首尾帧（尾帧可选）
- *      - "startFrameOptional"：首尾帧（首帧可选）
- *      - 数组形式如 ["imageReference:9", "videoReference:3", "audioReference:3"]：
- *        多模态参考模式，数字表示该类型的最大数量限制。
+ *    VideoModel.capabilities 明确声明模型支持的生成能力、语义输入、音频策略和输出预设。
+ *      - text-to-video：不接受图片输入。
+ *      - image-to-video：使用 sourceImage。
+ *      - first-last-frame：使用 firstFrame 与 lastFrame。
+ *      - keyframe-to-video：使用 firstFrame、可选 intermediateKeyframe 与 lastFrame，
+ *        并声明 transitions.kind 为 adjacent-keyframes。
  *
- *    在 videoRequest 中，config.mode 表示当前选择的模式，需根据其值决定：
- *      - 如何从 config.referenceList 中提取对应类型的引用
- *      - 如何构造 API 请求体中的图片/视频/音频参数
+ *    videoRequest 接收按 capabilityId 区分的 VideoGenerationCommand。不要依赖图片数组顺序，
+ *    不要重新引入 mode、referenceList 或内联 prompt 配置。output 必须匹配 capability 的预设，
+ *    audio 必须遵守 capability 声明；provider 的任务 ID 应通过 onTaskCheckpoint 持久化以支持恢复。
  *
  * 8. 异步任务处理
  *    对于视频生成等需要轮询的异步任务，使用全局的 pollTask 函数：
@@ -292,9 +324,8 @@ export {};
  *     - version：语义化版本格式 "x.y"。
  *     - inputs：根据目标 API 所需的认证信息配置（API Key、Secret、请求地址等）。
  *     - models：根据目标平台支持的模型列表填写，注意正确设置 type 和各模型特有字段。
- *       - VideoModel 的 mode 对应 API 支持的输入模式（参见规则 7 的 VideoMode 说明）。
- *       - VideoModel 的 audio 字段：true（始终生成音频）、false（不生成）、"optional"（用户可选）。
- *       - VideoModel 的 durationResolutionMap 对应各时长下可选的分辨率。
+ *       - VideoModel 必须提供非空 capabilities，禁止使用旧 mode/audio/durationResolutionMap 字段。
+ *       - 每个 Capability 必须绑定已有的 promptProfileId，并显式声明 inputs、audio 与 outputPresets。
  *       - VideoModel 的 associationSkills 可选，用于描述模型的特殊能力。
  *       - ImageModel 的 mode 对应 API 支持的生图模式（"text" 纯文本、"singleImage" 单图参考、"multiReference" 多图参考）。
  *       - TTSModel 的 voices 对应可选的音色列表。

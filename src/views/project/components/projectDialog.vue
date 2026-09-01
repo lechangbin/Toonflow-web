@@ -36,15 +36,18 @@
               </div>
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.videoModelData')">
-              <div class="ac" style="gap: 5px; width: 100%">
-                <modelSelect v-model="formState.videoModel" type="video" @change="changeFn" :changeConfig="true" />
-                <t-select v-model="formState.mode" class="paramSelect ml-5" :placeholder="$t('workbench.production.editImage.mode')">
-                  <t-option v-for="value in mode" :key="value.value" :value="value.value" :label="value.label" />
+              <div class="ac" style="gap: 5px; width: 100%; flex-wrap: wrap">
+                <modelSelect v-model="formState.videoModelSelection" type="video" @change="changeVideoModel" :changeConfig="true" />
+                <t-select v-model="formState.videoCapabilityId" class="paramSelect ml-5" placeholder="Video Capability" @change="changeCapability">
+                  <t-option v-for="value in capabilityOptions" :key="value.value" :value="value.value" :label="value.label" />
+                </t-select>
+                <t-select v-model="formState.videoOutputPresetId" class="paramSelect ml-5" placeholder="Output preset" @change="changePreset">
+                  <t-option v-for="value in presetOptions" :key="value.value" :value="value.value" :label="value.label" />
                 </t-select>
               </div>
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.videoRatio')">
-              <t-select v-model="formState.videoRatio" :options="RATIO_OPTIONS" />
+              <t-select v-model="formState.videoRatio" :options="ratioOptions" />
             </t-form-item>
             <t-form-item :label="$t('workbench.project.dialog.novelIntro')">
               <t-textarea
@@ -190,7 +193,7 @@
                     <t-tab-panel v-for="tab in visualManualTabData" :key="tab.value" :value="tab.value" :label="tab.label">
                       <MdEditor
                         v-model="tab.data"
-                        :theme="themeSetting.mode"
+                        :theme="themeSetting.mode === 'auto' ? 'light' : themeSetting.mode"
                         :toolbars="promptToolbars"
                         :footers="[]"
                         :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
@@ -261,7 +264,7 @@
                     <t-tab-panel v-for="tab in directorManualTabData" :key="tab.value" :value="tab.value" :label="tab.label">
                       <MdEditor
                         v-model="tab.data"
-                        :theme="themeSetting.mode"
+                        :theme="themeSetting.mode === 'auto' ? 'light' : themeSetting.mode"
                         :toolbars="promptToolbars"
                         :footers="[]"
                         :placeholder="$t('workbench.project.dialog.promptPlaceholder')"
@@ -290,49 +293,26 @@ import type { ToolbarNames } from "md-editor-v3";
 import modelSelect from "@/components/modelSelect.vue";
 import type { TabValue } from "tdesign-vue-next";
 import { DialogPlugin } from "tdesign-vue-next";
+import type { Project } from "@/stores/project";
+import {
+  findCatalogModel,
+  splitVideoModelSelection,
+  type VideoCapabilityContract,
+  type VideoCapabilityId,
+  type VideoModelContract,
+} from "@/videoContract";
+import { getVideoCapabilityCatalog } from "@/utils/videoCapabilityCatalog";
 
 const addProjectShow = defineModel<boolean>();
 const props = defineProps<{
-  projectData?: ProjectData | null;
+  projectData?: Project | null;
 }>();
 const emit = defineEmits<{
-  (e: "add", data: ProjectFormData): void;
-  (
-    e: "edit",
-    data: {
-      id: string;
-      name: string;
-      intro: string;
-      type: string;
-      artStyle: string;
-      directorManual: string;
-      videoRatio: string;
-      imageModel: string;
-      videoModel: string;
-      projectType: string;
-      imageQuality: "1K" | "2K" | "4K" | "";
-      mode: string;
-    },
-  ): void;
+  (e: "add", data: ProjectPayload): void;
+  (e: "edit", data: ProjectPayload & { id: string }): void;
 }>();
 
 // ===== 类型定义 =====
-interface ProjectData {
-  id: string;
-  name: string;
-  intro: string;
-  type: string;
-  artStyle: string | null;
-  directorManual: string | null;
-  videoRatio: string | null;
-  imageModel: string;
-  videoModel: string;
-  projectType: string;
-  imageQuality: "1K" | "2K" | "4K" | "";
-  visualManual?: string;
-  mode: string;
-}
-
 interface ProjectFormData {
   projectType: string;
   name: string;
@@ -342,10 +322,16 @@ interface ProjectFormData {
   directorManual: string;
   videoRatio: string;
   imageModel: string;
-  videoModel: string;
+  videoModelSelection: string;
+  videoVendorId: string;
+  videoModelId: string;
+  videoCapabilityId: VideoCapabilityId | "";
+  videoOutputPresetId: string;
   imageQuality: "1K" | "2K" | "4K" | "";
-  mode: string;
 }
+type ProjectPayload = Omit<ProjectFormData, "videoModelSelection" | "videoCapabilityId"> & {
+  videoCapabilityId: VideoCapabilityId;
+};
 interface VisualManualItem {
   name: string;
   images?: string[];
@@ -383,11 +369,6 @@ const DEFAULT_TAB_DATA: () => Data[] = () => [
 const isEdit = computed(() => !!props.projectData);
 
 // ===== 常量 =====
-const RATIO_OPTIONS = [
-  { value: "16:9", label: "16:9" },
-  { value: "9:16", label: "9:16" },
-];
-
 const DEFAULT_FORM: () => ProjectFormData & { id: number; era: string; createTime: number; userId: number } = () => ({
   id: 0,
   projectType: "novel",
@@ -400,11 +381,37 @@ const DEFAULT_FORM: () => ProjectFormData & { id: number; era: string; createTim
   createTime: 0,
   userId: 0,
   imageModel: "",
-  videoModel: "",
+  videoModelSelection: "",
+  videoVendorId: "",
+  videoModelId: "",
+  videoCapabilityId: "",
+  videoOutputPresetId: "",
   imageQuality: "",
-  mode: "",
   directorManual: "",
 });
+
+const selectedVideoModel = ref<VideoModelContract | null>(null);
+const capabilityOptions = computed(() =>
+  (selectedVideoModel.value?.capabilities ?? []).map((capability) => ({
+    value: capability.id,
+    label: capabilityLabel(capability.id),
+  })),
+);
+const selectedCapability = computed<VideoCapabilityContract | null>(() =>
+  selectedVideoModel.value?.capabilities.find((capability) => capability.id === formState.value.videoCapabilityId) ?? null,
+);
+const presetOptions = computed(() =>
+  (selectedCapability.value?.outputPresets ?? []).map((preset) => ({
+    value: preset.id,
+    label: `${preset.resolution} · ${preset.id}`,
+  })),
+);
+const selectedPreset = computed(() =>
+  selectedCapability.value?.outputPresets.find((preset) => preset.id === formState.value.videoOutputPresetId) ?? null,
+);
+const ratioOptions = computed(() =>
+  (selectedPreset.value?.aspectRatios ?? ["16:9", "9:16"]).map((ratio) => ({ value: ratio, label: ratio })),
+);
 
 // ===== 表单 =====
 const formState = ref(DEFAULT_FORM());
@@ -422,42 +429,37 @@ function handleOk() {
   if (!formState.value.name) return window.$message.warning($t("workbench.project.msg.enterProjectName"));
   if (!formState.value.type) return window.$message.warning($t("workbench.project.msg.enterProjectType"));
   if (!formState.value.imageModel) return window.$message.warning($t("workbench.project.msg.enterImageModel"));
-  if (!formState.value.videoModel) return window.$message.warning($t("workbench.project.msg.enterVideoModel"));
+  if (!formState.value.videoModelSelection) return window.$message.warning($t("workbench.project.msg.enterVideoModel"));
   if (!formState.value.artStyle) return window.$message.warning($t("workbench.project.msg.enterArtStyle"));
   if (!formState.value.directorManual) return window.$message.warning($t("workbench.project.msg.directorManual"));
   if (!formState.value.videoRatio) return window.$message.warning($t("workbench.project.msg.enterVideoRatio"));
   if (!formState.value.intro) return window.$message.warning($t("workbench.project.msg.enterProjectIntro"));
   if (!formState.value.imageQuality) return window.$message.warning($t("workbench.project.msg.enterProjectQuality"));
-  if (!formState.value.mode) return window.$message.warning($t("workbench.project.msg.selectMode"));
+  if (!formState.value.videoCapabilityId || !formState.value.videoOutputPresetId) {
+    return window.$message.warning("请选择 Video Capability 和输出预设");
+  }
+  const payload: ProjectPayload = {
+    projectType: formState.value.projectType || "novel",
+    name: formState.value.name,
+    intro: formState.value.intro,
+    type: formState.value.type,
+    artStyle: formState.value.artStyle,
+    directorManual: formState.value.directorManual,
+    videoRatio: formState.value.videoRatio || "16:9",
+    imageModel: formState.value.imageModel,
+    imageQuality: formState.value.imageQuality,
+    videoVendorId: formState.value.videoVendorId,
+    videoModelId: formState.value.videoModelId,
+    videoCapabilityId: formState.value.videoCapabilityId,
+    videoOutputPresetId: formState.value.videoOutputPresetId,
+  };
   if (isEdit.value) {
     emit("edit", {
+      ...payload,
       id: formState.value.id as unknown as string,
-      name: formState.value.name,
-      intro: formState.value.intro,
-      type: formState.value.type,
-      artStyle: formState.value.artStyle,
-      videoRatio: formState.value.videoRatio,
-      imageModel: formState.value.imageModel,
-      videoModel: formState.value.videoModel,
-      projectType: formState.value.projectType || "novel",
-      directorManual: formState.value.directorManual,
-      imageQuality: formState.value.imageQuality,
-      mode: formState.value.mode,
     });
   } else {
-    emit("add", {
-      projectType: formState.value.projectType || "novel",
-      name: formState.value.name,
-      intro: formState.value.intro,
-      type: formState.value.type,
-      artStyle: formState.value.artStyle,
-      videoRatio: formState.value.videoRatio || "16:9",
-      imageModel: formState.value.imageModel,
-      videoModel: formState.value.videoModel,
-      imageQuality: formState.value.imageQuality,
-      directorManual: formState.value.directorManual,
-      mode: formState.value.mode,
-    });
+    emit("add", payload);
   }
   resetForm();
   addProjectShow.value = false;
@@ -481,6 +483,7 @@ const promptToolbars: ToolbarNames[] = [
 
 watch(addProjectShow, async (visible) => {
   if (visible) {
+    const catalog = await getVideoCapabilityCatalog();
     if (props.projectData) {
       formState.value = {
         ...DEFAULT_FORM(),
@@ -491,24 +494,21 @@ watch(addProjectShow, async (visible) => {
         artStyle: props.projectData.artStyle || "",
         videoRatio: props.projectData.videoRatio || "16:9",
         imageModel: props.projectData.imageModel || "",
-        videoModel: props.projectData.videoModel || "",
+        videoModelSelection:
+          props.projectData.videoVendorId && props.projectData.videoModelId
+            ? `${props.projectData.videoVendorId}:${props.projectData.videoModelId}`
+            : "",
+        videoVendorId: props.projectData.videoVendorId || "",
+        videoModelId: props.projectData.videoModelId || "",
+        videoCapabilityId: props.projectData.videoCapabilityId || "",
+        videoOutputPresetId: props.projectData.videoOutputPresetId || "",
         imageQuality: props.projectData.imageQuality || "",
         projectType: props.projectData.projectType || "novel",
-        mode: props.projectData.mode || "text",
         directorManual: props.projectData.directorManual || "",
       };
-      // 编辑模式下主动获取视频模型详情，填充 mode 列表以回显 label
-      if (props.projectData.videoModel) {
+      if (formState.value.videoModelSelection) {
         try {
-          const { data } = await axios.post("/modelSelect/getModelDetail", {
-            modelId: props.projectData.videoModel,
-          });
-          if (data?.mode) {
-            mode.value = data.mode.map((item: any) => ({
-              label: getModeLabel(item),
-              value: modeToKey(item),
-            }));
-          }
+          selectedVideoModel.value = findCatalogModel(catalog, formState.value.videoModelSelection).model;
         } catch (e) {
           // 获取失败不影响其他功能
         }
@@ -665,40 +665,42 @@ function deleteVisualManual(item: VisualManualItem) {
     },
   });
 }
-type VideoMode =
-  | "singleImage" //单图参考
-  | "startEndRequired" //首尾帧（两张都得有）
-  | "endFrameOptional" //首尾帧（尾帧可选）
-  | "startFrameOptional" //首尾帧（首帧可选）
-  | "text" //文本
-  | (`videoReference:${number}` | `imageReference:${number}` | `audioReference:${number}`)[]; //多参考（数字代表限制数量）
-const mode = ref<{ label: string; value: string }[]>([]);
-const MODE_LABEL: Record<string, string> = {
-  singleImage: $t("workbench.production.generate.modeSingleImage"),
-  startEndRequired: $t("workbench.production.generate.modeStartEnd"),
-  endFrameOptional: $t("workbench.production.generate.modeStartEnd"),
-  startFrameOptional: $t("workbench.production.generate.modeStartEnd"),
-  text: $t("workbench.production.generate.modeText"),
-  videoReference: $t("workbench.production.generate.modeVideoRef"),
-  imageReference: $t("workbench.production.generate.modeImageRef"),
-  audioReference: $t("workbench.production.generate.modeAudioRef"),
-};
-// 模式转换为统一的 key 形式，方便后续处理
-function getModeLabel(mode?: VideoMode): string {
-  if (!mode) return "";
-  if (Array.isArray(mode)) return mode.map((r) => MODE_LABEL[r.replace(/:.*$/, "")] ?? r).join("、");
-  return MODE_LABEL[mode] ?? mode;
+function capabilityLabel(id: VideoCapabilityId): string {
+  return {
+    "text-to-video": "文生视频",
+    "image-to-video": "图生视频",
+    "first-last-frame": "首尾帧",
+    "keyframe-to-video": "关键帧动画",
+  }[id];
 }
-//模式数组转换为字符串 key，方便在前端使用和比较
-function modeToKey(m: VideoMode): string {
-  return Array.isArray(m) ? JSON.stringify(m) : m;
+
+async function changeVideoModel(value: string) {
+  const catalog = await getVideoCapabilityCatalog();
+  const data = findCatalogModel(catalog, value).model;
+  selectedVideoModel.value = data;
+  const parsed = splitVideoModelSelection(value);
+  formState.value.videoVendorId = parsed.vendorId;
+  formState.value.videoModelId = parsed.modelId;
+  const preferred = data.capabilities.find((capability) => capability.id === formState.value.videoCapabilityId) ?? data.capabilities[0];
+  formState.value.videoCapabilityId = preferred?.id ?? "";
+  changeCapability(formState.value.videoCapabilityId);
 }
-//获取模式
-function changeFn(val: string, data: any) {
-  mode.value = data.mode.map((item: any) => ({
-    label: getModeLabel(item),
-    value: modeToKey(item),
-  }));
+
+function changeCapability(value: unknown) {
+  const capabilityId = String(value) as VideoCapabilityId | "";
+  formState.value.videoCapabilityId = capabilityId;
+  const capability = selectedVideoModel.value?.capabilities.find((item) => item.id === capabilityId);
+  formState.value.videoOutputPresetId = capability?.outputPresets[0]?.id ?? "";
+  changePreset(formState.value.videoOutputPresetId);
+}
+
+function changePreset(value: unknown) {
+  const presetId = String(value);
+  formState.value.videoOutputPresetId = presetId;
+  const preset = selectedCapability.value?.outputPresets.find((item) => item.id === presetId);
+  if (preset && !preset.aspectRatios.includes(formState.value.videoRatio as "16:9" | "9:16")) {
+    formState.value.videoRatio = preset.aspectRatios[0] ?? "16:9";
+  }
 }
 //导演手册
 interface DirectorManualItem {

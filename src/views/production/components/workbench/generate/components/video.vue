@@ -97,7 +97,7 @@ const emit = defineEmits<{
 const { project } = storeToRefs(projectStore());
 const episodesId = inject<Ref<number>>("episodesId")!;
 
-const selectVideoId = ref();
+const selectVideoId = computed(() => currentTrack.value?.selectVideoId ?? null);
 const videoCoverMap = ref<Record<string, string>>({});
 const videoPlayerVisible = ref(false);
 const playingVideoSrc = ref<string>();

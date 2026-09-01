@@ -19,6 +19,7 @@ import { cachedLocale, languageList } from "@/locales";
 import { initTheme } from "@/utils/theme";
 import { type GlobalConfigProvider } from "tdesign-vue-next";
 import { useI18n } from "vue-i18n";
+import { migrateLegacyWebApiBaseUrl } from "@/runtimeBaseUrl";
 
 const { locale } = useI18n();
 const { baseUrl, isElectron } = storeToRefs(settingStore());
@@ -78,14 +79,19 @@ async function getPort() {
   await nextTick();
   await nextTick();
   await nextTick();
-  try {
-    const res = await fetch("toonflow://getAppUrl");
-    const data = await res.json();
-    if (data?.url) {
-      baseUrl.value = data.url;
-      isElectron.value = true;
-    }
-  } catch (error) {}
+  const electronRuntime = Boolean((window as Window & { $electron?: unknown }).$electron) || navigator.userAgent.includes("Electron");
+  if (electronRuntime) {
+    try {
+      const res = await fetch("toonflow://getAppUrl");
+      const data = await res.json();
+      if (data?.url) {
+        baseUrl.value = data.url;
+        isElectron.value = true;
+      }
+    } catch (error) {}
+  } else {
+    baseUrl.value = migrateLegacyWebApiBaseUrl(baseUrl.value, window.location);
+  }
 
   loading.value = false;
 
