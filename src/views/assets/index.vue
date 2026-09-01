@@ -454,9 +454,11 @@ import addAssets from "./components/addAssets.vue";
 import addAudioAssets from "./components/addAudioAssets.vue";
 import generateImage from "./components/generateImage.vue";
 import assetConfig from "./components/assetConfig.vue";
+import { useAssetImageGeneration } from "@/composables/useAssetImageGeneration";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 const { otherSetting } = storeToRefs(settingStore());
+const { generateBatchAssetImage } = useAssetImageGeneration();
 
 const props = withDefaults(
   defineProps<{
@@ -771,51 +773,52 @@ async function handleBatchGenerateImage() {
   });
   if (validAssets.length === 0) return;
 
-  // 设置 state 为 '生成中'，让轮询自动接管状态跟踪
-  const validParentAssets = validAssets.filter((a) => selectedRowKeys.value.includes(a.id));
-  const validSubAssets = validAssets.filter((a) => selectedSubRowKeys.value.includes(a.id));
-  validParentAssets.forEach((asset) => {
+  batchGenerationShow.value = false;
+
+  const result = await generateBatchAssetImage({
+    projectId: Number(project.value?.id),
+    model: selectValue.value,
+    resolution: resolution.value,
+    concurrentCount: otherSetting.value.assetsBatchGenereateSize,
+    assets: validAssets.map((item) => ({
+      id: item.id,
+      type: item.type ?? "props",
+      name: item.name ?? $t("workbench.cornerScape.unnamed"),
+      prompt: item.prompt || item.describe,
+    })),
+  });
+
+  if (result.skipped.length > 0) {
+    // 参考图配置或提示词无效的资产被跳过：保留配置，修正后可直接重试
+    window.$message.warning(
+      $t("workbench.assets.batch.skippedAssets", {
+        count: result.skipped.length,
+        detail: result.skipped.map((item) => item.name + "：" + item.message).join("；"),
+      }),
+    );
+  }
+  if (!result.ok) {
+    window.$message.error(result.failure.message);
+    return;
+  }
+
+  // 仅把已提交的资产标记为「生成中」，让轮询自动接管状态跟踪
+  const submittedIds = result.submitted.map((item) => item.id);
+  const submittedAssets = validAssets.filter((asset) => submittedIds.includes(asset.id));
+  const submittedParentAssets = submittedAssets.filter((a) => selectedRowKeys.value.includes(a.id));
+  const submittedSubAssets = submittedAssets.filter((a) => selectedSubRowKeys.value.includes(a.id));
+  submittedParentAssets.forEach((asset) => {
     const target = tableData.value.find((row) => row.id === asset.id);
     if (target) target.state = "生成中";
   });
-  validSubAssets.forEach((asset) => {
+  submittedSubAssets.forEach((asset) => {
     tableData.value.forEach((row) => {
       const target = row.sonAssets?.find((sub) => sub.id === asset.id);
       if (target) target.state = "生成中";
     });
   });
-  selectedRowKeys.value = selectedRowKeys.value.filter((key) => !validAssets.some((a) => a.id === key));
-  selectedSubRowKeys.value = selectedSubRowKeys.value.filter((key) => !validAssets.some((a) => a.id === key));
-  batchGenerationShow.value = false;
-
-  try {
-    await axios.post("/assetsGenerate/batchGenerateImageAssets", {
-      projectId: project.value?.id,
-      model: selectValue.value,
-      resolution: resolution.value,
-      concurrentCount: otherSetting.value.assetsBatchGenereateSize,
-      items: validAssets.map((item) => ({
-        id: item.id,
-        type: item.type ?? "props",
-        name: item.name ?? $t("workbench.cornerScape.unnamed"),
-        prompt: item.prompt || item.describe,
-      })),
-    });
-  } catch (e: any) {
-    window.$message.error($t("workbench.assets.imageGenFail", { name: "", error: e.message ?? "" }));
-    validAssets.forEach((asset) => {
-      // 在父级和子级中都查找
-      const parentTarget = tableData.value.find((row) => row.id === asset.id);
-      if (parentTarget) {
-        parentTarget.state = "生成失败";
-      } else {
-        tableData.value.forEach((row) => {
-          const subTarget = row.sonAssets?.find((sub) => sub.id === asset.id);
-          if (subTarget) subTarget.state = "生成失败";
-        });
-      }
-    });
-  }
+  selectedRowKeys.value = selectedRowKeys.value.filter((key) => !submittedIds.includes(Number(key)));
+  selectedSubRowKeys.value = selectedSubRowKeys.value.filter((key) => !submittedIds.includes(Number(key)));
 }
 // 批量删除
 function handleBatchDelete() {
