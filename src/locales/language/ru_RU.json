@@ -1513,7 +1513,19 @@
   "workbench.script.extractAssets": "Извлечь ресурсы",
   "promptManage": {
     "prompt": "Промпт",
-    "searchPlaceholder": "Поиск промптов или путей", "allCategories": "Все категории", "promptCount": "Промптов: {count}", "refresh": "Обновить", "catalogAriaLabel": "Каталог промптов", "customized": "Изменён", "unsaved": "Не сохранено", "restoreDefault": "По умолчанию", "save": "Сохранить", "profileNotice": "Video Prompt Profile проверяется перед сохранением.", "editorPlaceholder": "Введите промпт", "selectPrompt": "Выберите промпт слева", "empty": "Ничего не найдено", "loadFailed": "Ошибка загрузки", "saveSuccess": "Промпт сохранён", "saveFailed": "Ошибка сохранения", "discardConfirm": "Отменить несохранённые изменения?", "restoreConfirm": "Восстановить значение по умолчанию?", "restoreSuccess": "Значение восстановлено", "restoreFailed": "Ошибка восстановления", "cancel": "Отмена",
+    "customized": "Изменён",
+    "restoreDefault": "По умолчанию",
+    "save": "Сохранить",
+    "profileNotice": "Video Prompt Profile проверяется перед сохранением.",
+    "editorPlaceholder": "Введите промпт",
+    "empty": "Промптов пока нет",
+    "loadFailed": "Ошибка загрузки",
+    "saveSuccess": "Промпт сохранён",
+    "saveFailed": "Ошибка сохранения",
+    "restoreConfirm": "Восстановить значение по умолчанию?",
+    "restoreSuccess": "Значение восстановлено",
+    "restoreFailed": "Ошибка восстановления",
+    "cancel": "Отмена",
     "categories": { "system": "Системные", "scriptAgent": "Script Agent", "productionAgent": "Production Agent", "agentSkill": "Agent Skill", "visualSkill": "Visual Skill", "storySkill": "Director Skill", "videoProfile": "Video Prompt Profile", "modelPrompt": "Model Prompt" }
   },
   "hello": {
