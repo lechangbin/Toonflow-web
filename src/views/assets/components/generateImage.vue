@@ -10,23 +10,28 @@
       @close-btn-click="handleCancel">
       <div class="data f">
         <t-card :bordered="false" :style="{ width: '40%' }">
-          <div class="uploadReferenceImage">
+          <div class="persistedReferences">
+            <!-- Derived Asset：不展示人工参考图，仅显示只读说明（Issue #38）。 -->
+            <t-alert v-if="isDerived" theme="info" :message="$t('workbench.assets.config.derivedNote')" />
+            <template v-else>
             <div class="jb">
-              <span style="font-size: 16px; font-weight: 900">{{ $t("workbench.assets.gen.uploadRef") }}</span>
-              <t-tag>{{ $t("workbench.assets.gen.optional") }}</t-tag>
+              <span style="font-size: 16px; font-weight: 900">{{ $t("workbench.assets.gen.refsTitle") }}</span>
+              <t-tag>{{ references.length }} / {{ ASSET_REFERENCE_LIMIT }}</t-tag>
             </div>
-            <div class="upload">
-              <t-upload
-                v-model="referenceFileList"
-                :autoUpload="autoUpload"
-                :disabled="generateLoading"
-                theme="image"
-                :abridgeName="[10, 8]"
-                draggable
-                action=""
-                accept="image/*"
-                :showImageFileName="showImageFileName" />
+            <t-alert v-if="referencesFailure" theme="error" :message="referencesFailure.message" class="referencesAlert" />
+            <div v-else-if="references.length === 0" class="refsEmpty">{{ $t("workbench.assets.config.empty") }}</div>
+            <div v-else class="refsList">
+              <div v-for="(item, index) in references" :key="item.id" class="refItem">
+                <img class="refThumb" :src="mediaUrl(item.mediaPath)" :alt="item.description" />
+                <div class="refMeta">
+                  <div class="refIndex">{{ index + 1 }}</div>
+                  <div class="refDesc" :title="item.description">{{ item.description }}</div>
+                  <t-tag v-if="item.visualRole" size="small">{{ item.visualRole }}</t-tag>
+                </div>
+              </div>
             </div>
+            <div class="refsHint">{{ $t("workbench.assets.gen.refsManageHint") }}</div>
+            </template>
           </div>
           <div class="rawPicturePrompt">
             <div class="jb">
@@ -143,9 +148,14 @@ import modelSelect from "@/components/modelSelect.vue";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import axios from "@/utils/axios";
+import settingStore from "@/stores/setting";
+import { ASSET_REFERENCE_LIMIT, isDerivedAsset, referenceMediaUrl, type AssetReferenceRecord } from "@/assetReferenceContract";
+import { useAssetImageGeneration, type AssetImageGenerationFailureView } from "@/composables/useAssetImageGeneration";
 const props = defineProps<{
   formData: {
     id?: number;
+    /** 后端父子关系字段：父资产 id（基础资产为 null），Derived Asset 判定依据。 */
+    assetsId?: number | null;
     name?: string;
     describe?: string;
     type?: string;
@@ -153,6 +163,9 @@ const props = defineProps<{
     src: string;
   };
 }>();
+
+/** Derived Asset：人工参考图不加载、不展示，父资产锚点由后端自动解析（Issue #38）。 */
+const isDerived = computed(() => isDerivedAsset(props.formData));
 
 //显示生成图片的弹窗
 const generateImageShow = defineModel({
@@ -167,12 +180,13 @@ function handleCancel() {
   stopPolling();
   emit("update");
 }
-//上传参考图片
-const referenceFileList = ref<any[]>([]);
-const autoUpload = ref(false);
-const showImageFileName = ref(false);
+//持久化参考图（在资产配置中管理，生成时由服务端从持久化配置解析）
+const references = ref<AssetReferenceRecord[]>([]);
+const referencesFailure = ref<AssetImageGenerationFailureView | null>(null);
 const generateLoading = ref(false);
 const selectValue = ref(""); //选择的模型
+const store = settingStore();
+const { loadReferences, generateSingleAssetImage } = useAssetImageGeneration();
 
 const value2 = ref("");
 //智能生成提示词
@@ -198,6 +212,20 @@ async function generatePrompt() {
   }
 }
 const emit = defineEmits(["update"]);
+//加载资产已持久化的参考图（生成时由服务端解析，此处仅展示用户配置）
+async function loadPersistedReferences() {
+  references.value = [];
+  referencesFailure.value = null;
+  const result = await loadReferences(Number(project.value?.id), Number(props.formData.id), props.formData);
+  if (result.ok) {
+    references.value = result.references;
+  } else {
+    referencesFailure.value = result.failure;
+  }
+}
+function mediaUrl(mediaPath: string): string {
+  return referenceMediaUrl(store.baseUrl, mediaPath);
+}
 const resolution = ref("1K");
 //生成图片
 async function handleGenerate() {
@@ -215,35 +243,25 @@ async function handleGenerate() {
   }
   generateLoading.value = true;
   try {
-    let referenceImageBase64 = "";
-    if (referenceFileList.value.length > 0) {
-      const file = referenceFileList.value[0].raw;
-      if (file instanceof File) {
-        referenceImageBase64 = await new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const base64 = e.target?.result as string;
-            resolve(base64);
-          };
-          reader.readAsDataURL(file);
-        });
-      }
-    }
-    await axios.post("/assetsGenerate/generateAssets", {
+    const result = await generateSingleAssetImage({
+      projectId: Number(project.value?.id),
+      id: Number(props.formData.id),
       type: props.formData.type ?? "props",
-      projectId: project.value?.id,
       name: props.formData.name ?? $t("workbench.assets.gen.unnamed"),
-      base64: referenceImageBase64,
       prompt: props.formData.prompt,
       model: selectValue.value,
-      id: props.formData.id,
       resolution: resolution.value,
+      asset: props.formData,
     });
+    if (!result.ok) {
+      // 生成失败保留提示词、模型与分辨率等全部配置，可直接重试
+      window.$message.error(result.failure.message);
+      fetchGeneratedImages();
+      return;
+    }
     window.$message.success($t("workbench.assets.gen.assetGenSuccess"));
+    await loadPersistedReferences();
     await fetchGeneratedImages();
-  } catch (e: any) {
-    window.$message.error(e.message ?? $t("workbench.assets.gen.assetGenFail"));
-    fetchGeneratedImages();
   } finally {
     generateLoading.value = false;
   }
@@ -288,11 +306,13 @@ watch(
   () => generateImageShow.value,
   (newVal) => {
     if (newVal) {
-      referenceFileList.value = [];
+      references.value = [];
+      referencesFailure.value = null;
       value2.value = "";
       selectedImageIndex.value = null;
       hoveredImageIndex.value = null;
       generateLoading.value = false;
+      loadPersistedReferences();
       fetchGeneratedImages();
     }
   },
@@ -389,9 +409,57 @@ async function onClick() {
 .generateImage {
   .data {
     gap: 20px;
-    .uploadReferenceImage {
-      .upload {
+    .persistedReferences {
+      .referencesAlert,
+      .refsEmpty {
         margin-top: 10px;
+      }
+      .refsList {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        max-height: 220px;
+        overflow-y: auto;
+        .refItem {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 6px;
+          border: 1px solid var(--td-component-border);
+          border-radius: var(--td-radius-medium);
+          .refThumb {
+            flex: 0 0 48px;
+            width: 48px;
+            height: 48px;
+            object-fit: cover;
+            border-radius: var(--td-radius-small);
+          }
+          .refMeta {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            .refIndex {
+              flex: 0 0 auto;
+              color: var(--td-text-color-secondary);
+              font-size: 12px;
+            }
+            .refDesc {
+              flex: 1;
+              min-width: 0;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            }
+          }
+        }
+      }
+      .refsHint {
+        margin-top: 8px;
+        color: var(--td-text-color-placeholder);
+        font-size: 12px;
       }
     }
     .rawPicturePrompt {
