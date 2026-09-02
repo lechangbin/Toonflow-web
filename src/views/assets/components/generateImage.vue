@@ -11,6 +11,9 @@
       <div class="data f">
         <t-card :bordered="false" :style="{ width: '40%' }">
           <div class="persistedReferences">
+            <!-- Derived Asset：不展示人工参考图，仅显示只读说明（Issue #38）。 -->
+            <t-alert v-if="isDerived" theme="info" :message="$t('workbench.assets.config.derivedNote')" />
+            <template v-else>
             <div class="jb">
               <span style="font-size: 16px; font-weight: 900">{{ $t("workbench.assets.gen.refsTitle") }}</span>
               <t-tag>{{ references.length }} / {{ ASSET_REFERENCE_LIMIT }}</t-tag>
@@ -28,6 +31,7 @@
               </div>
             </div>
             <div class="refsHint">{{ $t("workbench.assets.gen.refsManageHint") }}</div>
+            </template>
           </div>
           <div class="rawPicturePrompt">
             <div class="jb">
@@ -145,11 +149,13 @@ import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import axios from "@/utils/axios";
 import settingStore from "@/stores/setting";
-import { ASSET_REFERENCE_LIMIT, referenceMediaUrl, type AssetReferenceRecord } from "@/assetReferenceContract";
+import { ASSET_REFERENCE_LIMIT, isDerivedAsset, referenceMediaUrl, type AssetReferenceRecord } from "@/assetReferenceContract";
 import { useAssetImageGeneration, type AssetImageGenerationFailureView } from "@/composables/useAssetImageGeneration";
 const props = defineProps<{
   formData: {
     id?: number;
+    /** 后端父子关系字段：父资产 id（基础资产为 null），Derived Asset 判定依据。 */
+    assetsId?: number | null;
     name?: string;
     describe?: string;
     type?: string;
@@ -157,6 +163,9 @@ const props = defineProps<{
     src: string;
   };
 }>();
+
+/** Derived Asset：人工参考图不加载、不展示，父资产锚点由后端自动解析（Issue #38）。 */
+const isDerived = computed(() => isDerivedAsset(props.formData));
 
 //显示生成图片的弹窗
 const generateImageShow = defineModel({
@@ -207,7 +216,7 @@ const emit = defineEmits(["update"]);
 async function loadPersistedReferences() {
   references.value = [];
   referencesFailure.value = null;
-  const result = await loadReferences(Number(project.value?.id), Number(props.formData.id));
+  const result = await loadReferences(Number(project.value?.id), Number(props.formData.id), props.formData);
   if (result.ok) {
     references.value = result.references;
   } else {
@@ -242,6 +251,7 @@ async function handleGenerate() {
       prompt: props.formData.prompt,
       model: selectValue.value,
       resolution: resolution.value,
+      asset: props.formData,
     });
     if (!result.ok) {
       // 生成失败保留提示词、模型与分辨率等全部配置，可直接重试
