@@ -1505,7 +1505,19 @@
   "workbench.script.extractAssets": "Trích xuất tài sản",
   "promptManage": {
     "prompt": "Prompt",
-    "searchPlaceholder": "Tìm prompt hoặc đường dẫn", "allCategories": "Tất cả danh mục", "promptCount": "{count} prompt", "refresh": "Làm mới", "catalogAriaLabel": "Danh mục prompt", "customized": "Đã tùy chỉnh", "unsaved": "Chưa lưu", "restoreDefault": "Khôi phục mặc định", "save": "Lưu", "profileNotice": "Video Prompt Profile được kiểm tra trước khi lưu.", "editorPlaceholder": "Nhập nội dung prompt", "selectPrompt": "Chọn prompt bên trái", "empty": "Không có prompt phù hợp", "loadFailed": "Tải prompt thất bại", "saveSuccess": "Đã lưu prompt", "saveFailed": "Lưu thất bại", "discardConfirm": "Bỏ thay đổi chưa lưu?", "restoreConfirm": "Khôi phục giá trị mặc định?", "restoreSuccess": "Đã khôi phục", "restoreFailed": "Khôi phục thất bại", "cancel": "Hủy",
+    "customized": "Đã tùy chỉnh",
+    "restoreDefault": "Khôi phục mặc định",
+    "save": "Lưu",
+    "profileNotice": "Video Prompt Profile được kiểm tra trước khi lưu.",
+    "editorPlaceholder": "Nhập nội dung prompt",
+    "empty": "Chưa có prompt",
+    "loadFailed": "Tải prompt thất bại",
+    "saveSuccess": "Đã lưu prompt",
+    "saveFailed": "Lưu thất bại",
+    "restoreConfirm": "Khôi phục giá trị mặc định?",
+    "restoreSuccess": "Đã khôi phục",
+    "restoreFailed": "Khôi phục thất bại",
+    "cancel": "Hủy",
     "categories": { "system": "Hệ thống", "scriptAgent": "Script Agent", "productionAgent": "Production Agent", "agentSkill": "Agent Skill", "visualSkill": "Visual Skill", "storySkill": "Director Skill", "videoProfile": "Video Prompt Profile", "modelPrompt": "Model Prompt" }
   },
   "hello": {

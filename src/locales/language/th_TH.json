@@ -1501,7 +1501,19 @@
   "workbench.script.extractAssets": "ดึงทรัพยากร",
   "promptManage": {
     "prompt": "พรอมต์",
-    "searchPlaceholder": "ค้นหาพรอมต์หรือพาธ", "allCategories": "ทุกหมวดหมู่", "promptCount": "{count} พรอมต์", "refresh": "รีเฟรช", "catalogAriaLabel": "แค็ตตาล็อกพรอมต์", "customized": "กำหนดเอง", "unsaved": "ยังไม่บันทึก", "restoreDefault": "คืนค่าเริ่มต้น", "save": "บันทึก", "profileNotice": "Video Prompt Profile จะถูกตรวจสอบก่อนบันทึก", "editorPlaceholder": "ป้อนพรอมต์", "selectPrompt": "เลือกพรอมต์ทางซ้าย", "empty": "ไม่พบพรอมต์", "loadFailed": "โหลดไม่สำเร็จ", "saveSuccess": "บันทึกแล้ว", "saveFailed": "บันทึกไม่สำเร็จ", "discardConfirm": "ละทิ้งการแก้ไขหรือไม่", "restoreConfirm": "คืนค่าเริ่มต้นหรือไม่", "restoreSuccess": "คืนค่าแล้ว", "restoreFailed": "คืนค่าไม่สำเร็จ", "cancel": "ยกเลิก",
+    "customized": "กำหนดเอง",
+    "restoreDefault": "คืนค่าเริ่มต้น",
+    "save": "บันทึก",
+    "profileNotice": "Video Prompt Profile จะถูกตรวจสอบก่อนบันทึก",
+    "editorPlaceholder": "ป้อนพรอมต์",
+    "empty": "ยังไม่มีพรอมต์",
+    "loadFailed": "โหลดไม่สำเร็จ",
+    "saveSuccess": "บันทึกแล้ว",
+    "saveFailed": "บันทึกไม่สำเร็จ",
+    "restoreConfirm": "คืนค่าเริ่มต้นหรือไม่",
+    "restoreSuccess": "คืนค่าแล้ว",
+    "restoreFailed": "คืนค่าไม่สำเร็จ",
+    "cancel": "ยกเลิก",
     "categories": { "system": "ระบบ", "scriptAgent": "Script Agent", "productionAgent": "Production Agent", "agentSkill": "Agent Skill", "visualSkill": "Visual Skill", "storySkill": "Director Skill", "videoProfile": "Video Prompt Profile", "modelPrompt": "Model Prompt" }
   },
   "hello": {
