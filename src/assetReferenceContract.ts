@@ -570,8 +570,14 @@ export function resolveGenerationReferences(
   return { ok: true, inputs: buildGenerationReferenceInputs(references) };
 }
 
-function resolveGenerationPrompt(prompt: string): { ok: true; prompt: string } | { ok: false; failure: AssetImageGenerationFailure } {
+function resolveGenerationPrompt(
+  prompt: string,
+  asset?: AssetParentLinkage | null,
+): { ok: true; prompt: string } | { ok: false; failure: AssetImageGenerationFailure } {
   const trimmed = typeof prompt === "string" ? prompt.trim() : "";
+  // Derived Asset 的最终提示词由后端根据 Parent Asset Anchor 与变化契约
+  // 确定性编译；新建记录在首次生成前可以没有前端缓存 prompt。
+  if (!trimmed && isDerivedAsset(asset)) return { ok: true, prompt: "" };
   if (!trimmed) {
     return { ok: false, failure: { kind: "promptRequired", message: "请填写提示词" } };
   }
@@ -596,7 +602,7 @@ export function buildSingleAssetImageGenerationRequest(
     asset?: AssetParentLinkage | null;
   },
 ): { ok: true; request: SingleAssetImageGenerationRequest; referenceInputs: GenerationReferenceInput[] } | { ok: false; failure: AssetImageGenerationFailure } {
-  const prompt = resolveGenerationPrompt(input.prompt);
+  const prompt = resolveGenerationPrompt(input.prompt, input.asset);
   if (!prompt.ok) return prompt;
   const references = resolveGenerationReferences(input.references, input.asset);
   if (!references.ok) return references;
@@ -650,7 +656,7 @@ export function resolveBatchGenerationAssets(assets: readonly BatchGenerationAss
   const submittable: BatchGenerationResolvedAsset[] = [];
   const skipped: BatchGenerationSkippedAsset[] = [];
   for (const asset of assets) {
-    const prompt = resolveGenerationPrompt(asset.prompt);
+    const prompt = resolveGenerationPrompt(asset.prompt, asset.asset);
     if (!prompt.ok) {
       skipped.push({ name: asset.name, failure: prompt.failure });
       continue;

@@ -114,6 +114,20 @@ test("单资产生成对 Derived Asset 构建出无人工参考图的请求，�
   assert.equal(result.request.id, 200);
 });
 
+test("Derived Asset 即使尚无前端提示词也可直接进入后端确定性编译链", () => {
+  const result = buildSingleAssetImageGenerationRequest({
+    ...SINGLE_INPUT,
+    prompt: "",
+    references: [],
+    asset: DERIVED_ASSET,
+  });
+
+  assert.equal(result.ok, true);
+  if (!result.ok) return;
+  assert.equal(result.request.prompt, "", "兼容字段保持为空，由后端 Parent Asset Anchor + 变化契约编译最终提示词");
+  assert.deepEqual(result.referenceInputs, []);
+});
+
 test("基础资产在 0、1、6 张人工参考图下行为不回归（#34/#35 保留）", () => {
   for (const count of [0, 1, 6]) {
     const references = makeOrderedReferences(count);
@@ -144,6 +158,16 @@ test("批量生成把 Derived Asset 的人工参考图归一为空，其余资�
   assert.equal(resolved.submittable.length, 2);
   assert.equal(resolved.submittable[0].referenceInputs.length, 2);
   assert.deepEqual(resolved.submittable[1].referenceInputs, []);
+});
+
+test("批量生成不因 Derived Asset 的空提示词跳过其确定性编译链", () => {
+  const resolved = resolveBatchGenerationAssets([
+    { id: 201, type: "role", name: "衍生资产", prompt: "", references: [], asset: DERIVED_ASSET },
+  ]);
+
+  assert.deepEqual(resolved.skipped, []);
+  assert.equal(resolved.submittable.length, 1);
+  assert.equal(resolved.submittable[0].prompt, "");
 });
 
 test("衍生边界错误 kind 与 i18n 键一一对应，全部集中在契约模块维护", () => {
