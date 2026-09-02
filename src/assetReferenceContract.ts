@@ -9,6 +9,11 @@
  * - 错误：稳定信封 { code, data: null, message, error: kind }。
  * 不重新发明字段；Asset Brief、内部模板等中间产物不出现在任何请求中。
  * 纯函数模块，与 videoContract.ts 同一测试 seam（node --experimental-strip-types --test）。
+ *
+ * Issue #38：Derived Asset 父资产锚点边界。后端正式父子关系字段（o_assets.assetsId，
+ * 即 getAssetsApi 返回资产行上的 assetsId）非空即为衍生资产：人工参考图必须为 0，
+ * 参考图 mutation 被稳定拒绝，生成请求构建对衍生资产一律返回空人工引用输入；
+ * 父资产锚点由后端自动解析，前端不提供任何锚点管理 UI。
  */
 
 /** 单个资产最多持有的参考图数量（与当前 Agnes Image 2.1 Flash 能力一致）。 */
@@ -23,6 +28,14 @@ export const ASSET_REFERENCE_ANALYSIS_STATES = ["not_requested", "pending", "com
 export type AssetReferenceDescriptionSource = (typeof ASSET_REFERENCE_DESCRIPTION_SOURCES)[number] | (string & {});
 export type AssetReferenceAnalysisState = (typeof ASSET_REFERENCE_ANALYSIS_STATES)[number] | (string & {});
 
+/**
+ * Derived Asset 边界（Issue #38）：仅凭后端正式父子关系字段识别。
+ * getAssetsApi 返回的资产行上 assetsId 为父资产 id（基础资产为 null）。
+ */
+export interface AssetParentLinkage {
+  assetsId?: unknown;
+}
+
 /** 与后端 assetReferenceErrorEnvelope 一一对应的失败 kind。 */
 export type AssetReferenceFailureKind =
   | "projectNotFound"
@@ -32,7 +45,8 @@ export type AssetReferenceFailureKind =
   | "referenceLimitExceeded"
   | "descriptionRequired"
   | "invalidMedia"
-  | "orderMismatch";
+  | "orderMismatch"
+  | "derivedAssetReferenceForbidden";
 
 /** 后端稳定错误信封。 */
 export interface AssetReferenceErrorEnvelope {
@@ -75,6 +89,36 @@ export interface AssetReferenceValidationFailure {
 }
 
 const DESCRIPTION_REQUIRED_MESSAGE = "参考图描述为必填项，本版本必须由人工撰写";
+
+const DERIVED_ASSET_REFERENCE_FORBIDDEN_MESSAGE = "衍生资产不支持人工参考图，图片将自动继承父资产当前图片";
+
+/**
+ * 归一父子关系字段：能转为正整数的任何形态（number、数字字符串）都视为
+ * 父资产 id，其余（null、undefined、0、非数字）归一为 null。所有调用方
+ * 共用同一语义，避免不同路径对 Derived Asset 的判定不一致。
+ */
+export function normalizeParentAssetId(value: unknown): number | null {
+  const parentId = Number(value);
+  return Number.isFinite(parentId) && parentId > 0 ? parentId : null;
+}
+
+/** 仅凭后端父子关系字段（assetsId 指向父资产）识别 Derived Asset。 */
+export function isDerivedAsset(asset: AssetParentLinkage | null | undefined): boolean {
+  return normalizeParentAssetId(asset?.assetsId) != null;
+}
+
+/**
+ * 参考图 mutation 守卫（Issue #38）：Derived Asset 的人工参考图增改/排序/删除
+ * 在契约层被稳定拒绝；基础资产返回 null 照常放行。composable/service 层
+ * 调用本函数，不能只靠隐藏按钮。
+ */
+export function makeReferenceMutationFailure(asset: AssetParentLinkage | null | undefined): {
+  kind: "derivedAssetReferenceForbidden";
+  message: string;
+} | null {
+  if (!isDerivedAsset(asset)) return null;
+  return { kind: "derivedAssetReferenceForbidden", message: DERIVED_ASSET_REFERENCE_FORBIDDEN_MESSAGE };
+}
 
 function trimToText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
@@ -289,13 +333,15 @@ export function findTransferExclusionConflicts(
 }
 
 /**
- * 生成请求中的参考图输入（#35 接入 Image Vendor 执行时使用）。
+ * 生成请求中的参考图输入（#35 接入 Image Vendor 执行时使用，#38 扩展）。
  * 无参考图时返回空数组且调用方必须整体省略参考图字段——不生成占位图，
- * 不发送虚假引用。
+ * 不发送虚假引用。Derived Asset 一律返回空人工引用输入。
  */
 export function buildGenerationReferenceInputs(
   references: readonly AssetReferenceRecord[],
+  asset?: AssetParentLinkage | null,
 ): Array<{ id: number; mediaPath: string; description: string; visualRole: string; requiredTransfers: string[]; exclusions: string[] }> {
+  if (isDerivedAsset(asset)) return [];
   return references.map((reference) => ({
     id: reference.id,
     mediaPath: reference.mediaPath,
@@ -370,9 +416,25 @@ export type AssetPromptFailureKind =
   | "stalePromptRecord"
   | "referenceLimitExceeded";
 
+/**
+ * Derived Asset 父资产锚点/变化契约稳定错误 kind（后端 Issue #37 错误族的
+ * 前端镜像，#37 落地后须逐项核对）。错误字符串不得散落在 Vue 组件中，
+ * 统一经 ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS 映射。
+ */
+export type DerivedAssetFailureKind =
+  | "derivedAssetReferenceForbidden"
+  | "parentAssetMissing"
+  | "parentAssetAnchorMissing"
+  | "parentAssetAnchorUnauthorized"
+  | "parentAssetAnchorUnreadable"
+  | "derivedChangeInstructionMissing"
+  | "derivedChangeInstructionInvalid"
+  | "derivedPromptCompilationFailed";
+
 /** 后端图片生成专属稳定错误 kind（assetImageGeneration.ts 的扩展 kind）。 */
 export type AssetImageGenerationBackendFailureKind =
   | AssetPromptFailureKind
+  | DerivedAssetFailureKind
   | "referenceMediaUnreadable"
   | "referenceMediaInvalid"
   | "imageGenerationFailed"
@@ -425,6 +487,15 @@ export const ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS: Record<AssetImageGenerati
   imageGenerationFailed: "workbench.assets.gen.errors.imageGenerationFailed",
   imagePersistenceFailed: "workbench.assets.gen.errors.imagePersistenceFailed",
   cancelled: "workbench.assets.gen.errors.cancelled",
+  // Derived Asset 父资产锚点/变化契约（Issue #38，镜像 #37 错误族）
+  derivedAssetReferenceForbidden: "workbench.assets.gen.errors.derivedAssetReferenceForbidden",
+  parentAssetMissing: "workbench.assets.gen.errors.parentAssetMissing",
+  parentAssetAnchorMissing: "workbench.assets.gen.errors.parentAssetAnchorMissing",
+  parentAssetAnchorUnauthorized: "workbench.assets.gen.errors.parentAssetAnchorUnauthorized",
+  parentAssetAnchorUnreadable: "workbench.assets.gen.errors.parentAssetAnchorUnreadable",
+  derivedChangeInstructionMissing: "workbench.assets.gen.errors.derivedChangeInstructionMissing",
+  derivedChangeInstructionInvalid: "workbench.assets.gen.errors.derivedChangeInstructionInvalid",
+  derivedPromptCompilationFailed: "workbench.assets.gen.errors.derivedPromptCompilationFailed",
   // 本地校验
   promptRequired: "workbench.assets.gen.errors.promptRequired",
 };
@@ -443,7 +514,14 @@ export function assetImageGenerationFailureText(
     const text = translate(key);
     if (text && text !== key) return text;
   }
-  return failure.message ?? "请求失败，请重试";
+  // 未知错误安全兜底：优先保留后端原始 message；缺失时经 i18n 键取通用文案，
+  // 翻译不可用时回退内置中文，绝不让错误被静默吞掉。
+  const message = typeof failure.message === "string" ? failure.message.trim() : "";
+  if (message) return message;
+  const genericKey = "workbench.assets.gen.errors.unknownFailure";
+  const generic = translate(genericKey);
+  if (generic && generic !== genericKey) return generic;
+  return "请求失败，请重试";
 }
 
 /** 单资产生成请求体（POST /assetsGenerate/generateAssets）。参考图由服务端解析。 */
@@ -467,13 +545,20 @@ export interface BatchAssetImageGenerationRequest {
 }
 
 /**
- * 发送前的参考图本地校验与形状归一（#35）。
+ * 发送前的参考图本地校验与形状归一（#35，#38 扩展衍生资产边界）。
+ * Derived Asset 一律返回空人工引用（父资产锚点由后端自动解析）；基础资产
  * 0 张参考图返回空数组（调用方整体省略参考图字段，不发送占位引用）；
  * 1~6 张保持用户排序与人工意图；第 7 张与描述缺失在提交前被阻止。
  */
 export function resolveGenerationReferences(
   references: readonly AssetReferenceRecord[],
+  asset?: AssetParentLinkage | null,
 ): { ok: true; inputs: GenerationReferenceInput[] } | { ok: false; failure: AssetImageGenerationFailure } {
+  // Derived Asset：人工引用必须为 0。旧 hydrate 数据或伪造本地状态中携带的
+  // 参考图在此被丢弃（不提交、不报错、不修改输入），防止绕过限制。
+  if (isDerivedAsset(asset)) {
+    return { ok: true, inputs: [] };
+  }
   if (references.length > ASSET_REFERENCE_LIMIT) {
     return { ok: false, failure: { kind: "referenceLimitExceeded", message: "单个资产最多支持 6 张参考图" } };
   }
@@ -508,11 +593,12 @@ export function buildSingleAssetImageGenerationRequest(
     model: string;
     resolution: string;
     references: readonly AssetReferenceRecord[];
+    asset?: AssetParentLinkage | null;
   },
 ): { ok: true; request: SingleAssetImageGenerationRequest; referenceInputs: GenerationReferenceInput[] } | { ok: false; failure: AssetImageGenerationFailure } {
   const prompt = resolveGenerationPrompt(input.prompt);
   if (!prompt.ok) return prompt;
-  const references = resolveGenerationReferences(input.references);
+  const references = resolveGenerationReferences(input.references, input.asset);
   if (!references.ok) return references;
   return {
     ok: true,
@@ -529,13 +615,14 @@ export function buildSingleAssetImageGenerationRequest(
   };
 }
 
-/** 批量生成中单个资产的输入（含发送前加载的持久化参考图）。 */
+/** 批量生成中单个资产的输入（含发送前加载的持久化参考图与父子关系字段）。 */
 export interface BatchGenerationAssetInput {
   id: number;
   type: string;
   name: string;
   prompt: string;
   references: readonly AssetReferenceRecord[];
+  asset?: AssetParentLinkage | null;
 }
 
 export interface BatchGenerationResolvedAsset {
@@ -568,7 +655,8 @@ export function resolveBatchGenerationAssets(assets: readonly BatchGenerationAss
       skipped.push({ name: asset.name, failure: prompt.failure });
       continue;
     }
-    const references = resolveGenerationReferences(asset.references);
+    const references = resolveGenerationReferences(asset.references, asset.asset);
+
     if (!references.ok) {
       skipped.push({ name: asset.name, failure: references.failure });
       continue;
