@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite --host",
     "preview": "vite preview",
-    "test:contract": "node --experimental-strip-types --test tests/videoContract.test.ts tests/scriptImport.test.ts tests/assetReferenceContract.test.ts tests/assetImageGenerationContract.test.ts",
+    "test:contract": "node --experimental-strip-types --test tests/videoContract.test.ts tests/scriptImport.test.ts tests/assetReferenceContract.test.ts tests/assetImageGenerationContract.test.ts tests/derivedAssetBoundary.test.ts",
     "build": "vue-tsc --build --force && vite build",
     "build-only": "vite build",
     "type-check": "vue-tsc --build --force",
