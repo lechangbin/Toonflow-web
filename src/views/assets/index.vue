@@ -455,6 +455,7 @@ import addAudioAssets from "./components/addAudioAssets.vue";
 import generateImage from "./components/generateImage.vue";
 import assetConfig from "./components/assetConfig.vue";
 import { useAssetImageGeneration } from "@/composables/useAssetImageGeneration";
+import { normalizeParentAssetId } from "@/assetReferenceContract";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 const { otherSetting } = storeToRefs(settingStore());
@@ -785,6 +786,7 @@ async function handleBatchGenerateImage() {
       type: item.type ?? "props",
       name: item.name ?? $t("workbench.cornerScape.unnamed"),
       prompt: item.prompt || item.describe,
+      asset: item,
     })),
   });
 
@@ -1108,6 +1110,7 @@ const generateImageShow = ref(false);
 // 当前操作的资产数据（用于图片生成）
 const currentAssetData = ref<{
   id?: number;
+  assetsId?: number | null;
   name?: string;
   describe?: string;
   type?: string;
@@ -1115,6 +1118,7 @@ const currentAssetData = ref<{
   src: string;
 }>({
   id: undefined,
+  assetsId: null,
   name: "",
   describe: "",
   type: "",
@@ -1124,6 +1128,7 @@ const currentAssetData = ref<{
 function generate(row: any) {
   currentAssetData.value = {
     id: row.id,
+    assetsId: normalizeParentAssetId(row.assetsId),
     name: row.name,
     describe: row.describe,
     type: row.type,
@@ -1136,12 +1141,15 @@ function generate(row: any) {
 const assetConfigShow = ref(false);
 const configAssetData = ref<{
   id: number;
+  /** 后端父子关系字段：父资产 id（基础资产为 null），Derived Asset 判定依据。 */
+  assetsId: number | null;
   name: string;
   describe: string;
   remark: string;
   prompt: string;
 }>({
   id: 0,
+  assetsId: null,
   name: "",
   describe: "",
   remark: "",
@@ -1150,6 +1158,7 @@ const configAssetData = ref<{
 function handleConfig(row: any) {
   configAssetData.value = {
     id: row.id,
+    assetsId: normalizeParentAssetId(row.assetsId),
     name: row.name ?? "",
     describe: row.describe ?? "",
     remark: row.remark ?? "",

@@ -12,6 +12,9 @@
         <t-alert v-if="failure" theme="error" :message="failure.message + '，' + $t('workbench.assets.config.retryHint')" class="configAlert" />
         <t-alert v-if="conflictMessage" theme="warning" :message="conflictMessage" class="configAlert" />
 
+        <!-- Derived Asset：人工参考图配置整体隐藏，仅显示只读说明（Issue #38）。 -->
+        <t-alert v-if="isDerived" theme="info" :message="$t('workbench.assets.config.derivedNote')" class="configAlert" />
+        <template v-else>
         <div class="sectionHeader">
           <span class="sectionTitle">{{ $t("workbench.assets.config.refTitle") }}</span>
           <t-tag size="small" :theme="canAdd ? 'default' : 'warning'">
@@ -122,6 +125,7 @@
             @change="onFileChosen"
           />
         </div>
+        </template>
 
         <t-divider />
 
@@ -151,6 +155,7 @@ import {
   ASSET_REFERENCE_LIMIT,
   findTransferExclusionConflicts,
   hydrateAssetConfig,
+  isDerivedAsset,
   normalizeTagInput,
   referenceMediaUrl,
   validateReferenceDraft,
@@ -162,6 +167,8 @@ import { useAssetReferences } from "@/composables/useAssetReferences";
 const props = defineProps<{
   formData: {
     id: number;
+    /** 后端父子关系字段：父资产 id（基础资产为 null），Derived Asset 判定依据。 */
+    assetsId: number | null;
     name: string;
     describe: string;
     remark: string;
@@ -198,7 +205,10 @@ const {
   remove,
   move,
   savePrompt,
-} = useAssetReferences(() => ({ projectId: project.value?.id, assetsId: props.formData.id }));
+} = useAssetReferences(() => ({ projectId: project.value?.id, assetsId: props.formData.id }), () => props.formData);
+
+/** Derived Asset：人工参考图配置隐藏，父资产锚点由后端自动解析（Issue #38）。 */
+const isDerived = computed(() => isDerivedAsset(props.formData));
 
 const promptDraft = ref("");
 const editDrafts = ref<Record<number, ReferenceDraftInput>>({});

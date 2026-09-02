@@ -7,8 +7,11 @@ import {
   buildUpdateAssetPromptRequest,
   buildUpdateReferenceRequest,
   canAddReference,
+  isDerivedAsset,
+  makeReferenceMutationFailure,
   parseReferenceError,
   parseReferenceListResponse,
+  type AssetParentLinkage,
   type AssetReferenceDraft,
   type AssetReferenceFailureKind,
   type AssetReferenceRecord,
@@ -33,11 +36,22 @@ export interface AssetPromptSaveInput {
  * 页面组件只负责渲染与事件接线；所有请求构建与错误归一化都经由
  * src/assetReferenceContract.ts，不重新发明字段。
  */
-export function useAssetReferences(getIds: () => { projectId?: number | string | null; assetsId?: number | null }) {
+export function useAssetReferences(
+  getIds: () => { projectId?: number | string | null; assetsId?: number | null },
+  getAsset?: () => AssetParentLinkage | null | undefined,
+) {
   const references = ref<AssetReferenceRecord[]>([]);
   const loading = ref(false);
   const saving = ref(false);
   const failure = ref<AssetReferenceFailure | null>(null);
+
+  /**
+   * Derived Asset 边界（Issue #38）：人工参考图仅属于基础资产。composable/
+   * service 层再次阻止衍生资产的参考图 mutation，不能只靠隐藏按钮。
+   */
+  function derivedMutationGuard(): AssetReferenceFailure | null {
+    return makeReferenceMutationFailure(getAsset?.());
+  }
 
   function resolveIds(): { projectId: number; assetsId: number } | null {
     const { projectId, assetsId } = getIds();
@@ -47,8 +61,12 @@ export function useAssetReferences(getIds: () => { projectId?: number | string |
     return { projectId: project, assetsId: asset };
   }
 
-  /** 加载参考图列表（含空状态）。 */
+  /** 加载参考图列表（含空状态）。Derived Asset 人工参考图必须为 0，不发请求。 */
   async function load(): Promise<boolean> {
+    if (isDerivedAsset(getAsset?.())) {
+      references.value = [];
+      return true;
+    }
     const ids = resolveIds();
     if (!ids) return false;
     loading.value = true;
@@ -67,6 +85,8 @@ export function useAssetReferences(getIds: () => { projectId?: number | string |
 
   /** 上传参考图：第 7 张在前端提交前被阻止，描述必填。失败时保留草稿由调用方恢复。 */
   async function create(draft: AssetReferenceDraft & { base64: string }): Promise<AssetReferenceFailure | null> {
+    const forbidden = derivedMutationGuard();
+    if (forbidden) return forbidden;
     const ids = resolveIds();
     if (!ids) return { message: "缺少项目或资产上下文，无法保存参考图" };
     if (!canAddReference(references.value.length)) {
@@ -94,6 +114,8 @@ export function useAssetReferences(getIds: () => { projectId?: number | string |
 
   /** 更新参考图的人工契约。 */
   async function update(id: number, draft: AssetReferenceDraft): Promise<AssetReferenceFailure | null> {
+    const forbidden = derivedMutationGuard();
+    if (forbidden) return forbidden;
     const ids = resolveIds();
     if (!ids) return { message: "缺少项目或资产上下文，无法保存参考图" };
     let request: ReturnType<typeof buildUpdateReferenceRequest>;
@@ -118,6 +140,8 @@ export function useAssetReferences(getIds: () => { projectId?: number | string |
 
   /** 删除参考图。 */
   async function remove(id: number): Promise<AssetReferenceFailure | null> {
+    const forbidden = derivedMutationGuard();
+    if (forbidden) return forbidden;
     const ids = resolveIds();
     if (!ids) return { message: "缺少项目或资产上下文，无法删除参考图" };
     saving.value = true;
@@ -136,6 +160,8 @@ export function useAssetReferences(getIds: () => { projectId?: number | string |
 
   /** 上移/下移参考图：把界面顺序转换为完整 orderedIds 排列。 */
   async function move(id: number, direction: -1 | 1): Promise<AssetReferenceFailure | null> {
+    const forbidden = derivedMutationGuard();
+    if (forbidden) return forbidden;
     const ids = resolveIds();
     if (!ids) return { message: "缺少项目或资产上下文，无法排序参考图" };
     const orderedIds = references.value.map((item) => item.id);
