@@ -36,7 +36,7 @@
           <div class="rawPicturePrompt">
             <div class="jb">
               <span style="font-size: 16px; font-weight: 900">{{ $t("workbench.assets.gen.promptLabel") }}</span>
-              <div class="ac" style="cursor: pointer" @click.stop="generatePrompt">
+              <div v-if="!isDerived" class="ac" style="cursor: pointer" @click.stop="generatePrompt">
                 <i-magic theme="outline" size="18" />
                 <span style="margin-left: 5px; font-size: 13px">{{ $t("workbench.assets.gen.smartGenerate") }}</span>
               </div>
@@ -47,7 +47,7 @@
                   v-model="props.formData.prompt"
                   :placeholder="$t('workbench.assets.gen.promptPlaceholder')"
                   :autosize="{ minRows: 15, maxRows: 15 }"
-                  :disabled="generateLoading" />
+                  :disabled="generateLoading || isDerived" />
               </t-loading>
             </div>
           </div>
@@ -229,7 +229,7 @@ function mediaUrl(mediaPath: string): string {
 const resolution = ref("1K");
 //生成图片
 async function handleGenerate() {
-  if (!props.formData.prompt) {
+  if (!isDerived.value && !props.formData.prompt) {
     window.$message.error($t("workbench.assets.gen.fillPrompt"));
     return;
   }
@@ -248,7 +248,7 @@ async function handleGenerate() {
       id: Number(props.formData.id),
       type: props.formData.type ?? "props",
       name: props.formData.name ?? $t("workbench.assets.gen.unnamed"),
-      prompt: props.formData.prompt,
+      prompt: props.formData.prompt ?? "",
       model: selectValue.value,
       resolution: resolution.value,
       asset: props.formData,

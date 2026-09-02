@@ -455,7 +455,7 @@ import addAudioAssets from "./components/addAudioAssets.vue";
 import generateImage from "./components/generateImage.vue";
 import assetConfig from "./components/assetConfig.vue";
 import { useAssetImageGeneration } from "@/composables/useAssetImageGeneration";
-import { normalizeParentAssetId } from "@/assetReferenceContract";
+import { isDerivedAsset, normalizeParentAssetId } from "@/assetReferenceContract";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 const { otherSetting } = storeToRefs(settingStore());
@@ -764,9 +764,10 @@ async function handleBatchGenerateImage() {
     return;
   }
 
-  // 过滤掉没有 prompt 的资产
+  // Base Asset 仍要求已有提示词；Derived Asset 由后端依据父锚点与变化契约
+  // 确定性编译，新建记录可在 prompt 为空时直接进入生成链。
   const validAssets = selectedAssets.filter((asset) => {
-    if (!asset.prompt) {
+    if (!isDerivedAsset(asset) && !asset.prompt) {
       window.$message.warning($t("workbench.assets.noPromptForImage", { name: asset.name }));
       return false;
     }
@@ -785,7 +786,7 @@ async function handleBatchGenerateImage() {
       id: item.id,
       type: item.type ?? "props",
       name: item.name ?? $t("workbench.cornerScape.unnamed"),
-      prompt: item.prompt || item.describe,
+      prompt: item.prompt || (isDerivedAsset(item) ? "" : item.describe),
       asset: item,
     })),
   });
