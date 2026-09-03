@@ -86,8 +86,8 @@
                 @click="img.state === '已完成' ? selectImage(index) : null"
                 @mouseenter="hoveredImageIndex = index"
                 @mouseleave="hoveredImageIndex = null">
-                <div v-if="img.state === '生成中'" class="generating-overlay f ac jc">
-                  <t-loading :text="$t('workbench.assets.gen.generatingLabel')" />
+                <div v-if="isImageGenerationActiveState(img.state)" class="generating-overlay f ac jc">
+                  <t-loading :text="imageStateText(img.state)" />
                 </div>
                 <div v-else-if="img.state === '生成失败' && !img.src" class="failed-overlay f ac jc">
                   <div style="text-align: center">
@@ -151,6 +151,7 @@ import axios from "@/utils/axios";
 import settingStore from "@/stores/setting";
 import { ASSET_REFERENCE_LIMIT, isDerivedAsset, referenceMediaUrl, type AssetReferenceRecord } from "@/assetReferenceContract";
 import { useAssetImageGeneration, type AssetImageGenerationFailureView } from "@/composables/useAssetImageGeneration";
+import { formatImageGenerationState, isImageGenerationActiveState } from "@/utils/imageGenerationLifecycle";
 const props = defineProps<{
   formData: {
     id?: number;
@@ -291,6 +292,11 @@ function handleCustomUpload(files: any[]): void {
 
 //生成结果
 const resultImages = ref<{ id: string; src: string; state: string; selected?: boolean }[]>([]);
+
+/** 活跃状态展示文案（等待中/生成中/下载中），与后端生命周期契约一致。 */
+function imageStateText(state: string): string {
+  return formatImageGenerationState(state, $t, "workbench.assets.gen.generatingLabel");
+}
 //预览图片
 const visible = ref(false);
 const trigger = ref();
@@ -341,8 +347,8 @@ async function fetchGeneratedImages() {
     selectedImageIndex.value = selectedIdx;
   }
 
-  // 如果还有"生成中"的图片，自动轮询刷新
-  const hasGenerating = images.some((img: { state: string }) => img.state === "生成中");
+  // 非终态（等待中/生成中/下载中）图片继续轮询，终态或缺失记录停止等待
+  const hasGenerating = images.some((img: { state: string }) => isImageGenerationActiveState(img.state));
   stopPolling();
   if (hasGenerating && generateImageShow.value) {
     pollingTimer = setTimeout(() => fetchGeneratedImages(), 3000);

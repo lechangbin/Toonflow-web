@@ -840,6 +840,16 @@
         "extreme": "Extreme Think"
       }
     },
+    "imageLifecycle": {
+      "waiting": "Waiting",
+      "generating": "Generating",
+      "downloading": "Downloading",
+      "cancelled": "Cancelled",
+      "errorTimeout": "Image generation timed out, please retry later",
+      "errorDownloadFailed": "Image download failed, please retry",
+      "errorPersistenceFailed": "Image saving failed, please retry",
+      "errorGenerationFailed": "Image generation failed, please retry"
+    },
     "cornerScape": {
       "batchSettings": "Batch Gen Settings",
       "quickActions": "Quick Actions",
@@ -1124,6 +1134,8 @@
           "referenceMediaUnreadable": "A reference image file is missing or unreadable",
           "referenceMediaInvalid": "A reference image file is invalid",
           "imageGenerationFailed": "Image generation failed. Please retry",
+          "imageGenerationTimeout": "Image generation timed out. Please retry later",
+          "imageDownloadFailed": "Image download failed. Please retry",
           "imagePersistenceFailed": "Failed to save the generated image",
           "cancelled": "Generation cancelled"
         }

@@ -935,6 +935,16 @@
         "extreme": "极致思考"
       }
     },
+    "imageLifecycle": {
+      "waiting": "等待中",
+      "generating": "生成中",
+      "downloading": "下载中",
+      "cancelled": "已取消",
+      "errorTimeout": "图片生成超时，请稍后重试",
+      "errorDownloadFailed": "图片下载失败，请重试",
+      "errorPersistenceFailed": "图片保存失败，请重试",
+      "errorGenerationFailed": "图片生成失败，请重试"
+    },
     "cornerScape": {
       "batchSettings": "批量生成设置",
       "quickActions": "快捷指令",
@@ -1221,6 +1231,8 @@
           "referenceMediaUnreadable": "参考图文件缺失或无法读取",
           "referenceMediaInvalid": "参考图文件无效",
           "imageGenerationFailed": "图片生成失败，请重试",
+          "imageGenerationTimeout": "图片生成超时，请稍后重试",
+          "imageDownloadFailed": "图片下载失败，请重试",
           "imagePersistenceFailed": "生成图片保存失败",
           "cancelled": "生成已取消"
         }

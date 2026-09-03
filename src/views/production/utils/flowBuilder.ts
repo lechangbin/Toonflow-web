@@ -1,5 +1,9 @@
 import type { Ref } from "vue";
 import { computed } from "vue";
+import type { ImageGenerationLifecycleState } from "@/utils/imageGenerationLifecycle";
+
+/** 资产图片状态：与后端共享生命周期契约（Issue #39），“未生成”表示尚无图片记录。 */
+export type AssetImageState = "未生成" | ImageGenerationLifecycleState;
 
 // ==================== 固定节点 ID ====================
 const NODE_IDS = {
@@ -23,9 +27,11 @@ export interface DeriveAsset {
   desc: string;
   src: string;
   flowId?: number;
-  state: "未生成" | "生成中" | "已完成" | "生成失败";
+  state: AssetImageState;
   type: "role" | "tool" | "scene" | "clip";
   errorReason?: string;
+  /** 稳定失败分类（imageGenerationTimeout 等），由轮询回填，用于区分展示。 */
+  errorKind?: string;
 }
 
 export interface AssetItem {

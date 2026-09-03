@@ -706,6 +706,16 @@
       },
       "reconnect": "重新連接"
     },
+    "imageLifecycle": {
+      "waiting": "等待中",
+      "generating": "生成中",
+      "downloading": "下載中",
+      "cancelled": "已取消",
+      "errorTimeout": "圖片生成逾時，請稍後重試",
+      "errorDownloadFailed": "圖片下載失敗，請重試",
+      "errorPersistenceFailed": "圖片儲存失敗，請重試",
+      "errorGenerationFailed": "圖片生成失敗，請重試"
+    },
     "cornerScape": {
       "batchSettings": "批次生成設定",
       "quickActions": "捷徑指令",
@@ -990,6 +1000,8 @@
           "referenceMediaUnreadable": "參考圖檔案缺失或無法讀取",
           "referenceMediaInvalid": "參考圖檔案無效",
           "imageGenerationFailed": "圖片生成失敗，請重試",
+          "imageGenerationTimeout": "圖片生成逾時，請稍後重試",
+          "imageDownloadFailed": "圖片下載失敗，請重試",
           "imagePersistenceFailed": "生成圖片儲存失敗",
           "cancelled": "生成已取消"
         }

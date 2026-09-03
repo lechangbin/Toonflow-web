@@ -88,9 +88,17 @@
                       @select-change="handleSubSelectChange">
                       <template #previewWithLoading="{ row: subRow }">
                         <div class="previewCell">
-                          <div v-if="subRow.state === '生成中'" class="imageTrigger generatingImage">
+                          <div v-if="isActiveImageState(subRow.state)" class="imageTrigger generatingImage">
                             <t-loading size="small" />
-                            <span class="generatingLabel">{{ $t("workbench.assets.generating") }}</span>
+                            <span class="generatingLabel">{{ imageStateText(subRow.state) }}</span>
+                          </div>
+                          <t-tooltip v-else-if="subRow.state === '生成失败'" :content="imageErrorText(subRow)">
+                            <div class="imageTrigger generatingImage" style="cursor: pointer">
+                              <span class="generatingLabel" style="color: var(--td-error-color)">{{ imageErrorText(subRow) }}</span>
+                            </div>
+                          </t-tooltip>
+                          <div v-else-if="subRow.state === '已取消'" class="imageTrigger generatingImage">
+                            <span class="generatingLabel">{{ $t("workbench.imageLifecycle.cancelled") }}</span>
                           </div>
                           <t-image-viewer v-else :images="[subRow.src]" :closeOnEscKeydown="true" :closeOnOverlay="true">
                             <template #trigger="{ open }">
@@ -171,9 +179,17 @@
                 </template>
                 <template #previewWithLoading="{ row }">
                   <div class="previewCell">
-                    <div v-if="row.state === '生成中'" class="imageTrigger generatingImage">
+                    <div v-if="isActiveImageState(row.state)" class="imageTrigger generatingImage">
                       <t-loading size="small" />
-                      <span class="generatingLabel">{{ $t("workbench.assets.generating") }}</span>
+                      <span class="generatingLabel">{{ imageStateText(row.state) }}</span>
+                    </div>
+                    <t-tooltip v-else-if="row.state === '生成失败'" :content="imageErrorText(row)">
+                      <div class="imageTrigger generatingImage" style="cursor: pointer">
+                        <span class="generatingLabel" style="color: var(--td-error-color)">{{ imageErrorText(row) }}</span>
+                      </div>
+                    </t-tooltip>
+                    <div v-else-if="row.state === '已取消'" class="imageTrigger generatingImage">
+                      <span class="generatingLabel">{{ $t("workbench.imageLifecycle.cancelled") }}</span>
                     </div>
                     <t-image-viewer v-else :images="[row.src]" :closeOnEscKeydown="true" :closeOnOverlay="true">
                       <template #trigger="{ open }">
@@ -456,6 +472,14 @@ import generateImage from "./components/generateImage.vue";
 import assetConfig from "./components/assetConfig.vue";
 import { useAssetImageGeneration } from "@/composables/useAssetImageGeneration";
 import { isDerivedAsset, normalizeParentAssetId } from "@/assetReferenceContract";
+import {
+  formatImageGenerationFailure,
+  formatImageGenerationState,
+  isImageGenerationActiveState,
+  normalizeImageGenerationState,
+  type ImageGenerationLifecycleState,
+  type ImageGenerationPollingRecord,
+} from "@/utils/imageGenerationLifecycle";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 const { otherSetting } = storeToRefs(settingStore());
@@ -543,8 +567,23 @@ const loading = ref(false);
 // 是否正在处于任意生成中（提示词或图片），基于 item 的实际 state/promptState 判断
 const isGenerating = (id: number) => {
   const item = findAssetById(id);
-  return item?.promptState === "生成中" || item?.state === "生成中";
+  return item?.promptState === "生成中" || isImageGenerationActiveState(item?.state);
 };
+
+/** 活跃状态展示文案（等待中/生成中/下载中），与后端生命周期契约一致。 */
+function imageStateText(state: string): string {
+  return formatImageGenerationState(state, $t, "workbench.assets.generating");
+}
+
+/** 模板守卫用普通布尔返回，避免类型收窄影响后续 v-else-if 的终态比较。 */
+function isActiveImageState(state: string): boolean {
+  return isImageGenerationActiveState(state);
+}
+
+/** 失败提示：优先稳定 kind 的本地化文案；errorReason 仅白名单本地文案可直接展示，历史供应商原文不泄露。 */
+function imageErrorText(item: Asset): string {
+  return formatImageGenerationFailure(item, $t, "workbench.imageLifecycle.errorGenerationFailed");
+}
 //表格数据类型定义
 interface Asset {
   id: number;
@@ -555,7 +594,9 @@ interface Asset {
   remark: string;
   src: string;
   type: "role" | "tool" | "scene" | "clip"; // "角色" | "道具" | "场景" | "素材"
-  state: string;
+  state: ImageGenerationLifecycleState | "未生成" | "";
+  errorKind?: string;
+  errorReason?: string;
   sonAssets?: Asset[]; // 子资产列表
   imageId: number;
   promptState: string;
@@ -805,21 +846,10 @@ async function handleBatchGenerateImage() {
     return;
   }
 
-  // 仅把已提交的资产标记为「生成中」，让轮询自动接管状态跟踪
+  // 只登记已被后端接受的资产 ID；可见状态只由权威轮询结果更新。
   const submittedIds = result.submitted.map((item) => item.id);
-  const submittedAssets = validAssets.filter((asset) => submittedIds.includes(asset.id));
-  const submittedParentAssets = submittedAssets.filter((a) => selectedRowKeys.value.includes(a.id));
-  const submittedSubAssets = submittedAssets.filter((a) => selectedSubRowKeys.value.includes(a.id));
-  submittedParentAssets.forEach((asset) => {
-    const target = tableData.value.find((row) => row.id === asset.id);
-    if (target) target.state = "生成中";
-  });
-  submittedSubAssets.forEach((asset) => {
-    tableData.value.forEach((row) => {
-      const target = row.sonAssets?.find((sub) => sub.id === asset.id);
-      if (target) target.state = "生成中";
-    });
-  });
+  submittedIds.forEach(addAcceptedImageId);
+  void pollingImageAssets();
   selectedRowKeys.value = selectedRowKeys.value.filter((key) => !submittedIds.includes(Number(key)));
   selectedSubRowKeys.value = selectedSubRowKeys.value.filter((key) => !submittedIds.includes(Number(key)));
 }
@@ -1264,8 +1294,19 @@ const notCompultedData = computed(() => {
   return getAllAssetsFlat().filter((item) => item.promptState == "生成中");
 });
 const generatingData = computed(() => {
-  return getAllAssetsFlat().filter((item) => item.state === "生成中");
+  // 轮询必须覆盖全部活跃状态（等待中/生成中/下载中），否则等待中的任务永远不会推进
+  return getAllAssetsFlat().filter((item) => isImageGenerationActiveState(item.state));
 });
+const acceptedImageIds = ref<number[]>([]);
+function addAcceptedImageId(id: number) {
+  if (!acceptedImageIds.value.includes(id)) acceptedImageIds.value.push(id);
+}
+function removeAcceptedImageId(id: number) {
+  acceptedImageIds.value = acceptedImageIds.value.filter((candidate) => candidate !== id);
+}
+const imagePollingIds = computed(() => [
+  ...new Set([...generatingData.value.map((item) => item.id), ...acceptedImageIds.value]),
+]);
 // 轮询相关
 let pollingTimer: ReturnType<typeof setInterval> | null = null;
 let imagePollingTimer: ReturnType<typeof setInterval> | null = null;
@@ -1291,19 +1332,23 @@ async function pollingPromptAssets() {
 }
 //轮询图片生成
 async function pollingImageAssets() {
-  if (generatingData.value.length === 0) return;
-  const ids = generatingData.value.map((item) => item.id);
+  if (imagePollingIds.value.length === 0) return;
+  const ids = imagePollingIds.value;
   try {
     const { data } = await axios.post("/assets/pollingImageAssets", { ids });
     if (Array.isArray(data) && data.length) {
-      data.forEach((item: { id: number; state: string; filePath: string; src?: string }) => {
+      // 后端对每个请求 id 都返回权威状态；state=null 表示记录缺失，
+      // 必须停止等待（置回“未生成”），不能无限轮询。
+      data.forEach((item: ImageGenerationPollingRecord) => {
+        removeAcceptedImageId(item.id);
         const target = findAssetById(item.id);
         if (target) {
-          target.state = item.state;
-          if (item.filePath !== undefined) target.filePath = item.filePath;
-          if (item.src !== undefined) target.src = item.src;
-          // filePath 存在时也作为 src 使用，确保图片立即显示
-          if (!item.src && item.filePath && item.state !== "生成中") {
+          const nextState = normalizeImageGenerationState(item.state) ?? "未生成";
+          target.state = nextState;
+          target.errorKind = item.errorKind ?? "";
+          if (item.filePath !== undefined && item.filePath) target.filePath = item.filePath;
+          // 仅终态且已有图片时才作为 src 显示，避免活跃阶段闪烁半成品
+          if (item.filePath && !isImageGenerationActiveState(nextState)) {
             target.src = item.filePath;
           }
         }
@@ -1335,7 +1380,7 @@ function stopPolling() {
 function startImagePolling() {
   if (imagePollingTimer) return;
   imagePollingTimer = setInterval(async () => {
-    if (generatingData.value.length === 0) {
+    if (imagePollingIds.value.length === 0) {
       stopImagePolling();
       return;
     }
@@ -1358,8 +1403,8 @@ watch(notCompultedData, (val) => {
   }
 });
 
-watch(generatingData, (val) => {
-  if (val.length > 0) {
+watch(imagePollingIds, (ids) => {
+  if (ids.length > 0) {
     startImagePolling();
   } else {
     stopImagePolling();

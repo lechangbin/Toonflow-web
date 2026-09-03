@@ -2,7 +2,8 @@ import axios from "@/utils/axios";
 import projectStore from "@/stores/project";
 import settingStore from "@/stores/setting";
 import { useChat } from "@/utils/useChat";
-import type { FlowData, Storyboard } from "@/views/production/utils/flowBuilder";
+import type { AssetImageState, FlowData, Storyboard } from "@/views/production/utils/flowBuilder";
+import { isImageGenerationActiveState } from "@/utils/imageGenerationLifecycle";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import { useThrottleFn } from "@vueuse/core";
 
@@ -260,15 +261,6 @@ function makeProductionAgentStore(projectId: string) {
       }
     }
     async function batchGenerateAssets(allIds: number[]) {
-      flowData.value.assets.forEach((asset) => {
-        if (asset.derive) {
-          asset.derive.forEach((derive) => {
-            if (allIds.includes(derive.id)) {
-              derive.state = "生成中" as "未生成" | "生成中" | "已完成" | "生成失败";
-            }
-          });
-        }
-      });
       try {
         const { data } = await axios.post("/production/assets/batchGenerateAssetsImage", {
           assetIds: allIds,
@@ -276,35 +268,35 @@ function makeProductionAgentStore(projectId: string) {
           scriptId: episodesId.value,
           concurrentCount: settingStore().otherSetting.assetsBatchGenereateSize,
         });
-        if (data) {
-          data.forEach((record: { id: number; state: "未生成" | "生成中" | "已完成" | "生成失败"; src: string }) => {
-            flowData.value.assets.forEach((asset) => {
-              if (asset.derive) {
-                asset.derive.forEach((derive) => {
-                  if (derive.id === record.id) {
-                    derive.state = record.state;
-                    derive.src = record.src;
-                  }
-                });
-              }
-            });
-          });
-        }
+        // 只登记后端已接受的 ID，展示状态由统一轮询契约回填。
+        allIds.forEach(addAcceptedAssetImageId);
+        void pollAssetsImages();
         return data;
-      } catch (e) {}
+      } catch (e) {
+        // 拒绝必须给出可理解的提示，且不残留虚假“等待中”
+        window.$message.error((e as any)?.message || $t("workbench.imageLifecycle.errorGenerationFailed"));
+        return undefined;
+      }
+    }
+    const acceptedAssetImageIds = ref<number[]>([]);
+    function addAcceptedAssetImageId(id: number) {
+      if (!acceptedAssetImageIds.value.includes(id)) acceptedAssetImageIds.value.push(id);
+    }
+    function removeAcceptedAssetImageId(id: number) {
+      acceptedAssetImageIds.value = acceptedAssetImageIds.value.filter((candidate) => candidate !== id);
     }
     const assetsNotStateImageIds = computed(() => {
       const ids: number[] = [];
       flowData.value.assets.forEach((asset) => {
         if (asset.derive) {
           asset.derive.forEach((derive) => {
-            if (derive.state == ("生成中" as "未生成" | "生成中" | "已完成" | "生成失败")) {
+            if (isImageGenerationActiveState(derive.state)) {
               ids.push(derive.id);
             }
           });
         }
       });
-      return ids;
+      return [...new Set([...ids, ...acceptedAssetImageIds.value])];
     });
     const storyboardNotStateImageIds = computed(() => {
       const ids: number[] = [];
@@ -328,15 +320,18 @@ function makeProductionAgentStore(projectId: string) {
           ids: ids,
         });
         if (!data || data.length === 0) return;
-        const records = data as Array<{ id: number; state: string; src?: string; errorReason?: string; prompt?: string }>;
+        // 后端对每个请求 id 都返回权威状态；state=null 表示记录缺失，
+        // 置回“未生成”停止等待，不能无限轮询。
+        const records = data as Array<{ id: number; state: string | null; src?: string | null; errorKind?: string | null; prompt?: string | null }>;
         records.forEach((record) => {
+          removeAcceptedAssetImageId(record.id);
           flowData.value.assets.forEach((asset) => {
             if (!asset.derive) return;
             asset.derive.forEach((derive) => {
               if (derive.id === record.id) {
-                derive.state = record.state as "未生成" | "生成中" | "已完成" | "生成失败";
+                derive.state = (record.state ?? "未生成") as AssetImageState;
                 if (record.src) derive.src = record.src;
-                derive.errorReason = record?.errorReason ?? "";
+                derive.errorKind = record?.errorKind ?? "";
                 derive.prompt = record?.prompt ?? "";
               }
             });

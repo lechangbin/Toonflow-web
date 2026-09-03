@@ -702,6 +702,16 @@
       },
       "reconnect": "再接続"
     },
+    "imageLifecycle": {
+      "waiting": "待機中",
+      "generating": "生成中",
+      "downloading": "ダウンロード中",
+      "cancelled": "キャンセル済み",
+      "errorTimeout": "画像生成がタイムアウトしました。後ほどもう一度お試しください",
+      "errorDownloadFailed": "画像のダウンロードに失敗しました。もう一度お試しください",
+      "errorPersistenceFailed": "画像の保存に失敗しました。もう一度お試しください",
+      "errorGenerationFailed": "画像生成に失敗しました。もう一度お試しください"
+    },
     "cornerScape": {
       "batchSettings": "一括生成設定",
       "quickActions": "クイックコマンド",
@@ -986,6 +996,8 @@
           "referenceMediaUnreadable": "参照画像ファイルが存在しないか読み取れません",
           "referenceMediaInvalid": "参照画像ファイルが無効です",
           "imageGenerationFailed": "画像生成に失敗しました。再試行してください",
+          "imageGenerationTimeout": "画像生成がタイムアウトしました。しばらくしてから再試行してください",
+          "imageDownloadFailed": "画像のダウンロードに失敗しました。再試行してください",
           "imagePersistenceFailed": "生成画像の保存に失敗しました",
           "cancelled": "生成はキャンセルされました"
         }

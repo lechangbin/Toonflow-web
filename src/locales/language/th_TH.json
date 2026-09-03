@@ -703,6 +703,16 @@
       },
       "reconnect": "เชื่อมต่อใหม่"
     },
+    "imageLifecycle": {
+      "waiting": "กำลังรอ",
+      "generating": "กำลังสร้าง",
+      "downloading": "กำลังดาวน์โหลด",
+      "cancelled": "ยกเลิกแล้ว",
+      "errorTimeout": "การสร้างภาพหมดเวลา โปรดลองอีกครั้งภายหลัง",
+      "errorDownloadFailed": "ดาวน์โหลดภาพไม่สำเร็จ โปรดลองอีกครั้ง",
+      "errorPersistenceFailed": "บันทึกภาพไม่สำเร็จ โปรดลองอีกครั้ง",
+      "errorGenerationFailed": "สร้างภาพไม่สำเร็จ โปรดลองอีกครั้ง"
+    },
     "cornerScape": {
       "batchSettings": "การตั้งค่าการสร้างเป็นชุด",
       "quickActions": "คำสั่งด่วน",
@@ -987,6 +997,8 @@
           "referenceMediaUnreadable": "ไฟล์รูปภาพอ้างอิงหายไปหรืออ่านไม่ได้",
           "referenceMediaInvalid": "ไฟล์รูปภาพอ้างอิงไม่ถูกต้อง",
           "imageGenerationFailed": "สร้างภาพไม่สำเร็จ โปรดลองอีกครั้ง",
+          "imageGenerationTimeout": "หมดเวลาการสร้างภาพ โปรดลองอีกครั้งภายหลัง",
+          "imageDownloadFailed": "ดาวน์โหลดภาพไม่สำเร็จ โปรดลองอีกครั้ง",
           "imagePersistenceFailed": "บันทึกภาพที่สร้างไม่สำเร็จ",
           "cancelled": "ยกเลิกการสร้างแล้ว"
         }
