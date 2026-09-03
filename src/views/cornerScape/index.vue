@@ -32,7 +32,7 @@
           </t-form-item>
 
           <t-form-item :label="$t('workbench.cornerScape.genModel')">
-            <modelSelect v-model="selectValue" :type="`image`" />
+          <modelSelect v-model="selectValue" :type="`image`" @change="persistImageModel" />
           </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.resolution')">
             <t-select
@@ -190,7 +190,7 @@
             </div>
           </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.genModel')">
-            <modelSelect v-model="selectValue" :type="`image`" />
+            <modelSelect v-model="selectValue" :type="`image`" @change="persistImageModel" />
           </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.resolution')">
             <t-select v-model="editForm.resolution" :placeholder="$t('workbench.cornerScape.resolutionPh')" :options="resolutionOptions" />
@@ -278,6 +278,68 @@ interface DataItem {
 const checkboxValue = ref<string[]>([]);
 const { project } = storeToRefs(projectStore());
 const selectValue = ref(project.value?.imageModel ?? "");
+const modelSaving = ref(false);
+const imageSubmitting = ref(false);
+let modelSaveQueue: Promise<void> = Promise.resolve();
+let modelSaveRevision = 0;
+function persistImageModel(value: string) {
+  // Selection events can include delayed model-detail responses; ignore superseded values.
+  if (value !== selectValue.value || !project.value) return;
+  const projectId = project.value.id;
+  const revision = ++modelSaveRevision;
+  modelSaving.value = true;
+  modelSaveQueue = modelSaveQueue.then(async () => {
+    try {
+      await axios.post("/project/setImageModel", { projectId: Number(projectId), imageModel: value });
+      if (project.value?.id === projectId) project.value.imageModel = value;
+    } catch (error: any) {
+      if (revision === modelSaveRevision && project.value?.id === projectId) {
+        selectValue.value = project.value.imageModel;
+        window.$message.error(error?.message ?? $t("workbench.cornerScape.msg.modelSaveFailed"));
+      }
+    } finally {
+      if (revision === modelSaveRevision) modelSaving.value = false;
+    }
+  });
+}
+
+// Only regenerate prompts after explicit confirmation; never silently resubmit image generation.
+async function recoverStalePrompts(error: any, requestedItems: DataItem[]): Promise<boolean> {
+  if (error?.error !== "stalePromptRecord" || !Array.isArray(error.affectedAssets)) return false;
+  const projectId = Number(project.value?.id);
+  const affectedIds = new Set(error.affectedAssets.map((asset: { id: number }) => asset.id));
+  const affectedItems = requestedItems.filter(item => affectedIds.has(item.id));
+  if (!affectedItems.length) return false;
+  const names = affectedItems.map(item => `${item.name}（#${item.id}）`).join("、");
+  const confirmed = await new Promise<boolean>(resolve => {
+    const dialog = DialogPlugin.confirm({
+      header: $t("workbench.cornerScape.msg.stalePromptTitle"),
+      body: $t("workbench.cornerScape.msg.stalePromptBody", { names }),
+      confirmBtn: $t("workbench.cornerScape.msg.regeneratePrompts"),
+      cancelBtn: $t("workbench.assets.cancelBtn"),
+      theme: "warning",
+      onConfirm: () => { dialog.destroy(); resolve(true); },
+      onClose: () => { dialog.destroy(); resolve(false); },
+    });
+  });
+  if (!confirmed) return true;
+  if (Number(project.value?.id) !== projectId) return true;
+  try {
+    await axios.post("/assetsGenerate/batchPolishAssetsPrompt", {
+      projectId,
+      items: affectedItems.map(item => ({ assetsId: item.id, type: item.type ?? "props", name: item.name, describe: item.describe ?? "" })),
+      otherTextPrompt: otherTextPrompt.value,
+    });
+    affectedItems.forEach(item => {
+      const target = dataList.value.find(row => row.id === item.id);
+      if (target) target.promptState = "生成中";
+    });
+    window.$message.success($t("workbench.cornerScape.msg.promptRecoveryStarted"));
+  } catch (failure: any) {
+    window.$message.error(failure?.message ?? $t("workbench.cornerScape.msg.promptGenFail"));
+  }
+  return true;
+}
 const resolution = ref("1K");
 const otherTextPrompt = ref("");
 const resolutionOptions = [
@@ -521,6 +583,10 @@ function setItemState(id: number, state: string) {
 }
 
 function regenerateItem() {
+  if (modelSaving.value) {
+    window.$message.warning($t("workbench.cornerScape.msg.modelSaving"));
+    return;
+  }
   if (!currentItem.value) return;
   if (!selectValue.value) {
     window.$message.warning($t("workbench.cornerScape.msg.selectModel"));
@@ -535,6 +601,7 @@ function regenerateItem() {
     return;
   }
   const item = currentItem.value;
+  const previousState = item.state;
   setItemState(item.id, "生成中");
   drawerVisible.value = false;
   const controller = createAbortController();
@@ -558,10 +625,12 @@ function regenerateItem() {
       window.$message.success($t("workbench.cornerScape.msg.genSuccess", { name: item.name }));
       await getFilteredData();
     })
-    .catch((e: any) => {
+    .catch(async (e: any) => {
+      setItemState(item.id, previousState);
       if (e.name === "CanceledError" || e.code === "ERR_CANCELED") return;
+      if (await recoverStalePrompts(e, [item])) return;
       window.$message.error(e.message ?? $t("workbench.cornerScape.msg.genFailed", { name: item.name }));
-      setItemState(item.id, "生成失败");
+      await getFilteredData();
     });
 }
 
@@ -686,6 +755,11 @@ async function batchSelectBindAudio() {
 }
 // 批量生成图片
 async function batchGenerationImage() {
+  if (imageSubmitting.value) return;
+  if (modelSaving.value) {
+    window.$message.warning($t("workbench.cornerScape.msg.modelSaving"));
+    return;
+  }
   if (selectedIds.value.length === 0) {
     window.$message.warning($t("workbench.cornerScape.msg.selectAtLeastOne"));
     return;
@@ -712,13 +786,7 @@ async function batchGenerationImage() {
     return;
   }
 
-  // 前端先将所有选中项标记为"生成中"
-  items.forEach((item) => setItemState(item.id, "生成中"));
-
-  window.$message.success(
-    $t("workbench.cornerScape.msg.batchStarted", { count: items.length, concurrent: otherSetting.value.assetsBatchGenereateSize }),
-  );
-
+  imageSubmitting.value = true;
   try {
     await axios.post("/assetsGenerate/batchGenerateImageAssets", {
       projectId: project.value?.id,
@@ -732,10 +800,17 @@ async function batchGenerationImage() {
         prompt: item.prompt,
       })),
     });
+    items.forEach((item) => setItemState(item.id, "生成中"));
+    window.$message.success(
+      $t("workbench.cornerScape.msg.batchStarted", { count: items.length, concurrent: otherSetting.value.assetsBatchGenereateSize }),
+    );
     selectedIds.value = [];
   } catch (e: any) {
     if (e.name === "CanceledError" || e.code === "ERR_CANCELED") return;
+    if (await recoverStalePrompts(e, items)) return;
     window.$message.error(e.message ?? $t("workbench.cornerScape.msg.batchFailed"));
+  } finally {
+    imageSubmitting.value = false;
   }
 }
 //轮询
