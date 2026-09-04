@@ -795,6 +795,9 @@
         "batchDeleteBody": "選択した {count} 件のシナリオを削除してもよろしいですか？この操作は取り消せません。",
         "batchDeleteSuccess": "一括削除に成功しました",
         "extractingInProgress": "抽出中",
+        "reextractHeader": "再抽出の確認",
+        "reextractBody": "この操作により既存のアセットが削除されます。抽出するか確認してください。",
+        "reextractConfirm": "削除して再抽出",
         "projectNotFound": "アイテムが見つかりません",
         "selectsExport": "スクリプトをエクスポートすることを選択してください"
       },
