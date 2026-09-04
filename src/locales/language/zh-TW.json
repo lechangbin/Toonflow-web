@@ -799,6 +799,9 @@
         "batchDeleteBody": "確定要刪除選中的 {count} 個劇本嗎？此操作無法復原。",
         "batchDeleteSuccess": "批量刪除成功",
         "extractingInProgress": "正在提取中",
+        "reextractHeader": "確認重新提取",
+        "reextractBody": "目前操作會刪除當前已有資產，請確認是否提取",
+        "reextractConfirm": "刪除並重新提取",
         "projectNotFound": "項目未找到",
         "selectsExport": "請選擇匯出劇本"
       },

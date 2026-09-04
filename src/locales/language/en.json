@@ -933,6 +933,9 @@
         "batchDeleteBody": "Are you sure you want to delete the selected {count} scripts? This cannot be undone.",
         "batchDeleteSuccess": "Batch deletion successful",
         "extractingInProgress": "Extracting",
+        "reextractHeader": "Confirm Re-extraction",
+        "reextractBody": "This operation will delete the existing assets. Please confirm whether to extract.",
+        "reextractConfirm": "Delete and Re-extract",
         "projectNotFound": "Item not found",
         "selectsExport": "Please choose to export the script"
       },

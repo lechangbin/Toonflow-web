@@ -79,12 +79,17 @@ import editScript from "./components/editScript.vue";
 import addScript from "./components/addScript.vue";
 import batchAddScript from "./components/batchAddScript.vue";
 import projectStore from "@/stores/project";
-import settingStore from "@/stores/setting";
 import imageListCacheStore from "@/stores/imageListCache";
+import {
+  buildExtractAssetsRequest,
+  resolveExtractAssetsAction,
+  resolveExtractAssetsFailure,
+  resolveReextractDialogAction,
+  needsReextractConfirmation,
+} from "@/scriptAssetExtractionContract";
 
 const { clearScriptCache } = imageListCacheStore();
 
-const { otherSetting } = storeToRefs(settingStore());
 const { project } = storeToRefs(projectStore());
 interface ScriptAsset {
   id: number;
@@ -214,22 +219,71 @@ async function handleDeleteScript(scriptId: number) {
   });
 }
 //提取资产
-async function handleExtractAssets() {
-  if (!project.value) return window.$message.error($t("workbench.script.msg.projectNotFound"));
-  //判断是否有资产正在提取中
+// Issue #44：已有资产的剧本重新提取前必须显式确认；后端 409 是最终权威。
+// 决策逻辑在 scriptAssetExtractionContract，本页面只是适配器。
+function openReextractConfirmDialog() {
+  const dialog = DialogPlugin.confirm({
+    header: $t("workbench.script.msg.reextractHeader"),
+    body: $t("workbench.script.msg.reextractBody"),
+    confirmBtn: $t("workbench.script.msg.reextractConfirm"),
+    cancelBtn: $t("workbench.script.msg.cancel"),
+    theme: "warning",
+    onConfirm: () => {
+      dialog.destroy();
+      const decision = resolveReextractDialogAction(true);
+      if (decision.action === "submit") void submitExtractAssets(decision.replaceExisting);
+    },
+    onClose: () => {
+      dialog.destroy();
+      // 取消：不发送任何请求，不改变加载状态与已有资产
+    },
+  });
+}
+
+async function submitExtractAssets(replaceExisting: boolean) {
+  if (scriptLoad.value) return; // 防止连续点击产生重复请求
   scriptLoad.value = true;
   try {
-    await axios.post("/script/extractAssets", {
-      scriptIds: selectedIds.value,
-      projectId: project.value!.id,
-      groupSize: otherSetting.value.assetsBatchGenereateSize,
-    });
+    await axios.post(
+      "/script/extractAssets",
+      buildExtractAssetsRequest({
+        projectId: Number(project.value!.id),
+        scriptIds: selectedIds.value,
+        replaceExisting,
+      }),
+    );
     searchScripts();
     selectedIds.value = [];
   } catch (e) {
-    window.$message.error((e as any)?.message || $t("workbench.script.msg.extractFailed"));
+    // 前端缓存可能过期：后端 409 reextractConfirmationRequired 时弹出相同确认框，
+    // 用户确认后携带替换意图重试
+    const decision = resolveExtractAssetsFailure(e);
+    if (decision.action === "confirm") {
+      openReextractConfirmDialog();
+      return;
+    }
+    if (decision.action === "inProgress") {
+      window.$message.warning($t("workbench.script.msg.extractingInProgress"));
+      return;
+    }
+    window.$message.error(decision.message || $t("workbench.script.msg.extractFailed"));
   } finally {
-    scriptLoad.value = false;
+    scriptLoad.value = false; // 失败后恢复可操作状态
+  }
+}
+
+async function handleExtractAssets() {
+  if (!project.value) return window.$message.error($t("workbench.script.msg.projectNotFound"));
+  const decision = resolveExtractAssetsAction({
+    hasCachedAssets: needsReextractConfirmation(scripts.value, selectedIds.value),
+    requestInFlight: scriptLoad.value,
+  });
+  if (decision.action === "confirm") {
+    openReextractConfirmDialog();
+    return;
+  }
+  if (decision.action === "submit") {
+    await submitExtractAssets(decision.replaceExisting);
   }
 }
 //批量删除剧本
