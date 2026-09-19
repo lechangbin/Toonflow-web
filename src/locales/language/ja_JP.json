@@ -702,6 +702,16 @@
       },
       "reconnect": "再接続"
     },
+    "imageLifecycle": {
+      "waiting": "待機中",
+      "generating": "生成中",
+      "downloading": "ダウンロード中",
+      "cancelled": "キャンセル済み",
+      "errorTimeout": "画像生成がタイムアウトしました。後ほどもう一度お試しください",
+      "errorDownloadFailed": "画像のダウンロードに失敗しました。もう一度お試しください",
+      "errorPersistenceFailed": "画像の保存に失敗しました。もう一度お試しください",
+      "errorGenerationFailed": "画像生成に失敗しました。もう一度お試しください"
+    },
     "cornerScape": {
       "batchSettings": "一括生成設定",
       "quickActions": "クイックコマンド",
@@ -750,6 +760,12 @@
         "polishFailed": "推敲に失敗しました。再試行してください",
         "selectAtLeastOne": "一括生成するアセットを少なくとも1つ選択してください",
         "batchStarted": "一括生成を開始しました。全 {count} 件、同時実行数 {concurrent}",
+        "modelSaveFailed": "画像モデルの保存に失敗しました",
+        "modelSaving": "モデルを保存中です",
+        "stalePromptTitle": "アセットのプロンプトが古くなっています",
+        "stalePromptBody": "次のプロンプトが古くなっています：{names}。再生成しますか？",
+        "regeneratePrompts": "はい、再生成",
+        "promptRecoveryStarted": "プロンプトの再生成を開始しました。完了後に画像生成を再度実行してください。",
         "batchItemFailed": "{name} の生成に失敗しました：{error}",
         "batchComplete": "一括生成が完了しました",
         "batchFailed": "バッチ生成に失敗しました",
@@ -795,6 +811,9 @@
         "batchDeleteBody": "選択した {count} 件のシナリオを削除してもよろしいですか？この操作は取り消せません。",
         "batchDeleteSuccess": "一括削除に成功しました",
         "extractingInProgress": "抽出中",
+        "reextractHeader": "再抽出の確認",
+        "reextractBody": "この操作により既存のアセットが削除されます。抽出するか確認してください。",
+        "reextractConfirm": "削除して再抽出",
         "projectNotFound": "アイテムが見つかりません",
         "selectsExport": "スクリプトをエクスポートすることを選択してください"
       },
@@ -980,6 +999,8 @@
           "referenceMediaUnreadable": "参照画像ファイルが存在しないか読み取れません",
           "referenceMediaInvalid": "参照画像ファイルが無効です",
           "imageGenerationFailed": "画像生成に失敗しました。再試行してください",
+          "imageGenerationTimeout": "画像生成がタイムアウトしました。しばらくしてから再試行してください",
+          "imageDownloadFailed": "画像のダウンロードに失敗しました。再試行してください",
           "imagePersistenceFailed": "生成画像の保存に失敗しました",
           "cancelled": "生成はキャンセルされました"
         }

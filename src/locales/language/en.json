@@ -840,6 +840,16 @@
         "extreme": "Extreme Think"
       }
     },
+    "imageLifecycle": {
+      "waiting": "Waiting",
+      "generating": "Generating",
+      "downloading": "Downloading",
+      "cancelled": "Cancelled",
+      "errorTimeout": "Image generation timed out, please retry later",
+      "errorDownloadFailed": "Image download failed, please retry",
+      "errorPersistenceFailed": "Image saving failed, please retry",
+      "errorGenerationFailed": "Image generation failed, please retry"
+    },
     "cornerScape": {
       "batchSettings": "Batch Gen Settings",
       "quickActions": "Quick Actions",
@@ -888,6 +898,12 @@
         "polishFailed": "Failed to polish, please try again",
         "selectAtLeastOne": "Select at least one asset for batch generation",
         "batchStarted": "Batch generation started. Total: {count}, Concurrency: {concurrent}",
+        "modelSaveFailed": "Failed to save image model",
+        "modelSaving": "Saving model, please wait",
+        "stalePromptTitle": "Asset prompts are outdated",
+        "stalePromptBody": "These asset prompts are outdated: {names}. Regenerate them?",
+        "regeneratePrompts": "Yes, regenerate",
+        "promptRecoveryStarted": "Prompt regeneration submitted. Click image generation again when it finishes.",
         "batchItemFailed": "{name} generation failed: {error}",
         "batchComplete": "Batch generation completed",
         "batchFailed": "Batch generation failed",
@@ -933,6 +949,9 @@
         "batchDeleteBody": "Are you sure you want to delete the selected {count} scripts? This cannot be undone.",
         "batchDeleteSuccess": "Batch deletion successful",
         "extractingInProgress": "Extracting",
+        "reextractHeader": "Confirm Re-extraction",
+        "reextractBody": "This operation will delete the existing assets. Please confirm whether to extract.",
+        "reextractConfirm": "Delete and Re-extract",
         "projectNotFound": "Item not found",
         "selectsExport": "Please choose to export the script"
       },
@@ -1118,6 +1137,8 @@
           "referenceMediaUnreadable": "A reference image file is missing or unreadable",
           "referenceMediaInvalid": "A reference image file is invalid",
           "imageGenerationFailed": "Image generation failed. Please retry",
+          "imageGenerationTimeout": "Image generation timed out. Please retry later",
+          "imageDownloadFailed": "Image download failed. Please retry",
           "imagePersistenceFailed": "Failed to save the generated image",
           "cancelled": "Generation cancelled"
         }

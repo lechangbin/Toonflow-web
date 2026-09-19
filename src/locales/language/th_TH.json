@@ -703,6 +703,16 @@
       },
       "reconnect": "เชื่อมต่อใหม่"
     },
+    "imageLifecycle": {
+      "waiting": "กำลังรอ",
+      "generating": "กำลังสร้าง",
+      "downloading": "กำลังดาวน์โหลด",
+      "cancelled": "ยกเลิกแล้ว",
+      "errorTimeout": "การสร้างภาพหมดเวลา โปรดลองอีกครั้งภายหลัง",
+      "errorDownloadFailed": "ดาวน์โหลดภาพไม่สำเร็จ โปรดลองอีกครั้ง",
+      "errorPersistenceFailed": "บันทึกภาพไม่สำเร็จ โปรดลองอีกครั้ง",
+      "errorGenerationFailed": "สร้างภาพไม่สำเร็จ โปรดลองอีกครั้ง"
+    },
     "cornerScape": {
       "batchSettings": "การตั้งค่าการสร้างเป็นชุด",
       "quickActions": "คำสั่งด่วน",
@@ -751,6 +761,12 @@
         "polishFailed": "ขัดเกลาข้อความล้มเหลว โปรดลองอีกครั้ง",
         "selectAtLeastOne": "โปรดเลือกสินทรัพย์อย่างน้อยหนึ่งรายการเพื่อสร้างเป็นชุด",
         "batchStarted": "เริ่มการสร้างเป็นชุดแล้ว จำนวน {count} รายการ ทำพร้อมกัน {concurrent} รายการ",
+        "modelSaveFailed": "บันทึกโมเดลภาพไม่สำเร็จ",
+        "modelSaving": "กำลังบันทึกโมเดล โปรดรอ",
+        "stalePromptTitle": "พรอมต์ของแอสเซตล้าสมัย",
+        "stalePromptBody": "พรอมต์ของแอสเซตเหล่านี้ล้าสมัย: {names} ต้องการสร้างใหม่หรือไม่?",
+        "regeneratePrompts": "ใช่ สร้างใหม่",
+        "promptRecoveryStarted": "เริ่มสร้างพรอมต์ใหม่แล้ว เมื่อเสร็จสิ้นให้กดสร้างภาพอีกครั้ง",
         "batchItemFailed": "สร้าง {name} ล้มเหลว: {error}",
         "batchComplete": "การสร้างเป็นชุดเสร็จสมบูรณ์",
         "batchFailed": "การสร้างแบทช์ล้มเหลว",
@@ -796,6 +812,9 @@
         "batchDeleteBody": "แน่ใจหรือไม่ว่าต้องการลบบทภาพยนตร์ที่เลือก {count} รายการ? การดำเนินการนี้ไม่สามารถยกเลิกได้",
         "batchDeleteSuccess": "ลบเป็นกลุ่มสำเร็จ",
         "extractingInProgress": "การสกัด",
+        "reextractHeader": "ยืนยันการสกัดใหม่",
+        "reextractBody": "การดำเนินการนี้จะลบสินทรัพย์ที่มีอยู่ โปรดยืนยันว่าจะสกัดต่อหรือไม่",
+        "reextractConfirm": "ลบและสกัดใหม่",
         "projectNotFound": "ไม่พบรายการ",
         "selectsExport": "โปรดเลือกส่งออกสคริปต์"
       },
@@ -981,6 +1000,8 @@
           "referenceMediaUnreadable": "ไฟล์รูปภาพอ้างอิงหายไปหรืออ่านไม่ได้",
           "referenceMediaInvalid": "ไฟล์รูปภาพอ้างอิงไม่ถูกต้อง",
           "imageGenerationFailed": "สร้างภาพไม่สำเร็จ โปรดลองอีกครั้ง",
+          "imageGenerationTimeout": "หมดเวลาการสร้างภาพ โปรดลองอีกครั้งภายหลัง",
+          "imageDownloadFailed": "ดาวน์โหลดภาพไม่สำเร็จ โปรดลองอีกครั้ง",
           "imagePersistenceFailed": "บันทึกภาพที่สร้างไม่สำเร็จ",
           "cancelled": "ยกเลิกการสร้างแล้ว"
         }

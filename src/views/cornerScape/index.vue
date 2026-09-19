@@ -32,7 +32,7 @@
           </t-form-item>
 
           <t-form-item :label="$t('workbench.cornerScape.genModel')">
-            <modelSelect v-model="selectValue" :type="`image`" />
+          <modelSelect v-model="selectValue" :type="`image`" @change="persistImageModel" />
           </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.resolution')">
             <t-select
@@ -72,21 +72,22 @@
       <t-card v-show="dataList.length > 0" shadow class="card" v-for="item in dataList" :key="item.id" @click="openDrawer(item)">
         <div class="imageBox">
           <t-checkbox class="selectBox" :checked="selectedIds.includes(item.id)" @click.stop @change="toggleSelect(item.id)" />
-          <div class="cancelGeneration" @click.stop="cancelGenerationFn(item)" v-if="item.state === '生成中'">
+          <div class="cancelGeneration" @click.stop="cancelGenerationFn(item)" v-if="isImageGenerationActiveState(item.state)">
             <t-tag theme="danger" size="small">
               {{ $t("workbench.cornerScape.cancelGeneration") }}
             </t-tag>
           </div>
           <t-empty v-if="!item.state && item.promptState !== '生成中'" type="maintenance" :title="$t('workbench.cornerScape.waitingGen')" />
-          <div v-else-if="item.state === '生成中' || item.promptState === '生成中' || item.audioBindState == '生成中'" class="generatingBox">
+          <div v-else-if="isImageGenerationActiveState(item.state) || item.promptState === '生成中' || item.audioBindState == '生成中'" class="generatingBox">
             <t-loading />
             <span class="generatingText">
-              {{ item.audioBindState === "生成中" ? $t("workbench.cornerScape.audioState") : $t("workbench.cornerScape.generating") }}
+              {{ item.audioBindState === "生成中" && !isImageGenerationActiveState(item.state) ? $t("workbench.cornerScape.audioState") : imageStateText(item.state) }}
             </span>
           </div>
-          <t-popup :content="item.errorReason" v-else-if="item.state === '生成失败'">
+          <t-popup :content="imageErrorText(item)" v-else-if="item.state === '生成失败'">
             <t-empty type="fail" :title="$t('workbench.cornerScape.genFailed')" />
           </t-popup>
+          <t-empty v-else-if="item.state === '已取消'" type="maintenance" :title="$t('workbench.imageLifecycle.cancelled')" />
           <t-image v-else class="image" :src="item.filePath ?? undefined" fit="contain" :preview="true" :lazy="true">
             <template #error>
               <t-empty type="fail" :title="$t('workbench.cornerScape.imageError')" />
@@ -159,11 +160,12 @@
         </template>
         <div v-if="currentItem" class="drawerImageBox">
           <t-empty v-if="!currentItem.state" type="maintenance" :title="$t('workbench.cornerScape.waitingGen')" />
-          <div v-else-if="currentItem.state === '生成中'" class="generatingBox">
+          <div v-else-if="isImageGenerationActiveState(currentItem.state)" class="generatingBox">
             <t-loading />
-            <span class="generatingText">{{ $t("workbench.cornerScape.generating") }}</span>
+            <span class="generatingText">{{ imageStateText(currentItem.state) }}</span>
           </div>
           <t-empty v-else-if="currentItem.state === '生成失败'" type="fail" :title="$t('workbench.cornerScape.genFailed')" />
+          <t-empty v-else-if="currentItem.state === '已取消'" type="maintenance" :title="$t('workbench.imageLifecycle.cancelled')" />
           <t-image v-else-if="currentItem.filePath" class="image" :src="currentItem.filePath" fit="contain">
             <template #error>
               <t-empty type="fail" :title="$t('workbench.cornerScape.imageError')" />
@@ -190,7 +192,7 @@
             </div>
           </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.genModel')">
-            <modelSelect v-model="selectValue" :type="`image`" />
+            <modelSelect v-model="selectValue" :type="`image`" @change="persistImageModel" />
           </t-form-item>
           <t-form-item :label="$t('workbench.cornerScape.resolution')">
             <t-select v-model="editForm.resolution" :placeholder="$t('workbench.cornerScape.resolutionPh')" :options="resolutionOptions" />
@@ -232,7 +234,7 @@
                 <template #icon><t-icon name="edit" /></template>
                 {{ $t("workbench.cornerScape.aiPolish") }}
               </t-button>
-              <t-button theme="primary" @click="regenerateItem" :disabled="currentItem.state == '生成中' ? true : false">
+              <t-button theme="primary" @click="regenerateItem" :disabled="isImageGenerationActiveState(currentItem.state)">
                 <template #icon><t-icon name="refresh" /></template>
                 {{ $t("workbench.cornerScape.regenerate") }}
               </t-button>
@@ -250,6 +252,14 @@ import projectStore from "@/stores/project";
 import modelSelect from "@/components/modelSelect.vue";
 import settingStore from "@/stores/setting";
 import openAssetsSelector from "@/utils/assetsCheck";
+import {
+  formatImageGenerationFailure,
+  formatImageGenerationState,
+  isImageGenerationActiveState,
+  normalizeImageGenerationState,
+  type ImageGenerationLifecycleState,
+  type ImageGenerationPollingRecord,
+} from "@/utils/imageGenerationLifecycle";
 
 const { otherSetting } = storeToRefs(settingStore());
 interface Image {
@@ -263,13 +273,15 @@ interface DataItem {
   name: string;
   prompt: string;
   filePath: string | null;
-  state: string;
+  state: ImageGenerationLifecycleState | "未生成" | "";
   model: string;
   resolution: string;
   describe: string;
   promptState: string;
   historyImages: Image[];
   errorReason: string;
+  /** 稳定失败分类（imageGenerationTimeout 等），由轮询回填，用于区分展示。 */
+  errorKind?: string;
   promptErrorReason: string;
   relepedAudio: { id: number; name: string }[];
   audioBindState: string;
@@ -278,6 +290,68 @@ interface DataItem {
 const checkboxValue = ref<string[]>([]);
 const { project } = storeToRefs(projectStore());
 const selectValue = ref(project.value?.imageModel ?? "");
+const modelSaving = ref(false);
+const imageSubmitting = ref(false);
+let modelSaveQueue: Promise<void> = Promise.resolve();
+let modelSaveRevision = 0;
+function persistImageModel(value: string) {
+  // Selection events can include delayed model-detail responses; ignore superseded values.
+  if (value !== selectValue.value || !project.value) return;
+  const projectId = project.value.id;
+  const revision = ++modelSaveRevision;
+  modelSaving.value = true;
+  modelSaveQueue = modelSaveQueue.then(async () => {
+    try {
+      await axios.post("/project/setImageModel", { projectId: Number(projectId), imageModel: value });
+      if (project.value?.id === projectId) project.value.imageModel = value;
+    } catch (error: any) {
+      if (revision === modelSaveRevision && project.value?.id === projectId) {
+        selectValue.value = project.value.imageModel;
+        window.$message.error(error?.message ?? $t("workbench.cornerScape.msg.modelSaveFailed"));
+      }
+    } finally {
+      if (revision === modelSaveRevision) modelSaving.value = false;
+    }
+  });
+}
+
+// Only regenerate prompts after explicit confirmation; never silently resubmit image generation.
+async function recoverStalePrompts(error: any, requestedItems: DataItem[]): Promise<boolean> {
+  if (error?.error !== "stalePromptRecord" || !Array.isArray(error.affectedAssets)) return false;
+  const projectId = Number(project.value?.id);
+  const affectedIds = new Set(error.affectedAssets.map((asset: { id: number }) => asset.id));
+  const affectedItems = requestedItems.filter(item => affectedIds.has(item.id));
+  if (!affectedItems.length) return false;
+  const names = affectedItems.map(item => `${item.name}（#${item.id}）`).join("、");
+  const confirmed = await new Promise<boolean>(resolve => {
+    const dialog = DialogPlugin.confirm({
+      header: $t("workbench.cornerScape.msg.stalePromptTitle"),
+      body: $t("workbench.cornerScape.msg.stalePromptBody", { names }),
+      confirmBtn: $t("workbench.cornerScape.msg.regeneratePrompts"),
+      cancelBtn: $t("workbench.assets.cancelBtn"),
+      theme: "warning",
+      onConfirm: () => { dialog.destroy(); resolve(true); },
+      onClose: () => { dialog.destroy(); resolve(false); },
+    });
+  });
+  if (!confirmed) return true;
+  if (Number(project.value?.id) !== projectId) return true;
+  try {
+    await axios.post("/assetsGenerate/batchPolishAssetsPrompt", {
+      projectId,
+      items: affectedItems.map(item => ({ assetsId: item.id, type: item.type ?? "props", name: item.name, describe: item.describe ?? "" })),
+      otherTextPrompt: otherTextPrompt.value,
+    });
+    affectedItems.forEach(item => {
+      const target = dataList.value.find(row => row.id === item.id);
+      if (target) target.promptState = "生成中";
+    });
+    window.$message.success($t("workbench.cornerScape.msg.promptRecoveryStarted"));
+  } catch (failure: any) {
+    window.$message.error(failure?.message ?? $t("workbench.cornerScape.msg.promptGenFail"));
+  }
+  return true;
+}
 const resolution = ref("1K");
 const otherTextPrompt = ref("");
 const resolutionOptions = [
@@ -321,10 +395,6 @@ onUnmounted(() => {
   stopPolling();
   stopImagePolling();
   stopAudioPolling();
-  // 将所有"生成中"的项重置为空状态
-  dataList.value.forEach((item) => {
-    if (item.state === "生成中") item.state = "";
-  });
 });
 function onChangeFn() {
   getFilteredData();
@@ -478,7 +548,7 @@ const editForm = reactive({
 });
 
 async function openDrawer(item: DataItem) {
-  if (item.state == "生成中") return;
+  if (isImageGenerationActiveState(item.state)) return;
   selectedHistoryId.value = null;
   // 先用当前数据打开抽屉
   editForm.assetsId = item.id;
@@ -514,13 +584,27 @@ async function openDrawer(item: DataItem) {
   }
 }
 
-function setItemState(id: number, state: string) {
+function setItemState(id: number, state: DataItem["state"]) {
   const item = dataList.value.find((i) => i.id === id);
   if (item) item.state = state;
   if (currentItem.value?.id === id) currentItem.value.state = state;
 }
 
+/** 活跃状态展示文案（等待中/生成中/下载中）；提示词/音频生成回退“生成中”。 */
+function imageStateText(state: string): string {
+  return formatImageGenerationState(state, $t, "workbench.cornerScape.generating");
+}
+
+/** 失败提示：优先稳定 kind 的本地化文案；errorReason 仅白名单本地文案可直接展示，历史供应商原文不泄露。 */
+function imageErrorText(item: DataItem): string {
+  return formatImageGenerationFailure(item, $t, "workbench.cornerScape.genFailed");
+}
+
 function regenerateItem() {
+  if (modelSaving.value) {
+    window.$message.warning($t("workbench.cornerScape.msg.modelSaving"));
+    return;
+  }
   if (!currentItem.value) return;
   if (!selectValue.value) {
     window.$message.warning($t("workbench.cornerScape.msg.selectModel"));
@@ -535,7 +619,7 @@ function regenerateItem() {
     return;
   }
   const item = currentItem.value;
-  setItemState(item.id, "生成中");
+  addSubmittingImageId(item.id);
   drawerVisible.value = false;
   const controller = createAbortController();
   axios
@@ -555,13 +639,18 @@ function regenerateItem() {
       { signal: controller.signal },
     )
     .then(async () => {
+      removeSubmittingImageId(item.id);
+      // POST 已接受但列表/占位可见性可能短暂滞后；交给权威轮询确认终态。
+      addAcceptedImageId(item.id);
       window.$message.success($t("workbench.cornerScape.msg.genSuccess", { name: item.name }));
       await getFilteredData();
     })
-    .catch((e: any) => {
+    .catch(async (e: any) => {
+      removeSubmittingImageId(item.id);
       if (e.name === "CanceledError" || e.code === "ERR_CANCELED") return;
+      if (await recoverStalePrompts(e, [item])) return;
       window.$message.error(e.message ?? $t("workbench.cornerScape.msg.genFailed", { name: item.name }));
-      setItemState(item.id, "生成失败");
+      await getFilteredData();
     });
 }
 
@@ -686,6 +775,11 @@ async function batchSelectBindAudio() {
 }
 // 批量生成图片
 async function batchGenerationImage() {
+  if (imageSubmitting.value) return;
+  if (modelSaving.value) {
+    window.$message.warning($t("workbench.cornerScape.msg.modelSaving"));
+    return;
+  }
   if (selectedIds.value.length === 0) {
     window.$message.warning($t("workbench.cornerScape.msg.selectAtLeastOne"));
     return;
@@ -712,13 +806,7 @@ async function batchGenerationImage() {
     return;
   }
 
-  // 前端先将所有选中项标记为"生成中"
-  items.forEach((item) => setItemState(item.id, "生成中"));
-
-  window.$message.success(
-    $t("workbench.cornerScape.msg.batchStarted", { count: items.length, concurrent: otherSetting.value.assetsBatchGenereateSize }),
-  );
-
+  imageSubmitting.value = true;
   try {
     await axios.post("/assetsGenerate/batchGenerateImageAssets", {
       projectId: project.value?.id,
@@ -732,10 +820,19 @@ async function batchGenerationImage() {
         prompt: item.prompt,
       })),
     });
+    // 只登记需要轮询的资产 ID；可见生命周期状态必须来自后端权威记录。
+    items.forEach((item) => addAcceptedImageId(item.id));
+    void pollingImageAssets();
+    window.$message.success(
+      $t("workbench.cornerScape.msg.batchStarted", { count: items.length, concurrent: otherSetting.value.assetsBatchGenereateSize }),
+    );
     selectedIds.value = [];
   } catch (e: any) {
     if (e.name === "CanceledError" || e.code === "ERR_CANCELED") return;
+    if (await recoverStalePrompts(e, items)) return;
     window.$message.error(e.message ?? $t("workbench.cornerScape.msg.batchFailed"));
+  } finally {
+    imageSubmitting.value = false;
   }
 }
 //轮询
@@ -743,8 +840,26 @@ const notCompultedData = computed(() => {
   return dataList.value.filter((item) => item.promptState == "生成中");
 });
 const generatingData = computed(() => {
-  return dataList.value.filter((item) => item.state === "生成中");
+  return dataList.value.filter((item) => isImageGenerationActiveState(item.state));
 });
+const submittingImageIds = ref<number[]>([]);
+const acceptedImageIds = ref<number[]>([]);
+const missingImagePollCounts = new Map<number, number>();
+function addUniqueId(target: typeof submittingImageIds, id: number) {
+  if (!target.value.includes(id)) target.value.push(id);
+}
+function removeId(target: typeof submittingImageIds, id: number) {
+  target.value = target.value.filter((candidate) => candidate !== id);
+}
+const addSubmittingImageId = (id: number) => addUniqueId(submittingImageIds, id);
+const removeSubmittingImageId = (id: number) => removeId(submittingImageIds, id);
+const addAcceptedImageId = (id: number) => {
+  missingImagePollCounts.delete(id);
+  addUniqueId(acceptedImageIds, id);
+};
+const imagePollingIds = computed(() => [
+  ...new Set([...generatingData.value.map((item) => item.id), ...submittingImageIds.value, ...acceptedImageIds.value]),
+]);
 const audioBindData = computed(() => {
   return dataList.value.filter((item) => item.audioBindState === "生成中");
 });
@@ -796,18 +911,41 @@ async function pollingPromptAssets() {
 }
 //轮询图片生成
 async function pollingImageAssets() {
-  if (generatingData.value.length === 0) return;
-  const ids = generatingData.value.map((item) => item.id);
+  if (imagePollingIds.value.length === 0) return;
+  const ids = imagePollingIds.value;
   try {
     const { data } = await axios.post("/assets/pollingImageAssets", { ids });
     let hasCompleted = false;
     if (Array.isArray(data) && data.length) {
-      data.forEach((item: { id: number; state: string; filePath: string }) => {
+      // 后端对每个请求 id 都返回权威状态；state=null 表示记录缺失，
+      // 必须停止等待（置回“未生成”），不能无限轮询。
+      data.forEach((item: ImageGenerationPollingRecord) => {
         const target = dataList.value.find((row) => row.id === item.id);
-        if (target) {
-          if (target.state === "生成中" && item.state !== "生成中") hasCompleted = true;
-          target.state = item.state;
-          if (item.filePath !== undefined) target.filePath = item.filePath;
+        if (!target) return;
+        if (item.state !== null) {
+          missingImagePollCounts.delete(item.id);
+          removeSubmittingImageId(item.id);
+          removeId(acceptedImageIds, item.id);
+        } else if (submittingImageIds.value.includes(item.id)) {
+          // 请求仍在提交中时，state=null 只表示占位尚未可见，不得清空状态或停止轮询。
+          return;
+        } else if (acceptedImageIds.value.includes(item.id)) {
+          const misses = (missingImagePollCounts.get(item.id) ?? 0) + 1;
+          missingImagePollCounts.set(item.id, misses);
+          if (misses < 3) return;
+          // 连续缺失才视为权威终止，既避免首轮竞态，也避免无限轮询。
+          missingImagePollCounts.delete(item.id);
+          removeId(acceptedImageIds, item.id);
+        }
+        const nextState = normalizeImageGenerationState(item.state) ?? "";
+        if (isImageGenerationActiveState(target.state) && !isImageGenerationActiveState(nextState)) hasCompleted = true;
+        target.state = nextState;
+        target.errorKind = item.errorKind ?? "";
+        if (item.filePath) target.filePath = item.filePath;
+        if (currentItem.value?.id === item.id) {
+          currentItem.value.state = nextState;
+          currentItem.value.errorKind = item.errorKind ?? "";
+          if (item.filePath) currentItem.value.filePath = item.filePath;
         }
       });
     }
@@ -897,7 +1035,7 @@ function startImagePolling() {
   if (imagePollingTimer) return;
 
   imagePollingTimer = setInterval(async () => {
-    if (generatingData.value.length === 0) {
+    if (imagePollingIds.value.length === 0) {
       stopImagePolling();
       return;
     }
@@ -936,8 +1074,8 @@ watch(notCompultedData, (val) => {
   }
 });
 
-watch(generatingData, (val) => {
-  if (val.length > 0) {
+watch(imagePollingIds, (ids) => {
+  if (ids.length > 0) {
     startImagePolling();
   } else {
     stopImagePolling();

@@ -706,6 +706,16 @@
       },
       "reconnect": "重新連接"
     },
+    "imageLifecycle": {
+      "waiting": "等待中",
+      "generating": "生成中",
+      "downloading": "下載中",
+      "cancelled": "已取消",
+      "errorTimeout": "圖片生成逾時，請稍後重試",
+      "errorDownloadFailed": "圖片下載失敗，請重試",
+      "errorPersistenceFailed": "圖片儲存失敗，請重試",
+      "errorGenerationFailed": "圖片生成失敗，請重試"
+    },
     "cornerScape": {
       "batchSettings": "批次生成設定",
       "quickActions": "捷徑指令",
@@ -754,6 +764,12 @@
         "polishFailed": "潤飾失敗，請重試",
         "selectAtLeastOne": "請至少選擇一個資產進行批次生成",
         "batchStarted": "開始批次生成，共 {count} 個，並發數 {concurrent}",
+        "modelSaveFailed": "圖像模型儲存失敗",
+        "modelSaving": "正在儲存模型，請稍候",
+        "stalePromptTitle": "資產提示詞已過期",
+        "stalePromptBody": "目前資產提示詞已過期：{names}。是否重新生成？",
+        "regeneratePrompts": "是的，重新生成",
+        "promptRecoveryStarted": "已提交提示詞重新生成；完成後請再次點擊圖片生成。",
         "batchItemFailed": "{name} 生成失敗：{error}",
         "batchComplete": "批次生成完成",
         "batchFailed": "批量生成失敗",
@@ -799,6 +815,9 @@
         "batchDeleteBody": "確定要刪除選中的 {count} 個劇本嗎？此操作無法復原。",
         "batchDeleteSuccess": "批量刪除成功",
         "extractingInProgress": "正在提取中",
+        "reextractHeader": "確認重新提取",
+        "reextractBody": "目前操作會刪除當前已有資產，請確認是否提取",
+        "reextractConfirm": "刪除並重新提取",
         "projectNotFound": "項目未找到",
         "selectsExport": "請選擇匯出劇本"
       },
@@ -984,6 +1003,8 @@
           "referenceMediaUnreadable": "參考圖檔案缺失或無法讀取",
           "referenceMediaInvalid": "參考圖檔案無效",
           "imageGenerationFailed": "圖片生成失敗，請重試",
+          "imageGenerationTimeout": "圖片生成逾時，請稍後重試",
+          "imageDownloadFailed": "圖片下載失敗，請重試",
           "imagePersistenceFailed": "生成圖片儲存失敗",
           "cancelled": "生成已取消"
         }
