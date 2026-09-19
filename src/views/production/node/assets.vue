@@ -45,10 +45,14 @@
                 </t-image>
               </div>
               <div v-else class="assetImageWrap assetImagePlaceholder">
-                <t-loading v-if="item.state == '生成中'" size="small" />
-                <t-tooltip v-else-if="item.state == '生成失败'" :content="item?.errorReason">
+                <div v-if="isActiveImageState(item.state)" class="ac jc" style="flex-direction: column; gap: 4px; width: 100%">
+                  <t-loading size="small" />
+                  <span style="font-size: 12px; color: var(--td-text-color-secondary)">{{ imageStateText(item.state) }}</span>
+                </div>
+                <t-tooltip v-else-if="item.state == '生成失败'" :content="imageErrorText(item)">
                   <div style="color: red; cursor: pointer">{{ $t("workbench.novel.genFailed") }}</div>
                 </t-tooltip>
+                <t-empty v-else-if="item.state == '已取消'" type="maintenance" size="small" :title="$t('workbench.imageLifecycle.cancelled')" />
                 <t-empty v-else size="small" :title="$t('workbench.production.node.assets.notGenerated')" />
               </div>
               <t-tooltip theme="primary" :content="$t('workbench.production.node.storyboard.deleteNode')">
@@ -79,6 +83,11 @@
 import { Handle, Position, type Edge } from "@vue-flow/core";
 import editImage from "../components/editImage/index.vue";
 import { type AssetItem, type DeriveAsset } from "../utils/flowBuilder";
+import {
+  formatImageGenerationFailure,
+  formatImageGenerationState,
+  isImageGenerationActiveState,
+} from "@/utils/imageGenerationLifecycle";
 import axios from "@/utils/axios";
 import useProjectStore from "@/stores/project";
 const { project } = storeToRefs(useProjectStore());
@@ -100,6 +109,21 @@ const currentRow = ref<{
 });
 const visible = ref(false);
 const currentAssetsId = ref();
+
+/** 活跃状态展示文案（等待中/生成中/下载中），与后端生命周期契约一致。 */
+function imageStateText(state: string): string {
+  return formatImageGenerationState(state, $t, "workbench.imageLifecycle.generating");
+}
+
+/** 模板守卫用普通布尔返回，避免类型收窄影响后续 v-else-if 的终态比较。 */
+function isActiveImageState(state: string): boolean {
+  return isImageGenerationActiveState(state);
+}
+
+/** 失败提示：优先稳定 kind 的本地化文案；errorReason 仅白名单本地文案可直接展示，历史供应商原文不泄露。 */
+function imageErrorText(item: DeriveAsset): string {
+  return formatImageGenerationFailure(item, $t, "workbench.production.node.assets.generateFailed");
+}
 function generateAssetsImage(row: DeriveAsset, referanceImageUrl: string) {
   currentRow.value = {
     flowId: row?.flowId,

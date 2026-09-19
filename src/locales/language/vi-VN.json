@@ -693,6 +693,16 @@
       },
       "reconnect": "kết nối lại"
     },
+    "imageLifecycle": {
+      "waiting": "Đang chờ",
+      "generating": "Đang tạo",
+      "downloading": "Đang tải xuống",
+      "cancelled": "Đã hủy",
+      "errorTimeout": "Tạo hình ảnh quá thời gian, vui lòng thử lại sau",
+      "errorDownloadFailed": "Tải hình ảnh thất bại, vui lòng thử lại",
+      "errorPersistenceFailed": "Lưu hình ảnh thất bại, vui lòng thử lại",
+      "errorGenerationFailed": "Tạo hình ảnh thất bại, vui lòng thử lại"
+    },
     "cornerScape": {
       "batchSettings": "Cài đặt tạo hàng loạt",
       "quickActions": "Lệnh lối tắt",
@@ -741,6 +751,12 @@
         "polishFailed": "Trau chuốt thất bại, vui lòng thử lại",
         "selectAtLeastOne": "Vui lòng chọn ít nhất một tài nguyên để tạo hàng loạt",
         "batchStarted": "Bắt đầu tạo hàng loạt, tổng cộng {count} mục, số luồng đồng thời {concurrent}",
+        "modelSaveFailed": "Không thể lưu mô hình ảnh",
+        "modelSaving": "Đang lưu mô hình, vui lòng chờ",
+        "stalePromptTitle": "Lời nhắc tài sản đã lỗi thời",
+        "stalePromptBody": "Lời nhắc của các tài sản sau đã lỗi thời: {names}. Tạo lại?",
+        "regeneratePrompts": "Có, tạo lại",
+        "promptRecoveryStarted": "Đã gửi yêu cầu tạo lại lời nhắc. Khi hoàn tất, hãy nhấn tạo ảnh lần nữa.",
         "batchItemFailed": "Tạo {name} thất bại: {error}",
         "batchComplete": "Tạo hàng loạt hoàn tất",
         "batchFailed": "Tạo hàng loạt không thành công",
@@ -971,6 +987,8 @@
           "referenceMediaUnreadable": "Tệp ảnh tham chiếu bị thiếu hoặc không đọc được",
           "referenceMediaInvalid": "Tệp ảnh tham chiếu không hợp lệ",
           "imageGenerationFailed": "Tạo ảnh thất bại, vui lòng thử lại",
+          "imageGenerationTimeout": "Quá thời gian tạo ảnh, vui lòng thử lại sau",
+          "imageDownloadFailed": "Tải ảnh thất bại, vui lòng thử lại",
           "imagePersistenceFailed": "Lưu ảnh đã tạo thất bại",
           "cancelled": "Đã hủy việc tạo"
         }

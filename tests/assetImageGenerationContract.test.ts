@@ -263,6 +263,8 @@ test("稳定错误 kind 与 i18n 键一一对应，覆盖生成链路全部后�
     "referenceMediaUnreadable",
     "referenceMediaInvalid",
     "imageGenerationFailed",
+    "imageGenerationTimeout",
+    "imageDownloadFailed",
     "imagePersistenceFailed",
     "cancelled",
   ];
@@ -295,4 +297,112 @@ test("失败 kind 经注入的翻译函数映射为用户可理解中文，未�
   assert.equal(assetImageGenerationFailureText({ kind: "futureKind" as AssetReferenceFailureKind, message: "未来错误消息" }, translate), "未来错误消息");
   assert.equal(assetImageGenerationFailureText({ message: "网络错误" }, translate), "网络错误");
   assert.equal(assetImageGenerationFailureText({}, translate), "请求失败，请重试");
+});
+
+// ---- 资产页轮询契约（Issue #39 生命周期）----
+// 复用真实 Vue 页面的 handler，而不是在测试里重新实现一遍请求流。
+import fs from "node:fs";
+import vm from "node:vm";
+import ts from "typescript";
+import { isImageGenerationActiveState, normalizeImageGenerationState } from "../src/utils/imageGenerationLifecycle.ts";
+
+const assetsPageSource = fs.readFileSync(new URL("../src/views/assets/index.vue", import.meta.url), "utf8");
+const assetsPageScript = assetsPageSource.split('<script setup lang="ts">')[1].split("</script>")[0];
+const assetsPageAst = ts.createSourceFile("assetsPage.ts", assetsPageScript, ts.ScriptTarget.Latest, true);
+const assetsPageFunctionNames = new Set(["getAllAssetsFlat", "findAssetById", "pollingImageAssets", "removeAcceptedImageId"]);
+const assetsPageVariableNames = new Set(["generatingData", "acceptedImageIds", "imagePollingIds"]);
+const assetsPageHandlers = assetsPageAst.statements
+  .filter(
+    (node) =>
+      (ts.isFunctionDeclaration(node) && assetsPageFunctionNames.has(node.name?.text ?? "")) ||
+      (ts.isVariableStatement(node) &&
+        node.declarationList.declarations.some((declaration) => assetsPageVariableNames.has(declaration.name.getText(assetsPageAst)))),
+  )
+  .map((node) => node.getText(assetsPageAst))
+  .join("\n");
+
+function makeAssetsPageRow(id: number, state: string) {
+  return { id, state, src: "", filePath: "", errorKind: "", promptState: "", sonAssets: [] as any[] };
+}
+
+function assetsPageHarness(rows: any[], post: (url: string, body: any) => Promise<any>) {
+  const refreshed: string[] = [];
+  let exposedGeneratingData: { value: any } | null = null;
+  const ctx: any = {
+    tableData: { value: rows },
+    assetOptions: { value: "role" },
+    computed: (getter: () => any) => ({ get value() { return getter(); } }),
+    ref: (value: any) => ({ value }),
+    isImageGenerationActiveState,
+    normalizeImageGenerationState,
+    axios: { post },
+    getFilteredData: (option: string) => { refreshed.push(option); },
+    __exposeGeneratingData: (value: { value: any }) => { exposedGeneratingData = value; },
+    console,
+  };
+  vm.createContext(ctx);
+  // 顶层 const 不会挂到 vm context 上，末尾追加一条语句把 computed 暴露出来
+  const code = ts.transpileModule(assetsPageHandlers, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText
+    + "\n__exposeGeneratingData(generatingData);";
+  vm.runInContext(code, ctx);
+  return { ctx, rows, refreshed, generatingData: exposedGeneratingData! };
+}
+
+test("资产页轮询集合覆盖全部活跃状态：等待中/生成中/下载中都必须被轮询", () => {
+  const rows = [
+    makeAssetsPageRow(1, "等待中"),
+    makeAssetsPageRow(2, "生成中"),
+    makeAssetsPageRow(3, "下载中"),
+    makeAssetsPageRow(4, "已完成"),
+    makeAssetsPageRow(5, "生成失败"),
+    makeAssetsPageRow(6, "已取消"),
+    makeAssetsPageRow(7, "未生成"),
+  ];
+  const h = assetsPageHarness(rows, async () => ({ data: [] }));
+  // 轮询集合必须包含全部活跃状态，否则等待中的任务永远不会被推进（永久等待）
+  // （vm 跨 realm 的数组不能直接 deepEqual，先拷贝为普通数组）
+  assert.deepEqual(
+    Array.from(h.generatingData.value, (item: any) => item.id),
+    [1, 2, 3],
+  );
+});
+
+test("资产页轮询：缺失记录停止等待，下载中不被误标为完成，终态才显示图片", async () => {
+  const rows = [makeAssetsPageRow(1, "等待中"), makeAssetsPageRow(2, "下载中")];
+  rows[0].sonAssets = [makeAssetsPageRow(3, "生成中")];
+  const h = assetsPageHarness(rows, async (_url, body) => {
+    // getAllAssetsFlat 先父资产后其子资产：请求顺序为 [1, 3, 2]
+    assert.deepEqual(Array.from(body.ids), [1, 3, 2]);
+    return {
+      data: [
+        { id: 1, state: null, filePath: null, errorKind: null },
+        { id: 2, state: "已完成", filePath: "http://oss/small-2.png", errorKind: null },
+        { id: 3, state: "生成失败", filePath: null, errorKind: "imageGenerationTimeout" },
+      ],
+    };
+  });
+  await h.ctx.pollingImageAssets();
+  // 记录缺失（state=null）必须置回“未生成”停止等待，不能无限轮询
+  assert.equal(h.rows[0].state, "未生成");
+  // 终态（已完成）才把 filePath 作为 src 显示
+  assert.equal(h.rows[1].state, "已完成");
+  assert.equal(h.rows[1].src, "http://oss/small-2.png");
+  // 稳定失败 kind 被写入，供展示层区分超时/生成失败/下载失败
+  assert.equal(h.rows[0].sonAssets[0].state, "生成失败");
+  assert.equal(h.rows[0].sonAssets[0].errorKind, "imageGenerationTimeout");
+  // 全部到达终态后轮询集合清空
+  assert.equal(h.generatingData.value.length, 0);
+  assert.deepEqual(h.refreshed, ["role"]);
+});
+
+test("资产页轮询：活跃状态下不提前把 filePath 当作图片显示", async () => {
+  const rows = [makeAssetsPageRow(1, "等待中")];
+  const h = assetsPageHarness(rows, async () => ({
+    data: [{ id: 1, state: "下载中", filePath: "http://oss/small-1.png", errorKind: null }],
+  }));
+  await h.ctx.pollingImageAssets();
+  assert.equal(h.rows[0].state, "下载中");
+  // 下载中仍是活跃状态，不能把半成品 URL 当成可预览图片
+  assert.equal(h.rows[0].src, "");
+  assert.deepEqual(Array.from(h.generatingData.value, (item: any) => item.id), [1]);
 });

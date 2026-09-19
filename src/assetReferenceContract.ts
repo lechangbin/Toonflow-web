@@ -438,6 +438,8 @@ export type AssetImageGenerationBackendFailureKind =
   | "referenceMediaUnreadable"
   | "referenceMediaInvalid"
   | "imageGenerationFailed"
+  | "imageGenerationTimeout"
+  | "imageDownloadFailed"
   | "imagePersistenceFailed"
   | "cancelled";
 
@@ -485,6 +487,8 @@ export const ASSET_IMAGE_GENERATION_FAILURE_I18N_KEYS: Record<AssetImageGenerati
   referenceMediaUnreadable: "workbench.assets.gen.errors.referenceMediaUnreadable",
   referenceMediaInvalid: "workbench.assets.gen.errors.referenceMediaInvalid",
   imageGenerationFailed: "workbench.assets.gen.errors.imageGenerationFailed",
+  imageGenerationTimeout: "workbench.assets.gen.errors.imageGenerationTimeout",
+  imageDownloadFailed: "workbench.assets.gen.errors.imageDownloadFailed",
   imagePersistenceFailed: "workbench.assets.gen.errors.imagePersistenceFailed",
   cancelled: "workbench.assets.gen.errors.cancelled",
   // Derived Asset 父资产锚点/变化契约（Issue #38，镜像 #37 错误族）
