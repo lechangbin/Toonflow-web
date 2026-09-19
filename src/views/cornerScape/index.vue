@@ -640,6 +640,8 @@ function regenerateItem() {
     )
     .then(async () => {
       removeSubmittingImageId(item.id);
+      // POST 已接受但列表/占位可见性可能短暂滞后；交给权威轮询确认终态。
+      addAcceptedImageId(item.id);
       window.$message.success($t("workbench.cornerScape.msg.genSuccess", { name: item.name }));
       await getFilteredData();
     })
@@ -842,6 +844,7 @@ const generatingData = computed(() => {
 });
 const submittingImageIds = ref<number[]>([]);
 const acceptedImageIds = ref<number[]>([]);
+const missingImagePollCounts = new Map<number, number>();
 function addUniqueId(target: typeof submittingImageIds, id: number) {
   if (!target.value.includes(id)) target.value.push(id);
 }
@@ -850,7 +853,10 @@ function removeId(target: typeof submittingImageIds, id: number) {
 }
 const addSubmittingImageId = (id: number) => addUniqueId(submittingImageIds, id);
 const removeSubmittingImageId = (id: number) => removeId(submittingImageIds, id);
-const addAcceptedImageId = (id: number) => addUniqueId(acceptedImageIds, id);
+const addAcceptedImageId = (id: number) => {
+  missingImagePollCounts.delete(id);
+  addUniqueId(acceptedImageIds, id);
+};
 const imagePollingIds = computed(() => [
   ...new Set([...generatingData.value.map((item) => item.id), ...submittingImageIds.value, ...acceptedImageIds.value]),
 ]);
@@ -917,10 +923,18 @@ async function pollingImageAssets() {
         const target = dataList.value.find((row) => row.id === item.id);
         if (!target) return;
         if (item.state !== null) {
+          missingImagePollCounts.delete(item.id);
           removeSubmittingImageId(item.id);
           removeId(acceptedImageIds, item.id);
+        } else if (submittingImageIds.value.includes(item.id)) {
+          // 请求仍在提交中时，state=null 只表示占位尚未可见，不得清空状态或停止轮询。
+          return;
         } else if (acceptedImageIds.value.includes(item.id)) {
-          // 已接受的批次按契约应已有占位；缺失是权威终止结果。
+          const misses = (missingImagePollCounts.get(item.id) ?? 0) + 1;
+          missingImagePollCounts.set(item.id, misses);
+          if (misses < 3) return;
+          // 连续缺失才视为权威终止，既避免首轮竞态，也避免无限轮询。
+          missingImagePollCounts.delete(item.id);
           removeId(acceptedImageIds, item.id);
         }
         const nextState = normalizeImageGenerationState(item.state) ?? "";

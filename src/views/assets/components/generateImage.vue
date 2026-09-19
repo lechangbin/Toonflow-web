@@ -243,6 +243,9 @@ async function handleGenerate() {
     return;
   }
   generateLoading.value = true;
+  // 单资产 POST 会等待供应商完成；立即读取后端状态，不能让数分钟调用期只剩
+  // 本地 loading。占位尚未创建时 generateLoading 会驱动有限间隔的后续读取。
+  void fetchGeneratedImages();
   try {
     const result = await generateSingleAssetImage({
       projectId: Number(project.value?.id),
@@ -350,7 +353,7 @@ async function fetchGeneratedImages() {
   // 非终态（等待中/生成中/下载中）图片继续轮询，终态或缺失记录停止等待
   const hasGenerating = images.some((img: { state: string }) => isImageGenerationActiveState(img.state));
   stopPolling();
-  if (hasGenerating && generateImageShow.value) {
+  if ((hasGenerating || generateLoading.value) && generateImageShow.value) {
     pollingTimer = setTimeout(() => fetchGeneratedImages(), 3000);
   }
 }

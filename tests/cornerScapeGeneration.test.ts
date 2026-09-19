@@ -37,6 +37,7 @@ const variableNames = new Set([
   "generatingData",
   "submittingImageIds",
   "acceptedImageIds",
+  "missingImagePollCounts",
   "addSubmittingImageId",
   "removeSubmittingImageId",
   "addAcceptedImageId",
@@ -52,6 +53,7 @@ function harness(post: (url: string, body: any) => Promise<any>, confirm = false
   const items = [1, 2].map(id => ({ id, name: `Asset ${id}`, prompt: "prompt", type: "role", describe: "description", state: "已完成", promptState: "" }));
   const messages: { kind: string; value: unknown }[] = [];
   const dialogs: any[] = [];
+  let exposedAcceptedImageIds: { value: number[] } | null = null;
   const ctx: any = {
     modelSaving: { value: false }, imageSubmitting: { value: false }, modelSaveRevision: 0, modelSaveQueue: Promise.resolve(),
     selectedIds: { value: [1, 2] }, selectValue: { value: "agnes:agnes-image-2.5-flash" }, resolution: { value: "1K" },
@@ -72,6 +74,7 @@ function harness(post: (url: string, body: any) => Promise<any>, confirm = false
     console,
     window: { $message: Object.fromEntries(["warning", "success", "error"].map(kind => [kind, (value: unknown) => messages.push({ kind, value })])) },
     $t: (key: string, params: unknown) => JSON.stringify({ key, params }),
+    __exposeAcceptedImageIds: (value: { value: number[] }) => { exposedAcceptedImageIds = value; },
     axios: { post }, DialogPlugin: { confirm: (options: any) => {
       dialogs.push(options);
       queueMicrotask(() => confirm ? options.onConfirm() : options.onClose());
@@ -79,8 +82,10 @@ function harness(post: (url: string, body: any) => Promise<any>, confirm = false
     } },
   };
   vm.createContext(ctx);
-  vm.runInContext(ts.transpileModule(handlers, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText, ctx);
-  return { ctx, items, dialogs, messages };
+  const code = ts.transpileModule(handlers, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText
+    + "\n__exposeAcceptedImageIds(acceptedImageIds);";
+  vm.runInContext(code, ctx);
+  return { ctx, items, dialogs, messages, acceptedImageIds: exposedAcceptedImageIds! };
 }
 
 test("rejected batch does not report started or leave fake generating state", async () => {
@@ -172,6 +177,49 @@ test("polling applies authoritative states and stops waiting on missing records"
   assert.equal(h.items[0].state, "下载中");
   assert.equal(h.items[1].state, "");
   assert.equal(h.ctx.currentItem.value.state, "下载中");
+});
+
+test("accepted single generation tolerates transient missing rows before treating absence as terminal", async () => {
+  const h = harness(async (url) => {
+    if (url.endsWith("pollingImageAssets")) {
+      return { data: [{ id: 1, state: null, filePath: null, errorKind: null }] };
+    }
+    return { data: [] };
+  });
+  h.acceptedImageIds.value.push(1);
+  const initialState = h.items[0].state;
+
+  await h.ctx.pollingImageAssets();
+  assert.deepEqual(Array.from(h.acceptedImageIds.value), [1], "首轮缺失可能只是占位尚未可见，必须继续轮询");
+  assert.equal(h.items[0].state, initialState, "短暂缺失不得清空现有权威状态");
+
+  await h.ctx.pollingImageAssets();
+  await h.ctx.pollingImageAssets();
+  assert.deepEqual(Array.from(h.acceptedImageIds.value), [], "连续三次缺失后停止，避免无限轮询");
+  assert.equal(h.items[0].state, "");
+});
+
+test("single-asset dialog polls while the blocking POST is still in flight", () => {
+  const generateSource = fs.readFileSync(new URL("../src/views/assets/components/generateImage.vue", import.meta.url), "utf8");
+  const start = generateSource.indexOf("async function handleGenerate");
+  const end = generateSource.indexOf("//自定义上传图片", start);
+  const handler = generateSource.slice(start, end);
+  assert.ok(handler.indexOf("void fetchGeneratedImages()") > -1, "提交后应立即启动权威轮询");
+  assert.ok(
+    handler.indexOf("void fetchGeneratedImages()") < handler.indexOf("await generateSingleAssetImage"),
+    "轮询必须早于会等待供应商完成的 POST await",
+  );
+  assert.match(generateSource, /hasGenerating\s*\|\|\s*generateLoading\.value/u, "占位尚未出现时仍应在提交期间继续轮询");
+});
+
+test("Production Agent only acknowledges accepted backend generation", () => {
+  const productionSource = fs.readFileSync(new URL("../src/stores/productionAgent.ts", import.meta.url), "utf8");
+  const handler = productionSource.slice(
+    productionSource.indexOf('s.on("generateDeriveAsset"'),
+    productionSource.indexOf('s.on("generateStoryboard"'),
+  );
+  assert.match(handler, /assetsData\s*===\s*undefined[\s\S]*success:\s*false/u);
+  assert.match(handler, /success:\s*true/u);
 });
 
 test("polling terminal states carry distinct stable error kinds", async () => {

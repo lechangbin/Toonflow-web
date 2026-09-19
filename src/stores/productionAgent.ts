@@ -187,6 +187,9 @@ function makeProductionAgentStore(projectId: string) {
           });
           s.on("generateDeriveAsset", async (data, callback) => {
             const assetsData = await batchGenerateAssets(data.ids);
+            if (assetsData === undefined) {
+              return callback({ success: false, message: $t("workbench.imageLifecycle.errorGenerationFailed") });
+            }
             callback({ success: true, message: assetsData });
           });
           s.on("generateStoryboard", async (data, callback) => {
