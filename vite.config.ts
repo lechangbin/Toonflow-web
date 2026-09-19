@@ -6,6 +6,7 @@ import Components from "unplugin-vue-components/vite";
 import { TDesignResolver } from "@tdesign-vue-next/auto-import-resolver";
 import { viteSingleFile } from "vite-plugin-singlefile";
 import postcsspxtoviewport from "postcss-px-to-viewport";
+import { generatedTypeDeclarations } from "./scripts/generatedTypeDeclarations.ts";
 
 export default defineConfig({
   base: "./",
@@ -20,7 +21,7 @@ export default defineConfig({
   plugins: [
     vue(),
     AutoImport({
-      dts: "src/types/auto-imports.d.ts",
+      dts: generatedTypeDeclarations.autoImports,
       imports: ["vue", "pinia", "vue-router"],
       resolvers: [
         TDesignResolver({
@@ -32,7 +33,7 @@ export default defineConfig({
       ],
     }),
     Components({
-      dts: "src/types/components.d.ts",
+      dts: generatedTypeDeclarations.components,
       resolvers: [
         TDesignResolver({
           library: "vue-next",
