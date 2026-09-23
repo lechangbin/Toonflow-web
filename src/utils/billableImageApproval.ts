@@ -10,7 +10,8 @@ export interface BillableImageApproval {
   preview: { assetId: number; assetName: string; vendorId: string; modelId: string;
     resolution: string; estimatedMaxCostMicros: number; currency: string; disclaimer: string };
   vendorRequest: null | { requestId: string; status: string; providerTaskId: string | null;
-    artifactHash: string | null; cancellationRequested: boolean; imageId: number };
+    artifactHash: string | null; pendingArtifactHash: string | null;
+    cancellationRequested: boolean; imageId: number };
 }
 
 export interface BillableImageQuote {
@@ -42,6 +43,7 @@ export function quoteMicros(decimal: string): number | null {
 
 export function imageApprovalSummary(approval: BillableImageApproval): string {
   const request = approval.vendorRequest;
+  if (request?.pendingArtifactHash) return "媒体写入尚未完成；已保留待写入证据，不表示图片成功，也不会重新请求供应商。";
   if (request?.status === "succeeded") return `已完成，图片 #${request.imageId}。`;
   if (request?.status === "unknown" || request?.status === "dispatch_recorded")
     return `结果未知，不能自动重发；请求 ${request.requestId} 需人工核对供应商记录。`;

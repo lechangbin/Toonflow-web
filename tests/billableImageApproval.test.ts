@@ -15,9 +15,12 @@ test("billable approval controls never treat unknown or cancelled outcomes as re
   assert.equal(maySubmitApprovedImage({ ...approval, expiresAt: 0 }), false);
   assert.equal(maySubmitApprovedImage({ ...approval, allowedActions: ["inspect"] }), false);
   const unknown = { ...approval, vendorRequest: { requestId: "request", status: "unknown",
-    providerTaskId: null, artifactHash: null, cancellationRequested: false, imageId: 1 } };
+    providerTaskId: null, artifactHash: null, pendingArtifactHash: null,
+    cancellationRequested: false, imageId: 1 } };
   assert.equal(maySubmitApprovedImage(unknown), false);
   assert.match(imageApprovalSummary(unknown), /不能自动重发/);
+  assert.match(imageApprovalSummary({ ...unknown, vendorRequest: { ...unknown.vendorRequest,
+    pendingArtifactHash: "hash" } }), /不表示图片成功/);
   assert.match(imageApprovalSummary({ ...unknown, vendorRequest: { ...unknown.vendorRequest,
     status: "late_artifact_observed" } }), /不会自动作为成功/);
   assert.match(imageApprovalSummary({ ...unknown, vendorRequest: { ...unknown.vendorRequest,

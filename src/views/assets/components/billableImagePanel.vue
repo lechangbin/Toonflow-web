@@ -32,7 +32,7 @@
           size="small" theme="danger" variant="outline" :disabled="busy" @click="cancel(approval)">请求取消</t-button>
         <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('commit_observed_artifact')"
           size="small" theme="primary" :disabled="busy" @click="commitObserved(approval)">提交已观察图片</t-button>
-        <t-button v-if="approval.vendorRequest?.artifactHash" size="small" variant="outline"
+        <t-button v-if="approval.vendorRequest?.artifactHash || approval.vendorRequest?.pendingArtifactHash" size="small" variant="outline"
           :disabled="busy" @click="inspectArtifact(approval)">查看产物证据</t-button>
         <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('stop_without_replay')"
           size="small" variant="outline" :disabled="busy" @click="stopWithoutReplay(approval)">结束跟踪（不重发）</t-button>
@@ -192,7 +192,7 @@ async function inspectArtifact(approval: BillableImageApproval) {
       requestId: approval.vendorRequest.requestId });
     const artifact = response.data?.artifact;
     if (!artifact) window.$message.warning("尚无可核对的产物证据。");
-    else window.$message.info(`产物 ${artifact.status}；SHA-256 ${artifact.artifactHash.slice(0, 16)}…；媒体 ${artifact.mediaPath}`);
+    else window.$message.info(`产物 ${artifact.status}；SHA-256 ${artifact.artifactHash.slice(0, 16)}…；媒体记录 ${artifact.mediaPath}。待写入不表示文件已存在。`);
   } catch { window.$message.warning("读取产物证据失败，请刷新后核对。"); }
 }
 
