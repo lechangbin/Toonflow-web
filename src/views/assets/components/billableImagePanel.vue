@@ -34,6 +34,8 @@
           size="small" theme="primary" :disabled="busy" @click="commitObserved(approval)">提交已观察图片</t-button>
         <t-button v-if="approval.vendorRequest?.artifactHash || approval.vendorRequest?.pendingArtifactHash" size="small" variant="outline"
           :disabled="busy" @click="inspectArtifact(approval)">查看产物证据</t-button>
+        <t-button v-if="approval.vendorRequest?.pendingArtifactHash" size="small" variant="outline"
+          :disabled="busy" @click="recoverPending(approval)">核对本地待写入媒体</t-button>
         <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('stop_without_replay')"
           size="small" variant="outline" :disabled="busy" @click="stopWithoutReplay(approval)">结束跟踪（不重发）</t-button>
         <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('reconcile_manual')"
@@ -194,6 +196,17 @@ async function inspectArtifact(approval: BillableImageApproval) {
     if (!artifact) window.$message.warning("尚无可核对的产物证据。");
     else window.$message.info(`产物 ${artifact.status}；SHA-256 ${artifact.artifactHash.slice(0, 16)}…；媒体记录 ${artifact.mediaPath}。待写入不表示文件已存在。`);
   } catch { window.$message.warning("读取产物证据失败，请刷新后核对。"); }
+}
+
+async function recoverPending(approval: BillableImageApproval) {
+  if (!approval.vendorRequest?.pendingArtifactHash || busy.value) return;
+  busy.value = true;
+  try {
+    await axios.post("/agentRuns/billableImage/artifact/recover", { projectId: props.projectId,
+      requestId: approval.vendorRequest.requestId });
+    window.$message.success("本地媒体已按内容哈希核对；仍需检查是否可提交，不会重发供应商请求。");
+  } catch { window.$message.warning("本地媒体不可读、哈希不符或状态已变化；未认定为成功，也未重新请求供应商。"); }
+  finally { busy.value = false; await refresh(); }
 }
 
 function showManualReconciliation(approval: BillableImageApproval) {
