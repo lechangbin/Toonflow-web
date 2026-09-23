@@ -40,13 +40,16 @@
           size="small" variant="outline" :disabled="busy" @click="stopWithoutReplay(approval)">结束跟踪（不重发）</t-button>
         <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('reconcile_manual')"
           size="small" variant="outline" :disabled="busy" @click="showManualReconciliation(approval)">人工核对指引</t-button>
+        <t-button size="small" variant="outline" @click="openEvidence(approval)">查看 Trace 证据</t-button>
       </div>
     </div>
+    <agentTraceEvidenceDrawer v-model:visible="evidenceVisible" :project-id="projectId" :run-id="evidenceRunId" />
   </div>
 </template>
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
+import agentTraceEvidenceDrawer from "./agentTraceEvidenceDrawer.vue";
 import { imageApprovalSummary, maySubmitApprovedImage, parseVendorModel, quoteMicros,
   type BillableImageApproval, type BillableImageQuote } from "@/utils/billableImageApproval";
 
@@ -63,7 +66,14 @@ const quote = ref<BillableImageQuote | null>(null);
 const amount = ref("");
 const currency = ref("USD");
 const approvals = ref<BillableImageApproval[]>([]);
+const evidenceVisible = ref(false);
+const evidenceRunId = ref("");
 let loadedQuoteKey = "";
+
+function openEvidence(approval: BillableImageApproval) {
+  evidenceRunId.value = approval.runId;
+  evidenceVisible.value = true;
+}
 
 async function refresh() {
   if (!props.visible || !props.projectId) return;
