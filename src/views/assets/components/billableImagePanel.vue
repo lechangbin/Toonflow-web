@@ -30,6 +30,14 @@
           :disabled="busy" @click="execute(approval)">提交供应商一次</t-button>
         <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('cancel')"
           size="small" theme="danger" variant="outline" :disabled="busy" @click="cancel(approval)">请求取消</t-button>
+        <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('commit_observed_artifact')"
+          size="small" theme="primary" :disabled="busy" @click="commitObserved(approval)">提交已观察图片</t-button>
+        <t-button v-if="approval.vendorRequest?.artifactHash" size="small" variant="outline"
+          :disabled="busy" @click="inspectArtifact(approval)">查看产物证据</t-button>
+        <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('stop_without_replay')"
+          size="small" variant="outline" :disabled="busy" @click="stopWithoutReplay(approval)">结束跟踪（不重发）</t-button>
+        <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('reconcile_manual')"
+          size="small" variant="outline" :disabled="busy" @click="showManualReconciliation(approval)">人工核对指引</t-button>
       </div>
     </div>
   </div>
@@ -154,6 +162,57 @@ function cancel(approval: BillableImageApproval) {
       try { await axios.post("/agentRuns/billableImage/cancel", { projectId: props.projectId,
         requestId: approval.vendorRequest?.requestId, expectedVersion: approval.runVersion }); }
       catch { window.$message.warning("取消状态可能已变化，请刷新核对。"); }
+      finally { busy.value = false; dialog.destroy(); await refresh(); }
+    },
+  });
+}
+
+function commitObserved(approval: BillableImageApproval) {
+  if (!approval.vendorRequest || !approval.allowedActions.includes("commit_observed_artifact") || busy.value) return;
+  const dialog = DialogPlugin.confirm({
+    header: "确认提交已观察的图片",
+    body: `请求 ${approval.vendorRequest.requestId} 的产物已记录。系统会重新校验目标、审批和取消状态；不再调用供应商。`,
+    theme: "warning", confirmBtn: "提交图片",
+    onConfirm: async () => {
+      busy.value = true;
+      try {
+        await axios.post("/agentRuns/billableImage/commit", { projectId: props.projectId,
+          requestId: approval.vendorRequest?.requestId, expectedVersion: approval.runVersion });
+        emit("completed");
+      } catch { window.$message.warning("本地提交条件已变化，请刷新后核对；系统不会重发供应商请求。"); }
+      finally { busy.value = false; dialog.destroy(); await refresh(); }
+    },
+  });
+}
+
+async function inspectArtifact(approval: BillableImageApproval) {
+  if (!approval.vendorRequest || busy.value) return;
+  try {
+    const response = await axios.post("/agentRuns/billableImage/artifact", { projectId: props.projectId,
+      requestId: approval.vendorRequest.requestId });
+    const artifact = response.data?.artifact;
+    if (!artifact) window.$message.warning("尚无可核对的产物证据。");
+    else window.$message.info(`产物 ${artifact.status}；SHA-256 ${artifact.artifactHash.slice(0, 16)}…；媒体 ${artifact.mediaPath}`);
+  } catch { window.$message.warning("读取产物证据失败，请刷新后核对。"); }
+}
+
+function showManualReconciliation(approval: BillableImageApproval) {
+  if (!approval.vendorRequest || !approval.allowedActions.includes("reconcile_manual")) return;
+  DialogPlugin.alert({ header: "供应商结果待人工核对",
+    body: `请求 ${approval.vendorRequest.requestId} 的提交结果未知。请使用供应商控制台或其支持渠道核对是否受理和计费；当前适配器没有可验证的任务 ID，系统不能自动轮询，也不能安全地重发此请求。可以请求取消并结束本地跟踪，但这不代表供应商已取消或退款。`,
+    confirmBtn: "知道了" });
+}
+
+function stopWithoutReplay(approval: BillableImageApproval) {
+  if (!approval.vendorRequest || !approval.allowedActions.includes("stop_without_replay") || busy.value) return;
+  const dialog = DialogPlugin.confirm({ header: "结束本地跟踪，不重发",
+    body: `请求 ${approval.vendorRequest.requestId} 的供应商效果和计费可能仍未知；结束仅关闭本地 Run，保留请求及迟到产物证据。`,
+    theme: "warning", confirmBtn: "结束跟踪",
+    onConfirm: async () => {
+      busy.value = true;
+      try { await axios.post("/agentRuns/billableImage/stop", { projectId: props.projectId,
+        requestId: approval.vendorRequest?.requestId, expectedVersion: approval.runVersion }); }
+      catch { window.$message.warning("状态已变化，请刷新后核对。"); }
       finally { busy.value = false; dialog.destroy(); await refresh(); }
     },
   });
