@@ -8,7 +8,10 @@ test("Trace labels distinguish approval, cancellation, recovery and late results
   assert.match(traceEventLabel("vendor.request.cancellation-requested"), /取消/);
   assert.match(traceEventLabel("vendor.request.unknown-on-recovery"), /重启/);
   assert.match(traceEventLabel("artifact.late-observed"), /迟到/);
-  assert.equal(traceEventLabel("run.created"), "run.created");
+  assert.match(traceEventLabel("run.created"), /创建/);
+  assert.match(traceEventLabel("interrupted-before-model-call"), /后继尝试/);
+  assert.match(traceEventLabel("tool.approval.conflicted"), /冲突/);
+  assert.equal(traceEventLabel("unknown.future-event"), "unknown.future-event");
 });
 
 test("legacy timeline does not claim a reconstructed causal chain or Provider refund", () => {
