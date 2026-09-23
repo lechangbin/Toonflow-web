@@ -10,6 +10,23 @@
         <i-click-to-fold size="18" @click.stop="emit('close')" />
       </div>
     </div>
+    <div v-if="approvalCards.length" class="approvalCards" aria-label="衍生资产审批">
+      <div v-for="approval in approvalCards" :key="approval.id" class="approvalCard">
+        <div class="approvalTitle">衍生资产写入 · {{ approval.preview.name }}</div>
+        <div class="approvalSummary">{{ approvalSummary(approval) }}</div>
+        <div v-if="approval.status === 'pending'" class="approvalDetails">
+          父资产 #{{ approval.preview.parentAssetId }} ·
+          {{ approval.preview.effect === 'create' ? '新建' : `目标 #${approval.preview.assetId}` }} ·
+          变化维度 {{ approval.preview.dimensions.join('、') }}<br />
+          工具修订 {{ approval.toolRevision }} · 载荷 {{ approval.payloadHash.slice(0, 12) }}…<br />
+          截止 {{ new Date(approval.expiresAt).toLocaleString() }}
+        </div>
+        <div v-if="mayDecide(approval, 'approve') || mayDecide(approval, 'reject')" class="approvalActions">
+          <t-button size="small" theme="primary" :disabled="approvalBusy" @click="confirmApproval(approval, 'approve')">批准写入</t-button>
+          <t-button size="small" variant="outline" :disabled="approvalBusy" @click="confirmApproval(approval, 'reject')">拒绝</t-button>
+        </div>
+      </div>
+    </div>
     <div class="chatBox" v-loading="loadingHistory">
       <t-chat-list :clear-history="false">
         <t-chat-message
@@ -95,6 +112,7 @@
 import { useMousePressed, useMouse } from "@vueuse/core";
 import _ from "lodash";
 import axios from "@/utils/axios";
+import { approvalSummary, mayDecide, visibleApprovals, type DerivedAssetApproval } from "@/utils/derivedAssetApproval";
 import productionAgentStore from "@/stores/productionAgent";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -112,6 +130,46 @@ const props = defineProps({ title: String });
 const emit = defineEmits(["close"]);
 
 const inputValue = ref("");
+const approvals = ref<DerivedAssetApproval[]>([]);
+const approvalCards = computed(() => visibleApprovals(approvals.value));
+const approvalBusy = ref(false);
+let approvalRefreshTimer: ReturnType<typeof setInterval> | undefined;
+
+async function refreshApprovals() {
+  const projectId = project.value?.id;
+  if (!projectId) { approvals.value = []; return; }
+  try {
+    const response = await axios.post("/agentRuns/derivedAssetApproval/list", { projectId });
+    approvals.value = response.data?.approvals ?? [];
+  } catch {
+    approvals.value = [];
+  }
+}
+
+function confirmApproval(approval: DerivedAssetApproval, decision: "approve" | "reject") {
+  if (!mayDecide(approval, decision) || approvalBusy.value) return;
+  const dialog = DialogPlugin.confirm({
+    header: decision === "approve" ? "确认写入衍生资产" : "确认拒绝写入",
+    body: `目标资产 ${approval.preview.assetId ?? "新建"}；期望版本 ${approval.preview.expectedVersion}；操作载荷 ${approval.payloadHash.slice(0, 12)}…。${decision === "approve" ? "确认后将立即写入当前项目。" : "拒绝后不会写入。"}`,
+    theme: decision === "approve" ? "warning" : "default",
+    confirmBtn: decision === "approve" ? "批准写入" : "拒绝",
+    onConfirm: async () => {
+      approvalBusy.value = true;
+      try {
+        await axios.post("/agentRuns/derivedAssetApproval/decide", {
+          projectId: project.value?.id, runId: approval.runId, approvalId: approval.id,
+          clientCommandId: crypto.randomUUID(), expectedVersion: approval.runVersion, decision,
+        });
+        await refreshApprovals();
+        dialog.destroy();
+      } catch {
+        await refreshApprovals();
+        dialog.destroy();
+        window.$message.warning("审批状态已变化或操作失败，请核对最新状态；系统不会自动重试写入。");
+      } finally { approvalBusy.value = false; }
+    },
+  });
+}
 
 function handleSend(text: string) {
   productionAgentStore().chat(text);
@@ -184,12 +242,17 @@ watchEffect(() => {
 
 const showThink = ref(false);
 onMounted(async () => {
+  await refreshApprovals();
+  approvalRefreshTimer = setInterval(() => { void refreshApprovals(); }, 5000);
   const { data } = await axios.post(`/project/getModelDetails`, { key: "productionAgent" });
   if (data && data.think) {
     showThink.value = true;
   }
 });
+onUnmounted(() => { if (approvalRefreshTimer) clearInterval(approvalRefreshTimer); });
+watch(() => project.value?.id, () => { void refreshApprovals(); });
 watch(connected, (newVal) => {
+  if (newVal) void refreshApprovals();
   if (status.value != "idle" && newVal) {
     status.value = "idle";
   }
@@ -229,7 +292,8 @@ watch(connected, (newVal) => {
   box-shadow: -4px 2px 10px var(--td-shadow-1);
   .chatBox {
     width: 100%;
-    height: calc(100% - 50px);
+    flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     padding-left: 8px;
@@ -261,6 +325,24 @@ watch(connected, (newVal) => {
     }
   }
 }
+
+.approvalCards {
+  max-height: 35%;
+  overflow-y: auto;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--td-border-level-1-color);
+}
+.approvalCard {
+  padding: 8px;
+  margin-bottom: 6px;
+  border: 1px solid var(--td-border-level-1-color);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.approvalTitle { font-weight: 600; }
+.approvalSummary { margin-top: 4px; }
+.approvalDetails { margin-top: 5px; line-height: 1.5; overflow-wrap: anywhere; }
+.approvalActions { display: flex; gap: 6px; margin-top: 8px; }
 
 .settingMenu {
   padding: 4px 0;
