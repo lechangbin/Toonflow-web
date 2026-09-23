@@ -47,7 +47,7 @@
                   v-model="props.formData.prompt"
                   :placeholder="$t('workbench.assets.gen.promptPlaceholder')"
                   :autosize="{ minRows: 15, maxRows: 15 }"
-                  :disabled="generateLoading || isDerived" />
+                  :disabled="isDerived" />
               </t-loading>
             </div>
           </div>
@@ -65,11 +65,9 @@
               </t-select>
             </div>
           </div>
-          <div class="generateButton" style="margin-top: 20px">
-            <t-button theme="primary" size="large" block :loading="generateLoading" @click="handleGenerate">
-              {{ $t("workbench.assets.gen.generateBtn") }}
-            </t-button>
-          </div>
+          <billableImagePanel :project-id="Number(project?.id)" :asset-id="Number(props.formData.id)"
+            :model="selectValue" :resolution="resolution" :visible="generateImageShow"
+            @completed="fetchGeneratedImages" />
         </t-card>
         <t-divider layout="vertical" style="height: 700px" />
         <t-card :title="$t('workbench.assets.gen.resultTitle')" :bordered="false" :style="{ width: '60%' }">
@@ -115,7 +113,6 @@
                   ref="customUploadRef"
                   action=""
                   v-model="customFileList"
-                  :disabled="generateLoading"
                   :autoUpload="false"
                   theme="custom"
                   accept="image/*"
@@ -145,6 +142,7 @@
 
 <script setup lang="ts">
 import modelSelect from "@/components/modelSelect.vue";
+import billableImagePanel from "./billableImagePanel.vue";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import axios from "@/utils/axios";
@@ -177,17 +175,15 @@ const generateImageShow = defineModel({
 //关闭生成图片的弹窗
 function handleCancel() {
   generateImageShow.value = false;
-  generateLoading.value = false;
   stopPolling();
   emit("update");
 }
 //持久化参考图（在资产配置中管理，生成时由服务端从持久化配置解析）
 const references = ref<AssetReferenceRecord[]>([]);
 const referencesFailure = ref<AssetImageGenerationFailureView | null>(null);
-const generateLoading = ref(false);
 const selectValue = ref(""); //选择的模型
 const store = settingStore();
-const { loadReferences, generateSingleAssetImage } = useAssetImageGeneration();
+const { loadReferences } = useAssetImageGeneration();
 
 const value2 = ref("");
 //智能生成提示词
@@ -228,48 +224,6 @@ function mediaUrl(mediaPath: string): string {
   return referenceMediaUrl(store.baseUrl, mediaPath);
 }
 const resolution = ref("1K");
-//生成图片
-async function handleGenerate() {
-  if (!isDerived.value && !props.formData.prompt) {
-    window.$message.error($t("workbench.assets.gen.fillPrompt"));
-    return;
-  }
-  if (!resolution.value) {
-    window.$message.error($t("workbench.assets.gen.pickResolution"));
-    return;
-  }
-  if (!selectValue.value) {
-    window.$message.error($t("workbench.assets.gen.pickModel"));
-    return;
-  }
-  generateLoading.value = true;
-  // 单资产 POST 会等待供应商完成；立即读取后端状态，不能让数分钟调用期只剩
-  // 本地 loading。占位尚未创建时 generateLoading 会驱动有限间隔的后续读取。
-  void fetchGeneratedImages();
-  try {
-    const result = await generateSingleAssetImage({
-      projectId: Number(project.value?.id),
-      id: Number(props.formData.id),
-      type: props.formData.type ?? "props",
-      name: props.formData.name ?? $t("workbench.assets.gen.unnamed"),
-      prompt: props.formData.prompt ?? "",
-      model: selectValue.value,
-      resolution: resolution.value,
-      asset: props.formData,
-    });
-    if (!result.ok) {
-      // 生成失败保留提示词、模型与分辨率等全部配置，可直接重试
-      window.$message.error(result.failure.message);
-      fetchGeneratedImages();
-      return;
-    }
-    window.$message.success($t("workbench.assets.gen.assetGenSuccess"));
-    await loadPersistedReferences();
-    await fetchGeneratedImages();
-  } finally {
-    generateLoading.value = false;
-  }
-}
 //自定义上传图片
 const customFileList = ref<any[]>([]);
 // 处理自定义上传
@@ -320,7 +274,6 @@ watch(
       value2.value = "";
       selectedImageIndex.value = null;
       hoveredImageIndex.value = null;
-      generateLoading.value = false;
       loadPersistedReferences();
       fetchGeneratedImages();
     }
@@ -353,7 +306,7 @@ async function fetchGeneratedImages() {
   // 非终态（等待中/生成中/下载中）图片继续轮询，终态或缺失记录停止等待
   const hasGenerating = images.some((img: { state: string }) => isImageGenerationActiveState(img.state));
   stopPolling();
-  if ((hasGenerating || generateLoading.value) && generateImageShow.value) {
+  if (hasGenerating && generateImageShow.value) {
     pollingTimer = setTimeout(() => fetchGeneratedImages(), 3000);
   }
 }
