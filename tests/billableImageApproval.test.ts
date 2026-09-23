@@ -29,6 +29,7 @@ test("billable approval controls never treat unknown or cancelled outcomes as re
 
 test("model identity and local quote amount are normalized without floating-point billing drift", () => {
   assert.deepEqual(parseVendorModel("v:model:revision"), { vendorId: "v", modelId: "model:revision" });
+  assert.deepEqual(parseVendorModel("v:series/model"), { vendorId: "v", modelId: "series/model" });
   assert.equal(parseVendorModel("missing"), null);
   assert.equal(quoteMicros("0.2"), 200_000);
   assert.equal(quoteMicros("0.000001"), 1);
