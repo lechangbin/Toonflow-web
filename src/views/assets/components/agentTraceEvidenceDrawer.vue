@@ -5,6 +5,7 @@
     <template v-else-if="evidence">
       <div class="traceHint">Run {{ evidence.runId }} · {{ evidence.timeline.eventCount }} 条事件</div>
       <div class="traceHint">{{ traceLinkageSummary(evidence) }}</div>
+      <div class="traceHint">{{ traceFailureClassificationSummary(evidence) }}</div>
       <div class="traceHint">脱敏校验：{{ evidence.redaction.result }}。结构化证据随项目保留；下载文件由浏览器保存，应用不另存导出副本。</div>
       <div class="traceActions">
         <t-button size="small" variant="outline" @click="download">下载脱敏 JSON</t-button>
@@ -31,7 +32,8 @@
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
-import { traceEventLabel, traceLinkageSummary, type AgentTraceEvidence } from "@/utils/agentTraceEvidence";
+import { traceEventLabel, traceLinkageSummary, traceFailureClassificationSummary,
+  type AgentTraceEvidence } from "@/utils/agentTraceEvidence";
 
 const props = defineProps<{ projectId: number; runId: string }>();
 const visible = defineModel<boolean>("visible", { required: true });

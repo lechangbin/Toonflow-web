@@ -21,6 +21,9 @@ export interface AgentTraceEvidence {
   runId: string;
   timeline: { schemaVersion: "toonflow.trace-timeline-evidence.v1";
     ordering: "durable-sequence"; linkage: "linked" | "legacy-unlinked"; eventCount: number };
+  failureClassification: { schemaVersion: "toonflow.trace-failure-classification.v1";
+    coverage: "complete" | "legacy-unclassified";
+    knownFailureEventCount: number; classifiedFailureEventCount: number };
   retention: { schemaVersion: "toonflow.agent-evidence-retention.v1";
     databaseRetention: "project-lifetime"; databaseDeletion: "project-delete-transaction";
     mediaDeletion: "project-directory-after-db-commit"; redactedExportRetention: "not-persisted" };
@@ -74,4 +77,11 @@ export function traceLinkageSummary(evidence: AgentTraceEvidence): string {
   return evidence.timeline.linkage === "linked"
     ? "前驱链已按持久化序号连接；不代表供应商已确认计费或取消。"
     : "包含旧版未补链事件；只按持久化序号展示，不推断缺失的因果关系。";
+}
+
+export function traceFailureClassificationSummary(evidence: AgentTraceEvidence): string {
+  const classification = evidence.failureClassification;
+  return classification.coverage === "complete"
+    ? `当前已识别的 ${classification.knownFailureEventCount} 条失败事件均有结构化诊断；不代表旧路径全覆盖。`
+    : `有 ${classification.knownFailureEventCount - classification.classifiedFailureEventCount} 条历史失败事件缺少诊断；不能推断其效果或重试安全性。`;
 }
