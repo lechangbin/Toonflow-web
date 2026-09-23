@@ -21,6 +21,10 @@ export interface AgentTraceEvidence {
   runId: string;
   timeline: { schemaVersion: "toonflow.trace-timeline-evidence.v1";
     ordering: "durable-sequence"; linkage: "linked" | "legacy-unlinked"; eventCount: number };
+  retention: { schemaVersion: "toonflow.agent-evidence-retention.v1";
+    databaseRetention: "project-lifetime"; databaseDeletion: "project-delete-transaction";
+    mediaDeletion: "project-directory-after-db-commit"; redactedExportRetention: "not-persisted" };
+  redaction: { schemaVersion: "toonflow.trace-redaction-evidence.v1"; result: "passed" };
   events: AgentTraceEvent[];
 }
 

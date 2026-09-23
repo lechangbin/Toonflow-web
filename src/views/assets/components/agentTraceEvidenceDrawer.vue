@@ -5,6 +5,7 @@
     <template v-else-if="evidence">
       <div class="traceHint">Run {{ evidence.runId }} · {{ evidence.timeline.eventCount }} 条事件</div>
       <div class="traceHint">{{ traceLinkageSummary(evidence) }}</div>
+      <div class="traceHint">脱敏校验：{{ evidence.redaction.result }}。结构化证据随项目保留；下载文件由浏览器保存，应用不另存导出副本。</div>
       <div class="traceActions">
         <t-button size="small" variant="outline" @click="download">下载脱敏 JSON</t-button>
         <t-button size="small" variant="outline" @click="refresh">刷新证据</t-button>
@@ -56,7 +57,7 @@ async function refresh() {
 }
 
 function download() {
-  if (!evidence.value) return;
+  if (!evidence.value || evidence.value.redaction.result !== "passed") return;
   const blob = new Blob([JSON.stringify(evidence.value, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");

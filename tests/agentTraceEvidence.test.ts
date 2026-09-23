@@ -14,7 +14,11 @@ test("Trace labels distinguish approval, cancellation, recovery and late results
 test("legacy timeline does not claim a reconstructed causal chain or Provider refund", () => {
   const evidence: AgentTraceEvidence = { schemaVersion: "toonflow.agent-trace-export.v1", projectId: 7,
     runId: "run-1", timeline: { schemaVersion: "toonflow.trace-timeline-evidence.v1",
-      ordering: "durable-sequence", linkage: "legacy-unlinked", eventCount: 0 }, events: [] };
+      ordering: "durable-sequence", linkage: "legacy-unlinked", eventCount: 0 },
+    retention: { schemaVersion: "toonflow.agent-evidence-retention.v1",
+      databaseRetention: "project-lifetime", databaseDeletion: "project-delete-transaction",
+      mediaDeletion: "project-directory-after-db-commit", redactedExportRetention: "not-persisted" },
+    redaction: { schemaVersion: "toonflow.trace-redaction-evidence.v1", result: "passed" }, events: [] };
   assert.match(traceLinkageSummary(evidence), /不推断/);
   assert.match(traceLinkageSummary({ ...evidence, timeline: { ...evidence.timeline, linkage: "linked" } }), /不代表供应商/);
 });

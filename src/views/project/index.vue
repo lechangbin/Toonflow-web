@@ -149,6 +149,10 @@ function addProjectFn(data: ProjectPayload) {
 }
 
 function delProjcer(projectId: string | undefined) {
+  const id = Number(projectId);
+  if (!Number.isSafeInteger(id) || id <= 0) {
+    window.$message.error($t("workbench.project.msg.notFound")); return;
+  }
   const dialog = DialogPlugin.confirm({
     header: $t("workbench.project.msg.deleteHeader"),
     body: $t("workbench.project.msg.deleteBody"),
@@ -156,10 +160,12 @@ function delProjcer(projectId: string | undefined) {
     cancelBtn: $t("workbench.project.msg.deleteCancel"),
     onConfirm: () => {
       axios
-        .post("/project/delProject", { id: projectId })
-        .then(() => {
+        .post("/project/delProject", { id })
+        .then((response) => {
           clearProjectCache(projectId!);
-          window.$message.success($t("workbench.project.msg.deleteSuccess"));
+          if (response.data?.mediaCleanup === "failed")
+            window.$message.warning("项目数据库记录已删除，但本地媒体清理失败，请人工核对。");
+          else window.$message.success($t("workbench.project.msg.deleteSuccess"));
           getAllProject();
         })
         .catch((e) => {
