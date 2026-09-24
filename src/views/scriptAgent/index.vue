@@ -3,7 +3,7 @@
     <Splitpanes class="default-theme data f">
       <Pane :size="30" :min-size="15" class="operate">
         <div class="box pr">
-          <t-chat-list :clear-history="false">
+          <t-chat-list v-if="!harnessMode" :clear-history="false">
             <t-chat-message
               v-for="message in messages"
               :key="message.id"
@@ -17,14 +17,18 @@
           </t-chat-list>
           <t-chat-sender
             class="inputBox"
-            :disabled="status === 'pending' || status === 'streaming'"
+            :disabled="harnessMode ? harnessBusy : status === 'pending' || status === 'streaming'"
             v-model="inputValue"
-            :loading="status === 'pending' || status === 'streaming'"
+            :loading="harnessMode ? harnessBusy || harnessActive : status === 'pending' || status === 'streaming'"
             placeholder="$t('workbench.scriptAgent.inputPlaceholder')"
             @send="handleSend"
             @stop="handleStop">
             <template #footer-prefix>
-              <t-popup trigger="click" placement="top-left">
+              <t-button size="small" variant="outline" :disabled="harnessBusy || (!harnessMode && (status === 'pending' || status === 'streaming'))"
+                @click="toggleHarnessMode">
+                {{ harnessMode ? "退出监督 Harness" : "试用监督 Harness" }}
+              </t-button>
+              <t-popup v-if="!harnessMode" trigger="click" placement="top-left">
                 <t-button shape="square" variant="outline" size="small" :disabled="status === 'pending' || status === 'streaming'">
                   <template #icon>
                     <i-setting-config size="16" />
@@ -51,7 +55,7 @@
                   </div>
                 </template>
               </t-popup>
-              <t-popup trigger="click" placement="top" v-if="showThink">
+              <t-popup trigger="click" placement="top" v-if="showThink && !harnessMode">
                 <t-button
                   size="small"
                   variant="outline"
@@ -77,7 +81,40 @@
               </t-popup>
             </template>
           </t-chat-sender>
-          <i-dot class="dot" theme="outline" :fill="connected ? 'green' : 'red'" />
+          <div v-if="harnessMode" class="harnessStatus">
+            <div>模型只能提出候选，不能直接写入；下方独立提案经批准后才会修改项目。</div>
+            <div v-if="harnessRun">Run {{ harnessRun.id }} · {{ harnessRun.status }}</div>
+            <div v-if="harnessRun?.attentionReason">需处理：{{ harnessRun.attentionReason }}</div>
+            <div v-if="harnessError" class="harnessError">{{ harnessError }}</div>
+            <pre v-if="harnessRun?.outputs?.length">{{ harnessRun.outputs.at(-1)?.content }}</pre>
+            <t-button size="small" variant="text" :disabled="harnessBusy" @click="refreshHarnessRun">刷新状态</t-button>
+            <div class="harnessApprovalTitle">模型提案授权（需已发布 Skill 声明对应 Tool）</div>
+            <div v-if="grantError" class="harnessError">{{ grantError }}</div>
+            <div v-if="proposalGrants" class="harnessGrantControls">
+              <t-button size="small" variant="outline" :disabled="grantBusy" @click="confirmProposalGrant('workspace')">
+                规划候选：{{ proposalGrants.workspace.active ? "已允许" : "未允许" }}
+              </t-button>
+              <t-button size="small" variant="outline" :disabled="grantBusy" @click="confirmProposalGrant('script')">
+                剧本候选：{{ proposalGrants.script.active ? "已允许" : "未允许" }}
+              </t-button>
+            </div>
+            <div class="harnessApprovalTitle">待审批写入候选（批准后才会修改项目）</div>
+            <div v-if="approvalError" class="harnessError">{{ approvalError }}</div>
+            <div v-for="approval in writeApprovals" :key="approval.id" class="harnessApproval">
+              <div>{{ approval.kind }} · {{ approval.status }} · {{ approval.runId }}</div>
+              <div v-if="approval.sourceRunId">来自模型 Run {{ approval.sourceRunId }}</div>
+              <pre>{{ JSON.stringify(approval.preview, null, 2) }}</pre>
+              <div v-if="approval.status === 'pending'">
+                <t-button size="small" variant="outline" :disabled="approvalBusy" @click="reviewScriptWrite(approval)">查看待写入全文</t-button>
+                <pre v-if="reviewedApproval?.approval.id === approval.id && reviewedApproval.approval.runVersion === approval.runVersion">
+{{ reviewedApproval.payload.content }}</pre>
+                <t-button size="small" theme="primary" :disabled="approvalBusy || !isReviewed(approval)" @click="confirmScriptWrite(approval, 'approve')">批准</t-button>
+                <t-button size="small" variant="outline" :disabled="approvalBusy" @click="confirmScriptWrite(approval, 'reject')">拒绝</t-button>
+              </div>
+            </div>
+            <t-button size="small" variant="text" :disabled="approvalBusy" @click="refreshWriteApprovals">刷新写入提案</t-button>
+          </div>
+          <i-dot class="dot" theme="outline" :fill="harnessMode ? 'blue' : connected ? 'green' : 'red'" />
           <transition name="fade">
             <div v-if="forceGenerateVisible" class="forceGenerateMask">
               <div class="forceGenerateCard">
@@ -212,12 +249,197 @@ import settingStore from "@/stores/setting";
 const { themeSetting } = storeToRefs(settingStore());
 import { Splitpanes, Pane } from "splitpanes";
 import axios from "@/utils/axios";
+import { v4 as uuid } from "uuid";
+import { createScriptHarnessClient, isScriptHarnessTerminal, type ScriptHarnessRun } from "@/utils/scriptHarnessContract";
+import { createScriptWriteApprovalClient, type ScriptProposalGrants, type ScriptWriteApproval, type ScriptWriteApprovalReview } from "@/utils/scriptWriteApprovalContract";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import editMdPreivew from "@/components/editMdPreivew.vue";
 import scriptAgentStore from "@/stores/scriptAgent";
 const { connected, messages, status, planData, thinkLevel } = storeToRefs(scriptAgentStore());
+const harnessMode = ref(false);
+const harnessRun = ref<ScriptHarnessRun | null>(null);
+const harnessBusy = ref(false);
+const harnessError = ref("");
+const harnessActive = computed(() => harnessRun.value?.status === "queued" || harnessRun.value?.status === "running");
+const harnessClient = createScriptHarnessClient(<T,>(path: string, body: unknown) =>
+  axios.post(path, body) as unknown as Promise<{ data: T }>);
+const approvalClient = createScriptWriteApprovalClient(<T,>(path: string, body: unknown) =>
+  axios.post(path, body) as unknown as Promise<{ data: T }>);
+const writeApprovals = ref<ScriptWriteApproval[]>([]);
+const proposalGrants = ref<ScriptProposalGrants | null>(null);
+const grantBusy = ref(false);
+const grantError = ref("");
+const reviewedApproval = ref<ScriptWriteApprovalReview | null>(null);
+const approvalBusy = ref(false);
+const approvalError = ref("");
+let harnessTimer: ReturnType<typeof setTimeout> | undefined;
+let harnessEpoch = 0;
+
+function clearHarnessTimer() {
+  if (harnessTimer) clearTimeout(harnessTimer);
+  harnessTimer = undefined;
+}
+function showHarnessError(error: unknown) {
+  harnessError.value = error instanceof Error ? error.message : "Harness 请求失败，请刷新状态后重试";
+}
+function acceptHarnessRun(run: ScriptHarnessRun, epoch: number) {
+  if (!harnessMode.value || epoch !== harnessEpoch) return;
+  const wasActive = harnessActive.value;
+  harnessRun.value = run;
+  clearHarnessTimer();
+  if (wasActive && isScriptHarnessTerminal(run.status)) {
+    void refreshWriteApprovals();
+  }
+  if (!isScriptHarnessTerminal(run.status) && run.status !== "waiting") {
+    harnessTimer = setTimeout(() => { void refreshHarnessRun(); }, 3000);
+  }
+}
+async function refreshHarnessRun() {
+  if (!harnessMode.value || !project.value?.id) return;
+  const epoch = harnessEpoch;
+  try {
+    const run = harnessRun.value
+      ? await harnessClient.inspect(project.value.id, harnessRun.value.id)
+      : (await harnessClient.list(project.value.id)).current;
+    if (epoch !== harnessEpoch || !harnessMode.value) return;
+    harnessError.value = "";
+    if (run) acceptHarnessRun(run, epoch);
+  } catch (error) {
+    if (epoch === harnessEpoch) showHarnessError(error);
+  }
+}
+async function toggleHarnessMode() {
+  if (harnessBusy.value) return;
+  clearHarnessTimer();
+  harnessEpoch += 1;
+  harnessError.value = "";
+  harnessRun.value = null;
+  if (harnessMode.value) {
+    harnessMode.value = false;
+    writeApprovals.value = [];
+    proposalGrants.value = null;
+    reviewedApproval.value = null;
+    scriptAgentStore().connect();
+    return;
+  }
+  scriptAgentStore().disconnect();
+  harnessMode.value = true;
+  await Promise.all([refreshHarnessRun(), refreshWriteApprovals(), refreshProposalGrants()]);
+}
+onUnmounted(() => { clearHarnessTimer(); harnessEpoch += 1; });
+
+async function refreshProposalGrants() {
+  if (!harnessMode.value || !project.value?.id) return;
+  const epoch = harnessEpoch;
+  try {
+    const grants = await approvalClient.grants(project.value.id);
+    if (epoch !== harnessEpoch) return;
+    proposalGrants.value = grants;
+    grantError.value = "";
+  } catch (error) {
+    if (epoch === harnessEpoch) grantError.value = error instanceof Error
+      ? error.message : "模型提案授权读取失败";
+  }
+}
+function confirmProposalGrant(kind: "workspace" | "script") {
+  if (!harnessMode.value || !proposalGrants.value || grantBusy.value) return;
+  const active = !proposalGrants.value[kind].active;
+  const dialog = DialogPlugin.confirm({
+    header: active ? "允许模型提出此类候选？" : "撤销此类候选授权？",
+    body: active
+      ? "这只允许已授权 Skill 提出待审批候选，不会自动修改项目；每项写入仍需您查看全文并批准。"
+      : "撤销阻止后续模型提案，不会删除已有独立审批候选。",
+    confirmBtn: active ? "允许提出候选" : "撤销授权",
+    cancelBtn: "取消", theme: "warning",
+    onConfirm: async () => {
+      if (!project.value?.id || !proposalGrants.value) return;
+      const epoch = harnessEpoch;
+      grantBusy.value = true;
+      try {
+        await approvalClient.setGrant(project.value.id, kind, proposalGrants.value, active);
+        if (epoch === harnessEpoch) await refreshProposalGrants();
+        dialog.destroy();
+      } catch (error) {
+        if (epoch === harnessEpoch) {
+          await refreshProposalGrants();
+          grantError.value = error instanceof Error ? error.message : "授权更新失败，请刷新后重试";
+        }
+      } finally {
+        if (epoch === harnessEpoch) grantBusy.value = false;
+      }
+    },
+  });
+}
+
+async function refreshWriteApprovals() {
+  if (!harnessMode.value || !project.value?.id) return;
+  const epoch = harnessEpoch;
+  try {
+    const approvals = await approvalClient.list(project.value.id);
+    if (epoch !== harnessEpoch) return;
+    writeApprovals.value = approvals;
+    if (reviewedApproval.value && !approvals.some((item) => isReviewed(item))) {
+      reviewedApproval.value = null;
+    }
+    approvalError.value = "";
+  } catch (error) {
+    if (epoch === harnessEpoch) approvalError.value = error instanceof Error
+      ? error.message : "写入提案读取失败";
+  }
+}
+function isReviewed(approval: ScriptWriteApproval): boolean {
+  return reviewedApproval.value?.approval.id === approval.id
+    && reviewedApproval.value.approval.runId === approval.runId
+    && reviewedApproval.value.approval.runVersion === approval.runVersion
+    && reviewedApproval.value.approval.payloadHash === approval.payloadHash
+    && approval.status === "pending";
+}
+async function reviewScriptWrite(approval: ScriptWriteApproval) {
+  if (!harnessMode.value || !project.value?.id || approvalBusy.value) return;
+  const epoch = harnessEpoch;
+  reviewedApproval.value = null;
+  approvalBusy.value = true;
+  try {
+    const review = await approvalClient.review(project.value.id, approval);
+    if (epoch === harnessEpoch) { reviewedApproval.value = review; approvalError.value = ""; }
+  } catch (error) {
+    if (epoch === harnessEpoch) approvalError.value = error instanceof Error
+      ? error.message : "待写入正文读取失败";
+  } finally {
+    if (epoch === harnessEpoch) approvalBusy.value = false;
+  }
+}
+function confirmScriptWrite(approval: ScriptWriteApproval, decision: "approve" | "reject") {
+  if (!harnessMode.value || approvalBusy.value || approval.status !== "pending" || !project.value?.id) return;
+  if (decision === "approve" && !isReviewed(approval)) return;
+  const dialog = DialogPlugin.confirm({
+    header: decision === "approve" ? "确认批准此单项写入？" : "确认拒绝此写入？",
+    body: `Run ${approval.runId}；操作 ${approval.operationId}；目标摘要 ${JSON.stringify(approval.preview)}`,
+    confirmBtn: decision === "approve" ? "批准精确目标" : "拒绝",
+    cancelBtn: "取消",
+    theme: decision === "approve" ? "warning" : "default",
+    onConfirm: async () => {
+      if (!project.value?.id) return;
+      const epoch = harnessEpoch;
+      approvalBusy.value = true;
+      try {
+        await approvalClient.decide(project.value.id, approval, decision, uuid());
+        reviewedApproval.value = null;
+        if (epoch === harnessEpoch) await refreshWriteApprovals();
+        dialog.destroy();
+      } catch (error) {
+        if (epoch === harnessEpoch) {
+          await refreshWriteApprovals();
+          approvalError.value = error instanceof Error ? error.message : "写入决策失败，请刷新后重试";
+        }
+      } finally {
+        if (epoch === harnessEpoch) approvalBusy.value = false;
+      }
+    },
+  });
+}
 const thinkLevelOptions = [
   { label: $t("workbench.scriptAgent.thinkLevel.off"), value: 0 },
   { label: $t("workbench.scriptAgent.thinkLevel.light"), value: 1 },
@@ -285,16 +507,45 @@ async function getPlanData() {
 //快捷发送
 const handleActions = {
   suggestion: (data?: any) => {
-    scriptAgentStore().chat(data?.content?.prompt);
+    handleSend(data?.content?.prompt ?? "");
   },
 };
 
-function handleSend(text: string) {
-  scriptAgentStore().chat(text);
-  inputValue.value = "";
+async function handleSend(text: string) {
+  if (!text.trim()) return;
+  if (!harnessMode.value) {
+    scriptAgentStore().chat(text);
+    inputValue.value = "";
+    return;
+  }
+  if (harnessBusy.value || harnessActive.value || !project.value?.id) return;
+  const epoch = harnessEpoch;
+  harnessBusy.value = true;
+  harnessError.value = "";
+  try {
+    const run = await harnessClient.start(project.value.id, uuid(), text);
+    if (epoch === harnessEpoch && harnessMode.value) {
+      inputValue.value = "";
+      acceptHarnessRun(run, epoch);
+    }
+  } catch (error) {
+    if (epoch === harnessEpoch) showHarnessError(error);
+  } finally {
+    if (epoch === harnessEpoch) harnessBusy.value = false;
+  }
 }
-function handleStop() {
-  scriptAgentStore().stopGenerate();
+async function handleStop() {
+  if (!harnessMode.value) { scriptAgentStore().stopGenerate(); return; }
+  if (!harnessRun.value?.allowedActions.includes("cancel") || !project.value?.id || harnessBusy.value) return;
+  const epoch = harnessEpoch;
+  harnessBusy.value = true;
+  try {
+    acceptHarnessRun(await harnessClient.cancel(project.value.id, harnessRun.value, uuid()), epoch);
+  } catch (error) {
+    if (epoch === harnessEpoch) { await refreshHarnessRun(); showHarnessError(error); }
+  } finally {
+    if (epoch === harnessEpoch) harnessBusy.value = false;
+  }
 }
 
 const memoryTypeLabel: Record<string, string> = {
@@ -575,6 +826,23 @@ function toggleAllCards() {
     }
   }
 }
+
+.harnessStatus {
+  margin: 0 8px 8px 0;
+  padding: 10px;
+  border: 1px solid var(--td-border-level-2-color);
+  border-radius: 8px;
+  overflow: auto;
+  max-height: 50%;
+  overflow-wrap: anywhere;
+  > div { margin-bottom: 6px; }
+  pre { white-space: pre-wrap; font: inherit; }
+}
+.harnessError { color: var(--td-error-color); }
+.harnessApprovalTitle { border-top: 1px solid var(--td-border-level-2-color); padding-top: 8px; }
+.harnessApproval { padding: 8px; border: 1px solid var(--td-border-level-2-color); border-radius: 6px; }
+.harnessApproval button + button { margin-left: 8px; }
+.harnessGrantControls { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .panelContent {
   height: 100%;
