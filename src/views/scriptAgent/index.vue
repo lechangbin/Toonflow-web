@@ -88,6 +88,17 @@
             <div v-if="harnessError" class="harnessError">{{ harnessError }}</div>
             <pre v-if="harnessRun?.outputs?.length">{{ harnessRun.outputs.at(-1)?.content }}</pre>
             <t-button size="small" variant="text" :disabled="harnessBusy" @click="refreshHarnessRun">刷新状态</t-button>
+            <div class="harnessApprovalTitle">独立写入提案（不会由当前只读 Run 自动产生）</div>
+            <div v-if="approvalError" class="harnessError">{{ approvalError }}</div>
+            <div v-for="approval in writeApprovals" :key="approval.id" class="harnessApproval">
+              <div>{{ approval.kind }} · {{ approval.status }} · {{ approval.runId }}</div>
+              <pre>{{ JSON.stringify(approval.preview, null, 2) }}</pre>
+              <div v-if="approval.status === 'pending'">
+                <t-button size="small" theme="primary" :disabled="approvalBusy" @click="confirmScriptWrite(approval, 'approve')">批准</t-button>
+                <t-button size="small" variant="outline" :disabled="approvalBusy" @click="confirmScriptWrite(approval, 'reject')">拒绝</t-button>
+              </div>
+            </div>
+            <t-button size="small" variant="text" :disabled="approvalBusy" @click="refreshWriteApprovals">刷新写入提案</t-button>
           </div>
           <i-dot class="dot" theme="outline" :fill="harnessMode ? 'blue' : connected ? 'green' : 'red'" />
           <transition name="fade">
@@ -226,6 +237,7 @@ import { Splitpanes, Pane } from "splitpanes";
 import axios from "@/utils/axios";
 import { v4 as uuid } from "uuid";
 import { createScriptHarnessClient, isScriptHarnessTerminal, type ScriptHarnessRun } from "@/utils/scriptHarnessContract";
+import { createScriptWriteApprovalClient, type ScriptWriteApproval } from "@/utils/scriptWriteApprovalContract";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -239,6 +251,11 @@ const harnessError = ref("");
 const harnessActive = computed(() => harnessRun.value?.status === "queued" || harnessRun.value?.status === "running");
 const harnessClient = createScriptHarnessClient(<T,>(path: string, body: unknown) =>
   axios.post(path, body) as unknown as Promise<{ data: T }>);
+const approvalClient = createScriptWriteApprovalClient(<T,>(path: string, body: unknown) =>
+  axios.post(path, body) as unknown as Promise<{ data: T }>);
+const writeApprovals = ref<ScriptWriteApproval[]>([]);
+const approvalBusy = ref(false);
+const approvalError = ref("");
 let harnessTimer: ReturnType<typeof setTimeout> | undefined;
 let harnessEpoch = 0;
 
@@ -279,14 +296,56 @@ async function toggleHarnessMode() {
   harnessRun.value = null;
   if (harnessMode.value) {
     harnessMode.value = false;
+    writeApprovals.value = [];
     scriptAgentStore().connect();
     return;
   }
   scriptAgentStore().disconnect();
   harnessMode.value = true;
-  await refreshHarnessRun();
+  await Promise.all([refreshHarnessRun(), refreshWriteApprovals()]);
 }
 onUnmounted(() => { clearHarnessTimer(); harnessEpoch += 1; });
+
+async function refreshWriteApprovals() {
+  if (!harnessMode.value || !project.value?.id) return;
+  const epoch = harnessEpoch;
+  try {
+    const approvals = await approvalClient.list(project.value.id);
+    if (epoch !== harnessEpoch) return;
+    writeApprovals.value = approvals;
+    approvalError.value = "";
+  } catch (error) {
+    if (epoch === harnessEpoch) approvalError.value = error instanceof Error
+      ? error.message : "写入提案读取失败";
+  }
+}
+function confirmScriptWrite(approval: ScriptWriteApproval, decision: "approve" | "reject") {
+  if (!harnessMode.value || approvalBusy.value || approval.status !== "pending" || !project.value?.id) return;
+  const dialog = DialogPlugin.confirm({
+    header: decision === "approve" ? "确认批准此单项写入？" : "确认拒绝此写入？",
+    body: `Run ${approval.runId}；操作 ${approval.operationId}；目标摘要 ${JSON.stringify(approval.preview)}`,
+    confirmBtn: decision === "approve" ? "批准精确目标" : "拒绝",
+    cancelBtn: "取消",
+    theme: decision === "approve" ? "warning" : "default",
+    onConfirm: async () => {
+      if (!project.value?.id) return;
+      const epoch = harnessEpoch;
+      approvalBusy.value = true;
+      try {
+        await approvalClient.decide(project.value.id, approval, decision, uuid());
+        if (epoch === harnessEpoch) await refreshWriteApprovals();
+        dialog.destroy();
+      } catch (error) {
+        if (epoch === harnessEpoch) {
+          await refreshWriteApprovals();
+          approvalError.value = error instanceof Error ? error.message : "写入决策失败，请刷新后重试";
+        }
+      } finally {
+        if (epoch === harnessEpoch) approvalBusy.value = false;
+      }
+    },
+  });
+}
 const thinkLevelOptions = [
   { label: $t("workbench.scriptAgent.thinkLevel.off"), value: 0 },
   { label: $t("workbench.scriptAgent.thinkLevel.light"), value: 1 },
@@ -389,7 +448,7 @@ async function handleStop() {
   try {
     acceptHarnessRun(await harnessClient.cancel(project.value.id, harnessRun.value, uuid()), epoch);
   } catch (error) {
-    if (epoch === harnessEpoch) { showHarnessError(error); await refreshHarnessRun(); }
+    if (epoch === harnessEpoch) { await refreshHarnessRun(); showHarnessError(error); }
   } finally {
     if (epoch === harnessEpoch) harnessBusy.value = false;
   }
@@ -686,6 +745,9 @@ function toggleAllCards() {
   pre { white-space: pre-wrap; font: inherit; }
 }
 .harnessError { color: var(--td-error-color); }
+.harnessApprovalTitle { border-top: 1px solid var(--td-border-level-2-color); padding-top: 8px; }
+.harnessApproval { padding: 8px; border: 1px solid var(--td-border-level-2-color); border-radius: 6px; }
+.harnessApproval button + button { margin-left: 8px; }
 
 .panelContent {
   height: 100%;
