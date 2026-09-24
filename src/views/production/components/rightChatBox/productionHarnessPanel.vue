@@ -21,9 +21,17 @@
           <div>资产 #{{ effect.approval.preview.assetId }} · {{ effect.approval.preview.assetName }}</div>
           <div>{{ imageApprovalSummary(effect.approval) }}</div>
           <div v-if="effect.approval.vendorRequest">请求 {{ effect.approval.vendorRequest.requestId }} · {{ effect.approval.vendorRequest.status }}</div>
+          <div class="actions">
+            <t-button v-if="effect.approval.status === 'pending' && effect.approval.allowedActions.includes('approve')"
+              size="small" theme="warning" :disabled="busy" @click="decide(effect.approval, 'approve')">批准计费范围</t-button>
+            <t-button v-if="effect.approval.status === 'pending' && effect.approval.allowedActions.includes('reject')"
+              size="small" variant="outline" :disabled="busy" @click="decide(effect.approval, 'reject')">拒绝</t-button>
+            <t-button v-if="maySubmitApprovedImage(effect.approval)" size="small" theme="primary"
+              :disabled="busy" @click="execute(effect.approval)">提交供应商一次</t-button>
+          </div>
         </template>
       </div>
-      <div class="hint">审批、提交或人工核对请在对应资产的“受控单资产生图”面板操作。此处只展示后端持久状态，不依据聊天回复判定图片成功。</div>
+      <div class="hint">取消、产物修复与人工对账请在对应资产的“受控单资产生图”面板操作。此处只依据后端持久状态，不根据聊天回复判定图片成功。</div>
     </div>
     <div v-if="recent.length" class="recent">
       <div class="sectionTitle">近期 Run</div>
@@ -35,7 +43,8 @@
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
-import { imageApprovalSummary } from "@/utils/billableImageApproval";
+import { imageApprovalSummary, maySubmitApprovedImage,
+  type BillableImageApproval } from "@/utils/billableImageApproval";
 import { createProductionHarnessClient, type ProductionHarnessEffect,
   type ProductionHarnessRun } from "@/utils/productionHarnessContract";
 
@@ -97,6 +106,41 @@ async function cancel() {
   } catch (reason) {
     error.value = reason instanceof Error ? reason.message : "取消状态不确定，请刷新核对";
   } finally { busy.value = false; }
+}
+
+function decide(approval: BillableImageApproval, decision: "approve" | "reject") {
+  if (busy.value || approval.status !== "pending"
+    || !approval.allowedActions.includes(decision)) return;
+  const dialog = DialogPlugin.confirm({
+    header: decision === "approve" ? "批准一次计费图片范围" : "拒绝图片请求",
+    body: `资产 #${approval.preview.assetId}；模型 ${approval.preview.vendorId}:${approval.preview.modelId}；${approval.preview.resolution}；估算上限 ${(approval.preview.estimatedMaxCostMicros / 1_000_000).toFixed(6)} ${approval.preview.currency}。批准仅授权范围，不会立即请求供应商；估算并非最终账单。`,
+    theme: "warning", confirmBtn: decision === "approve" ? "批准范围" : "拒绝",
+    onConfirm: async () => {
+      busy.value = true;
+      let warning = "";
+      try {
+        await client.decideImage(props.projectId, approval, decision, crypto.randomUUID());
+      } catch { warning = "审批状态可能已变化，请核对服务端状态；系统不会自动重试。"; }
+      finally { busy.value = false; dialog.destroy(); await refresh(); if (warning) error.value = warning; }
+    },
+  });
+}
+
+function execute(approval: BillableImageApproval) {
+  if (busy.value || !maySubmitApprovedImage(approval)) return;
+  const dialog = DialogPlugin.confirm({
+    header: "确认向供应商提交一次图片请求",
+    body: `资产 #${approval.preview.assetId}；范围摘要 ${approval.scopeHash.slice(0, 12)}…；最多一次调用。提交后断线或超时可能已计费，系统不会自动重发。`,
+    theme: "warning", confirmBtn: "提交一次",
+    onConfirm: async () => {
+      busy.value = true;
+      let warning = "";
+      try {
+        await client.executeImage(props.projectId, approval);
+      } catch { warning = "提交结果可能不确定，请核对请求账本；勿重新提案重试。"; }
+      finally { busy.value = false; dialog.destroy(); await refresh(); if (warning) error.value = warning; }
+    },
+  });
 }
 
 function select(run: ProductionHarnessRun) {

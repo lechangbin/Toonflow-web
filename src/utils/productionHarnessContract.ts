@@ -1,4 +1,4 @@
-import type { BillableImageApproval } from "@/utils/billableImageApproval";
+import type { BillableImageApproval } from "./billableImageApproval";
 
 export const PRODUCTION_HARNESS_SCOPE = "production-harness-v1" as const;
 export const PRODUCTION_HARNESS_START_VERSION = "toonflow.agent-run.start.v1" as const;
@@ -80,6 +80,28 @@ export function createProductionHarnessClient(post: Post) {
           clientCommandId, expectedVersion: run.version,
         });
       return result.data.run;
+    },
+    async decideImage(projectId: number | string, approval: BillableImageApproval,
+      decision: "approve" | "reject", clientCommandId: string) {
+      if (approval.status !== "pending" || !approval.allowedActions.includes(decision)) {
+        throw new TypeError("Production image approval cannot be decided in its current state");
+      }
+      const result = await post<{ approval: BillableImageApproval }>(
+        "/agentRuns/billableImage/decide", { projectId: productionProjectId(projectId),
+          runId: approval.runId, approvalId: approval.id, clientCommandId,
+          expectedVersion: approval.runVersion, decision });
+      return result.data.approval;
+    },
+    async executeImage(projectId: number | string, approval: BillableImageApproval) {
+      if (approval.status !== "approved" || approval.vendorRequest !== null
+        || !approval.allowedActions.includes("dispatch") || approval.expiresAt <= Date.now()) {
+        throw new TypeError("Production image approval cannot submit Vendor request");
+      }
+      const result = await post<{ result: { status: string } }>(
+        "/agentRuns/billableImage/execute", { projectId: productionProjectId(projectId),
+          runId: approval.runId, approvalId: approval.id,
+          expectedVersion: approval.runVersion });
+      return result.data.result;
     },
   };
 }

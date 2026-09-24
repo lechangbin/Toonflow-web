@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { createProductionHarnessClient, productionProjectId,
   type ProductionHarnessRun } from "../src/utils/productionHarnessContract.ts";
+import type { BillableImageApproval } from "../src/utils/billableImageApproval.ts";
 
 test("Production client uses owner-scoped HTTP state and separates child effects", async () => {
   const calls: Array<{ path: string; body: unknown }> = [];
@@ -46,4 +47,34 @@ test("Production client rejects malformed Project IDs and unauthorized cancellat
     role: "productionAgent", scope: "production-harness-v1", status: "succeeded",
     version: 2, allowedActions: ["inspect"], outputs: [] }, "stop-1"),
   /cannot be cancelled/);
+});
+
+test("Production image approval and submission are separate version-checked commands", async () => {
+  const calls: Array<{ path: string; body: unknown }> = [];
+  const pending: BillableImageApproval = { id: "approval-1", runId: "child-1",
+    runVersion: 2, status: "pending", runStatus: "waiting",
+    allowedActions: ["inspect", "approve", "reject"], expiresAt: Date.now() + 60_000,
+    scopeHash: "a".repeat(64), preview: { assetId: 21, assetName: "主角",
+      vendorId: "vendor", modelId: "model", resolution: "1K",
+      estimatedMaxCostMicros: 200_000, currency: "USD", disclaimer: "估算" },
+    vendorRequest: null };
+  const approved = { ...pending, status: "approved" as const,
+    runVersion: 3, allowedActions: ["inspect", "dispatch"] };
+  const client = createProductionHarnessClient(async <T>(path, body) => {
+    calls.push({ path, body });
+    return { data: (path.endsWith("/decide") ? { approval: approved }
+      : { result: { status: "unknown" } }) as T };
+  });
+  await assert.rejects(client.executeImage(7, pending), /cannot submit/);
+  assert.equal((await client.decideImage(7, pending, "approve", "owner-1")).status, "approved");
+  assert.equal((await client.executeImage(7, approved)).status, "unknown");
+  assert.deepEqual(calls[0], { path: "/agentRuns/billableImage/decide",
+    body: { projectId: 7, runId: "child-1", approvalId: "approval-1",
+      clientCommandId: "owner-1", expectedVersion: 2, decision: "approve" } });
+  assert.deepEqual(calls[1], { path: "/agentRuns/billableImage/execute",
+    body: { projectId: 7, runId: "child-1", approvalId: "approval-1",
+      expectedVersion: 3 } });
+  await assert.rejects(client.decideImage(7, approved, "approve", "owner-2"),
+    /cannot be decided/);
+  assert.equal(calls.length, 2);
 });
