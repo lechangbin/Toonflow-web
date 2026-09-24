@@ -18,6 +18,13 @@ export interface ScriptWriteApproval {
   preview: unknown;
   runVersion: number;
   runStatus: string;
+  sourceRunId?: string;
+  sourceOperationId?: string;
+}
+
+export interface ScriptProposalGrants {
+  workspace: { active: boolean; version: number };
+  script: { active: boolean; version: number };
 }
 
 export interface ScriptWriteApprovalReview {
@@ -31,6 +38,18 @@ type Post = <T>(path: string, body: unknown) => Promise<{ data: T }>;
 /** Owner authority is supplied by App authentication, never by a browser actor ID. */
 export function createScriptWriteApprovalClient(post: Post) {
   return {
+    async grants(projectId: number | string): Promise<ScriptProposalGrants> {
+      const result = await post<ScriptProposalGrants>(
+        "/agentRuns/getScriptProposalGrants", { projectId: canonicalProjectId(projectId) });
+      return result.data;
+    },
+    async setGrant(projectId: number | string, kind: "workspace" | "script",
+      current: ScriptProposalGrants, active: boolean): Promise<void> {
+      await post("/agentRuns/setScriptProposalGrant", {
+        projectId: canonicalProjectId(projectId), kind,
+        expectedVersion: current[kind].version, active,
+      });
+    },
     async list(projectId: number | string): Promise<ScriptWriteApproval[]> {
       const result = await post<ScriptWriteApproval[]>(
         "/agentRuns/scriptWriteApprovals/list", { projectId: canonicalProjectId(projectId) });

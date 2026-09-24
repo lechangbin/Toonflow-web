@@ -46,3 +46,20 @@ test("Full-text review refuses a changed proposal version", async () => {
   } as T }));
   await assert.rejects(client.review(7, approval), /no longer matches/);
 });
+
+test("Model proposal grant uses the current backend version and no browser actor", async () => {
+  const calls: Array<{ path: string; body: unknown }> = [];
+  const grants = { workspace: { active: false, version: 2 },
+    script: { active: true, version: 4 } };
+  const client = createScriptWriteApprovalClient(async <T>(path: string, body: unknown) => {
+    calls.push({ path, body });
+    return { data: grants as T };
+  });
+  const current = await client.grants("7");
+  await client.setGrant("7", "workspace", current, true);
+  assert.deepEqual(calls, [
+    { path: "/agentRuns/getScriptProposalGrants", body: { projectId: 7 } },
+    { path: "/agentRuns/setScriptProposalGrant", body: { projectId: 7,
+      kind: "workspace", expectedVersion: 2, active: true } },
+  ]);
+});
