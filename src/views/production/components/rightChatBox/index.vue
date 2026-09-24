@@ -6,11 +6,15 @@
         <i-dot theme="outline" :fill="connected ? 'green' : 'red'" />
         {{ props.title }}
       </span>
+      <t-button size="small" variant="text" @click="harnessMode = !harnessMode">
+        {{ harnessMode ? '旧生产聊天' : '受控 Run（试用）' }}
+      </t-button>
       <div class="close">
         <i-click-to-fold size="18" @click.stop="emit('close')" />
       </div>
     </div>
-    <div v-if="approvalCards.length" class="approvalCards" aria-label="衍生资产审批">
+    <productionHarnessPanel v-if="harnessMode && project?.id" :project-id="Number(project.id)" />
+    <div v-if="!harnessMode && approvalCards.length" class="approvalCards" aria-label="衍生资产审批">
       <div v-for="approval in approvalCards" :key="approval.id" class="approvalCard">
         <div class="approvalTitle">衍生资产写入 · {{ approval.preview.name }}</div>
         <div class="approvalSummary">{{ approvalSummary(approval) }}</div>
@@ -27,7 +31,7 @@
         </div>
       </div>
     </div>
-    <div class="chatBox" v-loading="loadingHistory">
+    <div v-if="!harnessMode" class="chatBox" v-loading="loadingHistory">
       <t-chat-list :clear-history="false">
         <t-chat-message
           v-for="message in messages"
@@ -115,6 +119,7 @@ import axios from "@/utils/axios";
 import { approvalSummary, mayDecide, visibleApprovals, type DerivedAssetApproval } from "@/utils/derivedAssetApproval";
 import productionAgentStore from "@/stores/productionAgent";
 import projectStore from "@/stores/project";
+import productionHarnessPanel from "./productionHarnessPanel.vue";
 const { project } = storeToRefs(projectStore());
 const { connected, messages, status, episodesId, loadingHistory, thinkLevel } = storeToRefs(productionAgentStore());
 const thinkLevelOptions = [
@@ -130,6 +135,7 @@ const props = defineProps({ title: String });
 const emit = defineEmits(["close"]);
 
 const inputValue = ref("");
+const harnessMode = ref(false);
 const approvals = ref<DerivedAssetApproval[]>([]);
 const approvalCards = computed(() => visibleApprovals(approvals.value));
 const approvalBusy = ref(false);
