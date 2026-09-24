@@ -16,6 +16,16 @@ export interface DerivedAssetApproval {
     name: string;
     dimensions: string[];
   };
+  payload?: {
+    parentAssetId: number;
+    assetId: number | null;
+    expectedVersion: number;
+    scriptId: number;
+    name: string;
+    description: string;
+    changeInstruction: { dimensions: string[]; evidence: string[];
+      preserve: string[]; change: string[]; exclude: string[] };
+  };
   runStatus: string;
   runVersion: number;
   allowedActions: string[];

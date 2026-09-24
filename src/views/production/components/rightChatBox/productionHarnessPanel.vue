@@ -1,7 +1,7 @@
 <template>
   <section class="productionHarness" aria-label="生产 Agent 持久 Run">
-    <div class="intro">受控生产指导（试用）：读取已授权的工作区；图片候选只会创建待项目所有者审批的请求，不会由模型直接计费。</div>
-    <t-textarea v-model="input" :disabled="busy" placeholder="描述要检查的拍摄计划或图片候选" :maxlength="20000" />
+    <div class="intro">受控生产指导（试用）：读取已授权的工作区；图片或派生资产候选只会创建待项目所有者审批的请求，不会由模型直接生成或写入。</div>
+    <t-textarea v-model="input" :disabled="busy" placeholder="描述要检查的拍摄计划、图片或派生资产候选" :maxlength="20000" />
     <div class="actions">
       <t-button size="small" theme="primary" :disabled="busy || !input.trim()" @click="start">创建 Run</t-button>
       <t-button size="small" variant="outline" :disabled="busy" @click="refresh">刷新服务端状态</t-button>
@@ -31,6 +31,23 @@
           </div>
         </template>
       </div>
+      <div class="sectionTitle">派生资产候选的持久效果</div>
+      <div v-if="!derivedEffects.length">尚无派生资产候选或服务端未记录效果。</div>
+      <div v-for="effect in derivedEffects" :key="effect.operationId" class="effectCard">
+        <div>操作 {{ effect.operationId }} · {{ effect.status === 'denied' ? '授权拒绝' : '已建审批' }}</div>
+        <template v-if="effect.approval">
+          <div>父资产 #{{ effect.approval.preview.parentAssetId }} · {{ effect.approval.preview.name }}</div>
+          <div>{{ derivedApprovalSummary(effect.approval) }}</div>
+          <pre v-if="effect.approval.payload">待审精确载荷：{{ JSON.stringify(effect.approval.payload, null, 2) }}</pre>
+          <div v-else>精确载荷不可核对；请勿批准。</div>
+          <div class="actions">
+            <t-button v-if="effect.approval.status === 'pending' && effect.approval.payload && effect.approval.allowedActions.includes('approve')"
+              size="small" theme="warning" :disabled="busy" @click="decideDerived(effect.approval, 'approve')">批准写入</t-button>
+            <t-button v-if="effect.approval.status === 'pending' && effect.approval.allowedActions.includes('reject')"
+              size="small" variant="outline" :disabled="busy" @click="decideDerived(effect.approval, 'reject')">拒绝</t-button>
+          </div>
+        </template>
+      </div>
       <div class="hint">取消、产物修复与人工对账请在对应资产的“受控单资产生图”面板操作。此处只依据后端持久状态，不根据聊天回复判定图片成功。</div>
     </div>
     <div v-if="recent.length" class="recent">
@@ -45,14 +62,17 @@
 import axios from "@/utils/axios";
 import { imageApprovalSummary, maySubmitApprovedImage,
   type BillableImageApproval } from "@/utils/billableImageApproval";
+import { approvalSummary as derivedApprovalSummary,
+  type DerivedAssetApproval } from "@/utils/derivedAssetApproval";
 import { createProductionHarnessClient, type ProductionHarnessEffect,
-  type ProductionHarnessRun } from "@/utils/productionHarnessContract";
+  type ProductionHarnessDerivedEffect, type ProductionHarnessRun } from "@/utils/productionHarnessContract";
 
 const props = defineProps<{ projectId: number }>();
 const input = ref("");
 const selected = ref<ProductionHarnessRun | null>(null);
 const recent = ref<ProductionHarnessRun[]>([]);
 const effects = ref<ProductionHarnessEffect[]>([]);
+const derivedEffects = ref<ProductionHarnessDerivedEffect[]>([]);
 const busy = ref(false);
 const error = ref("");
 let timer: ReturnType<typeof setInterval> | undefined;
@@ -71,12 +91,13 @@ async function refresh() {
     if (requestedEpoch !== epoch || requestedSequence !== refreshSequence) return;
     recent.value = list.recent;
     const id = selected.value?.id ?? list.current?.id ?? list.recent[0]?.id;
-    if (!id) { selected.value = null; effects.value = []; return; }
+    if (!id) { selected.value = null; effects.value = []; derivedEffects.value = []; return; }
     const run = await client.inspect(props.projectId, id);
     const childEffects = await client.effects(props.projectId, id);
     if (requestedEpoch !== epoch || requestedSequence !== refreshSequence) return;
     selected.value = run;
-    effects.value = childEffects;
+    effects.value = childEffects.effects;
+    derivedEffects.value = childEffects.derivedEffects;
     error.value = "";
   } catch (reason) {
     if (requestedEpoch === epoch && requestedSequence === refreshSequence) error.value = reason instanceof Error
@@ -143,9 +164,29 @@ function execute(approval: BillableImageApproval) {
   });
 }
 
+function decideDerived(approval: DerivedAssetApproval, decision: "approve" | "reject") {
+  if (busy.value || approval.status !== "pending"
+    || (decision === "approve" && !approval.payload)
+    || !approval.allowedActions.includes(decision)) return;
+  const dialog = DialogPlugin.confirm({
+    header: decision === "approve" ? "确认写入派生资产" : "拒绝派生资产候选",
+    body: `父资产 #${approval.preview.parentAssetId}；${approval.preview.effect === "create" ? "新建" : "更新"}「${approval.preview.name}」；期望版本 ${approval.preview.expectedVersion}；载荷摘要 ${approval.payloadHash.slice(0, 12)}…。请核对上方精确载荷；批准后立即写入本地资产。`,
+    theme: "warning", confirmBtn: decision === "approve" ? "批准写入" : "拒绝",
+    onConfirm: async () => {
+      busy.value = true;
+      let warning = "";
+      try {
+        await client.decideDerived(props.projectId, approval, decision, crypto.randomUUID());
+      } catch { warning = "派生资产审批状态可能已变化，请核对服务端状态；系统不会自动重试。"; }
+      finally { busy.value = false; dialog.destroy(); await refresh(); if (warning) error.value = warning; }
+    },
+  });
+}
+
 function select(run: ProductionHarnessRun) {
   selected.value = run;
   effects.value = [];
+  derivedEffects.value = [];
   void refresh();
 }
 
@@ -154,6 +195,7 @@ watch(() => props.projectId, () => {
   selected.value = null;
   recent.value = [];
   effects.value = [];
+  derivedEffects.value = [];
   void refresh();
 });
 onMounted(() => {

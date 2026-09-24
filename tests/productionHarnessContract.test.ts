@@ -4,6 +4,7 @@ import test from "node:test";
 import { createProductionHarnessClient, productionProjectId,
   type ProductionHarnessRun } from "../src/utils/productionHarnessContract.ts";
 import type { BillableImageApproval } from "../src/utils/billableImageApproval.ts";
+import type { DerivedAssetApproval } from "../src/utils/derivedAssetApproval.ts";
 
 test("Production client uses owner-scoped HTTP state and separates child effects", async () => {
   const calls: Array<{ path: string; body: unknown }> = [];
@@ -14,14 +15,17 @@ test("Production client uses owner-scoped HTTP state and separates child effects
     calls.push({ path, body });
     const data = path.endsWith("/list") ? { current: run, recent: [run] }
       : path.endsWith("/effects") ? { runId: run.id,
-        effects: [{ operationId: "image-1", status: "denied", approval: null }] }
+        effects: [{ operationId: "image-1", status: "denied", approval: null }],
+        derivedEffects: [{ operationId: "derived-1", status: "denied", approval: null }] }
       : { run };
     return { data: data as T };
   });
   assert.equal((await client.start("7", "request-1", "检查拍摄计划")).id, run.id);
   assert.equal((await client.inspect(7, run.id)).id, run.id);
   assert.equal((await client.list(7)).current?.id, run.id);
-  assert.equal((await client.effects(7, run.id))[0].status, "denied");
+  const effects = await client.effects(7, run.id);
+  assert.equal(effects.effects[0].status, "denied");
+  assert.equal(effects.derivedEffects[0].status, "denied");
   assert.equal((await client.cancel(7, run, "stop-1")).id, run.id);
   assert.deepEqual(calls.map((entry) => entry.path), [
     "/agentRuns/productionHarness/start", "/agentRuns/productionHarness/inspect",
@@ -33,6 +37,36 @@ test("Production client uses owner-scoped HTTP state and separates child effects
     clientRequestId: "request-1", content: "检查拍摄计划" });
   assert.deepEqual(calls[4].body, { projectId: 7, runId: run.id,
     clientCommandId: "stop-1", expectedVersion: 3 });
+});
+
+test("Production derived Asset approval is a separate version-checked Owner command", async () => {
+  const calls: Array<{ path: string; body: unknown }> = [];
+  const pending: DerivedAssetApproval = { id: "approval-derived", runId: "child-derived",
+    operationId: "operation-derived", toolName: "upsert_derived_asset",
+    toolRevision: "v1", payloadHash: "a".repeat(64), contractHash: "b".repeat(64),
+    status: "pending", expiresAt: Date.now() + 60_000,
+    preview: { effect: "create", parentAssetId: 21, assetId: null,
+      expectedVersion: 0, name: "蓝衣主角", dimensions: ["wardrobe"] },
+    payload: { parentAssetId: 21, assetId: null, expectedVersion: 0,
+      scriptId: 11, name: "蓝衣主角", description: "服装变化",
+      changeInstruction: { dimensions: ["wardrobe"], evidence: ["第一场"],
+        preserve: ["身份"], change: ["蓝色外套"], exclude: [] } },
+    runStatus: "waiting", runVersion: 2,
+    allowedActions: ["inspect", "approve", "reject"], receiptStatus: "pending" };
+  const client = createProductionHarnessClient(async <T>(path, body) => {
+    calls.push({ path, body });
+    return { data: { approval: { ...pending, status: "approved" } } as T };
+  });
+  assert.equal((await client.decideDerived(7, pending, "approve", "owner-derived")).status,
+    "approved");
+  assert.deepEqual(calls[0], { path: "/agentRuns/derivedAssetApproval/decide",
+    body: { projectId: 7, runId: pending.runId, approvalId: pending.id,
+      clientCommandId: "owner-derived", expectedVersion: 2, decision: "approve" } });
+  await assert.rejects(client.decideDerived(7, { ...pending, status: "approved" },
+    "approve", "duplicate"), /cannot be decided/);
+  await assert.rejects(client.decideDerived(7, { ...pending, payload: undefined },
+    "approve", "no-payload"), /cannot be decided/);
+  assert.equal(calls.length, 1);
 });
 
 test("Production client rejects malformed Project IDs and unauthorized cancellation", async () => {

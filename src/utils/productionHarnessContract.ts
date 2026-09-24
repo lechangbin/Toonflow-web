@@ -1,4 +1,5 @@
 import type { BillableImageApproval } from "./billableImageApproval";
+import type { DerivedAssetApproval } from "./derivedAssetApproval";
 
 export const PRODUCTION_HARNESS_SCOPE = "production-harness-v1" as const;
 export const PRODUCTION_HARNESS_START_VERSION = "toonflow.agent-run.start.v1" as const;
@@ -22,9 +23,17 @@ export interface ProductionHarnessEffect {
     sourceOperationId?: string }) | null;
 }
 
+export interface ProductionHarnessDerivedEffect {
+  operationId: string;
+  status: "denied" | "approval";
+  approval: (DerivedAssetApproval & { sourceRunId?: string;
+    sourceOperationId?: string }) | null;
+}
+
 export interface ProductionHarnessEffects {
   runId: string;
   effects: ProductionHarnessEffect[];
+  derivedEffects: ProductionHarnessDerivedEffect[];
 }
 
 export function productionProjectId(value: number | string): number {
@@ -67,7 +76,7 @@ export function createProductionHarnessClient(post: Post) {
         "/agentRuns/productionHarness/effects",
         { projectId: productionProjectId(projectId), runId });
       if (result.data.runId !== runId) throw new TypeError("Production effects Run ID mismatch");
-      return result.data.effects;
+      return result.data;
     },
     async cancel(projectId: number | string, run: ProductionHarnessRun,
       clientCommandId: string) {
@@ -102,6 +111,20 @@ export function createProductionHarnessClient(post: Post) {
           runId: approval.runId, approvalId: approval.id,
           expectedVersion: approval.runVersion });
       return result.data.result;
+    },
+    async decideDerived(projectId: number | string, approval: DerivedAssetApproval,
+      decision: "approve" | "reject", clientCommandId: string) {
+      if (approval.status !== "pending" || !approval.allowedActions.includes(decision)
+        || (decision === "approve" && !approval.payload)) {
+        throw new TypeError("Production derived Asset approval cannot be decided in its current state");
+      }
+      const result = await post<{ approval: DerivedAssetApproval }>(
+        "/agentRuns/derivedAssetApproval/decide", {
+          projectId: productionProjectId(projectId), runId: approval.runId,
+          approvalId: approval.id, clientCommandId,
+          expectedVersion: approval.runVersion, decision,
+        });
+      return result.data.approval;
     },
   };
 }
