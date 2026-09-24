@@ -25,8 +25,10 @@
           工具修订 {{ approval.toolRevision }} · 载荷 {{ approval.payloadHash.slice(0, 12) }}…<br />
           截止 {{ new Date(approval.expiresAt).toLocaleString() }}
         </div>
+        <pre v-if="approval.payload" class="approvalDetails">待审精确载荷：{{ JSON.stringify(approval.payload, null, 2) }}</pre>
+        <div v-else class="approvalDetails">精确载荷不可核对；请勿批准。</div>
         <div v-if="mayDecide(approval, 'approve') || mayDecide(approval, 'reject')" class="approvalActions">
-          <t-button size="small" theme="primary" :disabled="approvalBusy" @click="confirmApproval(approval, 'approve')">批准写入</t-button>
+          <t-button size="small" theme="primary" :disabled="approvalBusy || !mayDecide(approval, 'approve')" @click="confirmApproval(approval, 'approve')">批准写入</t-button>
           <t-button size="small" variant="outline" :disabled="approvalBusy" @click="confirmApproval(approval, 'reject')">拒绝</t-button>
         </div>
       </div>

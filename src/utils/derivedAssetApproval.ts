@@ -35,7 +35,8 @@ export interface DerivedAssetApproval {
 }
 
 export function mayDecide(approval: DerivedAssetApproval, decision: "approve" | "reject"): boolean {
-  return approval.allowedActions.includes(decision);
+  return approval.allowedActions.includes(decision)
+    && (decision !== "approve" || approval.payload !== undefined);
 }
 
 export function visibleApprovals(approvals: readonly DerivedAssetApproval[]): DerivedAssetApproval[] {
