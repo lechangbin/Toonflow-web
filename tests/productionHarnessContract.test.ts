@@ -69,6 +69,29 @@ test("Production derived Asset approval is a separate version-checked Owner comm
   assert.equal(calls.length, 1);
 });
 
+test("Production grant snapshot and toggle use backend versions and distinct capability routes", async () => {
+  const calls: Array<{ path: string; body: unknown }> = [];
+  const client = createProductionHarnessClient(async <T>(path, body) => {
+    calls.push({ path, body });
+    return { data: (path.endsWith("getProductionGrants") ? {
+      workspace: { active: false, version: 0 },
+      imageProposal: { active: false, version: 2 },
+      derivedProposal: { active: false, version: 4 },
+    } : { state: "active", version: 5 }) as T };
+  });
+  const grants = await client.grants(7);
+  assert.equal(grants.derivedProposal.version, 4);
+  assert.deepEqual(await client.setGrant(7, "derivedProposal",
+    grants.derivedProposal, true), { active: true, version: 5 });
+  assert.deepEqual(calls[0], { path: "/agentRuns/getProductionGrants",
+    body: { projectId: 7 } });
+  assert.deepEqual(calls[1], { path: "/agentRuns/setProposeDerivedAssetGrant",
+    body: { projectId: 7, expectedVersion: 4, active: true } });
+  await assert.rejects(client.setGrant(7, "derivedProposal",
+    grants.derivedProposal, false), /stale or unchanged/);
+  assert.equal(calls.length, 2);
+});
+
 test("Production client rejects malformed Project IDs and unauthorized cancellation", async () => {
   assert.equal(productionProjectId("7"), 7);
   for (const value of ["07", "7x", 0, -1, Number.MAX_SAFE_INTEGER + 1]) {

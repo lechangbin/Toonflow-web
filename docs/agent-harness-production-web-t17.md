@@ -6,6 +6,8 @@ App 后端的 `production-harness-v1` 与旧生产 Socket 路径并行。此 Web
 
 兼容入口中的旧 T08 派生审批卡片也同步展示已校验的完整 payload；若后端未返回 payload，即使 allowedActions 包含 approve，前端仍禁用批准但保留拒绝能力。相关 2 个定向单测与上述 4 个合约单测共 6 个通过。该 UI 防误操作层不能替代服务端冻结 payload、Owner 身份与目标状态校验。
 
+试用面板增加三项独立生产 grant 的 Owner 快照和按版本开启/撤销控件。读取经 `/agentRuns/getProductionGrants`，写入仍走各自原有 Owner-only 命令；客户端拒绝无变化或无效版本，不做失败自动重试。最近一次相关 Web 定向单测为 7 个，通过；非声明式 Vue 类型检查通过。是否在真实浏览器中可用仍待 T21。
+
 边界：这是受控生产入口的状态展示接缝，不等于旧 Socket 生命周期已移除。T18 仍需把当前/近期 Run、审批和证据展示统一到所有 Agent 入口，并在真实 App/Web 浏览器流程中验证刷新、重连、批准、拒绝、停止、恢复和兼容回退；T21 才执行最终全量验收。
 
 面试追问：为什么显示“指导 Run 成功”时仍要单列图片效果？因为模型文本 Step 的完成和供应商付费效果属于两个持久生命周期；子审批可能仍 pending、结果未知或取消后迟到。前端以 HTTP 效果投影呈现这些区别，旧 Socket 消息不能覆盖服务端结果。证据是 `src/utils/productionHarnessContract.ts`、`src/views/production/components/rightChatBox/productionHarnessPanel.vue` 与上述定向单测；真实交互体验和长期运行指标仍待测。

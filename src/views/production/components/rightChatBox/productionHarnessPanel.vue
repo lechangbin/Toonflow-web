@@ -1,6 +1,15 @@
 <template>
   <section class="productionHarness" aria-label="生产 Agent 持久 Run">
     <div class="intro">受控生产指导（试用）：读取已授权的工作区；图片或派生资产候选只会创建待项目所有者审批的请求，不会由模型直接生成或写入。</div>
+    <div class="grantCard">
+      <div class="sectionTitle">项目授权（仅所有者）</div>
+      <div v-if="!grants">授权状态尚未读取，请刷新。</div>
+      <div v-for="item in grantOptions" :key="item.kind" class="grantRow">
+        <span>{{ item.label }} · {{ grants?.[item.kind].active ? '已开启' : '未开启' }} · 版本 {{ grants?.[item.kind].version ?? 0 }}</span>
+        <t-button size="small" variant="outline" :disabled="busy || !grants"
+          @click="toggleGrant(item.kind)">{{ grants?.[item.kind].active ? '撤销' : '开启' }}</t-button>
+      </div>
+    </div>
     <t-textarea v-model="input" :disabled="busy" placeholder="描述要检查的拍摄计划、图片或派生资产候选" :maxlength="20000" />
     <div class="actions">
       <t-button size="small" theme="primary" :disabled="busy || !input.trim()" @click="start">创建 Run</t-button>
@@ -65,7 +74,8 @@ import { imageApprovalSummary, maySubmitApprovedImage,
 import { approvalSummary as derivedApprovalSummary,
   type DerivedAssetApproval } from "@/utils/derivedAssetApproval";
 import { createProductionHarnessClient, type ProductionHarnessEffect,
-  type ProductionHarnessDerivedEffect, type ProductionHarnessRun } from "@/utils/productionHarnessContract";
+  type ProductionHarnessDerivedEffect, type ProductionHarnessGrants,
+  type ProductionHarnessRun } from "@/utils/productionHarnessContract";
 
 const props = defineProps<{ projectId: number }>();
 const input = ref("");
@@ -73,6 +83,12 @@ const selected = ref<ProductionHarnessRun | null>(null);
 const recent = ref<ProductionHarnessRun[]>([]);
 const effects = ref<ProductionHarnessEffect[]>([]);
 const derivedEffects = ref<ProductionHarnessDerivedEffect[]>([]);
+const grants = ref<ProductionHarnessGrants | null>(null);
+const grantOptions: Array<{ kind: keyof ProductionHarnessGrants; label: string }> = [
+  { kind: "workspace", label: "读取生产工作区" },
+  { kind: "imageProposal", label: "提出计费图片候选" },
+  { kind: "derivedProposal", label: "提出派生资产候选" },
+];
 const busy = ref(false);
 const error = ref("");
 let timer: ReturnType<typeof setInterval> | undefined;
@@ -87,9 +103,12 @@ async function refresh() {
   const requestedSequence = ++refreshSequence;
   if (!Number.isSafeInteger(props.projectId) || props.projectId <= 0) return;
   try {
-    const list = await client.list(props.projectId);
+    const [list, grantSnapshot] = await Promise.all([
+      client.list(props.projectId), client.grants(props.projectId),
+    ]);
     if (requestedEpoch !== epoch || requestedSequence !== refreshSequence) return;
     recent.value = list.recent;
+    grants.value = grantSnapshot;
     const id = selected.value?.id ?? list.current?.id ?? list.recent[0]?.id;
     if (!id) { selected.value = null; effects.value = []; derivedEffects.value = []; return; }
     const run = await client.inspect(props.projectId, id);
@@ -103,6 +122,18 @@ async function refresh() {
     if (requestedEpoch === epoch && requestedSequence === refreshSequence) error.value = reason instanceof Error
       ? reason.message : "无法读取持久 Run 状态，请稍后重试";
   }
+}
+
+async function toggleGrant(kind: keyof ProductionHarnessGrants) {
+  const current = grants.value?.[kind];
+  if (!current || busy.value) return;
+  busy.value = true;
+  try {
+    await client.setGrant(props.projectId, kind, current, !current.active);
+    await refresh();
+  } catch (reason) {
+    error.value = reason instanceof Error ? reason.message : "授权状态不确定，请刷新核对";
+  } finally { busy.value = false; }
 }
 
 async function start() {
@@ -196,6 +227,7 @@ watch(() => props.projectId, () => {
   recent.value = [];
   effects.value = [];
   derivedEffects.value = [];
+  grants.value = null;
   void refresh();
 });
 onMounted(() => {
@@ -208,6 +240,8 @@ onUnmounted(() => { epoch++; if (timer) clearInterval(timer); });
 <style scoped>
 .productionHarness { padding: 10px; overflow-y: auto; flex: 1; font-size: 12px; }
 .intro, .hint { line-height: 1.5; margin-bottom: 8px; }
+.grantCard { border: 1px solid var(--td-border-level-1-color); border-radius: 6px; padding: 8px; margin: 6px 0; }
+.grantRow { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 5px 0; }
 .actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
 .error { color: var(--td-error-color); margin: 8px 0; }
 .runCard, .effectCard { border: 1px solid var(--td-border-level-1-color); border-radius: 6px; padding: 8px; margin: 6px 0; }

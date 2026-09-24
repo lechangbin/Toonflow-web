@@ -36,6 +36,18 @@ export interface ProductionHarnessEffects {
   derivedEffects: ProductionHarnessDerivedEffect[];
 }
 
+export interface ProductionHarnessGrants {
+  workspace: { active: boolean; version: number };
+  imageProposal: { active: boolean; version: number };
+  derivedProposal: { active: boolean; version: number };
+}
+
+const grantPaths = {
+  workspace: "/agentRuns/setReadProductionWorkspaceGrant",
+  imageProposal: "/agentRuns/setProposeBillableImageGrant",
+  derivedProposal: "/agentRuns/setProposeDerivedAssetGrant",
+} as const;
+
 export function productionProjectId(value: number | string): number {
   const id = typeof value === "number" ? value
     : /^[1-9]\d*$/.test(value) ? Number(value) : Number.NaN;
@@ -48,6 +60,20 @@ type Post = <T>(path: string, body: unknown) => Promise<{ data: T }>;
 /** HTTP snapshots own status; legacy Socket remains a separate compatibility path. */
 export function createProductionHarnessClient(post: Post) {
   return {
+    async grants(projectId: number | string) {
+      const result = await post<ProductionHarnessGrants>(
+        "/agentRuns/getProductionGrants", { projectId: productionProjectId(projectId) });
+      return result.data;
+    },
+    async setGrant(projectId: number | string, kind: keyof ProductionHarnessGrants,
+      current: ProductionHarnessGrants[keyof ProductionHarnessGrants], active: boolean) {
+      if (current.active === active || !Number.isSafeInteger(current.version)
+        || current.version < 0) throw new TypeError("Production grant command is stale or unchanged");
+      const result = await post<{ active?: boolean; state: "active" | "revoked";
+        version: number }>(grantPaths[kind], { projectId: productionProjectId(projectId),
+          expectedVersion: current.version, active });
+      return { active: result.data.state === "active", version: result.data.version };
+    },
     async start(projectId: number | string, clientRequestId: string, content: string) {
       const result = await post<{ run: ProductionHarnessRun }>(
         "/agentRuns/productionHarness/start", {
