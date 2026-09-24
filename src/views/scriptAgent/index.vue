@@ -82,7 +82,7 @@
             </template>
           </t-chat-sender>
           <div v-if="harnessMode" class="harnessStatus">
-            <div>只读 Harness（不会自动写入规划或剧本）</div>
+            <div>只读模型 Run 不会自动写入；下方独立提案经批准后会修改项目。</div>
             <div v-if="harnessRun">Run {{ harnessRun.id }} · {{ harnessRun.status }}</div>
             <div v-if="harnessRun?.attentionReason">需处理：{{ harnessRun.attentionReason }}</div>
             <div v-if="harnessError" class="harnessError">{{ harnessError }}</div>
@@ -94,7 +94,10 @@
               <div>{{ approval.kind }} · {{ approval.status }} · {{ approval.runId }}</div>
               <pre>{{ JSON.stringify(approval.preview, null, 2) }}</pre>
               <div v-if="approval.status === 'pending'">
-                <t-button size="small" theme="primary" :disabled="approvalBusy" @click="confirmScriptWrite(approval, 'approve')">批准</t-button>
+                <t-button size="small" variant="outline" :disabled="approvalBusy" @click="reviewScriptWrite(approval)">查看待写入全文</t-button>
+                <pre v-if="reviewedApproval?.approval.id === approval.id && reviewedApproval.approval.runVersion === approval.runVersion">
+{{ reviewedApproval.payload.content }}</pre>
+                <t-button size="small" theme="primary" :disabled="approvalBusy || !isReviewed(approval)" @click="confirmScriptWrite(approval, 'approve')">批准</t-button>
                 <t-button size="small" variant="outline" :disabled="approvalBusy" @click="confirmScriptWrite(approval, 'reject')">拒绝</t-button>
               </div>
             </div>
@@ -237,7 +240,7 @@ import { Splitpanes, Pane } from "splitpanes";
 import axios from "@/utils/axios";
 import { v4 as uuid } from "uuid";
 import { createScriptHarnessClient, isScriptHarnessTerminal, type ScriptHarnessRun } from "@/utils/scriptHarnessContract";
-import { createScriptWriteApprovalClient, type ScriptWriteApproval } from "@/utils/scriptWriteApprovalContract";
+import { createScriptWriteApprovalClient, type ScriptWriteApproval, type ScriptWriteApprovalReview } from "@/utils/scriptWriteApprovalContract";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
@@ -254,6 +257,7 @@ const harnessClient = createScriptHarnessClient(<T,>(path: string, body: unknown
 const approvalClient = createScriptWriteApprovalClient(<T,>(path: string, body: unknown) =>
   axios.post(path, body) as unknown as Promise<{ data: T }>);
 const writeApprovals = ref<ScriptWriteApproval[]>([]);
+const reviewedApproval = ref<ScriptWriteApprovalReview | null>(null);
 const approvalBusy = ref(false);
 const approvalError = ref("");
 let harnessTimer: ReturnType<typeof setTimeout> | undefined;
@@ -297,6 +301,7 @@ async function toggleHarnessMode() {
   if (harnessMode.value) {
     harnessMode.value = false;
     writeApprovals.value = [];
+    reviewedApproval.value = null;
     scriptAgentStore().connect();
     return;
   }
@@ -313,14 +318,40 @@ async function refreshWriteApprovals() {
     const approvals = await approvalClient.list(project.value.id);
     if (epoch !== harnessEpoch) return;
     writeApprovals.value = approvals;
+    if (reviewedApproval.value && !approvals.some((item) => isReviewed(item))) {
+      reviewedApproval.value = null;
+    }
     approvalError.value = "";
   } catch (error) {
     if (epoch === harnessEpoch) approvalError.value = error instanceof Error
       ? error.message : "写入提案读取失败";
   }
 }
+function isReviewed(approval: ScriptWriteApproval): boolean {
+  return reviewedApproval.value?.approval.id === approval.id
+    && reviewedApproval.value.approval.runId === approval.runId
+    && reviewedApproval.value.approval.runVersion === approval.runVersion
+    && reviewedApproval.value.approval.payloadHash === approval.payloadHash
+    && approval.status === "pending";
+}
+async function reviewScriptWrite(approval: ScriptWriteApproval) {
+  if (!harnessMode.value || !project.value?.id || approvalBusy.value) return;
+  const epoch = harnessEpoch;
+  reviewedApproval.value = null;
+  approvalBusy.value = true;
+  try {
+    const review = await approvalClient.review(project.value.id, approval);
+    if (epoch === harnessEpoch) { reviewedApproval.value = review; approvalError.value = ""; }
+  } catch (error) {
+    if (epoch === harnessEpoch) approvalError.value = error instanceof Error
+      ? error.message : "待写入正文读取失败";
+  } finally {
+    if (epoch === harnessEpoch) approvalBusy.value = false;
+  }
+}
 function confirmScriptWrite(approval: ScriptWriteApproval, decision: "approve" | "reject") {
   if (!harnessMode.value || approvalBusy.value || approval.status !== "pending" || !project.value?.id) return;
+  if (decision === "approve" && !isReviewed(approval)) return;
   const dialog = DialogPlugin.confirm({
     header: decision === "approve" ? "确认批准此单项写入？" : "确认拒绝此写入？",
     body: `Run ${approval.runId}；操作 ${approval.operationId}；目标摘要 ${JSON.stringify(approval.preview)}`,
@@ -333,6 +364,7 @@ function confirmScriptWrite(approval: ScriptWriteApproval, decision: "approve" |
       approvalBusy.value = true;
       try {
         await approvalClient.decide(project.value.id, approval, decision, uuid());
+        reviewedApproval.value = null;
         if (epoch === harnessEpoch) await refreshWriteApprovals();
         dialog.destroy();
       } catch (error) {
