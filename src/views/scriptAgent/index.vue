@@ -3,7 +3,7 @@
     <Splitpanes class="default-theme data f">
       <Pane :size="30" :min-size="15" class="operate">
         <div class="box pr">
-          <t-chat-list :clear-history="false">
+          <t-chat-list v-if="!harnessMode" :clear-history="false">
             <t-chat-message
               v-for="message in messages"
               :key="message.id"
@@ -17,14 +17,18 @@
           </t-chat-list>
           <t-chat-sender
             class="inputBox"
-            :disabled="status === 'pending' || status === 'streaming'"
+            :disabled="harnessMode ? harnessBusy : status === 'pending' || status === 'streaming'"
             v-model="inputValue"
-            :loading="status === 'pending' || status === 'streaming'"
+            :loading="harnessMode ? harnessBusy || harnessActive : status === 'pending' || status === 'streaming'"
             placeholder="$t('workbench.scriptAgent.inputPlaceholder')"
             @send="handleSend"
             @stop="handleStop">
             <template #footer-prefix>
-              <t-popup trigger="click" placement="top-left">
+              <t-button size="small" variant="outline" :disabled="harnessBusy || (!harnessMode && (status === 'pending' || status === 'streaming'))"
+                @click="toggleHarnessMode">
+                {{ harnessMode ? "退出只读 Harness" : "试用只读 Harness" }}
+              </t-button>
+              <t-popup v-if="!harnessMode" trigger="click" placement="top-left">
                 <t-button shape="square" variant="outline" size="small" :disabled="status === 'pending' || status === 'streaming'">
                   <template #icon>
                     <i-setting-config size="16" />
@@ -51,7 +55,7 @@
                   </div>
                 </template>
               </t-popup>
-              <t-popup trigger="click" placement="top" v-if="showThink">
+              <t-popup trigger="click" placement="top" v-if="showThink && !harnessMode">
                 <t-button
                   size="small"
                   variant="outline"
@@ -77,7 +81,15 @@
               </t-popup>
             </template>
           </t-chat-sender>
-          <i-dot class="dot" theme="outline" :fill="connected ? 'green' : 'red'" />
+          <div v-if="harnessMode" class="harnessStatus">
+            <div>只读 Harness（不会自动写入规划或剧本）</div>
+            <div v-if="harnessRun">Run {{ harnessRun.id }} · {{ harnessRun.status }}</div>
+            <div v-if="harnessRun?.attentionReason">需处理：{{ harnessRun.attentionReason }}</div>
+            <div v-if="harnessError" class="harnessError">{{ harnessError }}</div>
+            <pre v-if="harnessRun?.outputs?.length">{{ harnessRun.outputs.at(-1)?.content }}</pre>
+            <t-button size="small" variant="text" :disabled="harnessBusy" @click="refreshHarnessRun">刷新状态</t-button>
+          </div>
+          <i-dot class="dot" theme="outline" :fill="harnessMode ? 'blue' : connected ? 'green' : 'red'" />
           <transition name="fade">
             <div v-if="forceGenerateVisible" class="forceGenerateMask">
               <div class="forceGenerateCard">
@@ -212,12 +224,69 @@ import settingStore from "@/stores/setting";
 const { themeSetting } = storeToRefs(settingStore());
 import { Splitpanes, Pane } from "splitpanes";
 import axios from "@/utils/axios";
+import { v4 as uuid } from "uuid";
+import { createScriptHarnessClient, isScriptHarnessTerminal, type ScriptHarnessRun } from "@/utils/scriptHarnessContract";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import projectStore from "@/stores/project";
 const { project } = storeToRefs(projectStore());
 import editMdPreivew from "@/components/editMdPreivew.vue";
 import scriptAgentStore from "@/stores/scriptAgent";
 const { connected, messages, status, planData, thinkLevel } = storeToRefs(scriptAgentStore());
+const harnessMode = ref(false);
+const harnessRun = ref<ScriptHarnessRun | null>(null);
+const harnessBusy = ref(false);
+const harnessError = ref("");
+const harnessActive = computed(() => harnessRun.value?.status === "queued" || harnessRun.value?.status === "running");
+const harnessClient = createScriptHarnessClient(<T,>(path: string, body: unknown) =>
+  axios.post(path, body) as unknown as Promise<{ data: T }>);
+let harnessTimer: ReturnType<typeof setTimeout> | undefined;
+let harnessEpoch = 0;
+
+function clearHarnessTimer() {
+  if (harnessTimer) clearTimeout(harnessTimer);
+  harnessTimer = undefined;
+}
+function showHarnessError(error: unknown) {
+  harnessError.value = error instanceof Error ? error.message : "Harness 请求失败，请刷新状态后重试";
+}
+function acceptHarnessRun(run: ScriptHarnessRun, epoch: number) {
+  if (!harnessMode.value || epoch !== harnessEpoch) return;
+  harnessRun.value = run;
+  clearHarnessTimer();
+  if (!isScriptHarnessTerminal(run.status) && run.status !== "waiting") {
+    harnessTimer = setTimeout(() => { void refreshHarnessRun(); }, 3000);
+  }
+}
+async function refreshHarnessRun() {
+  if (!harnessMode.value || !project.value?.id) return;
+  const epoch = harnessEpoch;
+  try {
+    const run = harnessRun.value
+      ? await harnessClient.inspect(project.value.id, harnessRun.value.id)
+      : (await harnessClient.list(project.value.id)).current;
+    if (epoch !== harnessEpoch || !harnessMode.value) return;
+    harnessError.value = "";
+    if (run) acceptHarnessRun(run, epoch);
+  } catch (error) {
+    if (epoch === harnessEpoch) showHarnessError(error);
+  }
+}
+async function toggleHarnessMode() {
+  if (harnessBusy.value) return;
+  clearHarnessTimer();
+  harnessEpoch += 1;
+  harnessError.value = "";
+  harnessRun.value = null;
+  if (harnessMode.value) {
+    harnessMode.value = false;
+    scriptAgentStore().connect();
+    return;
+  }
+  scriptAgentStore().disconnect();
+  harnessMode.value = true;
+  await refreshHarnessRun();
+}
+onUnmounted(() => { clearHarnessTimer(); harnessEpoch += 1; });
 const thinkLevelOptions = [
   { label: $t("workbench.scriptAgent.thinkLevel.off"), value: 0 },
   { label: $t("workbench.scriptAgent.thinkLevel.light"), value: 1 },
@@ -285,16 +354,45 @@ async function getPlanData() {
 //快捷发送
 const handleActions = {
   suggestion: (data?: any) => {
-    scriptAgentStore().chat(data?.content?.prompt);
+    handleSend(data?.content?.prompt ?? "");
   },
 };
 
-function handleSend(text: string) {
-  scriptAgentStore().chat(text);
-  inputValue.value = "";
+async function handleSend(text: string) {
+  if (!text.trim()) return;
+  if (!harnessMode.value) {
+    scriptAgentStore().chat(text);
+    inputValue.value = "";
+    return;
+  }
+  if (harnessBusy.value || harnessActive.value || !project.value?.id) return;
+  const epoch = harnessEpoch;
+  harnessBusy.value = true;
+  harnessError.value = "";
+  try {
+    const run = await harnessClient.start(project.value.id, uuid(), text);
+    if (epoch === harnessEpoch && harnessMode.value) {
+      inputValue.value = "";
+      acceptHarnessRun(run, epoch);
+    }
+  } catch (error) {
+    if (epoch === harnessEpoch) showHarnessError(error);
+  } finally {
+    if (epoch === harnessEpoch) harnessBusy.value = false;
+  }
 }
-function handleStop() {
-  scriptAgentStore().stopGenerate();
+async function handleStop() {
+  if (!harnessMode.value) { scriptAgentStore().stopGenerate(); return; }
+  if (!harnessRun.value?.allowedActions.includes("cancel") || !project.value?.id || harnessBusy.value) return;
+  const epoch = harnessEpoch;
+  harnessBusy.value = true;
+  try {
+    acceptHarnessRun(await harnessClient.cancel(project.value.id, harnessRun.value, uuid()), epoch);
+  } catch (error) {
+    if (epoch === harnessEpoch) { showHarnessError(error); await refreshHarnessRun(); }
+  } finally {
+    if (epoch === harnessEpoch) harnessBusy.value = false;
+  }
 }
 
 const memoryTypeLabel: Record<string, string> = {
@@ -575,6 +673,19 @@ function toggleAllCards() {
     }
   }
 }
+
+.harnessStatus {
+  margin: 0 8px 8px 0;
+  padding: 10px;
+  border: 1px solid var(--td-border-level-2-color);
+  border-radius: 8px;
+  overflow: auto;
+  max-height: 50%;
+  overflow-wrap: anywhere;
+  > div { margin-bottom: 6px; }
+  pre { white-space: pre-wrap; font: inherit; }
+}
+.harnessError { color: var(--td-error-color); }
 
 .panelContent {
   height: 100%;
