@@ -1,6 +1,6 @@
 <template>
   <section class="productionHarness" aria-label="生产 Agent 持久 Run">
-    <div class="intro">受控生产指导（试用）：读取已授权的工作区；图片或派生资产候选只会创建待项目所有者审批的请求，不会由模型直接生成或写入。</div>
+    <div class="intro">受控生产指导（试用）：读取已授权的工作区；图片、派生资产和单条分镜候选只会创建待项目所有者审批的请求，不会由模型直接生成或写入。</div>
     <div class="grantCard">
       <div class="sectionTitle">项目授权（仅所有者）</div>
       <div v-if="!grants">授权状态尚未读取，请刷新。</div>
@@ -10,7 +10,7 @@
           @click="toggleGrant(item.kind)">{{ grants?.[item.kind].active ? '撤销' : '开启' }}</t-button>
       </div>
     </div>
-    <t-textarea v-model="input" :disabled="busy" placeholder="描述要检查的拍摄计划、图片或派生资产候选" :maxlength="20000" />
+    <t-textarea v-model="input" :disabled="busy" placeholder="描述要检查的拍摄计划、图片、派生资产或分镜候选" :maxlength="20000" />
     <div class="actions">
       <t-button size="small" theme="primary" :disabled="busy || !input.trim()" @click="start">创建 Run</t-button>
       <t-button size="small" variant="outline" :disabled="busy" @click="refresh">刷新服务端状态</t-button>
@@ -57,6 +57,24 @@
           </div>
         </template>
       </div>
+      <div class="sectionTitle">单条分镜候选的持久效果</div>
+      <div v-if="!storyboardEffects.length">尚无分镜候选或服务端未记录效果。</div>
+      <div v-for="effect in storyboardEffects" :key="effect.operationId" class="effectCard">
+        <div>操作 {{ effect.operationId }} · {{ effect.status === 'denied' ? '授权拒绝' : '已建审批' }}</div>
+        <template v-if="effect.approval">
+          <div>剧本 #{{ effect.approval.preview.scriptId }} · 轨道 #{{ effect.approval.preview.trackId }} · {{ effect.approval.status }}</div>
+          <div>时长 {{ effect.approval.preview.duration }} 秒 · 关联资产 {{ effect.approval.preview.assetCount }} 个</div>
+          <div v-if="effect.approval.receiptOutput">已提交分镜 #{{ effect.approval.receiptOutput.storyboardId }}</div>
+          <pre v-if="effect.approval.payload">待审精确载荷：{{ JSON.stringify(effect.approval.payload, null, 2) }}</pre>
+          <div v-else>精确载荷不可核对；请勿批准。</div>
+          <div class="actions">
+            <t-button v-if="effect.approval.status === 'pending' && effect.approval.payload && effect.approval.allowedActions.includes('approve')"
+              size="small" theme="warning" :disabled="busy" @click="decideStoryboard(effect.approval, 'approve')">批准写入分镜</t-button>
+            <t-button v-if="effect.approval.status === 'pending' && effect.approval.allowedActions.includes('reject')"
+              size="small" variant="outline" :disabled="busy" @click="decideStoryboard(effect.approval, 'reject')">拒绝</t-button>
+          </div>
+        </template>
+      </div>
       <div class="hint">取消、产物修复与人工对账请在对应资产的“受控单资产生图”面板操作。此处只依据后端持久状态，不根据聊天回复判定图片成功。</div>
     </div>
     <div v-if="recent.length" class="recent">
@@ -75,7 +93,8 @@ import { approvalSummary as derivedApprovalSummary,
   type DerivedAssetApproval } from "@/utils/derivedAssetApproval";
 import { createProductionHarnessClient, type ProductionHarnessEffect,
   type ProductionHarnessDerivedEffect, type ProductionHarnessGrants,
-  type ProductionHarnessRun } from "@/utils/productionHarnessContract";
+  type ProductionHarnessRun, type ProductionHarnessStoryboardEffect,
+  type StoryboardWriteApproval } from "@/utils/productionHarnessContract";
 
 const props = defineProps<{ projectId: number }>();
 const input = ref("");
@@ -83,11 +102,13 @@ const selected = ref<ProductionHarnessRun | null>(null);
 const recent = ref<ProductionHarnessRun[]>([]);
 const effects = ref<ProductionHarnessEffect[]>([]);
 const derivedEffects = ref<ProductionHarnessDerivedEffect[]>([]);
+const storyboardEffects = ref<ProductionHarnessStoryboardEffect[]>([]);
 const grants = ref<ProductionHarnessGrants | null>(null);
 const grantOptions: Array<{ kind: keyof ProductionHarnessGrants; label: string }> = [
   { kind: "workspace", label: "读取生产工作区" },
   { kind: "imageProposal", label: "提出计费图片候选" },
   { kind: "derivedProposal", label: "提出派生资产候选" },
+  { kind: "storyboardProposal", label: "提出单条分镜候选" },
 ];
 const busy = ref(false);
 const error = ref("");
@@ -110,13 +131,15 @@ async function refresh() {
     recent.value = list.recent;
     grants.value = grantSnapshot;
     const id = selected.value?.id ?? list.current?.id ?? list.recent[0]?.id;
-    if (!id) { selected.value = null; effects.value = []; derivedEffects.value = []; return; }
+    if (!id) { selected.value = null; effects.value = []; derivedEffects.value = [];
+      storyboardEffects.value = []; return; }
     const run = await client.inspect(props.projectId, id);
     const childEffects = await client.effects(props.projectId, id);
     if (requestedEpoch !== epoch || requestedSequence !== refreshSequence) return;
     selected.value = run;
     effects.value = childEffects.effects;
     derivedEffects.value = childEffects.derivedEffects;
+    storyboardEffects.value = childEffects.storyboardEffects;
     error.value = "";
   } catch (reason) {
     if (requestedEpoch === epoch && requestedSequence === refreshSequence) error.value = reason instanceof Error
@@ -214,10 +237,30 @@ function decideDerived(approval: DerivedAssetApproval, decision: "approve" | "re
   });
 }
 
+function decideStoryboard(approval: StoryboardWriteApproval, decision: "approve" | "reject") {
+  if (busy.value || approval.status !== "pending"
+    || (decision === "approve" && !approval.payload)
+    || !approval.allowedActions.includes(decision)) return;
+  const dialog = DialogPlugin.confirm({
+    header: decision === "approve" ? "确认写入一条分镜" : "拒绝分镜候选",
+    body: `剧本 #${approval.preview.scriptId}；已有轨道 #${approval.preview.trackId}；时长 ${approval.preview.duration} 秒；关联资产 ${approval.preview.assetCount} 个；载荷摘要 ${approval.payloadHash.slice(0, 12)}…。请核对上方精确载荷；批准后立即写入本地分镜，不会生成图片或视频。`,
+    theme: "warning", confirmBtn: decision === "approve" ? "批准写入" : "拒绝",
+    onConfirm: async () => {
+      busy.value = true;
+      let warning = "";
+      try {
+        await client.decideStoryboard(props.projectId, approval, decision, crypto.randomUUID());
+      } catch { warning = "分镜审批状态可能已变化，请核对服务端状态；系统不会自动重试。"; }
+      finally { busy.value = false; dialog.destroy(); await refresh(); if (warning) error.value = warning; }
+    },
+  });
+}
+
 function select(run: ProductionHarnessRun) {
   selected.value = run;
   effects.value = [];
   derivedEffects.value = [];
+  storyboardEffects.value = [];
   void refresh();
 }
 
@@ -227,6 +270,7 @@ watch(() => props.projectId, () => {
   recent.value = [];
   effects.value = [];
   derivedEffects.value = [];
+  storyboardEffects.value = [];
   grants.value = null;
   void refresh();
 });

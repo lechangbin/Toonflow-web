@@ -30,22 +30,52 @@ export interface ProductionHarnessDerivedEffect {
     sourceOperationId?: string }) | null;
 }
 
+export interface StoryboardWriteApproval {
+  id: string;
+  runId: string;
+  operationId: string;
+  status: "pending" | "approved" | "rejected" | "expired" | "conflicted";
+  expiresAt: number;
+  runStatus: string;
+  runVersion: number;
+  allowedActions: string[];
+  payloadHash: string;
+  targetStateHash: string;
+  preview: { scriptId: number; trackId: number; duration: number;
+    assetCount: number; payloadHash: string };
+  payload: { scriptId: number; trackId: number; videoDesc: string;
+    prompt: string | null; duration: number; shouldGenerateImage: boolean;
+    associateAssetsIds: number[] };
+  receiptOutput?: { storyboardId: number; assetCount: number };
+  sourceRunId?: string;
+  sourceOperationId?: string;
+}
+
+export interface ProductionHarnessStoryboardEffect {
+  operationId: string;
+  status: "denied" | "approval";
+  approval: StoryboardWriteApproval | null;
+}
+
 export interface ProductionHarnessEffects {
   runId: string;
   effects: ProductionHarnessEffect[];
   derivedEffects: ProductionHarnessDerivedEffect[];
+  storyboardEffects: ProductionHarnessStoryboardEffect[];
 }
 
 export interface ProductionHarnessGrants {
   workspace: { active: boolean; version: number };
   imageProposal: { active: boolean; version: number };
   derivedProposal: { active: boolean; version: number };
+  storyboardProposal: { active: boolean; version: number };
 }
 
 const grantPaths = {
   workspace: "/agentRuns/setReadProductionWorkspaceGrant",
   imageProposal: "/agentRuns/setProposeBillableImageGrant",
   derivedProposal: "/agentRuns/setProposeDerivedAssetGrant",
+  storyboardProposal: "/agentRuns/setProposeStoryboardGrant",
 } as const;
 
 export function productionProjectId(value: number | string): number {
@@ -146,6 +176,20 @@ export function createProductionHarnessClient(post: Post) {
       }
       const result = await post<{ approval: DerivedAssetApproval }>(
         "/agentRuns/derivedAssetApproval/decide", {
+          projectId: productionProjectId(projectId), runId: approval.runId,
+          approvalId: approval.id, clientCommandId,
+          expectedVersion: approval.runVersion, decision,
+        });
+      return result.data.approval;
+    },
+    async decideStoryboard(projectId: number | string, approval: StoryboardWriteApproval,
+      decision: "approve" | "reject", clientCommandId: string) {
+      if (approval.status !== "pending" || !approval.allowedActions.includes(decision)
+        || (decision === "approve" && !approval.payload)) {
+        throw new TypeError("Production Storyboard approval cannot be decided in its current state");
+      }
+      const result = await post<{ approval: StoryboardWriteApproval }>(
+        "/agentRuns/storyboardWriteApproval/decide", {
           projectId: productionProjectId(projectId), runId: approval.runId,
           approvalId: approval.id, clientCommandId,
           expectedVersion: approval.runVersion, decision,

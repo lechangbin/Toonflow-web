@@ -12,4 +12,6 @@ App 后端的 `production-harness-v1` 与旧生产 Socket 路径并行。此 Web
 
 边界：这是受控生产入口的状态展示接缝，不等于旧 Socket 生命周期已移除。T18 仍需把当前/近期 Run、审批和证据展示统一到所有 Agent 入口，并在真实 App/Web 浏览器流程中验证刷新、重连、批准、拒绝、停止、恢复和兼容回退；T21 才执行最终全量验收。
 
+单条分镜补充：试用面板现在单独展示 `storyboardEffects` 的持久子审批、精确待审载荷与提交后的分镜 ID，并提供版本化批准/拒绝；四项生产 grant 中的 `storyboardProposal` 与图片、派生资产互不借权。模型只提出候选，Owner 点击确认后才由 App 在事务中写入已有空 Video Track 的一条分镜；该操作不会生成图片或视频。最近一次相关 Web 合约测试 6 个通过，非声明式 Vue 类型检查通过；没有做浏览器验收，也未接管旧批量 Socket 路径。前文 4/6/7 个用例数字是对应历史切片，不应相加当作当前全量测试数量。
+
 面试追问：为什么显示“指导 Run 成功”时仍要单列图片效果？因为模型文本 Step 的完成和供应商付费效果属于两个持久生命周期；子审批可能仍 pending、结果未知或取消后迟到。前端以 HTTP 效果投影呈现这些区别，旧 Socket 消息不能覆盖服务端结果。证据是 `src/utils/productionHarnessContract.ts`、`src/views/production/components/rightChatBox/productionHarnessPanel.vue` 与上述定向单测；真实交互体验和长期运行指标仍待测。

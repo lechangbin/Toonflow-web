@@ -16,7 +16,8 @@ test("Production client uses owner-scoped HTTP state and separates child effects
     const data = path.endsWith("/list") ? { current: run, recent: [run] }
       : path.endsWith("/effects") ? { runId: run.id,
         effects: [{ operationId: "image-1", status: "denied", approval: null }],
-        derivedEffects: [{ operationId: "derived-1", status: "denied", approval: null }] }
+        derivedEffects: [{ operationId: "derived-1", status: "denied", approval: null }],
+        storyboardEffects: [{ operationId: "storyboard-1", status: "denied", approval: null }] }
       : { run };
     return { data: data as T };
   });
@@ -26,6 +27,7 @@ test("Production client uses owner-scoped HTTP state and separates child effects
   const effects = await client.effects(7, run.id);
   assert.equal(effects.effects[0].status, "denied");
   assert.equal(effects.derivedEffects[0].status, "denied");
+  assert.equal(effects.storyboardEffects[0].status, "denied");
   assert.equal((await client.cancel(7, run, "stop-1")).id, run.id);
   assert.deepEqual(calls.map((entry) => entry.path), [
     "/agentRuns/productionHarness/start", "/agentRuns/productionHarness/inspect",
@@ -77,6 +79,7 @@ test("Production grant snapshot and toggle use backend versions and distinct cap
       workspace: { active: false, version: 0 },
       imageProposal: { active: false, version: 2 },
       derivedProposal: { active: false, version: 4 },
+      storyboardProposal: { active: false, version: 6 },
     } : { state: "active", version: 5 }) as T };
   });
   const grants = await client.grants(7);
@@ -90,6 +93,33 @@ test("Production grant snapshot and toggle use backend versions and distinct cap
   await assert.rejects(client.setGrant(7, "derivedProposal",
     grants.derivedProposal, false), /stale or unchanged/);
   assert.equal(calls.length, 2);
+});
+
+test("Production Storyboard approval uses a separate version-checked Owner command", async () => {
+  const calls: Array<{ path: string; body: unknown }> = [];
+  const pending = { id: "approval-storyboard", runId: "child-storyboard",
+    operationId: "operation-storyboard", status: "pending" as const,
+    expiresAt: Date.now() + 60_000, runStatus: "waiting", runVersion: 2,
+    allowedActions: ["inspect", "approve", "reject"],
+    payloadHash: "a".repeat(64), targetStateHash: "b".repeat(64),
+    preview: { scriptId: 11, trackId: 31, duration: 4,
+      assetCount: 0, payloadHash: "a".repeat(64) },
+    payload: { scriptId: 11, trackId: 31, videoDesc: "庭院",
+      prompt: null, duration: 4, shouldGenerateImage: false,
+      associateAssetsIds: [] } };
+  const client = createProductionHarnessClient(async <T>(path, body) => {
+    calls.push({ path, body });
+    return { data: { approval: { ...pending, status: "approved" } } as T };
+  });
+  assert.equal((await client.decideStoryboard(7, pending, "approve",
+    "owner-storyboard")).status, "approved");
+  assert.deepEqual(calls[0], { path: "/agentRuns/storyboardWriteApproval/decide",
+    body: { projectId: 7, runId: pending.runId, approvalId: pending.id,
+      clientCommandId: "owner-storyboard", expectedVersion: 2,
+      decision: "approve" } });
+  await assert.rejects(client.decideStoryboard(7, { ...pending,
+    status: "approved" }, "approve", "duplicate"), /cannot be decided/);
+  assert.equal(calls.length, 1);
 });
 
 test("Production client rejects malformed Project IDs and unauthorized cancellation", async () => {
