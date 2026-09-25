@@ -22,6 +22,7 @@
       <div>Run {{ selected.id }} · {{ selected.status }} · 版本 {{ selected.version }}</div>
       <div v-if="selected.attentionReason">需要关注：{{ selected.attentionReason }}</div>
       <pre v-if="selected.outputs.length">{{ selected.outputs.at(-1)?.content }}</pre>
+      <agentTraceEvidenceDrawer :project-id="projectId" :run-id="selected.id" />
       <div class="sectionTitle">计费图片候选的持久效果</div>
       <div v-if="!effects.length">尚无图片候选或服务端未记录效果。</div>
       <div v-for="effect in effects" :key="effect.operationId" class="effectCard">
@@ -121,6 +122,7 @@ import { imageApprovalSummary, maySubmitApprovedImage,
 import { approvalSummary as derivedApprovalSummary,
   type DerivedAssetApproval } from "@/utils/derivedAssetApproval";
 import { chooseHarnessRecentRun } from "@/utils/harnessRecentRuns";
+import agentTraceEvidenceDrawer from "@/components/agentTraceEvidenceDrawer.vue";
 import { createProductionHarnessClient, type ProductionHarnessEffect,
   type ProductionHarnessDerivedEffect, type ProductionHarnessGrants,
   type ProductionHarnessRun, type ProductionHarnessStoryboardEffect,

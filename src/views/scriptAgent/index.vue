@@ -95,6 +95,8 @@
             <div v-if="harnessRun?.attentionReason">需处理：{{ harnessRun.attentionReason }}</div>
             <div v-if="harnessError" class="harnessError">{{ harnessError }}</div>
             <pre v-if="harnessRun?.outputs?.length">{{ harnessRun.outputs.at(-1)?.content }}</pre>
+            <agentTraceEvidenceDrawer v-if="harnessRun && project?.id"
+              :project-id="Number(project.id)" :run-id="harnessRun.id" />
             <t-button size="small" variant="text" :disabled="harnessBusy" @click="refreshHarnessRun">刷新状态</t-button>
             <div class="harnessApprovalTitle">模型提案授权（需已发布 Skill 声明对应 Tool）</div>
             <div v-if="grantError" class="harnessError">{{ grantError }}</div>
@@ -260,6 +262,7 @@ import axios from "@/utils/axios";
 import { v4 as uuid } from "uuid";
 import { createScriptHarnessClient, isScriptHarnessTerminal, type ScriptHarnessRun } from "@/utils/scriptHarnessContract";
 import { chooseHarnessRecentRun } from "@/utils/harnessRecentRuns";
+import agentTraceEvidenceDrawer from "@/components/agentTraceEvidenceDrawer.vue";
 import { createScriptWriteApprovalClient, type ScriptProposalGrants, type ScriptWriteApproval, type ScriptWriteApprovalReview } from "@/utils/scriptWriteApprovalContract";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import projectStore from "@/stores/project";
