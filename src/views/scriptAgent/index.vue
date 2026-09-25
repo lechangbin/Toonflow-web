@@ -84,6 +84,14 @@
           <div v-if="harnessMode" class="harnessStatus">
             <div>模型只能提出候选，不能直接写入；下方独立提案经批准后才会修改项目。</div>
             <div v-if="harnessRun">Run {{ harnessRun.id }} · {{ harnessRun.status }}</div>
+            <div v-if="harnessRecent.length" class="harnessApprovalTitle">服务端最近 Run（最多 20 条）</div>
+            <div v-if="harnessRecent.length" class="harnessRecent">
+              <t-button v-for="run in harnessRecent" :key="run.id" size="small"
+                :variant="harnessRun?.id === run.id ? 'outline' : 'text'"
+                :disabled="harnessBusy" @click="selectHarnessRun(run)">
+                {{ run.id.slice(0, 10) }} · {{ run.status }}
+              </t-button>
+            </div>
             <div v-if="harnessRun?.attentionReason">需处理：{{ harnessRun.attentionReason }}</div>
             <div v-if="harnessError" class="harnessError">{{ harnessError }}</div>
             <pre v-if="harnessRun?.outputs?.length">{{ harnessRun.outputs.at(-1)?.content }}</pre>
@@ -251,6 +259,7 @@ import { Splitpanes, Pane } from "splitpanes";
 import axios from "@/utils/axios";
 import { v4 as uuid } from "uuid";
 import { createScriptHarnessClient, isScriptHarnessTerminal, type ScriptHarnessRun } from "@/utils/scriptHarnessContract";
+import { chooseHarnessRecentRun } from "@/utils/harnessRecentRuns";
 import { createScriptWriteApprovalClient, type ScriptProposalGrants, type ScriptWriteApproval, type ScriptWriteApprovalReview } from "@/utils/scriptWriteApprovalContract";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import projectStore from "@/stores/project";
@@ -260,9 +269,12 @@ import scriptAgentStore from "@/stores/scriptAgent";
 const { connected, messages, status, planData, thinkLevel } = storeToRefs(scriptAgentStore());
 const harnessMode = ref(false);
 const harnessRun = ref<ScriptHarnessRun | null>(null);
+const harnessCurrent = ref<ScriptHarnessRun | null>(null);
+const harnessRecent = ref<ScriptHarnessRun[]>([]);
 const harnessBusy = ref(false);
 const harnessError = ref("");
-const harnessActive = computed(() => harnessRun.value?.status === "queued" || harnessRun.value?.status === "running");
+const harnessActive = computed(() => harnessCurrent.value?.status === "queued"
+  || harnessCurrent.value?.status === "running");
 const harnessClient = createScriptHarnessClient(<T,>(path: string, body: unknown) =>
   axios.post(path, body) as unknown as Promise<{ data: T }>);
 const approvalClient = createScriptWriteApprovalClient(<T,>(path: string, body: unknown) =>
@@ -276,6 +288,7 @@ const approvalBusy = ref(false);
 const approvalError = ref("");
 let harnessTimer: ReturnType<typeof setTimeout> | undefined;
 let harnessEpoch = 0;
+let harnessRefreshSequence = 0;
 
 function clearHarnessTimer() {
   if (harnessTimer) clearTimeout(harnessTimer);
@@ -288,27 +301,44 @@ function acceptHarnessRun(run: ScriptHarnessRun, epoch: number) {
   if (!harnessMode.value || epoch !== harnessEpoch) return;
   const wasActive = harnessActive.value;
   harnessRun.value = run;
+  if (harnessCurrent.value?.id === run.id) {
+    harnessCurrent.value = run;
+  }
+  harnessRecent.value = [run, ...harnessRecent.value.filter((entry) => entry.id !== run.id)]
+    .slice(0, 20);
   clearHarnessTimer();
   if (wasActive && isScriptHarnessTerminal(run.status)) {
     void refreshWriteApprovals();
   }
-  if (!isScriptHarnessTerminal(run.status) && run.status !== "waiting") {
+  if (harnessActive.value || !isScriptHarnessTerminal(run.status) && run.status !== "waiting") {
     harnessTimer = setTimeout(() => { void refreshHarnessRun(); }, 3000);
   }
 }
 async function refreshHarnessRun() {
   if (!harnessMode.value || !project.value?.id) return;
   const epoch = harnessEpoch;
+  const sequence = ++harnessRefreshSequence;
   try {
-    const run = harnessRun.value
-      ? await harnessClient.inspect(project.value.id, harnessRun.value.id)
-      : (await harnessClient.list(project.value.id)).current;
-    if (epoch !== harnessEpoch || !harnessMode.value) return;
+    const list = await harnessClient.list(project.value.id);
+    if (epoch !== harnessEpoch || sequence !== harnessRefreshSequence || !harnessMode.value) return;
+    const selection = chooseHarnessRecentRun({ selectedId: harnessRun.value?.id,
+      current: list.current, recent: list.recent });
+    const run = selection.selectedId
+      ? await harnessClient.inspect(project.value.id, selection.selectedId) : null;
+    if (epoch !== harnessEpoch || sequence !== harnessRefreshSequence || !harnessMode.value) return;
+    harnessCurrent.value = list.current;
+    harnessRecent.value = selection.recent;
     harnessError.value = "";
     if (run) acceptHarnessRun(run, epoch);
+    else harnessRun.value = null;
   } catch (error) {
     if (epoch === harnessEpoch) showHarnessError(error);
   }
+}
+function selectHarnessRun(run: ScriptHarnessRun) {
+  if (!harnessMode.value || harnessBusy.value) return;
+  harnessRun.value = run;
+  void refreshHarnessRun();
 }
 async function toggleHarnessMode() {
   if (harnessBusy.value) return;
@@ -316,6 +346,8 @@ async function toggleHarnessMode() {
   harnessEpoch += 1;
   harnessError.value = "";
   harnessRun.value = null;
+  harnessCurrent.value = null;
+  harnessRecent.value = [];
   if (harnessMode.value) {
     harnessMode.value = false;
     writeApprovals.value = [];
@@ -329,6 +361,18 @@ async function toggleHarnessMode() {
   await Promise.all([refreshHarnessRun(), refreshWriteApprovals(), refreshProposalGrants()]);
 }
 onUnmounted(() => { clearHarnessTimer(); harnessEpoch += 1; });
+watch(() => project.value?.id, () => {
+  if (!harnessMode.value) return;
+  clearHarnessTimer();
+  harnessEpoch += 1;
+  harnessRun.value = null;
+  harnessCurrent.value = null;
+  harnessRecent.value = [];
+  writeApprovals.value = [];
+  proposalGrants.value = null;
+  reviewedApproval.value = null;
+  void Promise.all([refreshHarnessRun(), refreshWriteApprovals(), refreshProposalGrants()]);
+});
 
 async function refreshProposalGrants() {
   if (!harnessMode.value || !project.value?.id) return;
@@ -526,6 +570,7 @@ async function handleSend(text: string) {
     const run = await harnessClient.start(project.value.id, uuid(), text);
     if (epoch === harnessEpoch && harnessMode.value) {
       inputValue.value = "";
+      harnessCurrent.value = run;
       acceptHarnessRun(run, epoch);
     }
   } catch (error) {
@@ -843,6 +888,7 @@ function toggleAllCards() {
 .harnessApproval { padding: 8px; border: 1px solid var(--td-border-level-2-color); border-radius: 6px; }
 .harnessApproval button + button { margin-left: 8px; }
 .harnessGrantControls { display: flex; flex-wrap: wrap; gap: 8px; }
+.harnessRecent { display: flex; flex-wrap: wrap; gap: 4px; }
 
 .panelContent {
   height: 100%;
