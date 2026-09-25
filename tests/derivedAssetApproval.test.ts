@@ -8,12 +8,18 @@ const approval: DerivedAssetApproval = {
   toolRevision: "v1", payloadHash: "a", contractHash: "b", status: "pending", expiresAt: 200,
   preview: { effect: "update", parentAssetId: 7, assetId: 8, expectedVersion: 2,
     name: "角色换装", dimensions: ["wardrobe"] },
+  payload: { parentAssetId: 7, assetId: 8, expectedVersion: 2,
+    scriptId: 11, name: "角色换装", description: "换装",
+    changeInstruction: { dimensions: ["wardrobe"], evidence: ["第一场"],
+      preserve: ["身份"], change: ["蓝色外套"], exclude: [] } },
   runStatus: "waiting", runVersion: 1, allowedActions: ["inspect", "approve", "reject"], receiptStatus: "pending",
 };
 
 test("approval controls follow backend allowedActions rather than a local status guess", () => {
   assert.equal(mayDecide(approval, "approve"), true);
   assert.equal(mayDecide({ ...approval, allowedActions: ["inspect"] }, "approve"), false);
+  assert.equal(mayDecide({ ...approval, payload: undefined }, "approve"), false);
+  assert.equal(mayDecide({ ...approval, payload: undefined }, "reject"), true);
   assert.equal(mayDecide({ ...approval, status: "approved", allowedActions: ["inspect"] }, "reject"), false);
   assert.equal(approvalSummary(approval).includes("目标版本 2"), true);
 });

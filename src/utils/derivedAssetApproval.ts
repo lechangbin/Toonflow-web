@@ -16,6 +16,16 @@ export interface DerivedAssetApproval {
     name: string;
     dimensions: string[];
   };
+  payload?: {
+    parentAssetId: number;
+    assetId: number | null;
+    expectedVersion: number;
+    scriptId: number;
+    name: string;
+    description: string;
+    changeInstruction: { dimensions: string[]; evidence: string[];
+      preserve: string[]; change: string[]; exclude: string[] };
+  };
   runStatus: string;
   runVersion: number;
   allowedActions: string[];
@@ -25,7 +35,8 @@ export interface DerivedAssetApproval {
 }
 
 export function mayDecide(approval: DerivedAssetApproval, decision: "approve" | "reject"): boolean {
-  return approval.allowedActions.includes(decision);
+  return approval.allowedActions.includes(decision)
+    && (decision !== "approve" || approval.payload !== undefined);
 }
 
 export function visibleApprovals(approvals: readonly DerivedAssetApproval[]): DerivedAssetApproval[] {

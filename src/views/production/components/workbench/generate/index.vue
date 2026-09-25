@@ -7,6 +7,16 @@
       :script-id="episodesId"
       :storyboard-list="storyboardList" />
     <modeMenu v-model="modelParmas" :track-id="currentTrack?.id" @model-change="handleModelChange" @selection-change="handleSelectionChange" />
+    <div v-if="currentTrack && modelParmas.capabilityId === 'text-to-video'" class="controlledQuote">
+      <span>受控文生视频本地费用上限（与当前模型、时长、画幅、音频选型精确绑定；非供应商报价）</span>
+      <t-button size="small" variant="outline" :disabled="quoteBusy" @click="loadControlledQuote">读取当前选型</t-button>
+      <template v-if="quoteLoaded">
+        <span>版本 {{ quoteSnapshot?.revision ?? 0 }} · {{ quoteSnapshot ? '已配置' : '未配置' }}</span>
+        <t-input v-model="quoteAmount" size="small" placeholder="金额，例如 0.250000" />
+        <t-input v-model="quoteCurrency" size="small" placeholder="币种，例如 USD" />
+        <t-button size="small" theme="warning" :disabled="quoteBusy" @click="saveControlledQuote">按当前版本设置</t-button>
+      </template>
+    </div>
     <div class="generate ac">
       <t-card v-if="currentTrack" :title="'#' + (activeTrackIndex + 1) + $t('workbench.generate.generateText')" header-bordered class="prompt">
         <template #actions>
@@ -50,6 +60,8 @@ import imageSelect from "./components/imageSelect.vue";
 import modeMenu from "./components/modeMenu.vue";
 import videoCard from "./components/video.vue";
 import { getVideoCapabilityCatalog } from "@/utils/videoCapabilityCatalog";
+import { createVideoQuoteClient, videoQuoteTarget,
+  type VideoQuoteSnapshot } from "@/utils/videoQuotePolicy";
 import {
   buildGenerationItem,
   buildPromptRequest,
@@ -91,6 +103,88 @@ const modelParmas = ref<ModelSetting>({
 const currentTrack = computed({
   get: () => trackList.value[activeTrackIndex.value],
   set: (value: TrackItem) => (trackList.value[activeTrackIndex.value] = value),
+});
+const quoteClient = createVideoQuoteClient(<T,>(path: string, body: unknown) =>
+  axios.post(path, body) as unknown as Promise<{ data: T }>);
+const quoteSnapshot = ref<VideoQuoteSnapshot | null>(null);
+const quoteLoaded = ref(false);
+const quoteKey = ref("");
+const quoteAmount = ref("");
+const quoteCurrency = ref("USD");
+const quoteBusy = ref(false);
+
+function currentQuoteTarget() {
+  if (!project.value || !currentTrack.value || imageList.value.length) {
+    throw new TypeError("请先选择无图片输入的文生视频轨道");
+  }
+  return videoQuoteTarget(Number(project.value.id),
+    selectedVideoConfiguration(currentTrack.value));
+}
+
+async function loadControlledQuote() {
+  if (quoteBusy.value) return;
+  quoteBusy.value = true;
+  try {
+    const target = currentQuoteTarget();
+    const key = JSON.stringify(target);
+    const snapshot = await quoteClient.get(target);
+    if (key !== JSON.stringify(currentQuoteTarget())) return;
+    quoteKey.value = key;
+    quoteSnapshot.value = snapshot;
+    quoteLoaded.value = true;
+    quoteAmount.value = snapshot ? (snapshot.estimatedMaxCostMicros / 1_000_000).toFixed(6) : "";
+    quoteCurrency.value = snapshot?.currency ?? "USD";
+  } catch (error) {
+    window.$message.error((error as Error)?.message ?? "读取视频估算失败");
+  } finally { quoteBusy.value = false; }
+}
+
+function saveControlledQuote() {
+  if (quoteBusy.value || !quoteLoaded.value) return;
+  let target: ReturnType<typeof currentQuoteTarget>;
+  let micros: number;
+  try {
+    target = currentQuoteTarget();
+    if (quoteKey.value !== JSON.stringify(target)) {
+      throw new TypeError("选型已变化，请重新读取当前估算");
+    }
+    if (!/^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/u.test(quoteAmount.value)) {
+      throw new TypeError("金额必须为最多六位小数的非负数");
+    }
+    micros = Math.round(Number(quoteAmount.value) * 1_000_000);
+    if (!Number.isSafeInteger(micros) || micros <= 0 || micros > 1_000_000_000) {
+      throw new TypeError("金额必须大于零且不超过 1000");
+    }
+    if (!/^[A-Z]{3}$/u.test(quoteCurrency.value)) throw new TypeError("币种必须为三位大写代码");
+  } catch (error) {
+    window.$message.error((error as Error).message); return;
+  }
+  const expectedRevision = quoteSnapshot.value?.revision ?? 0;
+  const dialog = DialogPlugin.confirm({
+    header: "设置受控视频本地费用上限",
+    body: `当前精确选型 ${target.vendorId}:${target.modelId}，${target.output.duration} 秒，${quoteAmount.value} ${quoteCurrency.value}，期望版本 ${expectedRevision}。这只是 Owner 配置的审批估算，不代表供应商报价，也不会提交生成。`,
+    theme: "warning", confirmBtn: "按版本设置",
+    onConfirm: async () => {
+      quoteBusy.value = true;
+      try {
+        const saved = await quoteClient.set(target, expectedRevision,
+          micros, quoteCurrency.value);
+        quoteSnapshot.value = saved;
+        quoteAmount.value = (saved.estimatedMaxCostMicros / 1_000_000).toFixed(6);
+      } catch {
+        quoteLoaded.value = false;
+        window.$message.error("估算版本或选型可能已变化，请重新读取核对；不会自动重试");
+      } finally { quoteBusy.value = false; dialog.destroy(); }
+    },
+  });
+}
+
+watch(() => [project.value?.id, currentTrack.value?.id,
+  modelParmas.value.modelSelection, modelParmas.value.capabilityId,
+  JSON.stringify(modelParmas.value.output), JSON.stringify(modelParmas.value.audio)], () => {
+  quoteLoaded.value = false;
+  quoteSnapshot.value = null;
+  quoteKey.value = "";
 });
 
 function configureSelection(modelSelection: string, capabilityId?: VideoCapabilityId | null, output?: Partial<VideoOutputSelection> | null) {
@@ -476,6 +570,16 @@ onUnmounted(() => {
   gap: 16px;
   overflow-y: auto;
 }
+.controlledQuote {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid var(--td-border-level-1-color);
+  font-size: 12px;
+}
+.controlledQuote :deep(.t-input) { width: 150px; }
 .generate {
   flex: 1;
   min-height: 0;

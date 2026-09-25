@@ -4,6 +4,7 @@ import settingStore from "@/stores/setting";
 import { useChat } from "@/utils/useChat";
 import type { AssetImageState, FlowData, Storyboard } from "@/views/production/utils/flowBuilder";
 import { isImageGenerationActiveState } from "@/utils/imageGenerationLifecycle";
+import { reconcileLegacyStoryboardSubmission } from "@/utils/legacyStoryboardAcknowledgement";
 import type { ChatMessagesData } from "@tdesign-vue-next/chat";
 import { useThrottleFn } from "@vueuse/core";
 
@@ -210,10 +211,14 @@ function makeProductionAgentStore(projectId: string) {
                   : 0,
               associateAssetsIds: data.associateAssetsIds || [],
             };
-            flowData.value.storyboard.push(insertVal);
-            await addStoryboardInfo([insertVal]);
-            throttledFn();
-            callback({ success: true, message: $t("storyboard.assets.derivativeAddSuccess") });
+            const outcome = await reconcileLegacyStoryboardSubmission(
+              () => addStoryboardInfo([insertVal]), getFlowData);
+            if (outcome === "acknowledged") {
+              throttledFn();
+              callback({ success: true, message: $t("storyboard.assets.derivativeAddSuccess") });
+            } else {
+              callback({ success: false, message: "分镜提交结果不确定，请刷新分镜面板核对；不要自动重试。" });
+            }
           });
         }
       },
@@ -455,16 +460,7 @@ function makeProductionAgentStore(projectId: string) {
         projectId: projectId,
       });
 
-      flowData.value.storyboard.forEach((item) => {
-        const updated = data.find((d: Storyboard) => d.prompt == item.prompt && d.duration == item.duration && d.videoDesc == item.videoDesc);
-        if (updated) {
-          item.id = updated.id;
-          item.trackId = updated.trackId;
-          item.src = updated.src;
-          item.state = updated.state;
-          item.associateAssetsIds = updated.associateAssetsIds;
-        }
-      });
+      return data;
     }
 
     const loadingHistory = ref(false);
