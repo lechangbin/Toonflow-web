@@ -130,6 +130,7 @@ export function useChat(options: UseChatOptions) {
     if (!lastMsg || lastMsg.role !== "assistant") return false;
 
     const status = lastMsg.status;
+    if (status === "complete" || status === "error" || status === "stop") return false;
     // pending 或 streaming 状态都算生成中
     if (status === "pending" || status === "streaming") return true;
 

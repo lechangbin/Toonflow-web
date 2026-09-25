@@ -10,6 +10,15 @@ test("Legacy projection rejects late updates after a terminal message state", ()
   assert.equal(acceptsLegacyMessageUpdate("pending", "streaming"), true);
 });
 
+test("A terminal message is not generating even if a content chunk remains streaming", () => {
+  const chat = useChat({ url: "unused", autoConnect: false,
+    manageLifecycle: false });
+  chat.messages.value.push({ id: "assistant-terminal", role: "assistant",
+    status: "stop", content: [{ id: "chunk-1", type: "text",
+      data: "partial", status: "streaming" }] } as any);
+  assert.equal(chat.isGenerating.value, false);
+});
+
 test("Legacy Socket stop request does not optimistically mark a message stopped", () => {
   const chat = useChat({ url: "unused", autoConnect: false,
     manageLifecycle: false });

@@ -14,6 +14,8 @@ Script Harness 试用入口现在每次刷新先读取认证 Project 的 `list`�
 
 迟到事件投影补强：旧消息进入 `complete`、`error` 或 `stop` 终态后，Web 不再接受它的后续状态/内容更新；旧消息的 `streaming` 更新也不能改变当前另一条消息的全局生成状态。3 个 `useChatStopBoundary` 定向测试与非声明式 Vue 类型检查通过。这是显示层防回跳，不能证明供应商副作用取消或服务端持久状态。
 
+生成中指示修正：消息终态优先于内容块的残留 `streaming` 状态，收到服务端 stop 后不因旧内容块继续显示生成中。`useChatStopBoundary` 相关 4 例和 Vue 类型检查通过；上一段的 3 例是该修正前的阶段记录。
+
 共享证据抽屉切片：Script 与 Production Harness 试用入口现在复用一个按需打开的 `agentTraceEvidenceDrawer`，只按当前选中 Project/Run 调用 Owner-only `/agentRuns/traceEvidence`。客户端拒绝 Run/Project 不匹配或无脱敏通过标志的响应，界面仅展示最近 100 条事件的序号、类型和 Run/Step 状态，不直接渲染诊断/原始 Prompt；切换 Run 会清空旧证据并丢弃迟到响应。2 个专用合约单测与近期 Run 定向用例、非声明式 Vue 类型检查通过。真实浏览器展示、5000 条长期性能和跨仓完整证据核验留到 T21。旧 Socket 仍并行，不能称 T18 完成。
 
 Video 证据字段联动：App 安全导出加入格式受限的视频请求/媒体 ID 后，共享抽屉仅展示这两个 ID，不展示媒体 URL、路径或原始供应商回包；客户端拒绝伪造成 URL 的 ID。2 个证据合约单测及非声明式 Vue 类型检查通过。旧段“仅展示事件状态”是前一切片记录，当前可从事件定位视频原请求，但真实浏览器和对账仍未验收。
