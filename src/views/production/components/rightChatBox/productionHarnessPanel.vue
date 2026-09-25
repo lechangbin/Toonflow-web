@@ -1,6 +1,6 @@
 <template>
   <section class="productionHarness" aria-label="生产 Agent 持久 Run">
-    <div class="intro">受控生产指导（试用）：读取已授权的工作区；图片、派生资产和单条分镜候选只会创建待项目所有者审批的请求，不会由模型直接生成或写入。</div>
+    <div class="intro">受控生产指导（试用）：读取已授权的工作区；图片、派生资产、单条分镜和文生视频候选只会创建待项目所有者审批的请求，不会由模型直接生成或写入。</div>
     <div class="grantCard">
       <div class="sectionTitle">项目授权（仅所有者）</div>
       <div v-if="!grants">授权状态尚未读取，请刷新。</div>
@@ -10,7 +10,7 @@
           @click="toggleGrant(item.kind)">{{ grants?.[item.kind].active ? '撤销' : '开启' }}</t-button>
       </div>
     </div>
-    <t-textarea v-model="input" :disabled="busy" placeholder="描述要检查的拍摄计划、图片、派生资产或分镜候选" :maxlength="20000" />
+    <t-textarea v-model="input" :disabled="busy" placeholder="描述要检查的拍摄计划、图片、派生资产、分镜或视频候选" :maxlength="20000" />
     <div class="actions">
       <t-button size="small" theme="primary" :disabled="busy || !input.trim()" @click="start">创建 Run</t-button>
       <t-button size="small" variant="outline" :disabled="busy" @click="refresh">刷新服务端状态</t-button>
@@ -75,7 +75,28 @@
           </div>
         </template>
       </div>
-      <div class="hint">取消、产物修复与人工对账请在对应资产的“受控单资产生图”面板操作。此处只依据后端持久状态，不根据聊天回复判定图片成功。</div>
+      <div class="sectionTitle">单轨道文生视频候选的持久效果</div>
+      <div v-if="!videoEffects.length">尚无视频候选或服务端未记录效果。</div>
+      <div v-for="effect in videoEffects" :key="effect.operationId" class="effectCard">
+        <div>操作 {{ effect.operationId }} · {{ effect.status === 'denied' ? '授权拒绝' : '已建审批' }}</div>
+        <template v-if="effect.approval">
+          <div>剧本 #{{ effect.approval.preview.scriptId }} · 轨道 #{{ effect.approval.preview.trackId }} · {{ effect.approval.status }}</div>
+          <div>{{ effect.approval.preview.vendorId }}:{{ effect.approval.preview.modelId }} · {{ effect.approval.preview.duration }} 秒</div>
+          <div>本地估算上限 {{ (effect.approval.preview.estimatedMaxCostMicros / 1_000_000).toFixed(6) }} {{ effect.approval.preview.currency }} · 报价版本 {{ effect.approval.preview.quoteRevision }}；非实际账单</div>
+          <pre>待审精确载荷：{{ JSON.stringify(effect.approval.payload, null, 2) }}</pre>
+          <div v-if="effect.approval.vendorRequest">原请求 {{ effect.approval.vendorRequest.requestId }} · {{ effect.approval.vendorRequest.status }} · 媒体 {{ effect.approval.vendorRequest.artifactStatus ?? '未观察' }}</div>
+          <div v-else-if="effect.approval.status === 'approved'">仅批准范围；供应商尚未提交。</div>
+          <div class="actions">
+            <t-button v-if="effect.approval.status === 'pending' && effect.approval.allowedActions.includes('approve')"
+              size="small" theme="warning" :disabled="busy" @click="decideVideo(effect.approval, 'approve')">批准视频计费范围</t-button>
+            <t-button v-if="effect.approval.status === 'pending' && effect.approval.allowedActions.includes('reject')"
+              size="small" variant="outline" :disabled="busy" @click="decideVideo(effect.approval, 'reject')">拒绝</t-button>
+            <t-button v-if="mayExecuteVideo(effect.approval)" size="small" theme="primary"
+              :disabled="busy" @click="executeVideo(effect.approval)">明确提交一次视频请求</t-button>
+          </div>
+        </template>
+      </div>
+      <div class="hint">图片取消与产物修复请在对应资产的“受控单资产生图”面板操作。视频异常或结果未知时先核对原请求；本面板不自动重试。此处只依据后端持久状态，不根据聊天回复判定生成成功。</div>
     </div>
     <div v-if="recent.length" class="recent">
       <div class="sectionTitle">近期 Run</div>
@@ -94,7 +115,8 @@ import { approvalSummary as derivedApprovalSummary,
 import { createProductionHarnessClient, type ProductionHarnessEffect,
   type ProductionHarnessDerivedEffect, type ProductionHarnessGrants,
   type ProductionHarnessRun, type ProductionHarnessStoryboardEffect,
-  type StoryboardWriteApproval } from "@/utils/productionHarnessContract";
+  type StoryboardWriteApproval, type ProductionHarnessVideoEffect,
+  type VideoGenerationApproval } from "@/utils/productionHarnessContract";
 
 const props = defineProps<{ projectId: number }>();
 const input = ref("");
@@ -103,12 +125,14 @@ const recent = ref<ProductionHarnessRun[]>([]);
 const effects = ref<ProductionHarnessEffect[]>([]);
 const derivedEffects = ref<ProductionHarnessDerivedEffect[]>([]);
 const storyboardEffects = ref<ProductionHarnessStoryboardEffect[]>([]);
+const videoEffects = ref<ProductionHarnessVideoEffect[]>([]);
 const grants = ref<ProductionHarnessGrants | null>(null);
 const grantOptions: Array<{ kind: keyof ProductionHarnessGrants; label: string }> = [
   { kind: "workspace", label: "读取生产工作区" },
   { kind: "imageProposal", label: "提出计费图片候选" },
   { kind: "derivedProposal", label: "提出派生资产候选" },
   { kind: "storyboardProposal", label: "提出单条分镜候选" },
+  { kind: "videoProposal", label: "提出单轨道文生视频候选" },
 ];
 const busy = ref(false);
 const error = ref("");
@@ -132,7 +156,7 @@ async function refresh() {
     grants.value = grantSnapshot;
     const id = selected.value?.id ?? list.current?.id ?? list.recent[0]?.id;
     if (!id) { selected.value = null; effects.value = []; derivedEffects.value = [];
-      storyboardEffects.value = []; return; }
+      storyboardEffects.value = []; videoEffects.value = []; return; }
     const run = await client.inspect(props.projectId, id);
     const childEffects = await client.effects(props.projectId, id);
     if (requestedEpoch !== epoch || requestedSequence !== refreshSequence) return;
@@ -140,6 +164,7 @@ async function refresh() {
     effects.value = childEffects.effects;
     derivedEffects.value = childEffects.derivedEffects;
     storyboardEffects.value = childEffects.storyboardEffects;
+    videoEffects.value = childEffects.videoEffects;
     error.value = "";
   } catch (reason) {
     if (requestedEpoch === epoch && requestedSequence === refreshSequence) error.value = reason instanceof Error
@@ -256,11 +281,50 @@ function decideStoryboard(approval: StoryboardWriteApproval, decision: "approve"
   });
 }
 
+function mayExecuteVideo(approval: VideoGenerationApproval): boolean {
+  return approval.status === "approved" && approval.vendorRequest === null
+    && approval.expiresAt > Date.now();
+}
+
+function decideVideo(approval: VideoGenerationApproval, decision: "approve" | "reject") {
+  if (busy.value || approval.status !== "pending"
+    || !approval.allowedActions.includes(decision)) return;
+  const dialog = DialogPlugin.confirm({
+    header: decision === "approve" ? "批准一次视频计费范围" : "拒绝视频候选",
+    body: `剧本 #${approval.preview.scriptId}；轨道 #${approval.preview.trackId}；${approval.preview.vendorId}:${approval.preview.modelId}；本地估算上限 ${(approval.preview.estimatedMaxCostMicros / 1_000_000).toFixed(6)} ${approval.preview.currency}；范围 ${approval.scopeHash.slice(0, 12)}…。批准不会提交供应商；请先核对精确载荷。`,
+    theme: "warning", confirmBtn: decision === "approve" ? "批准范围" : "拒绝",
+    onConfirm: async () => {
+      busy.value = true;
+      let warning = "";
+      try { await client.decideVideo(props.projectId, approval, decision, crypto.randomUUID()); }
+      catch { warning = "视频审批状态可能已变化，请刷新核对；系统不会自动重试。"; }
+      finally { busy.value = false; dialog.destroy(); await refresh(); if (warning) error.value = warning; }
+    },
+  });
+}
+
+function executeVideo(approval: VideoGenerationApproval) {
+  if (busy.value || !mayExecuteVideo(approval)) return;
+  const dialog = DialogPlugin.confirm({
+    header: "确认向供应商提交一次视频请求",
+    body: `剧本 #${approval.preview.scriptId}；轨道 #${approval.preview.trackId}；范围 ${approval.scopeHash.slice(0, 12)}…。这可能产生费用；断线或超时也可能已经提交，不会自动重发。服务端默认关闭此执行入口，需操作员显式启用。`,
+    theme: "warning", confirmBtn: "提交一次",
+    onConfirm: async () => {
+      busy.value = true;
+      let warning = "";
+      try { await client.executeVideo(props.projectId, approval); }
+      catch { warning = "视频请求可能未开放或提交结果不确定，请核对原请求账本；勿重新提案重试。"; }
+      finally { busy.value = false; dialog.destroy(); await refresh(); if (warning) error.value = warning; }
+    },
+  });
+}
+
 function select(run: ProductionHarnessRun) {
   selected.value = run;
   effects.value = [];
   derivedEffects.value = [];
   storyboardEffects.value = [];
+  videoEffects.value = [];
   void refresh();
 }
 
@@ -271,6 +335,7 @@ watch(() => props.projectId, () => {
   effects.value = [];
   derivedEffects.value = [];
   storyboardEffects.value = [];
+  videoEffects.value = [];
   grants.value = null;
   void refresh();
 });

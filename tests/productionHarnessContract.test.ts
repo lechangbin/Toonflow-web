@@ -5,6 +5,8 @@ import { createProductionHarnessClient, productionProjectId,
   type ProductionHarnessRun } from "../src/utils/productionHarnessContract.ts";
 import type { BillableImageApproval } from "../src/utils/billableImageApproval.ts";
 import type { DerivedAssetApproval } from "../src/utils/derivedAssetApproval.ts";
+import type { VideoGenerationApproval } from
+  "../src/utils/productionHarnessContract.ts";
 
 test("Production client uses owner-scoped HTTP state and separates child effects", async () => {
   const calls: Array<{ path: string; body: unknown }> = [];
@@ -17,7 +19,8 @@ test("Production client uses owner-scoped HTTP state and separates child effects
       : path.endsWith("/effects") ? { runId: run.id,
         effects: [{ operationId: "image-1", status: "denied", approval: null }],
         derivedEffects: [{ operationId: "derived-1", status: "denied", approval: null }],
-        storyboardEffects: [{ operationId: "storyboard-1", status: "denied", approval: null }] }
+        storyboardEffects: [{ operationId: "storyboard-1", status: "denied", approval: null }],
+        videoEffects: [{ operationId: "video-1", status: "denied", approval: null }] }
       : { run };
     return { data: data as T };
   });
@@ -28,6 +31,7 @@ test("Production client uses owner-scoped HTTP state and separates child effects
   assert.equal(effects.effects[0].status, "denied");
   assert.equal(effects.derivedEffects[0].status, "denied");
   assert.equal(effects.storyboardEffects[0].status, "denied");
+  assert.equal(effects.videoEffects[0].status, "denied");
   assert.equal((await client.cancel(7, run, "stop-1")).id, run.id);
   assert.deepEqual(calls.map((entry) => entry.path), [
     "/agentRuns/productionHarness/start", "/agentRuns/productionHarness/inspect",
@@ -80,6 +84,7 @@ test("Production grant snapshot and toggle use backend versions and distinct cap
       imageProposal: { active: false, version: 2 },
       derivedProposal: { active: false, version: 4 },
       storyboardProposal: { active: false, version: 6 },
+      videoProposal: { active: false, version: 8 },
     } : { state: "active", version: 5 }) as T };
   });
   const grants = await client.grants(7);
@@ -93,6 +98,47 @@ test("Production grant snapshot and toggle use backend versions and distinct cap
   await assert.rejects(client.setGrant(7, "derivedProposal",
     grants.derivedProposal, false), /stale or unchanged/);
   assert.equal(calls.length, 2);
+});
+
+test("Production Video candidate keeps approval and billable dispatch as separate Owner commands", async () => {
+  const calls: Array<{ path: string; body: unknown }> = [];
+  const pending: VideoGenerationApproval = { id: "video-approval", runId: "video-child",
+    operationId: "video-operation", status: "pending", runStatus: "waiting",
+    runVersion: 2, expiresAt: Date.now() + 60_000,
+    allowedActions: ["inspect", "approve", "reject"], scopeHash: "a".repeat(64),
+    payload: { scriptId: 11, item: { trackId: 31, promptRevisionId: 51,
+      vendorId: "agnes", modelId: "video-v2", capabilityId: "text-to-video",
+      inputs: [], output: {}, audio: {} } },
+    preview: { scriptId: 11, trackId: 31, promptRevisionId: 51,
+      vendorId: "agnes", modelId: "video-v2", duration: 5,
+      estimatedMaxCostMicros: 200_000, currency: "USD", quoteRevision: 1,
+      disclaimer: "本地估算" }, vendorRequest: null };
+  const approved: VideoGenerationApproval = { ...pending, status: "approved",
+    runVersion: 3, allowedActions: ["inspect"] };
+  const client = createProductionHarnessClient(async <T>(path, body) => {
+    calls.push({ path, body });
+    return { data: (path.endsWith("/decide") ? { approval: approved }
+      : path.endsWith("/execute") ? { result: { status: "submission-unknown",
+        requestId: "original-video-request" } }
+      : { state: "active", version: 9 }) as T };
+  });
+  await assert.rejects(client.executeVideo(7, pending), /cannot submit/);
+  assert.equal((await client.decideVideo(7, pending, "approve", "owner-review")).status,
+    "approved");
+  assert.equal((await client.executeVideo(7, approved)).status, "submission-unknown");
+  assert.deepEqual(await client.setGrant(7, "videoProposal",
+    { active: false, version: 8 }, true), { active: true, version: 9 });
+  assert.deepEqual(calls.map((call) => call.path), [
+    "/agentRuns/videoGenerationApproval/decide",
+    "/agentRuns/videoGenerationExecution/execute",
+    "/agentRuns/setProposeVideoGrant",
+  ]);
+  assert.deepEqual(calls[1].body, { projectId: 7, runId: "video-child",
+    approvalId: "video-approval", expectedVersion: 3 });
+  await assert.rejects(client.executeVideo(7, { ...approved, vendorRequest: {
+    requestId: "original-video-request", status: "unknown", providerTaskId: null,
+    artifactStatus: null } }), /cannot submit/);
+  assert.equal(calls.length, 3);
 });
 
 test("Production Storyboard approval uses a separate version-checked Owner command", async () => {

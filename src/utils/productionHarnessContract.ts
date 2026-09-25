@@ -57,11 +57,41 @@ export interface ProductionHarnessStoryboardEffect {
   approval: StoryboardWriteApproval | null;
 }
 
+export interface VideoGenerationApproval {
+  id: string;
+  runId: string;
+  operationId: string;
+  status: "pending" | "approved" | "rejected" | "expired";
+  runStatus: string;
+  runVersion: number;
+  expiresAt: number;
+  allowedActions: string[];
+  scopeHash: string;
+  payload: { scriptId: number; item: { trackId: number; promptRevisionId: number;
+    vendorId: string; modelId: string; capabilityId: "text-to-video";
+    inputs: []; output: unknown; audio: unknown } };
+  preview: { scriptId: number; trackId: number; promptRevisionId: number;
+    vendorId: string; modelId: string; duration: number;
+    estimatedMaxCostMicros: number; currency: string;
+    quoteRevision: number; disclaimer: string };
+  vendorRequest: null | { requestId: string; status: string;
+    providerTaskId: string | null; artifactStatus: string | null };
+  sourceRunId?: string;
+  sourceOperationId?: string;
+}
+
+export interface ProductionHarnessVideoEffect {
+  operationId: string;
+  status: "denied" | "approval";
+  approval: VideoGenerationApproval | null;
+}
+
 export interface ProductionHarnessEffects {
   runId: string;
   effects: ProductionHarnessEffect[];
   derivedEffects: ProductionHarnessDerivedEffect[];
   storyboardEffects: ProductionHarnessStoryboardEffect[];
+  videoEffects: ProductionHarnessVideoEffect[];
 }
 
 export interface ProductionHarnessGrants {
@@ -69,6 +99,7 @@ export interface ProductionHarnessGrants {
   imageProposal: { active: boolean; version: number };
   derivedProposal: { active: boolean; version: number };
   storyboardProposal: { active: boolean; version: number };
+  videoProposal: { active: boolean; version: number };
 }
 
 const grantPaths = {
@@ -76,6 +107,7 @@ const grantPaths = {
   imageProposal: "/agentRuns/setProposeBillableImageGrant",
   derivedProposal: "/agentRuns/setProposeDerivedAssetGrant",
   storyboardProposal: "/agentRuns/setProposeStoryboardGrant",
+  videoProposal: "/agentRuns/setProposeVideoGrant",
 } as const;
 
 export function productionProjectId(value: number | string): number {
@@ -195,6 +227,31 @@ export function createProductionHarnessClient(post: Post) {
           expectedVersion: approval.runVersion, decision,
         });
       return result.data.approval;
+    },
+    async decideVideo(projectId: number | string, approval: VideoGenerationApproval,
+      decision: "approve" | "reject", clientCommandId: string) {
+      if (approval.status !== "pending" || !approval.allowedActions.includes(decision)) {
+        throw new TypeError("Production Video approval cannot be decided in its current state");
+      }
+      const result = await post<{ approval: VideoGenerationApproval }>(
+        "/agentRuns/videoGenerationApproval/decide", {
+          projectId: productionProjectId(projectId), runId: approval.runId,
+          approvalId: approval.id, clientCommandId,
+          expectedVersion: approval.runVersion, decision,
+        });
+      return result.data.approval;
+    },
+    async executeVideo(projectId: number | string, approval: VideoGenerationApproval) {
+      if (approval.status !== "approved" || approval.vendorRequest !== null
+        || approval.expiresAt <= Date.now()) {
+        throw new TypeError("Production Video approval cannot submit Vendor request");
+      }
+      const result = await post<{ result: { status: string; requestId?: string } }>(
+        "/agentRuns/videoGenerationExecution/execute", {
+          projectId: productionProjectId(projectId), runId: approval.runId,
+          approvalId: approval.id, expectedVersion: approval.runVersion,
+        });
+      return result.data.result;
     },
   };
 }
