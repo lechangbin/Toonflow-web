@@ -93,6 +93,14 @@
               size="small" variant="outline" :disabled="busy" @click="decideVideo(effect.approval, 'reject')">拒绝</t-button>
             <t-button v-if="mayExecuteVideo(effect.approval)" size="small" theme="primary"
               :disabled="busy" @click="executeVideo(effect.approval)">明确提交一次视频请求</t-button>
+            <t-button v-if="mayCancelVideo(effect.approval)" size="small" variant="outline"
+              :disabled="busy" @click="videoRequestAction(effect.approval, 'cancel')">记录本地取消意图</t-button>
+            <t-button v-if="mayStopVideo(effect.approval)" size="small" variant="outline"
+              :disabled="busy" @click="videoRequestAction(effect.approval, 'stop')">停止本地追踪且不重发</t-button>
+            <t-button v-if="effect.approval.vendorRequest?.artifactStatus === 'write_pending'" size="small" variant="outline"
+              :disabled="busy" @click="videoRequestAction(effect.approval, 'recover')">检查本地待写媒体</t-button>
+            <t-button v-if="mayCommitVideo(effect.approval)" size="small" theme="warning"
+              :disabled="busy" @click="videoRequestAction(effect.approval, 'commit')">采纳已核验媒体</t-button>
           </div>
         </template>
       </div>
@@ -284,6 +292,55 @@ function decideStoryboard(approval: StoryboardWriteApproval, decision: "approve"
 function mayExecuteVideo(approval: VideoGenerationApproval): boolean {
   return approval.status === "approved" && approval.vendorRequest === null
     && approval.expiresAt > Date.now();
+}
+
+function mayCancelVideo(approval: VideoGenerationApproval): boolean {
+  return approval.runStatus === "waiting" && !!approval.vendorRequest
+    && ["dispatch_recorded", "unknown", "submitted", "artifact_observed"]
+      .includes(approval.vendorRequest.status);
+}
+
+function mayStopVideo(approval: VideoGenerationApproval): boolean {
+  return approval.runStatus === "waiting" && !!approval.vendorRequest
+    && ["cancellation_requested", "unknown", "late_artifact_observed"]
+      .includes(approval.vendorRequest.status);
+}
+
+function mayCommitVideo(approval: VideoGenerationApproval): boolean {
+  return approval.runStatus === "waiting"
+    && approval.vendorRequest?.status === "artifact_observed"
+    && approval.vendorRequest.artifactStatus === "observed";
+}
+
+function videoRequestAction(approval: VideoGenerationApproval,
+  action: "cancel" | "stop" | "recover" | "commit") {
+  const request = approval.vendorRequest;
+  if (busy.value || !request || action === "cancel" && !mayCancelVideo(approval)
+    || action === "stop" && !mayStopVideo(approval)
+    || action === "commit" && !mayCommitVideo(approval)
+    || action === "recover" && request.artifactStatus !== "write_pending") return;
+  const descriptions = {
+    cancel: "仅记录本地取消意图，不证明供应商已经停止或免计费。",
+    stop: "关闭本地追踪，不重发原请求，也不证明供应商没有产生费用或迟到结果。",
+    recover: "只检查原请求已记录的本地媒体路径，不重新调用供应商。",
+    commit: "仅在服务端再次验证目标、审批和媒体证据后采纳到 Project；冲突时保留原证据。",
+  };
+  const dialog = DialogPlugin.confirm({
+    header: `视频原请求 · ${action}`,
+    body: `请求 ${request.requestId}；当前状态 ${request.status}。${descriptions[action]}`,
+    theme: "warning", confirmBtn: "确认操作",
+    onConfirm: async () => {
+      busy.value = true;
+      let warning = "";
+      try {
+        if (action === "cancel") await client.cancelVideo(props.projectId, approval);
+        else if (action === "stop") await client.stopVideo(props.projectId, approval);
+        else if (action === "recover") await client.recoverVideo(props.projectId, approval);
+        else await client.commitVideo(props.projectId, approval);
+      } catch { warning = "原请求状态可能已变化，请刷新并核对服务端证据；系统不会自动重试。"; }
+      finally { busy.value = false; dialog.destroy(); await refresh(); if (warning) error.value = warning; }
+    },
+  });
 }
 
 function decideVideo(approval: VideoGenerationApproval, decision: "approve" | "reject") {

@@ -253,5 +253,54 @@ export function createProductionHarnessClient(post: Post) {
         });
       return result.data.result;
     },
+    async cancelVideo(projectId: number | string, approval: VideoGenerationApproval) {
+      const request = approval.vendorRequest;
+      if (!request || approval.runStatus !== "waiting"
+        || !["dispatch_recorded", "unknown", "submitted", "artifact_observed"]
+          .includes(request.status)) {
+        throw new TypeError("Production Video request cannot be locally cancelled");
+      }
+      await post("/agentRuns/videoGenerationExecution/cancel", {
+        projectId: productionProjectId(projectId), requestId: request.requestId,
+        expectedVersion: approval.runVersion,
+      });
+    },
+    async stopVideo(projectId: number | string, approval: VideoGenerationApproval) {
+      const request = approval.vendorRequest;
+      if (!request || approval.runStatus !== "waiting"
+        || !["cancellation_requested", "unknown", "late_artifact_observed"]
+          .includes(request.status)) {
+        throw new TypeError("Production Video request cannot be locally stopped");
+      }
+      await post("/agentRuns/videoGenerationExecution/stop", {
+        projectId: productionProjectId(projectId), requestId: request.requestId,
+        expectedVersion: approval.runVersion,
+      });
+    },
+    async commitVideo(projectId: number | string, approval: VideoGenerationApproval) {
+      const request = approval.vendorRequest;
+      if (!request || approval.runStatus !== "waiting"
+        || request.status !== "artifact_observed"
+        || request.artifactStatus !== "observed") {
+        throw new TypeError("Production Video artifact cannot be adopted");
+      }
+      const result = await post<{ output: unknown }>(
+        "/agentRuns/videoGenerationExecution/commit", {
+          projectId: productionProjectId(projectId), requestId: request.requestId,
+          expectedVersion: approval.runVersion,
+        });
+      return result.data.output;
+    },
+    async recoverVideo(projectId: number | string, approval: VideoGenerationApproval) {
+      const request = approval.vendorRequest;
+      if (!request || request.artifactStatus !== "write_pending") {
+        throw new TypeError("Production Video artifact is not pending local recovery");
+      }
+      const result = await post<{ artifact: unknown }>(
+        "/agentRuns/videoGenerationExecution/artifact/recover", {
+          projectId: productionProjectId(projectId), requestId: request.requestId,
+        });
+      return result.data.artifact;
+    },
   };
 }

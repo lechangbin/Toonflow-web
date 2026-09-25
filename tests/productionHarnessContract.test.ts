@@ -141,6 +141,49 @@ test("Production Video candidate keeps approval and billable dispatch as separat
   assert.equal(calls.length, 3);
 });
 
+test("Production Video request actions preserve original request ID and reject unsafe states", async () => {
+  const calls: Array<{ path: string; body: unknown }> = [];
+  const client = createProductionHarnessClient(async <T>(path, body) => {
+    calls.push({ path, body });
+    return { data: {} as T };
+  });
+  const base = { id: "video-approval", runId: "video-child",
+    operationId: "video-operation", status: "approved" as const,
+    runStatus: "waiting", runVersion: 4, expiresAt: Date.now() + 60_000,
+    allowedActions: ["inspect"], scopeHash: "a".repeat(64),
+    payload: { scriptId: 11, item: { trackId: 31, promptRevisionId: 51,
+      vendorId: "agnes", modelId: "video-v2",
+      capabilityId: "text-to-video" as const, inputs: [] as [],
+      output: {}, audio: {} } },
+    preview: { scriptId: 11, trackId: 31, promptRevisionId: 51,
+      vendorId: "agnes", modelId: "video-v2", duration: 5,
+      estimatedMaxCostMicros: 200_000, currency: "USD", quoteRevision: 1,
+      disclaimer: "本地估算" } };
+  const request = { requestId: "original-video-request", status: "unknown",
+    providerTaskId: null, artifactStatus: null };
+  await client.cancelVideo(7, { ...base, vendorRequest: request });
+  await client.stopVideo(7, { ...base, vendorRequest: request });
+  await client.recoverVideo(7, { ...base, vendorRequest: {
+    ...request, status: "submitted", artifactStatus: "write_pending" } });
+  await client.commitVideo(7, { ...base, vendorRequest: {
+    ...request, status: "artifact_observed", artifactStatus: "observed" } });
+  assert.deepEqual(calls.map((call) => call.path), [
+    "/agentRuns/videoGenerationExecution/cancel",
+    "/agentRuns/videoGenerationExecution/stop",
+    "/agentRuns/videoGenerationExecution/artifact/recover",
+    "/agentRuns/videoGenerationExecution/commit",
+  ]);
+  assert.deepEqual(calls[0].body, { projectId: 7,
+    requestId: "original-video-request", expectedVersion: 4 });
+  assert.deepEqual(calls[3].body, calls[0].body);
+  await assert.rejects(client.cancelVideo(7, { ...base, vendorRequest: {
+    ...request, status: "succeeded" } }), /cannot be locally cancelled/);
+  await assert.rejects(client.commitVideo(7, { ...base, vendorRequest: {
+    ...request, status: "late_artifact_observed", artifactStatus: "late" } }),
+  /cannot be adopted/);
+  assert.equal(calls.length, 4);
+});
+
 test("Production Storyboard approval uses a separate version-checked Owner command", async () => {
   const calls: Array<{ path: string; body: unknown }> = [];
   const pending = { id: "approval-storyboard", runId: "child-storyboard",
