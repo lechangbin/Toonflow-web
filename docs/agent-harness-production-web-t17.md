@@ -17,3 +17,5 @@ App 后端的 `production-harness-v1` 与旧生产 Socket 路径并行。此 Web
 面试追问：为什么显示“指导 Run 成功”时仍要单列图片效果？因为模型文本 Step 的完成和供应商付费效果属于两个持久生命周期；子审批可能仍 pending、结果未知或取消后迟到。前端以 HTTP 效果投影呈现这些区别，旧 Socket 消息不能覆盖服务端结果。证据是 `src/utils/productionHarnessContract.ts`、`src/views/production/components/rightChatBox/productionHarnessPanel.vue` 与上述定向单测；真实交互体验和长期运行指标仍待测。
 
 Video 试用接线：生产 grant 增加独立 `videoProposal` 开关，父 Run 的 `videoEffects` 显示子审批、精确候选与本地费用估算，Owner 可版本化批准/拒绝。批准后卡片仍标为“供应商尚未提交”；第二次明确确认才调用独立 Video execute，客户端在过期或已有原请求时拒绝再次提交。后端执行入口默认关闭；HTTP 404、超时或其他不确定结果只提示核对原请求，不自动重试。此面板暂未提供 Video 本地取消、Artifact 修复或报价策略设置，因此不能称视频操作闭环。`productionHarnessContract.test.ts` 的 7 个定向用例和非声明式 Vue 类型检查通过；未做浏览器、真实 Provider 或全量验收。
+
+视频工作台的当前文生视频选型现可由 Owner 读取并按 expectedRevision 配置本地费用估算；目标精确包含 Project、Vendor、Model、能力、输出时长/分辨率/画幅和音频。仅无图片输入的文生视频轨道可打开此控件，改选型后必须重新读取，提交前另有人工确认；服务端再次核对 Owner、选型 schema 和版本。它不保存 Prompt、不批准候选、不提交 Vendor，也不是实际报价。`videoQuotePolicyClient.test.ts` 的 2 个合约定向用例和相关 Web 7 例通过，非声明式 Vue 类型检查通过。当前 UI 未做浏览器验收，原段“无报价设置”是上一切片状态；Video 本地取消/媒体恢复 UI 仍未实现。
