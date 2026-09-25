@@ -1,7 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { useChat } from "../src/utils/useChat.ts";
+import { acceptsLegacyMessageUpdate, useChat } from "../src/utils/useChat.ts";
+
+test("Legacy projection rejects late updates after a terminal message state", () => {
+  assert.equal(acceptsLegacyMessageUpdate("stop", "complete"), false);
+  assert.equal(acceptsLegacyMessageUpdate("stop", "streaming"), false);
+  assert.equal(acceptsLegacyMessageUpdate("complete", "streaming"), false);
+  assert.equal(acceptsLegacyMessageUpdate("pending", "streaming"), true);
+});
 
 test("Legacy Socket stop request does not optimistically mark a message stopped", () => {
   const chat = useChat({ url: "unused", autoConnect: false,
