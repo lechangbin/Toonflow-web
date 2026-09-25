@@ -120,6 +120,7 @@ import { imageApprovalSummary, maySubmitApprovedImage,
   type BillableImageApproval } from "@/utils/billableImageApproval";
 import { approvalSummary as derivedApprovalSummary,
   type DerivedAssetApproval } from "@/utils/derivedAssetApproval";
+import { chooseHarnessRecentRun } from "@/utils/harnessRecentRuns";
 import { createProductionHarnessClient, type ProductionHarnessEffect,
   type ProductionHarnessDerivedEffect, type ProductionHarnessGrants,
   type ProductionHarnessRun, type ProductionHarnessStoryboardEffect,
@@ -160,9 +161,11 @@ async function refresh() {
       client.list(props.projectId), client.grants(props.projectId),
     ]);
     if (requestedEpoch !== epoch || requestedSequence !== refreshSequence) return;
-    recent.value = list.recent;
+    const selection = chooseHarnessRecentRun({ selectedId: selected.value?.id,
+      current: list.current, recent: list.recent });
+    recent.value = selection.recent;
     grants.value = grantSnapshot;
-    const id = selected.value?.id ?? list.current?.id ?? list.recent[0]?.id;
+    const id = selection.selectedId;
     if (!id) { selected.value = null; effects.value = []; derivedEffects.value = [];
       storyboardEffects.value = []; videoEffects.value = []; return; }
     const run = await client.inspect(props.projectId, id);
