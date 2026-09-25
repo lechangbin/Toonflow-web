@@ -5,7 +5,9 @@ export interface AgentTraceEvidence {
   redaction: { schemaVersion: "toonflow.trace-redaction-evidence.v1";
     result: "passed" };
   events: Array<{ id: string; sequence: number; eventType: string;
-    runStatus?: string; stepStatus?: string; createdAt: number }>;
+    runStatus?: string; stepStatus?: string;
+    videoVendorRequestId?: string; videoArtifactId?: string;
+    createdAt: number }>;
 }
 
 type Post = <T>(path: string, body: unknown) => Promise<{ data: T }>;
@@ -26,7 +28,9 @@ export function createAgentTraceEvidenceClient(post: Post) {
       || evidence.redaction.result !== "passed"
       || !Array.isArray(evidence.events) || evidence.events.length > 5000
       || evidence.events.some((event) => !Number.isSafeInteger(event.sequence)
-        || !/^[a-z][a-z0-9.-]{0,95}$/u.test(event.eventType))) {
+        || !/^[a-z][a-z0-9.-]{0,95}$/u.test(event.eventType)
+        || [event.videoVendorRequestId, event.videoArtifactId].some((id) =>
+          id !== undefined && !/^[A-Za-z0-9._:-]{1,128}$/u.test(id)))) {
       throw new TypeError("Agent evidence response is mismatched or unsafe");
     }
     return evidence;

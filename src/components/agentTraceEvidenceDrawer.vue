@@ -12,6 +12,8 @@
           #{{ event.sequence }} · {{ event.eventType }}
           <span v-if="event.runStatus"> · Run {{ event.runStatus }}</span>
           <span v-if="event.stepStatus"> · Step {{ event.stepStatus }}</span>
+          <span v-if="event.videoVendorRequestId"> · Video 请求 {{ event.videoVendorRequestId }}</span>
+          <span v-if="event.videoArtifactId"> · Video 媒体 {{ event.videoArtifactId }}</span>
         </li>
       </ol>
     </div>
