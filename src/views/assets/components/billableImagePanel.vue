@@ -62,6 +62,7 @@ const target = computed(() => {
   return { projectId: props.projectId, assetId: props.assetId, ...model, resolution: props.resolution };
 });
 const busy = ref(false);
+const submittingVendorRequest = ref(false);
 const quote = ref<BillableImageQuote | null>(null);
 const amount = ref("");
 const currency = ref("USD");
@@ -152,13 +153,16 @@ function execute(approval: BillableImageApproval) {
     theme: "warning", confirmBtn: "提交一次",
     onConfirm: async () => {
       busy.value = true;
+      submittingVendorRequest.value = true;
       try {
+        // The vendor POST may block; keep the authoritative request state visible meanwhile.
+        void refresh();
         const response = await axios.post("/agentRuns/billableImage/execute", {
           projectId: props.projectId, runId: approval.runId, approvalId: approval.id,
           expectedVersion: approval.runVersion });
         if (response.data?.result?.status === "succeeded") emit("completed");
       } catch { window.$message.warning("提交结果不确定；请查看请求状态，勿重新创建请求重试。"); }
-      finally { busy.value = false; dialog.destroy(); await refresh(); }
+      finally { submittingVendorRequest.value = false; busy.value = false; dialog.destroy(); await refresh(); }
     },
   });
 }
@@ -243,7 +247,9 @@ function stopWithoutReplay(approval: BillableImageApproval) {
 
 let timer: ReturnType<typeof setInterval> | undefined;
 watch(() => [props.visible, props.projectId, props.assetId, props.model, props.resolution], () => { void refresh(); }, { immediate: true });
-onMounted(() => { timer = setInterval(() => { if (props.visible && !busy.value) void refresh(); }, 5000); });
+onMounted(() => { timer = setInterval(() => {
+  if (props.visible && (!busy.value || submittingVendorRequest.value)) void refresh();
+}, 5000); });
 onUnmounted(() => { if (timer) clearInterval(timer); });
 </script>
 
