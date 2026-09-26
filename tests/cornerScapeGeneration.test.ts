@@ -199,17 +199,19 @@ test("accepted single generation tolerates transient missing rows before treatin
   assert.equal(h.items[0].state, "");
 });
 
-test("single-asset dialog polls while the blocking POST is still in flight", () => {
+test("supervised single-asset dialog polls while the vendor POST is in flight", () => {
   const generateSource = fs.readFileSync(new URL("../src/views/assets/components/generateImage.vue", import.meta.url), "utf8");
-  const start = generateSource.indexOf("async function handleGenerate");
-  const end = generateSource.indexOf("//自定义上传图片", start);
-  const handler = generateSource.slice(start, end);
-  assert.ok(handler.indexOf("void fetchGeneratedImages()") > -1, "提交后应立即启动权威轮询");
-  assert.ok(
-    handler.indexOf("void fetchGeneratedImages()") < handler.indexOf("await generateSingleAssetImage"),
-    "轮询必须早于会等待供应商完成的 POST await",
-  );
-  assert.match(generateSource, /hasGenerating\s*\|\|\s*generateLoading\.value/u, "占位尚未出现时仍应在提交期间继续轮询");
+  assert.match(generateSource, /<billableImagePanel[\s\S]*@completed="fetchGeneratedImages"/u,
+    "单资产生成使用受控审批面板，完成后刷新图片列表");
+  assert.doesNotMatch(generateSource, /generateSingleAssetImage/u,
+    "旧的直接生成请求不能绕过计费审批面板");
+  const panelSource = fs.readFileSync(new URL("../src/views/assets/components/billableImagePanel.vue", import.meta.url), "utf8");
+  const execute = panelSource.slice(panelSource.indexOf("function execute("), panelSource.indexOf("function cancel("));
+  assert.ok(execute.indexOf("void refresh()") > -1
+    && execute.indexOf("void refresh()") < execute.indexOf('await axios.post("/agentRuns/billableImage/execute"'),
+  "提交后须在可能阻塞的供应商 POST 前启动权威状态读取");
+  assert.match(panelSource, /props\.visible\s*&&\s*\(!busy\.value\s*\|\|\s*submittingVendorRequest\.value\)/u,
+    "供应商 POST 未返回时仍应轮询后端状态");
 });
 
 test("Production Agent only acknowledges accepted backend generation", () => {

@@ -20,6 +20,12 @@ export interface MessageUpdateEvent {
   ext?: Record<string, any>;
 }
 
+export function acceptsLegacyMessageUpdate(current: ChatMessageStatus | undefined,
+  incoming: ChatMessageStatus | undefined): boolean {
+  return !(["complete", "error", "stop"].includes(current ?? "")
+    && incoming !== current);
+}
+
 export interface ContentAddEvent {
   messageId: string;
   content: AIMessageContent;
@@ -124,6 +130,7 @@ export function useChat(options: UseChatOptions) {
     if (!lastMsg || lastMsg.role !== "assistant") return false;
 
     const status = lastMsg.status;
+    if (status === "complete" || status === "error" || status === "stop") return false;
     // pending 或 streaming 状态都算生成中
     if (status === "pending" || status === "streaming") return true;
 
@@ -358,6 +365,7 @@ export function useChat(options: UseChatOptions) {
 
     const msg = findMessage(messageId) as AIMessage;
     if (!msg || msg.role !== "assistant") return;
+    if (!acceptsLegacyMessageUpdate(msg.status, "streaming")) return;
 
     const content = findContent(msg, contentId);
     if (!content) return;
@@ -459,6 +467,7 @@ export function useChat(options: UseChatOptions) {
     socket.value.on("message:update", (data: MessageUpdateEvent) => {
       const msg = findMessage(data.id);
       if (!msg) return;
+      if (!acceptsLegacyMessageUpdate(msg.status, data.status)) return;
 
       if (data.status) {
         msg.status = data.status;
@@ -482,7 +491,7 @@ export function useChat(options: UseChatOptions) {
       }
 
       if (data.status === "streaming") {
-        status.value = "streaming";
+        if (currentMessageId.value === data.id) status.value = "streaming";
       }
 
       if (data.status === "complete" || data.status === "error" || data.status === "stop") {
@@ -497,6 +506,7 @@ export function useChat(options: UseChatOptions) {
     socket.value.on("content:add", (data: ContentAddEvent) => {
       const msg = findMessage(data.messageId) as AIMessage;
       if (!msg || msg.role !== "assistant") return;
+      if (!acceptsLegacyMessageUpdate(msg.status, "streaming")) return;
 
       if (!msg.content) {
         msg.content = [];
@@ -653,15 +663,7 @@ export function useChat(options: UseChatOptions) {
   const stopGenerate = (messageId?: string) => {
     const id = messageId || currentMessageId.value;
     if (!id) return false;
-
-    // 立即更新本地状态，不等服务端响应
-    const msg = findMessage(id);
-    if (msg) {
-      msg.status = "stop";
-    }
-    currentMessageId.value = null;
-    status.value = "idle";
-
+    // A Socket send is only a stop request; the server's message:update owns completion.
     return emit("stop", { messageId: id });
   };
 
