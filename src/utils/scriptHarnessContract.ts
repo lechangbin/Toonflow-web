@@ -35,6 +35,10 @@ export function isScriptHarnessTerminal(status: ScriptHarnessStatus): boolean {
 }
 
 type Post = <T>(path: string, body: unknown) => Promise<{ data: T }>;
+const conflict = (error: unknown) => typeof error === "object" && error !== null
+  && (("status" in error && error.status === 409)
+    || ("response" in error && typeof error.response === "object" && error.response !== null
+      && "status" in error.response && error.response.status === 409));
 
 /** Versioned HTTP adapter; never falls back to the legacy Socket on failure. */
 export function createScriptHarnessClient(post: Post) {
@@ -65,11 +69,26 @@ export function createScriptHarnessClient(post: Post) {
       if (!run.allowedActions.includes("cancel")) {
         throw new TypeError("Script Harness Run cannot be cancelled in its current state");
       }
-      const result = await post<{ run: ScriptHarnessRun }>(
+      const scopedProjectId = canonicalProjectId(projectId);
+      const submit = async (expectedVersion: number) => (await post<{ run: ScriptHarnessRun }>(
         "/agentRuns/scriptHarnessControls/cancel",
-        { projectId: canonicalProjectId(projectId), runId: run.id,
-          clientCommandId, expectedVersion: run.version });
-      return result.data.run;
+        { projectId: scopedProjectId, runId: run.id,
+          clientCommandId, expectedVersion })).data.run;
+      try {
+        return await submit(run.version);
+      } catch (error) {
+        if (!conflict(error)) throw error;
+        // Queued -> running can advance the version between rendering and the stop click.
+        // Read the same authoritative Run; never retry an unknown network outcome.
+        const fresh = (await post<{ run: ScriptHarnessRun }>(
+          "/agentRuns/scriptHarnessControls/inspect",
+          { projectId: scopedProjectId, runId: run.id })).data.run;
+        if (fresh.id !== run.id || fresh.projectId !== scopedProjectId
+          || fresh.role !== run.role || fresh.scope !== run.scope
+          || fresh.version <= run.version) throw error;
+        if (!fresh.allowedActions.includes("cancel")) return fresh;
+        return submit(fresh.version);
+      }
     },
   };
 }

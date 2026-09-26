@@ -68,7 +68,11 @@ instance.interceptors.response.use(
       });
     }
 
-    return Promise.reject(error?.response?.data ?? error);
+    const responseData = error?.response?.data;
+    if (responseData && typeof responseData === "object" && !Array.isArray(responseData)) {
+      return Promise.reject({ ...responseData, status: error.response.status });
+    }
+    return Promise.reject(responseData ?? error);
   },
 );
 
