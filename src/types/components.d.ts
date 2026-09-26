@@ -13,6 +13,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     About: typeof import('./../components/setting/components/about.vue')['default']
     AgentConfog: typeof import('./../components/setting/components/agentConfog.vue')['default']
+    AgentTraceEvidenceDrawer: typeof import('./../components/agentTraceEvidenceDrawer.vue')['default']
     AudioUploadBox: typeof import('./../components/setting/components/vendorTest/AudioUploadBox.vue')['default']
     DbConfig: typeof import('./../components/setting/components/dbConfig.vue')['default']
     DevConfig: typeof import('./../components/setting/components/devConfig.vue')['default']
