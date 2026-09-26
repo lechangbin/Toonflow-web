@@ -40,13 +40,16 @@
           size="small" variant="outline" :disabled="busy" @click="stopWithoutReplay(approval)">结束跟踪（不重发）</t-button>
         <t-button v-if="approval.vendorRequest && approval.allowedActions.includes('reconcile_manual')"
           size="small" variant="outline" :disabled="busy" @click="showManualReconciliation(approval)">人工核对指引</t-button>
+        <t-button size="small" variant="outline" @click="openEvidence(approval)">查看 Trace 证据</t-button>
       </div>
     </div>
+    <agentTraceEvidenceDrawer v-model:visible="evidenceVisible" :project-id="projectId" :run-id="evidenceRunId" />
   </div>
 </template>
 
 <script setup lang="ts">
 import axios from "@/utils/axios";
+import agentTraceEvidenceDrawer from "./agentTraceEvidenceDrawer.vue";
 import { imageApprovalSummary, maySubmitApprovedImage, parseVendorModel, quoteMicros,
   type BillableImageApproval, type BillableImageQuote } from "@/utils/billableImageApproval";
 
@@ -59,11 +62,19 @@ const target = computed(() => {
   return { projectId: props.projectId, assetId: props.assetId, ...model, resolution: props.resolution };
 });
 const busy = ref(false);
+const submittingVendorRequest = ref(false);
 const quote = ref<BillableImageQuote | null>(null);
 const amount = ref("");
 const currency = ref("USD");
 const approvals = ref<BillableImageApproval[]>([]);
+const evidenceVisible = ref(false);
+const evidenceRunId = ref("");
 let loadedQuoteKey = "";
+
+function openEvidence(approval: BillableImageApproval) {
+  evidenceRunId.value = approval.runId;
+  evidenceVisible.value = true;
+}
 
 async function refresh() {
   if (!props.visible || !props.projectId) return;
@@ -142,13 +153,16 @@ function execute(approval: BillableImageApproval) {
     theme: "warning", confirmBtn: "提交一次",
     onConfirm: async () => {
       busy.value = true;
+      submittingVendorRequest.value = true;
       try {
+        // The vendor POST may block; keep the authoritative request state visible meanwhile.
+        void refresh();
         const response = await axios.post("/agentRuns/billableImage/execute", {
           projectId: props.projectId, runId: approval.runId, approvalId: approval.id,
           expectedVersion: approval.runVersion });
         if (response.data?.result?.status === "succeeded") emit("completed");
       } catch { window.$message.warning("提交结果不确定；请查看请求状态，勿重新创建请求重试。"); }
-      finally { busy.value = false; dialog.destroy(); await refresh(); }
+      finally { submittingVendorRequest.value = false; busy.value = false; dialog.destroy(); await refresh(); }
     },
   });
 }
@@ -233,7 +247,9 @@ function stopWithoutReplay(approval: BillableImageApproval) {
 
 let timer: ReturnType<typeof setInterval> | undefined;
 watch(() => [props.visible, props.projectId, props.assetId, props.model, props.resolution], () => { void refresh(); }, { immediate: true });
-onMounted(() => { timer = setInterval(() => { if (props.visible && !busy.value) void refresh(); }, 5000); });
+onMounted(() => { timer = setInterval(() => {
+  if (props.visible && (!busy.value || submittingVendorRequest.value)) void refresh();
+}, 5000); });
 onUnmounted(() => { if (timer) clearInterval(timer); });
 </script>
 
